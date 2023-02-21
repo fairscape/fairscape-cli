@@ -70,19 +70,19 @@ fairscape describe --name "b2ai computation"
 
 ## Milestones
 
-- [ ] 02-22
+- [ ] 02-23
         - [ ] validate json command
         - [ ] pypi package for classes based on linkml description
-- [ ] 02-23
+- [ ] 02-25
         - [ ] validate software
         - [ ] validate dataset
         - [ ] validate computation
-- [ ] 02-24
+- [ ] 02-27
         - [ ] ROcrate create
         - [ ] ROcrate add software
         - [ ] ROcrate add dataset
         - [ ] ROcrate add computation
-- [ ] 02-25
+- [ ] 02-28
         - [ ] ROcrate hash
         - [ ] list ROcrate
         - [ ] describe ROcrate
