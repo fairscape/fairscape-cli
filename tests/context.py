@@ -9,4 +9,4 @@ sys.path.insert(
     )
 )
 
-import fairscape
+import app

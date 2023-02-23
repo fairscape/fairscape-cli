@@ -1,1 +1,1 @@
-from .context import fairscape
+from .context import app
