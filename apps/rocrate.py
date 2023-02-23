@@ -33,5 +33,16 @@ def package_rocrate(output_path: Path = typer.Option(...)):
     pass
 
 
+@app.command()
+def delete(
+    path: str,
+    force: bool = typer.Option(..., prompt="Confirm to delete RO crate")
+):
+    if force:
+        print(f"deleting ro crate: {path}")
+    else:
+        print("cancelling deletion")
+
+
 if __name__ == "__main__":
     app()
