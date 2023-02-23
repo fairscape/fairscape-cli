@@ -1,9 +1,10 @@
 import typer
 from pathlib import Path
-import objects
+import apps.objects
 
 app = typer.Typer()
-app.add_typer(objects.app, name="add")
+# subcommand
+app.add_typer(apps.objects.app, name="add")
 
 
 @app.command("create")
