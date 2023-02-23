@@ -12,11 +12,17 @@ def validate_json(path: Path = typer.Argument(..., help="Path to the metadata in
     if path.is_file():
         # content = path.read_text();
         # print(f"File content: {content}")
-        try:
-            file_metadata = open(path)
-            json.load(file_metadata)
-        except ValueError as e:
-            raise e
+        file_extensions = [".json", ".jsonld"]
+        # abort if correct file format is not submitted
+        if not path.suffix in file_extensions:
+            print(f"Only {file_extensions} file types are allowed. Please try again.")
+            typer.Abort()
+        else:
+            try:
+                file_metadata = open(path)
+                json.load(file_metadata)
+            except ValueError as e:
+                raise e
     elif path.is_dir():
         print("Expecting file but got a directory. Aborting...")
         typer.Abort()
