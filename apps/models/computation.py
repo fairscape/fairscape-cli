@@ -5,6 +5,7 @@ import re
 class Computation(BaseModel):
     type: str
     name: str
+    description: str
     author: str
     version: str
     usedSoftware: str
@@ -19,8 +20,8 @@ class Computation(BaseModel):
 
     @validator('name')
     def name_must_contain_space(cls, v):
-        if ' ' in v:
-            raise ValueError('must not contain space')
+        if not isinstance(v, str):
+            raise ValueError('must be a string')
         return v
 
     @validator('author')

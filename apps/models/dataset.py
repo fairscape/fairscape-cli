@@ -1,18 +1,18 @@
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, validator, Field
 
 import re
 
 
 class Dataset(BaseModel):
-    type: str
+    type: str = Field(None, alias='@type')
     name: str
     author: str
     version: str
     format: str
     contentUrl: str
 
-    @validator('type')
-    def must_be_software(cls, v):
+    @validator('type', pre=True, always=True)
+    def must_be_dataset(cls, v):
         if v != 'Dataset':
             raise ValueError('must be of type Dataset')
         return v

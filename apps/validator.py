@@ -4,24 +4,37 @@ import json
 from apps.models.dataset import Dataset
 from apps.models.software import Software
 from pydantic import ValidationError
+from pyld import jsonld
 
 app = typer.Typer()
 
 
 @app.command("json")
 def validate_json(path: Path = typer.Argument(..., help="Path to the metadata in JSON/JSON-LD format")):
+
+    context = {"@vocab": "https://schema.org/", "evi": "https://w3id.org/EVI#"}
+
+
     if path.is_file():
         # content = path.read_text();
         # print(f"File content: {content}")
         file_extensions = [".json", ".jsonld"]
         # abort if correct file format is not submitted
-        if not path.suffix in file_extensions:
-            print(f"Only {file_extensions} file types are allowed. Please try again.")
+        if path.suffix not in file_extensions:
+            print(f"Only {file_extensions} files are allowed")
             typer.Abort()
         else:
             try:
                 metadata_file = open(path)
-                json.load(metadata_file)
+                data = json.load(metadata_file)
+                #print(json.dumps(data, indent=2))
+                #flattened = jsonld.flatten(data, context)
+                #print(json.dumps(flattened, indent=2))
+                compacted = jsonld.compact(data, context)
+                #print(json.dumps(compacted, indent=2))
+
+                expanded = jsonld.expand(compacted)
+                print(json.dumps(expanded, indent=2))
             except json.decoder.JSONDecodeError as e:
                 print(e)
     elif path.is_dir():
