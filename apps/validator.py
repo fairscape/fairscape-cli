@@ -27,14 +27,14 @@ def validate_json(path: Path = typer.Argument(..., help="Path to the metadata in
             try:
                 metadata_file = open(path)
                 data = json.load(metadata_file)
-                #print(json.dumps(data, indent=2))
-                #flattened = jsonld.flatten(data, context)
+                print(json.dumps(data, indent=2))
+                #flattened = jsonld.flatten(data)
                 #print(json.dumps(flattened, indent=2))
-                compacted = jsonld.compact(data, context)
+                #compacted = jsonld.compact(data, context)
                 #print(json.dumps(compacted, indent=2))
 
-                expanded = jsonld.expand(compacted)
-                print(json.dumps(expanded, indent=2))
+                #expanded = jsonld.expand(compacted)
+                #print(json.dumps(expanded, indent=2))
             except json.decoder.JSONDecodeError as e:
                 print(e)
     elif path.is_dir():
