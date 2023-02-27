@@ -4,7 +4,6 @@ import json
 from apps.models.dataset import Dataset
 from apps.models.software import Software
 from pydantic import ValidationError
-from pyld import jsonld
 
 app = typer.Typer()
 
@@ -21,27 +20,21 @@ def validate_json(path: Path = typer.Argument(..., help="Path to the metadata in
         file_extensions = [".json", ".jsonld"]
         # abort if correct file format is not submitted
         if path.suffix not in file_extensions:
-            print(f"Only {file_extensions} files are allowed")
-            typer.Abort()
+            typer.secho(f"Only {file_extensions} files are allowed", fg=typer.colors.BRIGHT_RED)
+            raise typer.Exit(1)
         else:
             try:
                 metadata_file = open(path)
                 data = json.load(metadata_file)
                 print(json.dumps(data, indent=2))
-                #flattened = jsonld.flatten(data)
-                #print(json.dumps(flattened, indent=2))
-                #compacted = jsonld.compact(data, context)
-                #print(json.dumps(compacted, indent=2))
-
-                #expanded = jsonld.expand(compacted)
-                #print(json.dumps(expanded, indent=2))
             except json.decoder.JSONDecodeError as e:
-                print(e)
+                typer.secho(e, fg=typer.colors.BRIGHT_RED)
     elif path.is_dir():
-        print("Expecting file but got a directory. Aborting...")
-        typer.Abort()
+        typer.secho("Expecting file but got a directory. Aborting...", fg=typer.colors.BRIGHT_RED)
+        raise typer.Exit(1)
     elif not path.exists():
-        print(f"Unable to find any metadata file at the path: \"{path}\"")
+        typer.secho(f"Unable to find any metadata file at the path: \"{path}\"", fg=typer.colors.BRIGHT_RED)
+        raise typer.Exit(1)
 
 
 @app.command("dataset")
@@ -52,8 +45,8 @@ def validate_dataset(path: Path = typer.Argument(..., help="Path to the Dataset 
         file_extensions = [".json", ".jsonld"]
         # abort if correct file format is not submitted
         if not path.suffix in file_extensions:
-            print(f"Only {file_extensions} file types are allowed. Please try again.")
-            typer.Abort()
+            typer.secho(f"Only {file_extensions} files are allowed", fg=typer.colors.BRIGHT_RED)
+            raise typer.Exit(1)
         else:
             try:
                 dataset_file = open(path)
@@ -62,10 +55,11 @@ def validate_dataset(path: Path = typer.Argument(..., help="Path to the Dataset 
             except ValueError as e:
                 raise e
     elif path.is_dir():
-        print("Expecting file but got a directory. Aborting...")
-        typer.Abort()
+        typer.secho("Expecting file but got a directory. Aborting...", fg=typer.colors.BRIGHT_RED)
+        raise typer.Exit(1)
     elif not path.exists():
-        print(f"Unable to find any metadata file at the path: \"{path}\"")
+        typer.secho(f"Unable to find any metadata file at the path: \"{path}\"", fg=typer.colors.BRIGHT_RED)
+        raise typer.Exit(1)
 
 
 @app.command("software")
@@ -76,8 +70,8 @@ def validate_software(path: Path = typer.Argument(..., help="Path to the Softwar
         file_extensions = [".json", ".jsonld"]
         # abort if correct file format is not submitted
         if not path.suffix in file_extensions:
-            print(f"Only {file_extensions} file types are allowed. Please try again.")
-            typer.Abort()
+            typer.secho(f"Only {file_extensions} files are allowed", fg=typer.colors.BRIGHT_RED)
+            raise typer.Exit(1)
         else:
             try:
                 software_file = open(path)
@@ -89,10 +83,11 @@ def validate_software(path: Path = typer.Argument(..., help="Path to the Softwar
             except ValueError as e:
                 raise e
     elif path.is_dir():
-        print("Expecting file but got a directory. Aborting...")
-        typer.Abort()
+        typer.secho("Expecting file but got a directory. Aborting...", fg=typer.colors.BRIGHT_RED)
+        raise typer.Exit(1)
     elif not path.exists():
-        print(f"Unable to find any metadata file at the path: \"{path}\"")
+        typer.secho(f"Unable to find any metadata file at the path: \"{path}\"", fg=typer.colors.BRIGHT_RED)
+        raise typer.Exit(1)
 
 
 @app.command("computation")
