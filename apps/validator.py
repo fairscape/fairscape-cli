@@ -3,96 +3,68 @@ from pathlib import Path
 import json
 from apps.models.dataset import Dataset
 from apps.models.software import Software
+from apps.models.computation import Computation
 from pydantic import ValidationError
+from apps.utils import is_path_valid
 
 app = typer.Typer()
 
 
 @app.command("json")
-def validate_json(path: Path = typer.Argument(..., help="Path to the metadata in JSON/JSON-LD format")):
+def validate_json_document(path: Path = typer.Argument(..., help="Path to the metadata in JSON/JSON-LD format")):
 
-    context = {"@vocab": "https://schema.org/", "evi": "https://w3id.org/EVI#"}
-
-
-    if path.is_file():
-        # content = path.read_text();
-        # print(f"File content: {content}")
-        file_extensions = [".json", ".jsonld"]
-        # abort if correct file format is not submitted
-        if path.suffix not in file_extensions:
-            typer.secho(f"Only {file_extensions} files are allowed", fg=typer.colors.BRIGHT_RED)
-            raise typer.Exit(1)
-        else:
-            try:
-                metadata_file = open(path)
-                data = json.load(metadata_file)
-                print(json.dumps(data, indent=2))
-            except json.decoder.JSONDecodeError as e:
-                typer.secho(e, fg=typer.colors.BRIGHT_RED)
-    elif path.is_dir():
-        typer.secho("Expecting file but got a directory. Aborting...", fg=typer.colors.BRIGHT_RED)
-        raise typer.Exit(1)
-    elif not path.exists():
-        typer.secho(f"Unable to find any metadata file at the path: \"{path}\"", fg=typer.colors.BRIGHT_RED)
-        raise typer.Exit(1)
+    if is_path_valid(path=path):
+        try:
+            file = open(path)
+            data = json.load(file)
+            # print(json.dumps(data, indent=2))
+        except json.decoder.JSONDecodeError as e:
+            typer.secho(e, fg=typer.colors.BRIGHT_RED)
 
 
 @app.command("dataset")
-def validate_dataset(path: Path = typer.Argument(..., help="Path to the Dataset metadata in JSON/JSON-LD format")):
-    if path.is_file():
-        # content = path.read_text();
-        # print(f"File content: {content}")
-        file_extensions = [".json", ".jsonld"]
-        # abort if correct file format is not submitted
-        if not path.suffix in file_extensions:
-            typer.secho(f"Only {file_extensions} files are allowed", fg=typer.colors.BRIGHT_RED)
-            raise typer.Exit(1)
-        else:
+def validate_dataset_metadata(path: Path = typer.Argument(..., help="Path to the Dataset metadata in JSON/JSON-LD "
+                                                                    "format")):
+    if is_path_valid(path=path):
+        try:
+            file = open(path)
+            metadata = json.load(file)
             try:
-                dataset_file = open(path)
-                dataset_metadata = json.load(dataset_file)
-                dataset = Dataset(**dataset_metadata)
-            except ValueError as e:
-                raise e
-    elif path.is_dir():
-        typer.secho("Expecting file but got a directory. Aborting...", fg=typer.colors.BRIGHT_RED)
-        raise typer.Exit(1)
-    elif not path.exists():
-        typer.secho(f"Unable to find any metadata file at the path: \"{path}\"", fg=typer.colors.BRIGHT_RED)
-        raise typer.Exit(1)
+                dataset = Dataset(**metadata)
+            except ValidationError as e:
+                typer.secho(e, fg=typer.colors.BRIGHT_RED)
+        except ValueError as e:
+            typer.secho(e, fg=typer.colors.BRIGHT_RED)
 
 
 @app.command("software")
-def validate_software(path: Path = typer.Argument(..., help="Path to the Software metadata in JSON/JSON-LD format")):
-    if path.is_file():
-        # content = path.read_text();
-        # print(f"File content: {content}")
-        file_extensions = [".json", ".jsonld"]
-        # abort if correct file format is not submitted
-        if not path.suffix in file_extensions:
-            typer.secho(f"Only {file_extensions} files are allowed", fg=typer.colors.BRIGHT_RED)
-            raise typer.Exit(1)
-        else:
+def validate_software_metadata(path: Path = typer.Argument(..., help="Path to the Software metadata in JSON/JSON-LD "
+                                                                     "format")):
+    if is_path_valid(path=path):
+        try:
+            file = open(path)
+            metadata = json.load(file)
             try:
-                software_file = open(path)
-                software_metadata = json.load(software_file)
-                try:
-                    software = Software(**software_metadata)
-                except ValidationError as e:
-                    print(e)
-            except ValueError as e:
-                raise e
-    elif path.is_dir():
-        typer.secho("Expecting file but got a directory. Aborting...", fg=typer.colors.BRIGHT_RED)
-        raise typer.Exit(1)
-    elif not path.exists():
-        typer.secho(f"Unable to find any metadata file at the path: \"{path}\"", fg=typer.colors.BRIGHT_RED)
-        raise typer.Exit(1)
+                software = Software(**metadata)
+            except ValidationError as e:
+                typer.secho(e, fg=typer.colors.BRIGHT_RED)
+        except ValueError as e:
+            typer.secho(e, fg=typer.colors.BRIGHT_RED)
 
 
 @app.command("computation")
-def validate_computation(path: Path):
-    pass
+def validate_computation_metadata(path: Path = typer.Argument(..., help="Path to the Computation metadata in "
+                                                                        "JSON/JSON-LD format")):
+    if is_path_valid(path=path):
+        try:
+            file = open(path)
+            metadata = json.load(file)
+            try:
+                computation = Computation(**metadata)
+            except ValidationError as e:
+                typer.secho(e, fg=typer.colors.BRIGHT_RED)
+        except ValueError as e:
+            typer.secho(e, fg=typer.colors.BRIGHT_RED)
 
 
 if __name__ == "__main__":

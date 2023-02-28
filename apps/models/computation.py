@@ -3,7 +3,6 @@ import re
 
 
 class Computation(BaseModel):
-    type: str
     name: str
     description: str
     author: str
@@ -11,40 +10,3 @@ class Computation(BaseModel):
     usedSoftware: str
     usedDataset: str
     generated: str
-
-    @validator('type')
-    def must_be_computation(cls, v):
-        if v != 'Computation':
-            raise ValueError('must be of type Computation')
-        return v
-
-    @validator('name')
-    def name_must_contain_space(cls, v):
-        if not isinstance(v, str):
-            raise ValueError('must be a string')
-        return v
-
-    @validator('author')
-    def author_must_contain_space(cls, v):
-        if ' ' not in v:
-            raise ValueError('must contain a space')
-        return v
-
-    @validator('version')
-    def version_must_contain_a_digit(cls, v):
-        if not any(char.isdigit() for char in v):
-            raise ValueError('must contain at least one digit')
-        return v
-
-    @validator('contentUrl')
-    def contenturl_must_be_uri(cls, v):
-        regex = re.compile(
-            r'^(?:http|ftp)s?://'  # http:// or https://
-            r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|'  # domain...
-            r'localhost|'  # localhost...
-            r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # ...or ip
-            r'(?::\d+)?'  # optional port
-            r'(?:/?|[/?]\S+)$', re.IGNORECASE)
-        if re.match(regex, v) is None:
-            raise ValueError('Illformed contentUrl')
-        return v

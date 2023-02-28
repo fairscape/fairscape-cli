@@ -1,56 +1,51 @@
-from pydantic import BaseModel, validator, Field
-
-import re
+from pydantic import BaseModel, validator
+from urllib.parse import urlparse
+from apps.utils import get_sha256_remote
 
 
 class Dataset(BaseModel):
-    type: str = Field(None, alias='@type')
     name: str
+    description: str
     author: str
     version: str
-    format: str
     contentUrl: str
 
-    @validator('type', pre=True, always=True)
-    def must_be_dataset(cls, v):
-        if v != 'Dataset':
-            raise ValueError('must be of type Dataset')
+    @validator('name', pre=True, always=True)
+    def name_must_be_string(cls, v):
+        if not isinstance(v, str):
+            raise ValueError(f"Unable to validate \"{v}\". Must be string")
         return v
 
-    @validator('name')
-    def name_must_contain_space(cls, v):
-        if ' ' in v:
-            raise ValueError('must not contain space')
+    @validator('description', pre=True, always=True)
+    def description_must_be_string(cls, v):
+        if not isinstance(v, str):
+            raise ValueError(f"Unable to validate \"{v}\". Must be string")
         return v
 
-    @validator('author')
-    def author_must_contain_space(cls, v):
-        if ' ' not in v:
-            raise ValueError('must contain a space')
+    @validator('author', pre=True, always=True)
+    def author_must_be_string(cls, v):
+        if not isinstance(v, str):
+            raise ValueError(f"Unable to validate \"{v}\". Must be string")
         return v
 
     @validator('version')
     def version_must_contain_a_digit(cls, v):
         if not any(char.isdigit() for char in v):
-            raise ValueError('must contain at least one digit')
+            raise ValueError(f"Unable to validate \"{v}\". Must contain at least one digit")
         return v
 
-    @validator('format')
-    def format_must_be_string_without_space(cls, v):
-        format_types = ["csv", "tsv"]
-        if not v in format_types:
-            raise ValueError('format must be one of ', format_types)
-        return v
-
-    @validator('contentUrl')
-    def contenturl_must_be_uri(cls, v):
-        regex = re.compile(
-            r'^(?:http|ftp)s?://'  # http:// or https://
-            r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|'  # domain...
-            r'localhost|'  # localhost...
-            r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # ...or ip
-            r'(?::\d+)?'  # optional port
-            r'(?:/?|[/?]\S+)$', re.IGNORECASE)
-        if re.match(regex, v) is None:
-            raise ValueError('Illformed contentUrl')
+    @validator('contentUrl', pre=True, always=True)
+    def content_url_must_be_uri(cls, v):
+        o = urlparse(v)
+        if not (o.scheme and o.netloc):
+            raise ValueError(f"Unable to validate \"{v}\". contentUrl is malformed")
+        #elif len(get_sha256_remote(v)) > 0:
+        #    raise ValueError(f"Unable to validate \"{v}\". contentUrl is malformed")
+        github_prefix = "https://github.com"
+        if v.startswith(github_prefix):
+            url_wihtout_blob = v.replace("blob/", "")
+            url_raw_content = url_wihtout_blob.replace("github", "raw.githubusercontent")
+            get_sha256_remote(url_raw_content)
+        else:
+            raise ValueError(f"Unable to validate \"{v}\". Cannot process Non-github contentUrl")
         return v
