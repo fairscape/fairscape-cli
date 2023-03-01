@@ -27,6 +27,9 @@ def is_path_valid(path: Path):
         raise typer.Exit(1)
 
 
+def compute_sha256(file_name):
+    return hashlib.sha256(open(file_name, 'rb').read()).hexdigest()
+
 # Reference: https://gist.github.com/lboulard/efa1f8b0a0c62dce3f0e7fd832d1257f
 def get_sha256_remote(url):
 
