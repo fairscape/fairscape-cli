@@ -24,6 +24,8 @@ of all metadata records and RO crates assembled.
 fairscape validate json ./path_to_json.json
 ```
 
+#### JSON Validation Implementation
+
 ```
 from fairscape-models import Dataset, Computation, Software
 import json
@@ -78,9 +80,8 @@ def validate_json(filepath):
         return None
 ```
 
-
+Validating Individual Classes
 ```
-
 fairscape validate dataset
 fairscape validate software
 fairscape validate computation
@@ -96,23 +97,6 @@ fairscape rocrate create \
         --project "ark:5982/UVA/b2ai" \
         --path "./"
 
-# remote paths examples
-# for github domain
-# https://raw.githubusercontent.com/idekerlab/MuSIC/master/Examples/APMS_embedding.MuSIC.csv
-
-
-# S3
-# s3://example-bucket/path/to/object
-# http(s)://<bucket>.s3.amazonaws.com/<object>
-# http(s)://s3.amazonaws.com/<bucket>/<object>
-
-# local s3
-
-# identifier
-# e.g. Zenodo DOI
-
-# external filesystems i.e. RIVANNA project storage
-# smb://qumulo.rc.virginia.edu/
 ```
 
 ```
@@ -207,7 +191,7 @@ cd myrocrate
 
 fairscape add dataset ... --path /mnt/results/mytestfile.csv
 
-# fairscape has every enough to auto generate identifiers
+# fairscape has every parameter required to auto generate identifiers
 # ark:5982/<ORGANIZATION>/<PROJECT>/<ROCRATE>/postfix
 
 fairscape setcontext crateid --id <CRATEID>
@@ -215,7 +199,27 @@ fairscape setcontext crateid --id <CRATEID>
 fairscape rocrate add compution/dataset/software/etc... 
 ```
 
+### Design Considerations
 
+#### Dealing with Remote Content
+
+remote paths examples
+1. github domain
+  - https://raw.githubusercontent.com/idekerlab/MuSIC/master/Examples/APMS_embedding.MuSIC.csv
+
+2. S3
+- s3://example-bucket/path/to/object
+- `http(s)://<bucket>.s3.amazonaws.com/<object>`
+- http(s)://s3.amazonaws.com/<bucket>/<object>
+
+3. Local File URI
+
+4. identifier
+- Zenodo DOI
+
+5. external filesystems 
+- RIVANNA project storage smb://qumulo.rc.virginia.edu/
+```
 
 ## Milestones
 
