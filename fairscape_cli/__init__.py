@@ -1,0 +1,1 @@
+from fairscape_cli.__main__ import fairscape_cli_app

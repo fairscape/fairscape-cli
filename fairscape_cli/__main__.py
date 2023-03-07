@@ -1,10 +1,10 @@
 import typer
 import fairscape_cli.apps.fairscape
 
-app = typer.Typer()
+fairscape_cli_app = typer.Typer()
 
 # enable command apps
-app.add_typer(fairscape_cli.apps.fairscape.app, name="fairscape")
+fairscape_cli_app.add_typer(fairscape_cli.apps.fairscape.app, name="fairscape")
 
 if __name__ == "__main__":
-    app()
+    fairscape_cli_app()
