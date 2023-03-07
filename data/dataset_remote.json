@@ -1,0 +1,8 @@
+{
+    "name": "AP-MS embeddings",
+    "description": "Description of this dataset",
+    "author": "Gygi lab (https://gygi.hms.harvard.edu/team.html)",
+    "datePublished": "2021-04-23",
+    "version": "alpha-1.0",
+    "contentUrl": "https://github.com/idekerlab/MuSIC/blob/master/Examples/APMS_embedding.MuSIC.csv"
+}

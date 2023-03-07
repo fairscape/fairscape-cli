@@ -1,0 +1,7 @@
+{
+    "name":"test computation",
+    "runBy": "some author",
+    "description": "Run CLiXO community detection at single stringency to predict a set of communities.",
+    "usedSoftware": "https://github.com/idekerlab/MuSIC/blob/master/music_utils.py",
+    "usedDataset": ["data/APML_embedding.MuSIC.csv", "https://github.com/idekerlab/MuSIC/blob/master/Examples/APMS_embedding.MuSIC.csv"]
+}

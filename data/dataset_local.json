@@ -1,0 +1,8 @@
+{
+    "name": "AP-MS embeddings",
+    "description": "Description of this dataset",
+    "author": "Gygi lab (https://gygi.hms.harvard.edu/team.html)",
+    "datePublished": "2021-04-23",
+    "version": "1.0",
+    "contentUrl": "data/APML_embedding.MuSIC.csv"
+}
