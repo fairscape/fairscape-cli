@@ -1,6 +1,6 @@
 from pydantic import BaseModel, validator
 from urllib.parse import urlparse
-from apps.utils import get_sha256_remote
+from fairscape_cli.apps.utils import get_sha256_remote
 
 
 class Software(BaseModel):
