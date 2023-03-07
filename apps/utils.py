@@ -15,15 +15,15 @@ def valid_path(path: Path):
     if not path.exists():
         typer.secho(f"{message_failure} {path}", fg=typer.colors.RED)
         typer.secho(f"Unable to find document at: \"{path}\"", fg=typer.colors.BRIGHT_RED)
-        #raise typer.Exit(1)
+        raise typer.Exit(1)
     elif path.is_dir():
         typer.secho(f"{message_failure} {path}", fg=typer.colors.RED)
         typer.secho("Expecting a document but got a directory", fg=typer.colors.BRIGHT_RED)
-        #raise typer.Exit(1)
+        raise typer.Exit(1)
     elif not path.is_file():
         typer.secho(f"{message_failure} {path}", fg=typer.colors.RED)
         typer.secho("Not a document", fg=typer.colors.BRIGHT_RED)
-        #raise typer.Exit(1)
+        raise typer.Exit(1)
     else: # is a document
         # content = path.read_text();
         # print(f"File content: {content}")
@@ -51,7 +51,7 @@ def valid_file_format(path: Path):
     if path.suffix not in file_extensions:
         typer.secho(f"{message_failure} {path}", fg=typer.colors.RED)
         typer.secho(f"Only {file_extensions} documment formats are allowed", fg=typer.colors.BRIGHT_RED)
-        #raise typer.Exit(1)
+        raise typer.Exit(1)
     else:
         return True
 
