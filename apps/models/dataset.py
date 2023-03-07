@@ -1,10 +1,11 @@
 from pydantic import BaseModel, validator
 from urllib.parse import urlparse
-from apps.utils import get_sha256_remote, compute_sha256
+from apps.utils import *
 from pathlib import Path
 
 
 class Dataset(BaseModel):
+    type: str = "evi:Dataset"
     name: str
     description: str
     author: str
@@ -36,27 +37,17 @@ class Dataset(BaseModel):
         return v
 
     @validator('contentUrl', pre=True, always=True)
-    def content_url_must_be_uri(cls, v):
-        if not v.startswith("http"):
-            path = Path(v)
-            if not path.exists():
-                raise ValueError(f"Unable to find document at: \"{path}\"")
-            elif path.is_dir():
-                raise ValueError(f"Expecting a file but got a directory at: \"{path}\"")
-            elif path.is_file():
-                compute_sha256(path)
-            return v
-        else:
-            o = urlparse(v)
-            if not (o.scheme and o.netloc):
-                raise ValueError(f"Unable to validate \"{v}\". contentUrl is malformed")
-            #elif len(get_sha256_remote(v)) > 0:
-            #    raise ValueError(f"Unable to validate \"{v}\". contentUrl is malformed")
-            github_prefix = "https://github.com"
-            if v.startswith(github_prefix):
-                url_wihtout_blob = v.replace("blob/", "")
-                url_raw_content = url_wihtout_blob.replace("github", "raw.githubusercontent")
-                get_sha256_remote(url_raw_content)
+    def content_url_must_be_file_or_uri(cls, v):
+        if valid_remote_repo_prefix(v):
+            if url_has_content(v):
+                return v
             else:
-                raise ValueError(f"Unable to validate \"{v}\". Cannot process Non-github contentUrl")
+                raise ValueError(f"Unable to read content from \"{v}\". ")
+        else:
+            path = Path(v)
+            if valid_path(path):
+                content = path.read_text().strip(' ');
+                if not (len(compute_sha256(path)) == 64 and len(content) > 0):
+                    raise ValueError(f"Unable to read content from \"{v}\". ")
             return v
+
