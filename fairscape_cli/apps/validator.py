@@ -1,9 +1,9 @@
 import typer
 from pathlib import Path
 import json
-from apps.models.dataset import Dataset
-from apps.models.software import Software
-from apps.models.computation import Computation
+from fairscape_cli.apps.models.dataset import Dataset
+from fairscape_cli.apps.models.software import Software
+from fairscape_cli.apps.models.computation import Computation
 from pydantic import ValidationError
 from apps.utils import is_path_valid
 

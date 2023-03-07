@@ -1,6 +1,6 @@
 import typer
 from pathlib import Path
-import apps.objects
+import fairscape_cli.apps.objects
 
 app = typer.Typer()
 # subcommand

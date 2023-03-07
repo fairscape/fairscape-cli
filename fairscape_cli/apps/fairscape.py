@@ -1,8 +1,8 @@
 import typer
-import apps.validator
-import apps.rocrate
-import apps.list
-import apps.describe
+import fairscape_cli.apps.validator
+import fairscape_cli.apps.rocrate
+import fairscape_cli.apps.list
+import fairscape_cli.apps.describe
 
 
 app = typer.Typer()
