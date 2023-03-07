@@ -1,16 +1,16 @@
 import typer
-import fairscape_cli.apps.validator
-import fairscape_cli.apps.rocrate
-import fairscape_cli.apps.list
-import fairscape_cli.apps.describe
+import fairscape_cli.apps.validator as validator
+import fairscape_cli.apps.rocrate as rocrate
+import fairscape_cli.apps.list as list_objects
+import fairscape_cli.apps.describe as describe
 
 
 app = typer.Typer()
 # subcommands
-app.add_typer(apps.rocrate.app, name="rocrate")
-app.add_typer(apps.validator.app, name="validate")
-app.add_typer(apps.list.app, name="list")
-app.add_typer(apps.describe.app, name="describe")
+app.add_typer(rocrate.app, name="rocrate")
+app.add_typer(validator.app, name="validate")
+app.add_typer(list_objects.app, name="list")
+app.add_typer(describe.app, name="describe")
 
 
 @app.command("describe-id")

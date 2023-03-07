@@ -4,7 +4,7 @@ import fairscape_cli.apps.objects
 
 app = typer.Typer()
 # subcommand
-app.add_typer(apps.objects.app, name="add")
+app.add_typer(fairscape_cli.apps.objects.app, name="add")
 
 
 @app.command("create")
