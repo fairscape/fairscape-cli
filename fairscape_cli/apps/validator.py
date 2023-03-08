@@ -11,24 +11,38 @@ app = typer.Typer()
 
 
 @app.command("json")
-def validate_json_document(path: Path = typer.Argument(..., help="Path to the metadata in JSON/JSON-LD format")):
+def validate_json_document(
+    path: str = typer.Argument(
+        ..., 
+        help="Path to the metadata in JSON/JSON-LD format"
+        )
+    ):
 
-    if is_path_valid(path=path):
+    json_path = Path(path)
+
+    if is_path_valid(path=json_path):
         try:
-            file = open(path)
-            data = json.load(file)
+            json_file = open(json_path)
+            data = json.load(json_file)
             # print(json.dumps(data, indent=2))
         except json.decoder.JSONDecodeError as e:
             typer.secho(e, fg=typer.colors.BRIGHT_RED)
 
 
 @app.command("dataset")
-def validate_dataset_metadata(path: Path = typer.Argument(..., help="Path to the Dataset metadata in JSON/JSON-LD "
-                                                                    "format")):
-    if is_path_valid(path=path):
+def validate_dataset_metadata(
+    path: str = typer.Argument(
+        ..., 
+        help="Path to the Dataset metadata in JSON/JSON-LD format"
+        )
+    ):
+
+    json_path = Path(path)
+
+    if is_path_valid(path=json_path):
         try:
-            file = open(path)
-            metadata = json.load(file)
+            json_metadata = open(json_path)
+            metadata = json.load(json_metadata)
             try:
                 dataset = Dataset(**metadata)
             except ValidationError as e:
@@ -38,12 +52,19 @@ def validate_dataset_metadata(path: Path = typer.Argument(..., help="Path to the
 
 
 @app.command("software")
-def validate_software_metadata(path: Path = typer.Argument(..., help="Path to the Software metadata in JSON/JSON-LD "
-                                                                     "format")):
-    if is_path_valid(path=path):
+def validate_software_metadata(
+    path: str = typer.Argument(
+        ..., 
+        help="Path to the Software metadata in JSON/JSON-LD format"
+        )
+    ):
+
+    json_path = Path(path)
+
+    if is_path_valid(path=json_path):
         try:
-            file = open(path)
-            metadata = json.load(file)
+            json_file = open(json_path)
+            metadata = json.load(json_file)
             try:
                 software = Software(**metadata)
             except ValidationError as e:
@@ -53,12 +74,19 @@ def validate_software_metadata(path: Path = typer.Argument(..., help="Path to th
 
 
 @app.command("computation")
-def validate_computation_metadata(path: Path = typer.Argument(..., help="Path to the Computation metadata in "
-                                                                        "JSON/JSON-LD format")):
-    if is_path_valid(path=path):
+def validate_computation_metadata(
+    path: str = typer.Argument(
+        ..., 
+        help="Path to the Computation metadata in JSON/JSON-LD format"
+        )
+    ):
+
+    json_path = Path(path)
+
+    if is_path_valid(path=json_path):
         try:
-            file = open(path)
-            metadata = json.load(file)
+            json_file = open(json_path)
+            metadata = json.load(json_file)
             try:
                 computation = Computation(**metadata)
             except ValidationError as e:
