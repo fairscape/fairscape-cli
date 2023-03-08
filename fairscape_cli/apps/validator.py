@@ -12,7 +12,12 @@ app = typer.Typer()
 def validate_model(path: str, model):
     json_path = Path(path)
 
-    if is_path_valid(path=json_path):
+    
+    if is_path_valid(path=json_path) == False:
+        print(f"Invalid Path: {json_path}"
+        typer.Exit(code=1)
+
+    else::
         with open(json_path, "r") as json_file:
             try:
                 json_metadata = open(json_path)
