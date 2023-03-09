@@ -30,7 +30,7 @@ def create_crate(
     rocrate_metadata = {
         "@id": guid,
         "@context": {
-            "EVI": "https://w3id.org/EVI#"
+            "EVI": "https://w3id.org/EVI#",
             "@vocab": "https://schema.org/"
         },
         "@type": "Dataset",
@@ -49,7 +49,7 @@ def create_crate(
             {
                 "@id": ro_crate_metadata_ark,
                 "conformsTo": {"@id": "https://w3id.org/ro/crate/1.1"},
-                "about": {"@id": guid}
+                "about": {"@id": guid},
                 "contentUrl": path,
             }
         ]  
