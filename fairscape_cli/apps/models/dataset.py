@@ -1,16 +1,18 @@
 from pydantic import BaseModel, validator
 from urllib.parse import urlparse
+
+import fairscape_models
 from fairscape_cli.apps.utils import get_sha256_remote, compute_sha256
 from pathlib import Path
 
 
-class Dataset(BaseModel):
+class Dataset(fairscape_models.Dataset):
     name: str
     description: str
     author: str
     version: str
-    contentUrl: str
 
+"""
     @validator('name', pre=True, always=True)
     def name_must_be_string(cls, v):
         if not isinstance(v, str):
@@ -60,3 +62,4 @@ class Dataset(BaseModel):
             else:
                 raise ValueError(f"Unable to validate \"{v}\". Cannot process Non-github contentUrl")
             return v
+"""

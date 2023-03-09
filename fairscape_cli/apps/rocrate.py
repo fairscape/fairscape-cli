@@ -5,24 +5,35 @@ import shutil
 
 app = typer.Typer()
 # subcommand
-app.add_typer(fairscape_cli.apps.objects.app, name="add")
+app.add_typer(fairscape_cli.apps.objects.app, name="rocrate")
 
 
 @app.command("create")
-def create_crate(guid: str = typer.Option(...),
-                 name: str = typer.Option(...),
-                 organization: str = typer.Option(...),
-                 project: str = typer.Option(...),
-                 path: Path = typer.Option(...)):
+def create_crate(
+    guid: str = typer.Option(...),
+    name: str = typer.Option(...),
+    organization: str = typer.Option(...),
+    project: str = typer.Option(...),
+    path: Path = typer.Option(...)
+):
 
     
     # create a empty folder at the specified path
+    try:
+        path.mkdir(exist_ok=False)
+    
+    except FileExistsError:
+        typer.secho("Path Already Exists")
+        typer.Exit()
 
     # initilize ro-crate-metadata.json
     rocrate_metadata = {
         "@id": guid,
-        "@context": "",
-        "@type": "",
+        "@context": {
+            "EVI": "https://w3id.org/EVI#"
+            "@vocab": "https://schema.org/"
+        },
+        "@type": "Dataset",
         "name": name,
         "isPartOf": [
             {
@@ -35,6 +46,12 @@ def create_crate(guid: str = typer.Option(...),
             }
         ],
         "@graph": [
+            {
+                "@id": ro_crate_metadata_ark,
+                "conformsTo": {"@id": "https://w3id.org/ro/crate/1.1"},
+                "about": {"@id": guid}
+                "contentUrl": path,
+            }
         ]  
     }
 
@@ -42,6 +59,8 @@ def create_crate(guid: str = typer.Option(...),
 
     with open(ro_crate_metadata_path, "w") as metadata_file:
         json.dump(metadata_file)
+    
+    typer.secho(f"Created RO Crate at {path}")
 
     # TODO add metadata to cache
 
@@ -50,7 +69,6 @@ def create_crate(guid: str = typer.Option(...),
 def compute_hash(rocrate_path: Path = typer.Option(...)):
     
     # look at the rocrate path
-
     pathlib.ls(ro_crate_path)
 
     # read in the ro-crate-metadata.json
@@ -82,12 +100,9 @@ def compute_hash(rocrate_path: Path = typer.Option(...)):
 
         if content.get("@type") == "Software":
             # if there is a local file uri then hash it
-    
+            pass 
 
         
-
-
-
 
 
 @app.command("package")

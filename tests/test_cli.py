@@ -9,17 +9,10 @@ sys.path.insert(
     )
 )
 
-import unittest
-import logging
 from typer.testing import CliRunner
 from fairscape_cli import fairscape_cli_app
 
 runner = CliRunner()
-
-test_logger = logging.getLogger()
-test_logger.level = logging.DEBUG
-stream_handler = logging.StreamHandler(sys.stdout)
-test_logger.addHandler(stream_handler)
 
 def run_test_command(test_command):
 
@@ -28,85 +21,72 @@ def run_test_command(test_command):
         test_command
     )
 
-    test_logger.debug(f"COMMAND: {' '.join(test_command)}\nExitCode: {result.exit_code}\nOutput: {result.stdout}")
+    print(f"COMMAND: {' '.join(test_command)}\nExitCode: {result.exit_code}\nOutput: {result.stdout}")
     return result
 
 
-class TestValidateSoftware(unittest.TestCase):
 
 
-    def test_validate_json(self):
-        validate_json_software = [
-            "fairscape", 
-            "validate", 
-            "json", 
-            "./tests/data/software.json"
-        ]
-        
-        result = run_test_command(validate_json_software)
-        assert result.exit_code == 0
+def test_software_validate_json():
+    validate_json_software = [
+        "validate", 
+        "json", 
+        "./tests/data/software.json"
+    ]
+    
+    result = run_test_command(validate_json_software)
+
+    assert result.exit_code == 0
 
 
-    def test_validate_software(self):
-        validate_json_software = [
-            "fairscape", 
-            "validate", 
-            "software", 
-            "./tests/data/software.json"
-        ]
-        
-        result = run_test_command(validate_json_software)
-        assert result.exit_code == 0
-        
+def test_software_validate_software():
+    validate_json_software = [
+        "validate", 
+        "software", 
+        "./tests/data/software.json"
+    ]
+    
+    result = run_test_command(validate_json_software)
+    assert result.exit_code == 0
+    
 
-    def test_missing_properties(self):
-        validate_missing_software = [
-            "fairscape", 
-            "validate", 
-            "software", 
-            "./tests/data/software_missing.json"
-        ]
-        
-        result = run_test_command(validate_missing_software)
-        assert result.exit_code != 0
+def test_software_missing_properties():
+    validate_missing_software = [
+        "validate", 
+        "software", 
+        "./tests/data/software_missing.json"
+    ]
+    
+    result = run_test_command(validate_missing_software)
+    assert result.exit_code != 0
 
 
-    def test_incorrect_type(self):
-        pass
+def _test_software_incorrect_type():
+    pass
 
 
-class TestValidateComputation(unittest.TestCase):
  
-    def test_validate_json(self):
-        validate_json_computation= [
-            "fairscape", 
-            "validate", 
-            "json", 
-            "./tests/data/computation.json"
-        ]
-        
-        result = run_test_command(validate_json_computation)
-        assert result.exit_code == 0
+def test_computation_validate_json():
+    validate_json_computation= [
+        "validate", 
+        "json", 
+        "./tests/data/computation.json"
+    ]
+    
+    result = run_test_command(validate_json_computation)
+    assert result.exit_code == 0
 
 
-class TestValidateDataset(unittest.TestCase):
 
-    def test_validate_json(self):
-        validate_json_dataset= [
-            "fairscape", 
-            "validate", 
-            "json", 
-            "./tests/data/dataset.json"
-        ]
-        
-        result = run_test_command(validate_json_dataset)
-        assert result.exit_code == 0
-
-
-class TestValidateROCrate(unittest.TestCase):
-
-    def test_validate_json(self):
-        pass
+def test_dataset_validate_json():
+    validate_json_dataset= [
+        "validate", 
+        "json", 
+        "./tests/data/dataset.json"
+    ]
+    
+    result = run_test_command(validate_json_dataset)
+    assert result.exit_code == 0
 
 
 

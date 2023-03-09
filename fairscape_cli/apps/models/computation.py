@@ -1,8 +1,9 @@
 from pydantic import BaseModel, ValidationError, validator
+import fairscape_models
 import re
 
 
-class Computation(BaseModel):
+class Computation(fairscape_models.Computation):
     name: str
     description: str
     author: str

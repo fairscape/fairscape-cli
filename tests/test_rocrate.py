@@ -16,28 +16,41 @@ from fairscape_cli import fairscape_cli_app
 
 runner = CliRunner()
 
-test_logger = logging.getLogger()
-test_logger.level = logging.DEBUG
-stream_handler = logging.StreamHandler(sys.stdout)
-test_logger.addHandler(stream_handler)
+def run_test_command(test_command):
 
+    result = runner.invoke(
+        fairscape_cli_app, 
+        test_command
+    )
 
-class TestROCrate(unittest.TestCase):
+    print(f"\nCOMMAND: {' '.join(test_command)}\nExitCode: {result.exit_code}\nOutput: {result.stdout}")
+    return result
+ 
+   
+def test_rocrate_create(): 
+
+    create_rocrate = [
+        "rocrate", 
+        "create", 
+        "--rocrate ./tests/test_rocrate"
+    ]
     
-    def test_create_rocrate(self):
-        pass
-    
-    def test_add_dataset(self):
-        pass
+    result = run_test_command(create_rocrate)
 
-    def test_add_computation(self):
-        pass
+    assert result.exit_code == 0
 
-    def test_add_software(self):
-        pass
 
-    def test_validate_rocrate(self):
-        pass
+def test_add_dataset():
+    pass
 
-    def test_hash_rocrate(self):
-        pass
+def test_add_computation():
+    pass
+
+def test_add_software(self):
+    pass
+
+def test_validate_rocrate(self):
+    pass
+
+def test_hash_rocrate(self):
+    pass

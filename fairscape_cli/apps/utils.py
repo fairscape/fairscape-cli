@@ -16,15 +16,15 @@ def is_path_valid(path: Path):
         # abort if correct file format is not submitted
         if path.suffix not in file_extensions:
             typer.secho(f"Only {file_extensions} formats are allowed", fg=typer.colors.BRIGHT_RED)
-            raise typer.Exit(1)
+            return False 
         else:
             return True
     elif path.is_dir():
         typer.secho("Expecting a file but got a directory", fg=typer.colors.BRIGHT_RED)
-        raise typer.Exit(1)
+        return False
     elif not path.exists():
         typer.secho(f"Unable to find document at: \"{path}\"", fg=typer.colors.BRIGHT_RED)
-        raise typer.Exit(1)
+        return False
 
 
 def compute_sha256(file_name):

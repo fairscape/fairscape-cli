@@ -1,15 +1,14 @@
 from pydantic import BaseModel, validator
 from urllib.parse import urlparse
+
+import fairscape_models
 from fairscape_cli.apps.utils import get_sha256_remote
 
 
-class Software(BaseModel):
+class Software(fairscape_models.Software):
     name: str
-    description: str
-    author: str
-    version: str
-    contentUrl: str
 
+"""
     @validator('name', pre=True, always=True)
     def name_must_be_string(cls, v):
         if not isinstance(v, str):
@@ -49,3 +48,4 @@ class Software(BaseModel):
         else:
             raise ValueError(f"Unable to validate \"{v}\". Cannot process Non-github contentUrl")
         return v
+"""

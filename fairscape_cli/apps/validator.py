@@ -14,20 +14,12 @@ def validate_model(path: str, model):
 
     
     if is_path_valid(path=json_path) == False:
-        print(f"Invalid Path: {json_path}"
+        print(f"Invalid Path: {json_path}")
         typer.Exit(code=1)
-
-    else::
+    else:
         with open(json_path, "r") as json_file:
-            try:
-                json_metadata = open(json_path)
-                metadata = json.load(json_metadata)
-                try:
-                    instance_model = model(**metadata)
-                except ValidationError as e:
-                    typer.secho(e, fg=typer.colors.BRIGHT_RED)
-            except ValueError as e:
-                typer.secho(e, fg=typer.colors.BRIGHT_RED)
+            metadata = json.load(json_file)
+            instance_model = model(**metadata)
 
 
 @app.command("json")
@@ -56,8 +48,17 @@ def validate_dataset_metadata(
         help="Path to the Dataset metadata in JSON/JSON-LD format"
         )
     ):
+    
+    try:
+        validate_model(path, Dataset)
 
-    validate_model(path, Dataset)
+    except ValidationError as e:
+        typer.secho(e, fg=typer.colors.BRIGHT_RED)
+        typer.Exit(code=1)
+
+    except ValueError as e:
+        typer.secho(e, fg=typer.colors.BRIGHT_RED)
+        typer.Exit(code=1)
 
 @app.command("software")
 def validate_software_metadata(
@@ -67,8 +68,19 @@ def validate_software_metadata(
         )
     ):
 
-    validate_model(path, Software)
+    try:
+        validate_model(path, Software)
 
+    except ValidationError as e:
+        typer.secho("ERROR")
+        typer.secho(e, fg=typer.colors.BRIGHT_RED)
+        typer.Exit(code=1)
+
+    except ValueError as e:
+
+        typer.secho("ERROR")
+        typer.secho(e, fg=typer.colors.BRIGHT_RED)
+        typer.Exit(code=1)
 
 
 @app.command("computation")
@@ -79,7 +91,17 @@ def validate_computation_metadata(
         )
     ):
 
-    validate_model(path, Computation)
+    try:
+        validate_model(path, Computation)
+
+    except ValidationError as e:
+        typer.secho(e, fg=typer.colors.BRIGHT_RED)
+        typer.Exit(code=1)
+
+    except ValueError as e:
+        typer.secho(e, fg=typer.colors.BRIGHT_RED)
+        typer.Exit(code=1)
+
 
 
 if __name__ == "__main__":
