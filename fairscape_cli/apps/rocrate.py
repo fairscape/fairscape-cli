@@ -5,7 +5,7 @@ import shutil
 
 app = typer.Typer()
 # subcommand
-app.add_typer(fairscape_cli.apps.objects.app, name="rocrate")
+app.add_typer(fairscape_cli.apps.objects.app, name="add")
 
 
 @app.command("create")
@@ -27,6 +27,8 @@ def create_crate(
         typer.Exit()
 
     # initilize ro-crate-metadata.json
+    ro_crate_metadata_path = path / 'ro-crate-metadata.json'
+
     rocrate_metadata = {
         "@id": guid,
         "@context": {
@@ -50,12 +52,12 @@ def create_crate(
                 "@id": ro_crate_metadata_ark,
                 "conformsTo": {"@id": "https://w3id.org/ro/crate/1.1"},
                 "about": {"@id": guid},
-                "contentUrl": path,
+                "isPartOf": {"@id": guid},
+                "contentUrl": ro_crate_metadata_path,
             }
         ]  
     }
 
-    ro_crate_metadata_path = path / 'ro-crate-metadata.json'
 
     with open(ro_crate_metadata_path, "w") as metadata_file:
         json.dump(metadata_file)
@@ -63,6 +65,8 @@ def create_crate(
     typer.secho(f"Created RO Crate at {path}")
 
     # TODO add metadata to cache
+
+
 
 
 @app.command("hash")
