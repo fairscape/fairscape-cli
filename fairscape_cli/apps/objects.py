@@ -1,5 +1,6 @@
 import typer
 from pathlib import Path
+from typing import Optional, List
 from pydantic import ValidationError
 from fairscape_cli.apps.models import (
     Dataset,
@@ -31,7 +32,7 @@ def add_dataset(
     
     # check if you are in the rocrate path
     # ro-crate-metadata.json should be a local file
-    if !Path("ro-crate-metadata.json").exists():
+    if Path("ro-crate-metadata.json").exists() != True:
         typer.secho("ro-crate-metadata.json not found")
         typer.secho("execute rocrate add commands from within the rocrate directory")
         typer.Exit()
@@ -39,7 +40,7 @@ def add_dataset(
     # TODO check that destination path is in the rocrate
 
     # check if the source file exists 
-    if !sourcePath.exists():
+    if sourcePath.exists() != True:
         typer.secho(f"sourcePath: {sourcePath} Doesn't Exist")
         typer.Exit() 
 
@@ -110,7 +111,7 @@ def add_software(
 
     # check if you are in the rocrate path
     # ro-crate-metadata.json should be a local file
-    if !Path("ro-crate-metadata.json").exists():
+    if Path("ro-crate-metadata.json").exists() != True:
         typer.secho("ro-crate-metadata.json not found")
         typer.secho("execute rocrate add commands from within the rocrate directory")
         typer.Exit()
@@ -118,7 +119,7 @@ def add_software(
     # TODO check that destination path is in the rocrate
 
     # check if the source file exists 
-    if !sourcePath.exists():
+    if sourcePath.exists() != True:
         typer.secho(f"sourcePath: {sourcePath} Doesn't Exist")
         typer.Exit() 
 
@@ -190,7 +191,7 @@ def add_computation(
 
     # check if you are in the rocrate path
     # ro-crate-metadata.json should be a local file
-    if !Path("ro-crate-metadata.json").exists():
+    if Path("ro-crate-metadata.json").exists() != True:
         typer.secho("ro-crate-metadata.json not found")
         typer.secho("execute rocrate add commands from within the rocrate directory")
         typer.Exit()
