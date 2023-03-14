@@ -2,6 +2,7 @@ import typer
 from pathlib import Path
 import fairscape_cli.apps.objects
 import shutil
+import json
 
 app = typer.Typer()
 # subcommand
@@ -12,8 +13,8 @@ app.add_typer(fairscape_cli.apps.objects.app, name="add")
 def create_crate(
     guid: str = typer.Option(...),
     name: str = typer.Option(...),
-    organization: str = typer.Option(...),
-    project: str = typer.Option(...),
+    organization_id: str = typer.Option(...),
+    project_id: str = typer.Option(...),
     path: Path = typer.Option(...)
 ):
 
@@ -28,6 +29,7 @@ def create_crate(
 
     # initilize ro-crate-metadata.json
     ro_crate_metadata_path = path / 'ro-crate-metadata.json'
+    ro_crate_metadata_ark = guid + "/ro-crate-metadata.json"
 
     rocrate_metadata = {
         "@id": guid,
@@ -53,14 +55,14 @@ def create_crate(
                 "conformsTo": {"@id": "https://w3id.org/ro/crate/1.1"},
                 "about": {"@id": guid},
                 "isPartOf": {"@id": guid},
-                "contentUrl": ro_crate_metadata_path,
+                "contentUrl": str(ro_crate_metadata_path),
             }
         ]  
     }
 
 
-    with open(ro_crate_metadata_path, "w") as metadata_file:
-        json.dump(metadata_file)
+    with ro_crate_metadata_path.open(mode="w") as metadata_file:
+        json.dump(rocrate_metadata, metadata_file)
     
     typer.secho(f"Created RO Crate at {path}")
 

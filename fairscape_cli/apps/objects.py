@@ -7,6 +7,7 @@ from fairscape_cli.apps.models import (
     Software,
     Computation
 )
+import json
 import shutil
 
 app = typer.Typer()
@@ -14,6 +15,7 @@ app = typer.Typer()
 
 @app.command("dataset")
 def add_dataset(
+    rocrate_path: Path = typer.Option(...),
     guid: str = typer.Option(...),
     name: str = typer.Option(...),
     author: str = typer.Option(...),
@@ -30,11 +32,11 @@ def add_dataset(
     destinationPath: Path = typer.Option(...)
 ):
     
+    metadata_path = rocrate_path / "ro-crate-metadata.json"
     # check if you are in the rocrate path
     # ro-crate-metadata.json should be a local file
-    if Path("ro-crate-metadata.json").exists() != True:
-        typer.secho("ro-crate-metadata.json not found")
-        typer.secho("execute rocrate add commands from within the rocrate directory")
+    if metadata_path.exists() != True:
+        typer.secho(f"Cannot Find RO-Crate Metadata: {metadata_path}")
         typer.Exit()
 
     # TODO check that destination path is in the rocrate
@@ -55,6 +57,7 @@ def add_dataset(
             "@id": guid,
             "@type": "https://w3id.org/EVI#Dataset",
             "author": author,
+            "name": name,
             "description": description,
             "datePublished": datePublished,
             "version": version,
@@ -64,9 +67,28 @@ def add_dataset(
             "generatedBy": generatedBy,
             "derivedFrom": derivedFrom,
             "usedBy": usedBy,
-            "contentUrl": "file://" + destinationPath
+            "contentUrl": "file://" + str(destinationPath)
             }
         )
+
+        # open the ro-crate-metadata.json
+        with metadata_path.open("r") as rocrate_metadata_file:
+            rocrate_metadata = json.load(rocrate_metadata_file)
+
+        # TODO check if the file is redundant
+     
+        # add to the @graph
+        rocrate_metadata['@graph'].append(dataset_model.dict(by_alias=True))
+        
+        # overwrite the ro-crate-metadata.json file
+        with metadata_path.open("w") as f:
+            json.dump(rocrate_metadata, f, indent=2)
+
+        typer.secho("Added Dataset")
+        typer.secho(
+            json.dumps(dataset_model.json(by_alias=True), indent=2)
+        )
+
 
     except ValidationError as e:
         typer.secho("Dataset Validation Error")
@@ -75,27 +97,11 @@ def add_dataset(
 
     # TODO add to cache
 
-    # open the ro-crate-metadata.json
-    with open("ro-crate-metadata.json", "r") as rocrate_metadata_file:
-        rocrate_metadata = json.load(rocrate_metadata_file)
-
-    # TODO check if the file is redundant
- 
-    # add to the @graph
-    rocrate_metadata['@graph'].append(dataset_model.dict(by_alias=True))
-    
-    # overwrite the ro-crate-metadata.json file
-    with open("ro-crate-metadata.json", "w") as f:
-        json.dump(rocrate_metadata, f, indent=2)
-
-    typer.secho("Added Dataset")
-    typer.secho(
-        json.dumps(dataset_model.json(by_alias=True), indent=2)
-    )
 
 
 @app.command("software")
 def add_software(
+    rocrate_path: Path = typer.Option(...),
     guid: str = typer.Option(...),
     name: str = typer.Option(...),
     author: str = typer.Option(...),
@@ -109,11 +115,12 @@ def add_software(
     destinationPath: Path = typer.Option(...)
 ):
 
+
+    metadata_path = rocrate_path / "ro-crate-metadata.json"
     # check if you are in the rocrate path
     # ro-crate-metadata.json should be a local file
-    if Path("ro-crate-metadata.json").exists() != True:
-        typer.secho("ro-crate-metadata.json not found")
-        typer.secho("execute rocrate add commands from within the rocrate directory")
+    if metadata_path.exists() != True:
+        typer.secho(f"Cannot Find RO-Crate Metadata: {metadata_path}")
         typer.Exit()
 
     # TODO check that destination path is in the rocrate
@@ -125,7 +132,7 @@ def add_software(
 
     # copy the file into the destinationPath
     shutil.copy(sourcePath, destinationPath)
-
+         
 
     # initilize the model with the required properties
     try:
@@ -142,40 +149,41 @@ def add_software(
             "additionalDocumentation": additionalDocumentation,
             "format": dataFormat,
             "usedByComputation": usedByComputation,
-            "contentUrl": "file://" + destinationPath
+            "contentUrl": "file://" + str(destinationPath)
             }
         )
 
+        # open the ro-crate-metadata.json
+        with metadata_path.open("r") as rocrate_metadata_file:
+            rocrate_metadata = json.load(rocrate_metadata_file)
+
+        # TODO check if the file is redundant
+     
+        # add to the @graph
+        rocrate_metadata['@graph'].append(software_model.dict(by_alias=True))
+        
+        # overwrite the ro-crate-metadata.json file
+        with metadata_path.open("w") as f:
+            json.dump(rocrate_metadata, f, indent=2)
+
+        typer.secho("Added Software")
+        typer.secho(
+            json.dumps(software_model.json(by_alias=True), indent=2)
+        )
+
+
     except ValidationError as e:
-        typer.secho("Software Metadata Validation Error")
+        typer.secho("Software Validation Error")
         typer.secho(e)
         typer.Exit()
 
-    # TODO add to cache
-
-    # open the ro-crate-metadata.json
-    with open("ro-crate-metadata.json", "r") as rocrate_metadata_file:
-        rocrate_metadata = json.load(rocrate_metadata_file)
-
-    # TODO check if the file is redundant
- 
-    # add to the @graph
-    rocrate_metadata['@graph'].append(software_model.dict(by_alias=True))
-    
-    # overwrite the ro-crate-metadata.json file
-    with open("ro-crate-metadata.json", "w") as f:
-        json.dump(rocrate_metadata, f, indent=2)
-
-    typer.secho("Added software")
-    typer.secho(
-        json.dumps(software_model.json(by_alias=True), indent=2)
-    )
 
 
 
 
 @app.command("computation")
 def add_computation(
+    rocrate_path: Path = typer.Option(...),
     guid: str = typer.Option(...),
     name: str = typer.Option(...),
     runBy: str = typer.Option(...),
@@ -189,13 +197,12 @@ def add_computation(
 
 ):
 
+    metadata_path = rocrate_path / "ro-crate-metadata.json"
     # check if you are in the rocrate path
     # ro-crate-metadata.json should be a local file
-    if Path("ro-crate-metadata.json").exists() != True:
-        typer.secho("ro-crate-metadata.json not found")
-        typer.secho("execute rocrate add commands from within the rocrate directory")
+    if metadata_path.exists() != True:
+        typer.secho(f"Cannot Find RO-Crate Metadata: {metadata_path}")
         typer.Exit()
-
 
     # initilize the model with the required properties
     try:
@@ -214,29 +221,30 @@ def add_computation(
             }
         )
 
+        # open the ro-crate-metadata.json
+        with metadata_path.open("r") as rocrate_metadata_file:
+            rocrate_metadata = json.load(rocrate_metadata_file)
+
+        # TODO check if the file is redundant
+     
+        # add to the @graph
+        rocrate_metadata['@graph'].append(computation_model.dict(by_alias=True))
+        
+        # overwrite the ro-crate-metadata.json file
+        with metadata_path.open("w") as f:
+            json.dump(rocrate_metadata, f, indent=2)
+
+        typer.secho("Added Software")
+        typer.secho(
+            json.dumps(computation_model.json(by_alias=True), indent=2)
+        )
+
+
     except ValidationError as e:
-        typer.secho("Computation Metadata Validation Error")
+        typer.secho("Software Validation Error")
         typer.secho(e)
         typer.Exit()
 
-
-    # open the ro-crate-metadata.json
-    with open("ro-crate-metadata.json", "r") as rocrate_metadata_file:
-        rocrate_metadata = json.load(rocrate_metadata_file)
-
-    # TODO check if the file is redundant
- 
-    # add to the @graph
-    rocrate_metadata['@graph'].append(computation_model.dict(by_alias=True))
-    
-    # overwrite the ro-crate-metadata.json file
-    with open("ro-crate-metadata.json", "w") as f:
-        json.dump(rocrate_metadata, f, indent=2)
-
-    typer.secho("Added Computation")
-    typer.secho(
-        json.dumps(computation_model.json(by_alias=True), indent=2)
-    )
 
 
 
