@@ -103,45 +103,120 @@ def test_add_dataset():
     
 
 def test_add_computation():
+
+    test_computation = {
+        "id": "ARK:average_predicted_protein_proximities.1/c295abcd-8ad8-44ff-95e3-e5e65f1667da",
+        "name": "average predicted protein proximities",
+        "type": "evi:Computation",
+        "runBy": "Qin, Y.",
+        "dateCreated": "2021-05-23",
+        "description": "Average the predicted proximities",
+        "usedSoftware":[
+          "random_forest_output (https://github.com/idekerlab/MuSIC/blob/master/random_forest_output.py)"
+        ],
+        "usedDataset": [ 
+    """predicted protein proximities:
+    Fold 1 proximities:
+        IF_emd_1_APMS_emd_1.RF_maxDep_30_nEst_1000.fold_1.pkl""",
+        "IF_emd_2_APMS_emd_1.RF_maxDep_30_nEst_1000.fold_1.pkl",
+    """Fold 1 proximities:
+          IF_emd_1_APMS_emd_1.RF_maxDep_30_nEst_1000.fold_2.pkl""",
+        "IF_emd_2_APMS_emd_1.RF_maxDep_30_nEst_1000.fold_2.pkl",
+    """Fold 1 proximities:
+          IF_emd_1_APMS_emd_1.RF_maxDep_30_nEst_1000.fold_3.pkl""",
+        "IF_emd_2_APMS_emd_1.RF_maxDep_30_nEst_1000.fold_3.pkl",
+    """Fold 1 proximities:
+          IF_emd_1_APMS_emd_1.RF_maxDep_30_nEst_1000.fold_4.pkl""",
+        "IF_emd_2_APMS_emd_1.RF_maxDep_30_nEst_1000.fold_4.pkl",
+    """Fold 1 proximities:
+          IF_emd_1_APMS_emd_1.RF_maxDep_30_nEst_1000.fold_5.pkl""",
+    "IF_emd_2_APMS_emd_1.RF_maxDep_30_nEst_1000.fold_5.pkl"
+        ],
+        "associatedPublication": "Qin, Y. et al. A multi-scale map of cell structure fusing protein images and interactions. Nature 600, 536–542 2021",
+
+        "additionalDocumentation": ["https://idekerlab.ucsd.edu/music/"],
+        "generated": [
+        "averages of predicted protein proximities (https://github.com/idekerlab/MuSIC/blob/master/Examples/MuSIC_predicted_proximity.txt)"
+    ]
+    }
+
+    software = [f'\"{element}\"' for element in test_computation['usedSoftware']]
+    datasets = [f'\"{element}\"' for element in test_computation['usedDataset']]
+    generated = [f'\"{element}\"' for element in test_computation['generated']]
+
     add_computation = [
         "rocrate",
         "add",
         "computation",
-        "--guid ark:59853/UVA/B2AI/rocrate_test/music_test_run",
-        "--name music test run",
-        "--runBy Max Levinson",
+        "--rocrate-path './tests/example_rocrate'",
+        "--guid 'ark:59853/UVA/B2AI/rocrate_test/music_test_run'",
+        f"--name '{test_computation['name']}'",
+        "--runby 'Max Levinson'",
         "--description 'test run of music pipeline using example data'",
-        "--associatedPublication ",
-        "--additionalDocumentation ",
-        "--usedSoftware ",
-        "--usedDataset ",
-        "--generated "
+        f"--associatedpublication '{test_computation['associatedPublication']}'",
+        f"--additionaldocumentation '{test_computation['additionalDocumentation']}' ",
+        f"--usedsoftware '[{','.join(software)}]'",
+        f"--useddataset '[{','.join(datasets)}]'",
+        f"--generated '[{','.join(generated)}]'"
     ]
 
-    result = run_test_command(add_computation)
+    print(' '.join(add_computation))
+
+    result = runner.invoke(
+        fairscape_cli_app, 
+        ' '.join(add_computation) 
+    )
+    print(result.stdout)
 
     assert result.exit_code == 0
 
 def test_add_software():
+
+    example_software = {
+
+        "id": "ARK:calibrate_pariwise_distance.1/467f5ebd-cb29-43a1-beab-aa2d50606eff.py",
+        "name": "calibrate pairwise distance",
+        "type": "evi:Software",
+        "author": "Qin, Y.",
+        "dateModified": "2021-06-20",
+        "version": "1.0",
+        "description": "script written in python to calibrate pairwise distance.",
+        "associatedPublication": "Qin, Y. et al. A multi-scale map of cell structure fusing protein images and interactions. Nature 600, 536–542 2021",
+        "additionalDocumentation": ["https://idekerlab.ucsd.edu/music/"],
+        "format": "py",
+        "usedByComputation": ["ARK:compute_standard_proximities.1/f9aa5f3f-665a-4ab9-8879-8d0d52f05265"],
+        "contentUrl": "https://github.com/idekerlab/MuSIC/blob/master/calibrate_pairwise_distance.py"
+    }
+
     add_software = [
         "rocrate",
         "add",
         "dataset",
+        "--rocrate-path './tests/example_rocrate'",
         "--guid ark:59853/UVA/B2AI/rocrate_test/music_software",
         "--name MuSIC",
-        "--author ",
-        "--version ",
-        "--description ",
-        "--associatedPublication ",
-        "--format .py",
-        "--sourcePath ",
-        "--destinationPath ",
+        f"--author '{example_software['author']}'",
+        "--version '1.0'",
+        f"--description '{example_software['description']}'",
+        f"--associatedpublication '{example_software['associatedPublication']}'",
+        "--dataformat '.py'",
+        f"--datepublished '{example_software['dateModified']}'",
+        "--sourcepath './tests/data/calibrate_pairwise_distance.py'",
+        "--destinationpath './tests/example_rocrate/calibrate_pairwise_distance.py'",
     
     ]
 
-    result = run_test_command(add_software)
+
+    print(' '.join(add_software))
+
+    result = runner.invoke(
+        fairscape_cli_app, 
+        ' '.join(add_software) 
+    )
+    print(result.stdout)
 
     assert result.exit_code == 0
+
 
 def _test_validate_rocrate():
     pass
