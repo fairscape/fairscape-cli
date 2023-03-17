@@ -1,5 +1,9 @@
 from pydantic import BaseModel, validator
 from urllib.parse import urlparse
+from typing import (
+    Optional,
+    List
+)
 
 import fairscape_models
 from fairscape_cli.apps.utils import get_sha256_remote, compute_sha256
@@ -11,6 +15,8 @@ class Dataset(fairscape_models.Dataset):
     description: str
     author: str
     version: str
+    generatedBy: Optional[List[str]] = []
+    usedBy: Optional[List[str]] = []
 
 """
     @validator('name', pre=True, always=True)

@@ -109,7 +109,7 @@ def add_software(
     description: str = typer.Option(...),
     associatedPublication: str = typer.Option(...),
     additionalDocumentation: List[str] = typer.Option([]),
-    format: str = typer.Option(...),
+    fileFormat: str = typer.Option(...),
     usedByComputation: Optional[List[str]] = typer.Option([]),
     sourcePath: Path = typer.Option(...),
     destinationPath: Path = typer.Option(...)
@@ -147,7 +147,7 @@ def add_software(
             "version": version,
             "associatedPublication": associatedPublication,
             "additionalDocumentation": additionalDocumentation,
-            "format": dataFormat,
+            "format": fileFormat,
             "usedByComputation": usedByComputation,
             "contentUrl": "file://" + str(destinationPath)
             }
@@ -186,15 +186,15 @@ def add_computation(
     rocrate_path: Path = typer.Option(...),
     guid: str = typer.Option(...),
     name: str = typer.Option(...),
-    runBy: str = typer.Option(...),
+    run_by: str = typer.Option(...),
+    date_created: str = typer.Option(...),
     description: str = typer.Option(...),
     associatedPublication: Optional[str] = typer.Option(""),
     additionalDocumentation: Optional[str] = typer.Option(""),
-    usedSoftware: str = typer.Option(...),
-    usedDataset: str = typer.Option(...),
+    usedSoftware: List[str] = typer.Option(...),
+    usedDataset: List[str] = typer.Option(...),
     calledBy: Optional[str] = typer.Option(""),
-    generated: str = typer.Option(...)
-
+    generated: List[str] = typer.Option(...)
 ):
 
     metadata_path = rocrate_path / "ro-crate-metadata.json"
@@ -211,13 +211,14 @@ def add_computation(
             "@id": guid,
             "@type": "https://w3id.org/EVI#Computation",
             "name": name,
-            "runBy": runBy,
+            "runBy": run_by,
+            "dateCreated": date_created,
             "description": description,
             "associatedPublication": associatedPublication,
             "additionalDocumentation": additionalDocumentation,
             "usedSoftware": usedSoftware,
             "usedDataset": usedDataset,
-            "generated": str,
+            "generated": generated,
             }
         )
 
@@ -228,20 +229,22 @@ def add_computation(
         # TODO check if the file is redundant
      
         # add to the @graph
-        rocrate_metadata['@graph'].append(computation_model.dict(by_alias=True))
+        graph_metadata = rocrate_metadata.get('@graph', [])
+        graph_metadata.append(computation_model.dict(by_alias=True))
+        rocrate_metadata['@graph'] = graph_metadata
         
         # overwrite the ro-crate-metadata.json file
-        with metadata_path.open("w") as f:
-            json.dump(rocrate_metadata, f, indent=2)
+        with metadata_path.open("w") as rocrate_metadata_file:
+            json.dump(rocrate_metadata, rocrate_metadata_file, indent=2)
 
-        typer.secho("Added Software")
+        typer.secho("Added Computation")
         typer.secho(
             json.dumps(computation_model.json(by_alias=True), indent=2)
         )
 
 
     except ValidationError as e:
-        typer.secho("Software Validation Error")
+        typer.secho("Computation Validation Error")
         typer.secho(e)
         typer.Exit()
 

@@ -1,4 +1,8 @@
 from pydantic import BaseModel, ValidationError, validator
+from typing import (
+    Optional,
+    List
+)
 import fairscape_models
 import re
 
@@ -6,8 +10,6 @@ import re
 class Computation(fairscape_models.Computation):
     name: str
     description: str
-    author: str
-    version: str
-    usedSoftware: str
-    usedDataset: str
-    generated: str
+    usedSoftware: Optional[List[str]] = []
+    usedDataset: Optional[List[str]] = []
+    generated: List[str] = []

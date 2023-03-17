@@ -55,14 +55,14 @@ def create_crate(
                 "conformsTo": {"@id": "https://w3id.org/ro/crate/1.1"},
                 "about": {"@id": guid},
                 "isPartOf": {"@id": guid},
-                "contentUrl": str(ro_crate_metadata_path),
+                "contentUrl": 'file://' + str(ro_crate_metadata_path),
             }
         ]  
     }
 
 
     with ro_crate_metadata_path.open(mode="w") as metadata_file:
-        json.dump(rocrate_metadata, metadata_file)
+        json.dump(rocrate_metadata, metadata_file, indent=2)
     
     typer.secho(f"Created RO Crate at {path}")
 
