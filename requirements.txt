@@ -1,5 +1,8 @@
 pydantic
 pyld
+<<<<<<< HEAD
 typer
+=======
+>>>>>>> 1485a85a0b25f8bf5bfa8104d0733c3789646e0f
 click
 fairscape-models == 1.3.0
