@@ -40,13 +40,8 @@ def create(
         path.mkdir(exist_ok=False)
     
     except FileExistsError:
-<<<<<<< HEAD
         click.echo("ERROR: ROCrate Path Already Exists")
         click.Abort()
-=======
-        typer.secho("Path Already Exists")
-        typer.Exit()
->>>>>>> 1485a85a0b25f8bf5bfa8104d0733c3789646e0f
 
     # initilize ro-crate-metadata.json
     ro_crate_metadata_path = path / 'ro-crate-metadata.json'
@@ -84,34 +79,19 @@ def create(
 
     with ro_crate_metadata_path.open(mode="w") as metadata_file:
         json.dump(rocrate_metadata, metadata_file, indent=2)
-    
-<<<<<<< HEAD
+   
     click.echo(f"Created RO Crate at {path}")
-=======
-    typer.secho(f"Created RO Crate at {path}")
->>>>>>> 1485a85a0b25f8bf5bfa8104d0733c3789646e0f
 
     # TODO add metadata to cache
 
 
-
-
-<<<<<<< HEAD
-##########################
 # RO Crate add subcommands
-##########################
-def add_element_ro_crate():
-    pass
-=======
-# RO Crate add subcommands
->>>>>>> 1485a85a0b25f8bf5bfa8104d0733c3789646e0f
 
 @rocrate.group('add')
 def add():
     pass
 
 @add.command('software')
-<<<<<<< HEAD
 @click.argument('rocrate-path', type=click.Path(exists=True, path_type=pathlib.Path))
 @click.option('--guid', required=True)
 @click.option('--name', required=True)
@@ -148,34 +128,11 @@ def software(
     if metadata_path.exists() != True:
         click.echo(f"Cannot Find RO-Crate Metadata: {metadata_path}")
         click.Abort()
-=======
-def software(
-    rocrate_path: Path = typer.Option(...),
-    guid: str = typer.Option(...),
-    name: str = typer.Option(...),
-    author: str = typer.Option(...),
-    version: str = typer.Option(...),
-    description: str = typer.Option(...),
-    associatedPublication: str = typer.Option(...),
-    additionalDocumentation: List[str] = typer.Option([]),
-    fileFormat: str = typer.Option(...),
-    usedByComputation: Optional[List[str]] = typer.Option([]),
-    sourcePath: Path = typer.Option(...),
-    destinationPath: Path = typer.Option(...)
-):
-
-    metadata_path = rocrate_path / "ro-crate-metadata.json"
-    # check if you are in the rocrate path
-    # ro-crate-metadata.json should be a local file
-    if metadata_path.exists() != True:
-        typer.secho(f"Cannot Find RO-Crate Metadata: {metadata_path}")
-        typer.Exit()
->>>>>>> 1485a85a0b25f8bf5bfa8104d0733c3789646e0f
 
     # TODO check that destination path is in the rocrate
 
     # check if the source file exists 
-<<<<<<< HEAD
+
     source_filepath = Path(source_path)
     if source_filpath.exists() != True:
         click.echo(f"sourcePath: {source_path} Doesn't Exist")
@@ -183,15 +140,10 @@ def software(
 
     # copy the file into the destinationPath
     shutil.copy(Path(source_path), Path(destination_path)
-=======
-    if sourcePath.exists() != True:
-        typer.secho(f"sourcePath: {sourcePath} Doesn't Exist")
-        typer.Exit() 
+
 
     # copy the file into the destinationPath
     shutil.copy(sourcePath, destinationPath)
->>>>>>> 1485a85a0b25f8bf5bfa8104d0733c3789646e0f
-         
 
     # initilize the model with the required properties
     try:
@@ -201,7 +153,7 @@ def software(
             "@type": "https://w3id.org/EVI#Software",
             "name": name,
             "author": author,
-<<<<<<< HEAD
+
             "dateModified": date_modified,
             "description": description,
             "version": version,
@@ -210,16 +162,6 @@ def software(
             "format": file_format,
             "usedByComputation": used_by_computation,
             "contentUrl": "file://" + str(destination_path)
-=======
-            "dateModified": dateModified,
-            "description": description,
-            "version": version,
-            "associatedPublication": associatedPublication,
-            "additionalDocumentation": additionalDocumentation,
-            "format": fileFormat,
-            "usedByComputation": usedByComputation,
-            "contentUrl": "file://" + str(destinationPath)
->>>>>>> 1485a85a0b25f8bf5bfa8104d0733c3789646e0f
             }
         )
 
@@ -236,7 +178,6 @@ def software(
         with metadata_path.open("w") as f:
             json.dump(rocrate_metadata, f, indent=2)
 
-<<<<<<< HEAD
         click.echo("Added Software")
         click.echo(
             json.dumps(software_model.json(by_alias=True), indent=2)
@@ -264,27 +205,13 @@ def software(
 @click.option('--derived-from', required=False)
 @click.option('--associated-publication', required=False)
 @click.option('--additional-documentation', required=False)
-=======
-        typer.secho("Added Software")
-        typer.secho(
-            json.dumps(software_model.json(by_alias=True), indent=2)
-        )
-
-
-    except ValidationError as e:
-        typer.secho("Software Validation Error")
-        typer.secho(e)
-        typer.Exit()
-
 @add.command('dataset')
 @click.option('rocrate')
->>>>>>> 1485a85a0b25f8bf5bfa8104d0733c3789646e0f
 def dataset(
     rocrate_path: Path,
     guid: str,
     name: str,
     author: str,
-<<<<<<< HEAD
     description: str,
     datePublished: str,
     version: str,
@@ -296,19 +223,6 @@ def dataset(
     used_by: Optional[List[str]],
     source_filepath: str,
     destination_filepath: str
-=======
-    description: str = typer.Option(...),
-    datePublished: str = typer.Option(...),
-    version: str = typer.Option(...),
-    associatedPublication: str = typer.Option(...),
-    additionalDocumentation: Optional[List[str]] = typer.Option([]),
-    dataFormat: str = typer.Option(...),
-    generatedBy: Optional[List[str]] = typer.Option([]),
-    derivedFrom: Optional[List[str]] = typer.Option([]),
-    usedBy: Optional[List[str]] = typer.Option([]),
-    sourcePath: Path = typer.Option(...),
-    destinationPath: Path = typer.Option(...)
->>>>>>> 1485a85a0b25f8bf5bfa8104d0733c3789646e0f
 ):
 
 
@@ -317,7 +231,6 @@ def dataset(
     # ro-crate-metadata.json should be a local file
 
     if metadata_path.exists() != True:
-<<<<<<< HEAD
         click.echo(f"Cannot Find RO-Crate Metadata: {metadata_path}")
         click.Abort()
 
@@ -329,22 +242,10 @@ def dataset(
     if source_path.exists() != True:
         click.echo(f"sourcePath: {sourcePath} Doesn't Exist")
         clic.Abort()
-=======
-        typer.secho(f"Cannot Find RO-Crate Metadata: {metadata_path}")
-        typer.Exit()
-
-    # TODO check that destination path is in the rocrate
-
-    # check if the source file exists 
-    if sourcePath.exists() != True:
-        typer.secho(f"sourcePath: {sourcePath} Doesn't Exist")
-        typer.Exit() 
->>>>>>> 1485a85a0b25f8bf5bfa8104d0733c3789646e0f
 
     # copy the file into the destinationPath
     shutil.copy(sourcePath, destinationPath)
-         
-
+    
     # initilize the model with the required properties
     try:
         dataset_model = Dataset(   
@@ -354,7 +255,6 @@ def dataset(
             "author": author,
             "name": name,
             "description": description,
-<<<<<<< HEAD
             "datePublished": date_published,
             "version": version,
             "associatedPublication": associated_publication,
@@ -364,17 +264,6 @@ def dataset(
             "derivedFrom": derived_from,
             "usedBy": used_by,
             "contentUrl": "file://" + str(destination_path)
-=======
-            "datePublished": datePublished,
-            "version": version,
-            "associatedPublication": associatedPublication,
-            "additionalDocumentation": additionalDocumentation,
-            "format": dataFormat,
-            "generatedBy": generatedBy,
-            "derivedFrom": derivedFrom,
-            "usedBy": usedBy,
-            "contentUrl": "file://" + str(destinationPath)
->>>>>>> 1485a85a0b25f8bf5bfa8104d0733c3789646e0f
             }
         )
 
@@ -391,7 +280,6 @@ def dataset(
         with metadata_path.open("w") as f:
             json.dump(rocrate_metadata, f, indent=2)
 
-<<<<<<< HEAD
         click.echo("Added Software")
         click.echo(
             json.dumps(software_model.json(by_alias=True), indent=2)
@@ -402,24 +290,10 @@ def dataset(
         click.echo(e)
         click.Abort()
 
-=======
-        typer.secho("Added Dataset")
-        typer.secho(
-            json.dumps(dataset_model.json(by_alias=True), indent=2)
-        )
-
-
-    except ValidationError as e:
-        typer.secho("Dataset Validation Error")
-        typer.secho(e)
-        typer.Exit()
->>>>>>> 1485a85a0b25f8bf5bfa8104d0733c3789646e0f
-
     # TODO add to cache
 
 
 @add.command('computation')
-<<<<<<< HEAD
 @click.argument('rocrate-path', type=click.Path(exists=True, path_type=pathlib.Path))
 @click.option('--guid', required=True)
 @click.option('--name', required=True)
@@ -444,35 +318,15 @@ def computation(
     called_by: Optional[str],
     generated: List[str] 
     associated_publication: Optional[str],
-    additional_documentation: Optional[str],
-=======
-def computation():
-    rocrate_path: Path = typer.Option(...),
-    guid: str = typer.Option(...),
-    name: str = typer.Option(...),
-    run_by: str = typer.Option(...),
-    date_created: str = typer.Option(...),
-    description: str = typer.Option(...),
-    associatedPublication: Optional[str] = typer.Option(""),
-    additionalDocumentation: Optional[str] = typer.Option(""),
-    usedSoftware: List[str] = typer.Option(...),
-    usedDataset: List[str] = typer.Option(...),
-    calledBy: Optional[str] = typer.Option(""),
-    generated: List[str] = typer.Option(...)
->>>>>>> 1485a85a0b25f8bf5bfa8104d0733c3789646e0f
+    additional_documentation: Optional[str]
 ):
 
     metadata_path = rocrate_path / "ro-crate-metadata.json"
     # check if you are in the rocrate path
     # ro-crate-metadata.json should be a local file
     if metadata_path.exists() != True:
-<<<<<<< HEAD
         click.echo(f"Cannot Find RO-Crate Metadata: {metadata_path}")
         click.Abort()
-=======
-        typer.secho(f"Cannot Find RO-Crate Metadata: {metadata_path}")
-        typer.Exit()
->>>>>>> 1485a85a0b25f8bf5bfa8104d0733c3789646e0f
 
     # initilize the model with the required properties
     try:
