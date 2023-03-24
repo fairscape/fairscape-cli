@@ -163,7 +163,6 @@ class TestROCrateSuccess():
         print(result.stdout)
 
         assert result.exit_code == 0
-        assert False
 
 
     def test_add_software(self):

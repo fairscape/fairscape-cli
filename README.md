@@ -24,70 +24,15 @@ of all metadata records and RO crates assembled.
 fairscape validate json ./path_to_json.json
 ```
 
-#### JSON Validation Implementation
 
+### Validating Individual Classes
 ```
-from fairscape-models import Dataset, Computation, Software
-import json
-
-def validate_json(filepath):
-        """
-        expecting just a path to a file
-        """
-
-        try:
-                json_metadata = json.loads(filepath)
-        except Exception as e:
-                # handle exception if json file is invalid
-                print(e)
-                return "error message"
-
-        # is it a list of contents of mixed types
-        # handling JSON-LD in multiple forms 
-        # example_graph = [
-        #        {"@id": "ark:9999/max-levinson", ...},
-        #        {"@id": "ark:9999/UVA", ...},
-        #        {"@id": "ark:9999/UVA/b2ai", ...},
-        # ]
-
-        # handling "@graph" encapsulation
-        # example_graph = { "@graph": 
-        #   {[
-        #        {"@id": "ark:9999/max-levinson", ...},
-        #        {"@id": "ark:9999/UVA", ...},
-        #        {"@id": "ark:9999/UVA/b2ai", ...},
-        #   ]}
-        # }
-        
-
-        # may want to use jsonld library to fully expand 
-        object_type = json_metadata.get("@type")
-
-        
-        if object_type is None:
-                # cause an error
-                pass
-        if object_type == "EVI:Computation":
-                pass
-
-        # TODO NEXT WEEK: ensure the references are valid
-        # for a single object
-        # for multiple just iterate
-
-        # check that identifiers exist first looking at the cache 
-        # if not in the cache check the network 
-
-        return None
+fairscape validate dataset ./tests/data/dataset.json
+fairscape validate software ./tests/data/software.json
+fairscape validate computation ./tests/data/computation.json
 ```
 
-Validating Individual Classes
-```
-fairscape validate dataset
-fairscape validate software
-fairscape validate computation
-```
-
-### ROcrate functionality
+## ROCrate
 ```
 # create a new ROcrate
 fairscape rocrate create \
@@ -95,45 +40,11 @@ fairscape rocrate create \
         --name "b2ai example rocrate" \
         --organization "ark:5982/UVA" \
         --project "ark:5982/UVA/b2ai" \
-        --path "./"
+        --path "./tests/example_rocrate"
 
 ```
 
-```
-
-import pathlib.Path as Path 
-from fairscape-models import rocrate
-
-def getsqliteconn():
-        pass
-
-def create_ro_crate(*args, **kwargs):
-
-        name=kargs.get("name")
-
-
-        try: 
-                rocrate_model = rocrate(
-                        name=name,
-                )
-
-        except ValidationError as e:
-                # pretty print the validation errors
-                print(e)
-
-        rocrate_path = kwargs.get("path")
-        Path(rocrate_path).mkdir()
-
-        # persist in the sqlite cache
-        sqlite_connection = getsqliteconn()
-        
-        # insert one record into rocrate table
-        
-
-        return None
-         
-```
-
+### Adding Contents 
 
 ```
 

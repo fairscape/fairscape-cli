@@ -1,0 +1,33 @@
+# pyproject.toml
+[build-system]
+requires = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fairscape-cli"
+version = "1.0.0"
+description = "CLI tool for B2AI metadata validation and ROCrate creation"
+readme = "README.md"
+authors = [
+        { name = "Max Levinson",    email = "mal8ch@virginia.edu"},
+        { name = "Sadnan Al Manir", email = "sadnanalmanir@gmail.com"},
+        { name = "Tim Clark",       email = "twc8q@virginia.edu"}
+]
+license = {file= "LICENSE"}
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3"]
+keywords = ["fairscape", "reproducibility", "fair", "b2ai"]
+dependencies = [
+        "pydantic",
+        "fairscape-models",
+        "typer[all]",
+        "pydantic",
+        "pyld"
+]
+requires-python = ">=3.6"
+
+[project.urls]
+Homepage = "https://github.com/fairscape/fairscape-cli"
+

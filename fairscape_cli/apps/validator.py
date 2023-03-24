@@ -11,7 +11,6 @@ app = typer.Typer()
 
 def validate_model(path: str, model):
     json_path = Path(path)
-
     
     if is_path_valid(path=json_path) == False:
         print(f"Invalid Path: {json_path}")

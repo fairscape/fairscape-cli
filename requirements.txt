@@ -1,4 +1,5 @@
-typer[all]
 pydantic
 pyld
-fairscape-models
+typer
+click
+fairscape-models == 1.3.0
