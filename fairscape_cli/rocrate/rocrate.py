@@ -1,5 +1,9 @@
 import click
 import pathlib
+from typing import (
+    List,
+    Optional
+)
 
 # RO Crate 
 
@@ -26,25 +30,25 @@ def zip():
 @click.option('-n', '--name', required=True, type=str)
 @click.option('-org', '--organization-guid', required=True, type=str)
 @click.option('-proj', '--project-guid', required=True, type=str)
-@click.argument('path', type=click.Path(exists=False, path_type=pathlib.Path))
+@click.argument('crate-path', type=click.Path(exists=False, path_type=pathlib.Path))
 def create(
     guid: str,
     name: str,
     organization_id: str,
     project_id: str,
-    path: Path, 
+    crate_path: pathlib.Path, 
 ): 
 
     # create a empty folder at the specified path
     try:
-        path.mkdir(exist_ok=False)
+        crate_path.mkdir(exist_ok=False)
     
     except FileExistsError:
         click.echo("ERROR: ROCrate Path Already Exists")
         click.Abort()
 
     # initilize ro-crate-metadata.json
-    ro_crate_metadata_path = path / 'ro-crate-metadata.json'
+    ro_crate_metadata_path = crate_path / 'ro-crate-metadata.json'
     ro_crate_metadata_ark = guid + "/ro-crate-metadata.json"
 
     rocrate_metadata = {
@@ -79,29 +83,22 @@ def create(
 
     with ro_crate_metadata_path.open(mode="w") as metadata_file:
         json.dump(rocrate_metadata, metadata_file, indent=2)
-<<<<<<< HEAD
     
-=======
-   
->>>>>>> 9dcf6f52b826c5c22041a545a524c78143991acb
-    click.echo(f"Created RO Crate at {path}")
+    click.echo(f"Created RO Crate at {crate_path}")
 
     # TODO add metadata to cache
 
 
-<<<<<<< HEAD
 
 
 ##########################
 # RO Crate add subcommands
 ##########################
+
 def add_element_ro_crate():
     pass
-# RO Crate add subcommands
-=======
-# RO Crate add subcommands
->>>>>>> 9dcf6f52b826c5c22041a545a524c78143991acb
 
+# RO Crate add subcommands
 @rocrate.group('add')
 def add():
     pass
@@ -114,14 +111,14 @@ def add():
 @click.option('--version', required=True)
 @click.option('--description', required=True)
 @click.option('--file-format', required=True)
-@click.option('--source-path', required=True)
-@click.option('--destination-path', required=True)
-@click.option('--date-modified', requred=False)
+@click.option('--source-filepath', required=True)
+@click.option('--destination-filepath', required=True)
+@click.option('--date-modified', required=False)
 @click.option('--used-by-computation', required=False)
 @click.option('--associated-publication', required=False)
 @click.option('--additional-documentation', required=False)
 def software(
-    rocrate_path: Path,
+    rocrate_path: pathlib.Path,
     guid: str,
     name: str,
     author: str,
@@ -133,7 +130,7 @@ def software(
     date_modified: str,
     used_by_computation: Optional[List[str]],
     associated_publication: Optional[str],
-    additional_documentation: Optional[str],
+    additional_documentation: Optional[str]
 ):
 
     metadata_path = rocrate_path / "ro-crate-metadata.json"
@@ -147,25 +144,14 @@ def software(
     # TODO check that destination path is in the rocrate
 
     # check if the source file exists 
-<<<<<<< HEAD
-=======
-
->>>>>>> 9dcf6f52b826c5c22041a545a524c78143991acb
-    source_filepath = Path(source_path)
-    if source_filpath.exists() != True:
+    source_path = pathlib.Path(source_filepath)
+    destination_path = pathlib.Path(destination_filepath)
+    if source_path.exists() != True:
         click.echo(f"sourcePath: {source_path} Doesn't Exist")
         click.Abort() 
 
     # copy the file into the destinationPath
-    shutil.copy(Path(source_path), Path(destination_path)
-<<<<<<< HEAD
-         
-=======
-
-
-    # copy the file into the destinationPath
-    shutil.copy(sourcePath, destinationPath)
->>>>>>> 9dcf6f52b826c5c22041a545a524c78143991acb
+    shutil.copy(source_path, destination_path)
 
     # initilize the model with the required properties
     try:
@@ -175,10 +161,6 @@ def software(
             "@type": "https://w3id.org/EVI#Software",
             "name": name,
             "author": author,
-<<<<<<< HEAD
-=======
-
->>>>>>> 9dcf6f52b826c5c22041a545a524c78143991acb
             "dateModified": date_modified,
             "description": description,
             "version": version,
@@ -230,13 +212,8 @@ def software(
 @click.option('--derived-from', required=False)
 @click.option('--associated-publication', required=False)
 @click.option('--additional-documentation', required=False)
-<<<<<<< HEAD
-=======
-@add.command('dataset')
-@click.option('rocrate')
->>>>>>> 9dcf6f52b826c5c22041a545a524c78143991acb
 def dataset(
-    rocrate_path: Path,
+    rocrate_path: pathlib.Path,
     guid: str,
     name: str,
     author: str,
@@ -263,16 +240,15 @@ def dataset(
         click.Abort()
 
     # TODO check that destination path is in the rocrate
-    destination_path = Path(destination_filepath)
-
+    destination_path = pathlib.Path(destination_filepath)
+    source_path = pathlib.Path(source_filepath) 
     # check if the source file exists 
-    source_path = Path(source_filepath) 
     if source_path.exists() != True:
         click.echo(f"sourcePath: {sourcePath} Doesn't Exist")
         clic.Abort()
 
     # copy the file into the destinationPath
-    shutil.copy(sourcePath, destinationPath)
+    shutil.copy(source_path, destination_path)
     
     # initilize the model with the required properties
     try:
@@ -318,10 +294,6 @@ def dataset(
         click.echo(e)
         click.Abort()
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 9dcf6f52b826c5c22041a545a524c78143991acb
     # TODO add to cache
 
 
@@ -339,7 +311,7 @@ def dataset(
 @click.option('--associated-publication', required=False)
 @click.option('--additional-documentation', required=False)
 def computation(
-    rocrate_path: Path,
+    rocrate_path: pathlib.Path,
     guid: str,
     name: str,
     run_by: str,
@@ -348,13 +320,9 @@ def computation(
     used_software: List[str],
     used_dataset: List[str],
     called_by: Optional[str],
-    generated: List[str] 
+    generated: List[str],
     associated_publication: Optional[str],
-<<<<<<< HEAD
     additional_documentation: Optional[str],
-=======
-    additional_documentation: Optional[str]
->>>>>>> 9dcf6f52b826c5c22041a545a524c78143991acb
 ):
 
     metadata_path = rocrate_path / "ro-crate-metadata.json"
