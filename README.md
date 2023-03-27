@@ -24,69 +24,15 @@ of all metadata records and RO crates assembled.
 fairscape validate json ./path_to_json.json
 ```
 
+
+### Validating Individual Classes
 ```
-from fairscape-models import Dataset, Computation, Software
-import json
-
-def validate_json(filepath):
-        """
-        expecting just a path to a file
-        """
-
-        try:
-                json_metadata = json.loads(filepath)
-        except Exception as e:
-                # handle exception if json file is invalid
-                print(e)
-                return "error message"
-
-        # is it a list of contents of mixed types
-        # handling JSON-LD in multiple forms 
-        # example_graph = [
-        #        {"@id": "ark:9999/max-levinson", ...},
-        #        {"@id": "ark:9999/UVA", ...},
-        #        {"@id": "ark:9999/UVA/b2ai", ...},
-        # ]
-
-        # handling "@graph" encapsulation
-        # example_graph = { "@graph": 
-        #   {[
-        #        {"@id": "ark:9999/max-levinson", ...},
-        #        {"@id": "ark:9999/UVA", ...},
-        #        {"@id": "ark:9999/UVA/b2ai", ...},
-        #   ]}
-        # }
-        
-
-        # may want to use jsonld library to fully expand 
-        object_type = json_metadata.get("@type")
-
-        
-        if object_type is None:
-                # cause an error
-                pass
-        if object_type == "EVI:Computation":
-                pass
-
-        # TODO NEXT WEEK: ensure the references are valid
-        # for a single object
-        # for multiple just iterate
-
-        # check that identifiers exist first looking at the cache 
-        # if not in the cache check the network 
-
-        return None
+fairscape validate dataset ./tests/data/dataset.json
+fairscape validate software ./tests/data/software.json
+fairscape validate computation ./tests/data/computation.json
 ```
 
-
-```
-
-fairscape validate dataset
-fairscape validate software
-fairscape validate computation
-```
-
-### ROcrate functionality
+## ROCrate
 ```
 # create a new ROcrate
 fairscape rocrate create \
@@ -94,62 +40,11 @@ fairscape rocrate create \
         --name "b2ai example rocrate" \
         --organization "ark:5982/UVA" \
         --project "ark:5982/UVA/b2ai" \
-        --path "./"
-
-# remote paths examples
-# for github domain
-# https://raw.githubusercontent.com/idekerlab/MuSIC/master/Examples/APMS_embedding.MuSIC.csv
-
-
-# S3
-# s3://example-bucket/path/to/object
-# http(s)://<bucket>.s3.amazonaws.com/<object>
-# http(s)://s3.amazonaws.com/<bucket>/<object>
-
-# local s3
-
-# identifier
-# e.g. Zenodo DOI
-
-# external filesystems i.e. RIVANNA project storage
-# smb://qumulo.rc.virginia.edu/
-```
+        --path "./tests/example_rocrate"
 
 ```
 
-import pathlib.Path as Path 
-from fairscape-models import rocrate
-
-def getsqliteconn():
-        pass
-
-def create_ro_crate(*args, **kwargs):
-
-        name=kargs.get("name")
-
-
-        try: 
-                rocrate_model = rocrate(
-                        name=name,
-                )
-
-        except ValidationError as e:
-                # pretty print the validation errors
-                print(e)
-
-        rocrate_path = kwargs.get("path")
-        Path(rocrate_path).mkdir()
-
-        # persist in the sqlite cache
-        sqlite_connection = getsqliteconn()
-        
-        # insert one record into rocrate table
-        
-
-        return None
-         
-```
-
+### Adding Contents 
 
 ```
 
@@ -207,7 +102,7 @@ cd myrocrate
 
 fairscape add dataset ... --path /mnt/results/mytestfile.csv
 
-# fairscape has every enough to auto generate identifiers
+# fairscape has every parameter required to auto generate identifiers
 # ark:5982/<ORGANIZATION>/<PROJECT>/<ROCRATE>/postfix
 
 fairscape setcontext crateid --id <CRATEID>
@@ -215,7 +110,27 @@ fairscape setcontext crateid --id <CRATEID>
 fairscape rocrate add compution/dataset/software/etc... 
 ```
 
+### Design Considerations
 
+#### Dealing with Remote Content
+
+remote paths examples
+1. github domain
+  - https://raw.githubusercontent.com/idekerlab/MuSIC/master/Examples/APMS_embedding.MuSIC.csv
+
+2. S3
+- s3://example-bucket/path/to/object
+- `http(s)://<bucket>.s3.amazonaws.com/<object>`
+- http(s)://s3.amazonaws.com/<bucket>/<object>
+
+3. Local File URI
+
+4. identifier
+- Zenodo DOI
+
+5. external filesystems 
+- RIVANNA project storage smb://qumulo.rc.virginia.edu/
+```
 
 ## Milestones
 

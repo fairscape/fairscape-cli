@@ -8,5 +8,3 @@ sys.path.insert(
         '..')
     )
 )
-
-import fairscape
