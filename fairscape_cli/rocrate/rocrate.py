@@ -79,12 +79,17 @@ def create(
 
     with ro_crate_metadata_path.open(mode="w") as metadata_file:
         json.dump(rocrate_metadata, metadata_file, indent=2)
+<<<<<<< HEAD
     
+=======
+   
+>>>>>>> 9dcf6f52b826c5c22041a545a524c78143991acb
     click.echo(f"Created RO Crate at {path}")
 
     # TODO add metadata to cache
 
 
+<<<<<<< HEAD
 
 
 ##########################
@@ -93,6 +98,9 @@ def create(
 def add_element_ro_crate():
     pass
 # RO Crate add subcommands
+=======
+# RO Crate add subcommands
+>>>>>>> 9dcf6f52b826c5c22041a545a524c78143991acb
 
 @rocrate.group('add')
 def add():
@@ -139,6 +147,10 @@ def software(
     # TODO check that destination path is in the rocrate
 
     # check if the source file exists 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 9dcf6f52b826c5c22041a545a524c78143991acb
     source_filepath = Path(source_path)
     if source_filpath.exists() != True:
         click.echo(f"sourcePath: {source_path} Doesn't Exist")
@@ -146,7 +158,14 @@ def software(
 
     # copy the file into the destinationPath
     shutil.copy(Path(source_path), Path(destination_path)
+<<<<<<< HEAD
          
+=======
+
+
+    # copy the file into the destinationPath
+    shutil.copy(sourcePath, destinationPath)
+>>>>>>> 9dcf6f52b826c5c22041a545a524c78143991acb
 
     # initilize the model with the required properties
     try:
@@ -156,6 +175,10 @@ def software(
             "@type": "https://w3id.org/EVI#Software",
             "name": name,
             "author": author,
+<<<<<<< HEAD
+=======
+
+>>>>>>> 9dcf6f52b826c5c22041a545a524c78143991acb
             "dateModified": date_modified,
             "description": description,
             "version": version,
@@ -207,6 +230,11 @@ def software(
 @click.option('--derived-from', required=False)
 @click.option('--associated-publication', required=False)
 @click.option('--additional-documentation', required=False)
+<<<<<<< HEAD
+=======
+@add.command('dataset')
+@click.option('rocrate')
+>>>>>>> 9dcf6f52b826c5c22041a545a524c78143991acb
 def dataset(
     rocrate_path: Path,
     guid: str,
@@ -245,8 +273,7 @@ def dataset(
 
     # copy the file into the destinationPath
     shutil.copy(sourcePath, destinationPath)
-         
-
+    
     # initilize the model with the required properties
     try:
         dataset_model = Dataset(   
@@ -291,7 +318,10 @@ def dataset(
         click.echo(e)
         click.Abort()
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 9dcf6f52b826c5c22041a545a524c78143991acb
     # TODO add to cache
 
 
@@ -320,7 +350,11 @@ def computation(
     called_by: Optional[str],
     generated: List[str] 
     associated_publication: Optional[str],
+<<<<<<< HEAD
     additional_documentation: Optional[str],
+=======
+    additional_documentation: Optional[str]
+>>>>>>> 9dcf6f52b826c5c22041a545a524c78143991acb
 ):
 
     metadata_path = rocrate_path / "ro-crate-metadata.json"
