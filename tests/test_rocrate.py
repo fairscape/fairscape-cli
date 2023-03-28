@@ -9,8 +9,8 @@ sys.path.insert(
     )
 )
 
-from typer.testing import CliRunner
-from fairscape_cli.apps.fairscape import app as fairscape_cli_app
+from click.testing import CliRunner
+from fairscape_cli.__main__ import cli as fairscape_cli_app
 
 runner = CliRunner()
  
@@ -25,9 +25,9 @@ class TestROCrateSuccess():
             "create", 
             "--guid ark:59853/UVA/B2AI/rocrate_test",
             "--name 'test rocrate'",
-            "--organization-id 'ark:59853/UVA'",
-            "--project-id 'ark:59853/UVA/B2AI'",
-            "--path './tests/example_rocrate'",
+            "--organization-guid 'ark:59853/UVA'",
+            "--project-guid 'ark:59853/UVA/B2AI'",
+            "'./tests/example_rocrate'",
         ]
         
         result = self.runner.invoke(
@@ -69,19 +69,19 @@ class TestROCrateSuccess():
             "rocrate",
             "add",
             "dataset",
-            "--rocrate-path './tests/example_rocrate'",
             f"--name '{test_dataset['name']}'",
             "--guid 'ark:59853/UVA/B2AI/rocrate_test/music_data'",
             "--name 'AP-MS embeddings'",
             f"--description '{test_dataset['description']}'" ,
-            f"--datepublished '{test_dataset['datePublished']}'",
+            f"--date-published '{test_dataset['datePublished']}'",
             f"--author '{test_dataset['author']}'",
             "--version '1.0.0'",
-            f"--associatedpublication '{test_dataset['associatedPublication']}'",
-            f"--additionaldocumentation '{test_dataset['additionalDocumentation'][0]}'",
-            f"--dataformat '{test_dataset['format']}'",
-            "--sourcepath './tests/data/APMS_embedding_MUSIC.csv'",
-            "--destinationpath './tests/example_rocrate/APMS_embedding_MUSIC.csv'"
+            f"--associated-publication '{test_dataset['associatedPublication']}'",
+            f"--additional-documentation '{test_dataset['additionalDocumentation'][0]}'",
+            f"--data-format '{test_dataset['format']}'",
+            "--source-filepath './tests/data/APMS_embedding_MUSIC.csv'",
+            "--destination-filepath './tests/example_rocrate/APMS_embedding_MUSIC.csv'",
+            "'./tests/example_rocrate'",
         ]
 
         print(' '.join(add_dataset))
@@ -141,17 +141,16 @@ class TestROCrateSuccess():
             "rocrate",
             "add",
             "computation",
-            "--rocrate-path './tests/example_rocrate'",
             "--guid 'ark:59853/UVA/B2AI/rocrate_test/music_test_run'",
             f"--name '{test_computation['name']}'",
+            "--called-by 'Max Levinson'",
             "--run-by 'Max Levinson'",
             "--date-created '03-17-2023'",
             "--description 'test run of music pipeline using example data'",
-            f"--associatedpublication '{test_computation['associatedPublication']}'",
-            f"--additionaldocumentation '{test_computation['additionalDocumentation']}' ",
-            f"--usedsoftware '[{','.join(software)}]'",
-            f"--useddataset '[{','.join(datasets)}]'",
-            f"--generated '[{','.join(generated)}]'"
+            f"--used-software '[{','.join(software)}]'",
+            f"--used-dataset '[{','.join(datasets)}]'",
+            f"--generated '{generated[0]}'",
+            "'./tests/example_rocrate'"
         ]
 
         print(' '.join(add_computation))
@@ -186,17 +185,17 @@ class TestROCrateSuccess():
             "rocrate",
             "add",
             "dataset",
-            "--rocrate-path './tests/example_rocrate'",
             "--guid ark:59853/UVA/B2AI/rocrate_test/music_software",
             "--name MuSIC",
             f"--author '{example_software['author']}'",
             "--version '1.0'",
             f"--description '{example_software['description']}'",
-            f"--associatedpublication '{example_software['associatedPublication']}'",
-            "--dataformat '.py'",
-            f"--datepublished '{example_software['dateModified']}'",
-            "--sourcepath './tests/data/calibrate_pairwise_distance.py'",
-            "--destinationpath './tests/example_rocrate/calibrate_pairwise_distance.py'",
+            f"--associated-publication '{example_software['associatedPublication']}'",
+            "--data-format '.py'",
+            f"--date-published '{example_software['dateModified']}'",
+            "--source-filepath './tests/data/calibrate_pairwise_distance.py'",
+            "--destination-filepath './tests/example_rocrate/calibrate_pairwise_distance.py'",
+            "'./tests/example_rocrate'",
         
         ]
 

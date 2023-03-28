@@ -1,5 +1,13 @@
 import click
 import pathlib
+import shutil
+from pydantic import ValidationError
+import json
+from fairscape_cli.models import (
+    Dataset,
+    Software,
+    Computation
+)
 from typing import (
     List,
     Optional
@@ -26,16 +34,16 @@ def zip():
     pass
 
 @rocrate.command('create')
-@click.option('-g', '--guid', required=True, type=str)
-@click.option('-n', '--name', required=True, type=str)
-@click.option('-org', '--organization-guid', required=True, type=str)
-@click.option('-proj', '--project-guid', required=True, type=str)
+@click.option('--guid', required=True, type=str)
+@click.option('--name', required=True, type=str)
+@click.option('--organization-guid', required=True, type=str)
+@click.option('--project-guid', required=True, type=str)
 @click.argument('crate-path', type=click.Path(exists=False, path_type=pathlib.Path))
 def create(
     guid: str,
     name: str,
-    organization_id: str,
-    project_id: str,
+    organization_guid: str,
+    project_guid: str,
     crate_path: pathlib.Path, 
 ): 
 
@@ -61,11 +69,11 @@ def create(
         "name": name,
         "isPartOf": [
             {
-                "@id": organization_id,
+                "@id": organization_guid,
                 "@type": "Organization"
             },
             {
-                "@id": project_id,
+                "@id": project_guid,
                 "@type": "Project"
             }
         ],
@@ -202,8 +210,7 @@ def software(
 @click.option('--name', required=True)
 @click.option('--author', required=True)
 @click.option('--version', required=True)
-@click.option('--datePublished', required=True)
-@click.option('--version', required=True)
+@click.option('--date-published', required=True)
 @click.option('--description', required=True)
 @click.option('--data-format', required=True)
 @click.option('--source-filepath', required=True)
@@ -218,12 +225,11 @@ def dataset(
     name: str,
     author: str,
     description: str,
-    datePublished: str,
+    date_published: str,
     version: str,
     associated_publication: str,
     additional_documentation: Optional[List[str]],
     data_format: str,
-    generated_by: Optional[List[str]],
     derived_from: Optional[List[str]],
     used_by: Optional[List[str]],
     source_filepath: str,
@@ -242,13 +248,12 @@ def dataset(
     # TODO check that destination path is in the rocrate
     destination_path = pathlib.Path(destination_filepath)
     source_path = pathlib.Path(source_filepath) 
+
     # check if the source file exists 
     if source_path.exists() != True:
         click.echo(f"sourcePath: {sourcePath} Doesn't Exist")
         clic.Abort()
 
-    # copy the file into the destinationPath
-    shutil.copy(source_path, destination_path)
     
     # initilize the model with the required properties
     try:
@@ -264,7 +269,6 @@ def dataset(
             "associatedPublication": associated_publication,
             "additionalDocumentation": additional_documentation,
             "format": data_format,
-            "generatedBy": generated_by,
             "derivedFrom": derived_from,
             "usedBy": used_by,
             "contentUrl": "file://" + str(destination_path)
@@ -295,6 +299,9 @@ def dataset(
         click.Abort()
 
     # TODO add to cache
+    
+    # copy the file into the destinationPath
+    shutil.copy(source_path, destination_path)
 
 
 @add.command('computation')
@@ -304,25 +311,21 @@ def dataset(
 @click.option('--run-by', required=True)
 @click.option('--called-by', required=True)
 @click.option('--date-created', required=True)
-@click.option('--version', required=True)
 @click.option('--description', required=True)
 @click.option('--used-software', required=True)
 @click.option('--used-dataset', required=True)
-@click.option('--associated-publication', required=False)
-@click.option('--additional-documentation', required=False)
+@click.option('--generated', required=True)
 def computation(
     rocrate_path: pathlib.Path,
     guid: str,
     name: str,
     run_by: str,
+    called_by: str,
     date_created: str,
     description: str,
     used_software: List[str],
     used_dataset: List[str],
-    called_by: Optional[str],
-    generated: List[str],
-    associated_publication: Optional[str],
-    additional_documentation: Optional[str],
+    generated: List[str]
 ):
 
     metadata_path = rocrate_path / "ro-crate-metadata.json"
@@ -342,10 +345,8 @@ def computation(
             "runBy": run_by,
             "dateCreated": date_created,
             "description": description,
-            "associatedPublication": associatedPublication,
-            "additionalDocumentation": additionalDocumentation,
-            "usedSoftware": usedSoftware,
-            "usedDataset": usedDataset,
+            "usedSoftware": used_software,
+            "usedDataset": used_dataset,
             "generated": generated,
             }
         )
