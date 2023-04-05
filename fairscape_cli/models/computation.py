@@ -11,4 +11,4 @@ class Computation(fairscape_models.Computation):
     description: str
     usedSoftware: Optional[List[str]] = []
     usedDataset: Optional[List[str]] = []
-    generated: List[str] = []
+    generated: Optional[List[str]] = []

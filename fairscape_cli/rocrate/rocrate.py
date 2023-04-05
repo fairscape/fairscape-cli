@@ -8,26 +8,20 @@ from fairscape_cli.models import (
     Software,
     Computation
 )
-from typing import (
-    List,
-    Optional
+
+from fairscape_cli.rocrate.utils import (
+    generate_id,
+    inside_crate 
 )
 
-def generate_id(rocrate_metadata_path: pathlib.Path, name: str, metadata_type: str)-> str: 
-    """
-    Given ROCrate metadata generate an id for the element based on name
-    """
-
-    with metadata_path.open('r') as rocrate_metadata_file:
-        # read the rocrate_metadata
-        rocrate_metadata = json.load(rocrate_metadata_file)
-        rocrate_id = rocrate_metadata.get("@id")
-       
-    return f"{rocrate_id}/{name.replace(' ', '_')}-{metadata_type}"
-
+from typing import (
+    List,
+    Optional,
+    Union
+)
+ 
 
 # RO Crate 
-
 @click.group('rocrate')
 def rocrate():
     pass
@@ -61,8 +55,8 @@ def create(
 ): 
 
 
-    organization_guid = "ark:/{organization_name.replace(' ', '_')}"
-    project_guid = organization_guid + f"/{project_guid.replace(' ', '_')}"
+    organization_guid = f"ark:/{organization_name.replace(' ', '_')}"
+    project_guid = organization_guid + f"/{project_name.replace(' ', '_')}"
 
     if guid == "":
         guid = project_guid + f"/{name.replace(' ', '_')}"
@@ -90,11 +84,13 @@ def create(
         "isPartOf": [
             {
                 "@id": organization_guid,
-                "@type": "Organization"
+                "@type": "Organization",
+                "name": organization_name
             },
             {
                 "@id": project_guid,
-                "@type": "Project"
+                "@type": "Project",
+                "name": project_name
             }
         ],
         "@graph": [
@@ -131,6 +127,7 @@ def add_element_ro_crate():
 def add():
     pass
 
+
 @add.command('software')
 @click.argument('rocrate-path', type=click.Path(exists=True, path_type=pathlib.Path))
 @click.option('--guid', required=False, type=str, default="", show_default=False)
@@ -143,7 +140,7 @@ def add():
 @click.option('--source-filepath', required=False)
 @click.option('--destination-filepath', required=False)
 @click.option('--date-modified', required=False)
-@click.option('--used-by-computation', required=False)
+@click.option('--used-by-computation', required=False, multiple=True)
 @click.option('--associated-publication', required=False)
 @click.option('--additional-documentation', required=False)
 def software(
@@ -211,14 +208,14 @@ def software(
         with metadata_path.open("r") as rocrate_metadata_file:
             rocrate_metadata = json.load(rocrate_metadata_file)
 
-        # TODO check if the file is redundant
+            # TODO check if the file is redundant
      
-        # add to the @graph
-        rocrate_metadata['@graph'].append(software_model.dict(by_alias=True))
+            # add to the @graph
+            rocrate_metadata['@graph'].append(software_model.dict(by_alias=True))
         
-        # overwrite the ro-crate-metadata.json file
-        with metadata_path.open("w") as f:
-            json.dump(rocrate_metadata, f, indent=2)
+            # overwrite the ro-crate-metadata.json file
+            with metadata_path.open("w") as f:
+                json.dump(rocrate_metadata, f, indent=2)
 
         click.echo("Added Software")
         click.echo(
@@ -249,8 +246,8 @@ def software(
 @click.option('--data-format', required=True)
 @click.option('--source-filepath', required=True)
 @click.option('--destination-filepath', required=True)
-@click.option('--used-by', required=False)
-@click.option('--derived-from', required=False)
+@click.option('--used-by', required=False, multiple=True)
+@click.option('--derived-from', required=False, multiple=True)
 @click.option('--associated-publication', required=False)
 @click.option('--additional-documentation', required=False)
 def dataset(
@@ -262,13 +259,13 @@ def dataset(
     description: str,
     date_published: str,
     version: str,
-    associated_publication: str,
+    associated_publication: Optional[str],
     additional_documentation: Optional[List[str]],
     data_format: str,
+    source_filepath: str,
+    destination_filepath: str,
     derived_from: Optional[List[str]],
     used_by: Optional[List[str]],
-    source_filepath: str,
-    destination_filepath: str
 ):
 
 
@@ -295,6 +292,7 @@ def dataset(
     
     # initilize the model with the required properties
     try:
+
         dataset_model = Dataset(   
             **{
             "@id": guid,
@@ -327,13 +325,14 @@ def dataset(
         with metadata_path.open("w") as f:
             json.dump(rocrate_metadata, f, indent=2)
 
-        click.echo("Added Software")
+        click.echo("Added Dataset")
+
         click.echo(
-            json.dumps(software_model.json(by_alias=True), indent=2)
+            json.dumps(dataset_model.json(by_alias=True), indent=2)
         )
 
     except ValidationError as e:
-        click.echo("Dataset Validation Error")
+        click.echo("Software Validation Error")
         click.echo(e)
         click.Abort()
 
@@ -348,23 +347,23 @@ def dataset(
 @click.option('--guid', required=False, default="", type=str, show_default=False)
 @click.option('--name', required=True)
 @click.option('--run-by', required=True)
-@click.option('--called-by', required=True)
+@click.option('--command', required=False)
 @click.option('--date-created', required=True)
 @click.option('--description', required=True)
-@click.option('--used-software', required=True)
-@click.option('--used-dataset', required=True)
-@click.option('--generated', required=True)
+@click.option('--used-software', required=False, multiple=True)
+@click.option('--used-dataset', required=False, multiple=True)
+@click.option('--generated', required=False, multiple=True)
 def computation(
     rocrate_path: pathlib.Path,
     guid: str,
     name: str,
     run_by: str,
-    called_by: str,
+    command: Optional[Union[str, List[str]]],
     date_created: str,
     description: str,
-    used_software: List[str],
-    used_dataset: List[str],
-    generated: List[str]
+    used_software,
+    used_dataset,
+    generated
 ):
 
     metadata_path = rocrate_path / "ro-crate-metadata.json"
@@ -379,6 +378,7 @@ def computation(
 
     # initilize the model with the required properties
     try:
+
         computation_model = Computation(   
             **{
             "@id": guid,
@@ -419,4 +419,14 @@ def computation(
         click.echo(e)
         click.Abort()
 
+###############################################
+# Interactive propmpt for missing metadata
+###############################################
 
+@rocrate.group('add-prompt')
+def add_prompt():
+    """
+    Add an element with interactive prompts for input from the user.
+    Temporary as individual command will be merged as a seperate flag
+    """
+    pass
