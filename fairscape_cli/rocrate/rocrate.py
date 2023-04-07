@@ -245,11 +245,7 @@ def software(
             json_object = json.dumps(rocrate_metadata, indent=2)
             f.write(json_object)
 
-
-        click.echo("Added Software")
-        click.echo(
-            json.dumps(software_model.dict(by_alias=True), indent=2)
-        )
+        click.echo(guid)
 
 
     except ValidationError as e:
@@ -379,11 +375,7 @@ def dataset(
         with metadata_path.open("w") as f:
             json.dump(rocrate_metadata, f, indent=2)
 
-        click.echo("Added Dataset")
-
-        click.echo(
-            json.dumps(dataset_model.dict(by_alias=True), indent=2)
-        )
+        click.echo(guid)
 
     except ValidationError as e:
         click.echo("Software Validation Error")
@@ -461,10 +453,11 @@ def computation(
         with metadata_path.open("w") as rocrate_metadata_file:
             json.dump(rocrate_metadata, rocrate_metadata_file, indent=2)
 
-        click.echo("Added Computation")
-        click.echo(
-            json.dumps(computation_model.dict(by_alias=True), indent=2)
-        )
+        click.echo(guid)
+        #click.echo("Added Computation")
+        #click.echo(
+        #    json.dumps(computation_model.dict(by_alias=True), indent=2)
+        #)
 
 
     except ValidationError as e:
