@@ -74,6 +74,21 @@ files = [
 test = ["pytest (>=6)"]
 
 [[package]]
+name = "fairscape-models"
+version = "0.1.2"
+description = "Pydantic models for B2AI metadata validation"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "fairscape-models-0.1.2.tar.gz", hash = "sha256:a8e4a479740b5a2987cdf302e34f23ea829ddbac2d12417ec0db1d7d5738a924"},
+    {file = "fairscape_models-0.1.2-py3-none-any.whl", hash = "sha256:4b6b4f22428fd7ac7a845dfcf34e723480ae2d93daa9b400e0a012149a0c1ccb"},
+]
+
+[package.dependencies]
+pydantic = "*"
+
+[[package]]
 name = "frozendict"
 version = "2.3.6"
 description = "A simple immutable dictionary"
@@ -363,4 +378,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "4837f319e95d5845c7f117b6a6f02c8d77a06691bdd2cc723f64a8950d0ec81a"
+content-hash = "b7dab65c96334f7fb1b1d8a868f351f2ec7c956cb97eb04441f7c93ff2c7fdb0"
