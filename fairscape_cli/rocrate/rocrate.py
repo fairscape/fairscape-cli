@@ -175,37 +175,62 @@ def software(
     if guid == "":
         guid = generate_id(metadata_path, name, "Software")
 
-    # TODO check that destination path is in the rocrate
-
-    # check if the source file exists 
-    source_path = pathlib.Path(source_filepath)
-    destination_path = pathlib.Path(destination_filepath)
-
-    if source_path.exists() != True:
-        click.echo(f"sourcePath: {source_path} Doesn't Exist")
-        click.Abort() 
-
 
     # initilize the model with the required properties
     try:
-        software_model = Software(   
-            **{
-            "@id": guid,
-            "@type": "https://w3id.org/EVI#Software",
-            "url": url,
-            "name": name,
-            "author": author,
-            "dateModified": date_modified,
-            "description": description,
-            "version": version,
-            "associatedPublication": associated_publication,
-            "additionalDocumentation": additional_documentation,
-            "format": file_format,
-            "usedByComputation": used_by_computation,
-            "contentUrl": "file://" + str(destination_path)
-            }
-        )
 
+        # if moving local files
+        if source_filepath !=  "" and destination_filepath != "":
+
+            # check if the source file exists 
+            source_path = pathlib.Path(source_filepath)
+            destination_path = pathlib.Path(destination_filepath)
+
+            if source_path.exists() != True:
+                click.echo(f"sourcePath: {source_path} Doesn't Exist")
+                click.Abort() 
+            
+            # TODO check that destination path is in the rocrate
+
+            software_model = Software(   
+                **{
+                "@id": guid,
+                "@type": "https://w3id.org/EVI#Software",
+                "url": url,
+                "name": name,
+                "author": author,
+                "dateModified": date_modified,
+                "description": description,
+                "version": version,
+                "associatedPublication": associated_publication,
+                "additionalDocumentation": additional_documentation,
+                "format": file_format,
+                "usedByComputation": used_by_computation,
+                "contentUrl": "file://" + str(destination_path)
+                }
+            )
+
+            # copy the file into the destinationPath
+            shutil.copy(source_path, destination_path)
+
+        else:
+            software_model = Software(   
+                **{
+                "@id": guid,
+                "@type": "https://w3id.org/EVI#Software",
+                "url": url,
+                "name": name,
+                "author": author,
+                "dateModified": date_modified,
+                "description": description,
+                "version": version,
+                "associatedPublication": associated_publication,
+                "additionalDocumentation": additional_documentation,
+                "format": file_format,
+                "usedByComputation": used_by_computation
+                }
+            )
+            
         # open the ro-crate-metadata.json
         with metadata_path.open("r") as rocrate_metadata_file:
             rocrate_metadata = json.load(rocrate_metadata_file)
@@ -220,6 +245,7 @@ def software(
             json_object = json.dumps(rocrate_metadata, indent=2)
             f.write(json_object)
 
+
         click.echo("Added Software")
         click.echo(
             json.dumps(software_model.dict(by_alias=True), indent=2)
@@ -231,8 +257,6 @@ def software(
         click.echo(e)
         click.Abort()
 
-    # copy the file into the destinationPath
-    shutil.copy(source_path, destination_path)
 
     # TODO add to cache
 
@@ -283,40 +307,66 @@ def dataset(
     if guid == "":
         guid = generate_id(metadata_path, name, "Dataset")
 
-    # TODO check that destination path is in the rocrate
-    destination_path = pathlib.Path(destination_filepath)
-    source_path = pathlib.Path(source_filepath) 
-
-    # check if the source file exists 
-    if source_path.exists() != True:
-        click.echo(f"sourcePath: {sourcePath} Doesn't Exist")
-        clic.Abort()
 
     
     # initilize the model with the required properties
     try:
 
-        dataset_model = Dataset(   
-            **{
-            "@id": guid,
-            "@type": "https://w3id.org/EVI#Dataset",
-            "url": url,
-            "author": author,
-            "name": name,
-            "description": description,
-            "datePublished": date_published,
-            "version": version,
-            "associatedPublication": associated_publication,
-            "additionalDocumentation": additional_documentation,
-            "format": data_format,
-            "derivedFrom": derived_from,
-            "usedBy": used_by,
-            "contentUrl": "file://" + str(destination_path)
-            }
-        )
+        if destination_filepath != "" and source_filepath != "":
+            
+
+            # TODO check that destination path is in the rocrate
+            destination_path = pathlib.Path(destination_filepath)
+            source_path = pathlib.Path(source_filepath) 
+
+            # check if the source file exists 
+            if source_path.exists() != True:
+                click.echo(f"sourcePath: {sourcePath} Doesn't Exist")
+                clic.Abort()
+
+            dataset_model = Dataset(   
+                **{
+                "@id": guid,
+                "@type": "https://w3id.org/EVI#Dataset",
+                "url": url,
+                "author": author,
+                "name": name,
+                "description": description,
+                "datePublished": date_published,
+                "version": version,
+                "associatedPublication": associated_publication,
+                "additionalDocumentation": additional_documentation,
+                "format": data_format,
+                "derivedFrom": derived_from,
+                "usedBy": used_by,
+                "contentUrl": "file://" + str(destination_path)
+                }
+            )
+
+            # copy the file into the destinationPath
+            shutil.copy(source_path, destination_path)
+
+        else:
+            dataset_model = Dataset(   
+                **{
+                "@id": guid,
+                "@type": "https://w3id.org/EVI#Dataset",
+                "url": url,
+                "author": author,
+                "name": name,
+                "description": description,
+                "datePublished": date_published,
+                "version": version,
+                "associatedPublication": associated_publication,
+                "additionalDocumentation": additional_documentation,
+                "format": data_format,
+                "derivedFrom": derived_from,
+                "usedBy": used_by
+                }
+            )
+        
 
         # open the ro-crate-metadata.json
-        click.echo("READING ROCRATE METADATA")
         with metadata_path.open("r") as rocrate_metadata_file:
             rocrate_metadata = json.load(rocrate_metadata_file)
 
@@ -340,8 +390,6 @@ def dataset(
         click.echo(e)
         click.Abort()
     
-    # copy the file into the destinationPath
-    shutil.copy(source_path, destination_path)
 
     # TODO add to cache
     
