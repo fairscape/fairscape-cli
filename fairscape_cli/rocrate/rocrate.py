@@ -1,8 +1,9 @@
 import click
 import pathlib
 import shutil
-from pydantic import ValidationError
 import json
+from pydantic import ValidationError
+
 from fairscape_cli.models import (
     Dataset,
     Software,
@@ -109,6 +110,7 @@ def create(
         json.dump(rocrate_metadata, metadata_file, indent=2)
     
     click.echo(f"Created RO Crate at {crate_path}")
+    click.echo(json.dumps(rocrate_metadata, indent=2))
 
     # TODO add metadata to cache
 
@@ -213,13 +215,14 @@ def software(
             # add to the @graph
             rocrate_metadata['@graph'].append(software_model.dict(by_alias=True))
         
-            # overwrite the ro-crate-metadata.json file
-            with metadata_path.open("w") as f:
-                json.dump(rocrate_metadata, f, indent=2)
+        # overwrite the ro-crate-metadata.json file
+        with metadata_path.open("w") as f:
+            json_object = json.dumps(rocrate_metadata, indent=2)
+            f.write(json_object)
 
         click.echo("Added Software")
         click.echo(
-            json.dumps(software_model.json(by_alias=True), indent=2)
+            json.dumps(software_model.dict(by_alias=True), indent=2)
         )
 
 
@@ -313,6 +316,7 @@ def dataset(
         )
 
         # open the ro-crate-metadata.json
+        click.echo("READING ROCRATE METADATA")
         with metadata_path.open("r") as rocrate_metadata_file:
             rocrate_metadata = json.load(rocrate_metadata_file)
 
@@ -328,18 +332,19 @@ def dataset(
         click.echo("Added Dataset")
 
         click.echo(
-            json.dumps(dataset_model.json(by_alias=True), indent=2)
+            json.dumps(dataset_model.dict(by_alias=True), indent=2)
         )
 
     except ValidationError as e:
         click.echo("Software Validation Error")
         click.echo(e)
         click.Abort()
-
-    # TODO add to cache
     
     # copy the file into the destinationPath
     shutil.copy(source_path, destination_path)
+
+    # TODO add to cache
+    
 
 
 @add.command('computation')
@@ -410,7 +415,7 @@ def computation(
 
         click.echo("Added Computation")
         click.echo(
-            json.dumps(computation_model.json(by_alias=True), indent=2)
+            json.dumps(computation_model.dict(by_alias=True), indent=2)
         )
 
 

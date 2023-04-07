@@ -1,5 +1,7 @@
 import os
 import sys
+import pathlib
+import json
 
 sys.path.insert(
     0, 
@@ -92,18 +94,23 @@ Fold 1 proximities:
 
 class TestROCrateSuccess():
     runner = CliRunner()
+    rocrate_path = "./tests/example_rocrate"
+
     
    
     def test_rocrate_create(self): 
 
+        crate_id = "ark:59853/UVA/B2AI/rocrate_test"
+        crate_name = 'test rocrate'
+
         create_rocrate = [
             "rocrate", 
             "create", 
-            "--guid ark:59853/UVA/B2AI/rocrate_test",
-            "--name 'test rocrate'",
+            f"--guid '{crate_id}'",
+            f"--name '{crate_name}'",
             "--organization-name 'UVA'",
             "--project-name 'B2AI'",
-            "'./tests/example_rocrate'",
+            f"{self.rocrate_path}"
         ]
         
         result = self.runner.invoke(
@@ -115,7 +122,14 @@ class TestROCrateSuccess():
         assert result.exit_code == 0
         assert "Created RO Crate at" in result.stdout
 
-        # TODO check that the ro-crate-metadata.json is correct
+        # check that the ro-crate-metadata.json is correct
+        rocrate_metadata_path = self.rocrate_path + "/ro-crate-metadata.json"
+
+        with open(rocrate_metadata_path, 'r') as metadata_file:
+            rocrate_metadata = json.load(metadata_file)
+
+        assert rocrate_metadata['@id'] == crate_id
+        assert rocrate_metadata['name'] == crate_name
 
 
     def test_add_dataset(self):

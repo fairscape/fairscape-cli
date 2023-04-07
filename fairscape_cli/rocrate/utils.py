@@ -1,4 +1,5 @@
 import pathlib
+import json
 
 def generate_id(rocrate_metadata_path: pathlib.Path, name: str, metadata_type: str)-> str: 
     """
@@ -13,6 +14,16 @@ def generate_id(rocrate_metadata_path: pathlib.Path, name: str, metadata_type: s
     return f"{rocrate_id}/{name.replace(' ', '_')}-{metadata_type}"
 
 
+class DestinationCrateError(Exception):
+    
+    def __init__(self, crate_path, destination_path):
+        self.message = "\n".join([
+            "Destination Filepath isnt inside the Crate",
+            f"ROCrate Path: {str(crate_path)}", 
+            f"DestinationPath: {str(destination_path)}"
+            ])
+
+
 def inside_crate(rocrate_path: pathlib.Path, destination_path: pathlib.Path):
     """
     Function to determine if the destination_path for a file is inside the crate
@@ -24,7 +35,6 @@ def inside_crate(rocrate_path: pathlib.Path, destination_path: pathlib.Path):
     for crate_part, dest_part in zip(rocrate_path_abolute.parts, 
         destination_path_absolute.parts):
         if crate_part != dest_part:
-            raise Exception("Destination Filepath isnt inside the Crate") 
+            raise DestinationCrateError(rocrate_path, destination_path) 
     
-    pass
 
