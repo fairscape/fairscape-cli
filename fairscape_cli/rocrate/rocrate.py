@@ -41,11 +41,12 @@ def validate():
 def zip():
     pass
 
+
 @rocrate.command('create')
 @click.option('--guid', required=False, type=str, default="", show_default=False)
-@click.option('--name', required=True, type=str)
-@click.option('--organization-name', required=True, type=str)
-@click.option('--project-name', required=True, type=str)
+@click.option('--name', required=True, type=str, prompt=True)
+@click.option('--organization-name', required=True, type=str, prompt=True)
+@click.option('--project-name', required=True, type=str, prompt=True)
 @click.argument('crate-path', type=click.Path(exists=False, path_type=pathlib.Path))
 def create(
     guid: str,
@@ -133,11 +134,11 @@ def add():
 @add.command('software')
 @click.argument('rocrate-path', type=click.Path(exists=True, path_type=pathlib.Path))
 @click.option('--guid', required=False, type=str, default="", show_default=False)
-@click.option('--name', required=True)
-@click.option('--author', required=True)
-@click.option('--version', required=True)
-@click.option('--description', required=True)
-@click.option('--file-format', required=True)
+@click.option('--name', required=True, prompt=True)
+@click.option('--author', required=True, prompt=True)
+@click.option('--version', required=True, prompt=True)
+@click.option('--description', required=True, prompt=True)
+@click.option('--file-format', required=True, prompt=True)
 @click.option('--url', required=False)
 @click.option('--source-filepath', required=False)
 @click.option('--destination-filepath', required=False)
@@ -260,15 +261,15 @@ def software(
 @add.command('dataset')
 @click.argument('rocrate-path', type=click.Path(exists=True, path_type=pathlib.Path))
 @click.option('--guid', required=False, default="", type=str)
-@click.option('--name', required=True)
+@click.option('--name', required=True, prompt=True)
 @click.option('--url', required=False)
-@click.option('--author', required=True)
-@click.option('--version', required=True)
-@click.option('--date-published', required=True)
-@click.option('--description', required=True)
-@click.option('--data-format', required=True)
-@click.option('--source-filepath', required=True)
-@click.option('--destination-filepath', required=True)
+@click.option('--author', required=True, prompt=True)
+@click.option('--version', required=True, prompt=True)
+@click.option('--date-published', required=True, prompt=True)
+@click.option('--description', required=True, prompt=True)
+@click.option('--data-format', required=True, prompt=True)
+@click.option('--source-filepath', required=False, prompt=True)
+@click.option('--destination-filepath', required=False, prompt=True)
 @click.option('--used-by', required=False, multiple=True)
 @click.option('--derived-from', required=False, multiple=True)
 @click.option('--associated-publication', required=False)
@@ -390,11 +391,11 @@ def dataset(
 @add.command('computation')
 @click.argument('rocrate-path', type=click.Path(exists=True, path_type=pathlib.Path))
 @click.option('--guid', required=False, default="", type=str, show_default=False)
-@click.option('--name', required=True)
-@click.option('--run-by', required=True)
-@click.option('--command', required=False)
-@click.option('--date-created', required=True)
-@click.option('--description', required=True)
+@click.option('--name', required=True, prompt=True)
+@click.option('--run-by', required=True, prompt=True)
+@click.option('--command', required=False, prompt=True)
+@click.option('--date-created', required=True, prompt=True)
+@click.option('--description', required=True, prompt=True)
 @click.option('--used-software', required=False, multiple=True)
 @click.option('--used-dataset', required=False, multiple=True)
 @click.option('--generated', required=False, multiple=True)
@@ -465,14 +466,3 @@ def computation(
         click.echo(e)
         click.Abort()
 
-###############################################
-# Interactive propmpt for missing metadata
-###############################################
-
-@rocrate.group('add-prompt')
-def add_prompt():
-    """
-    Add an element with interactive prompts for input from the user.
-    Temporary as individual command will be merged as a seperate flag
-    """
-    pass

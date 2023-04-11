@@ -55,7 +55,6 @@ test_software = {
     "usedByComputation": ["ARK:compute_standard_proximities.1/f9aa5f3f-665a-4ab9-8879-8d0d52f05265"],
     "contentUrl": "https://github.com/idekerlab/MuSIC/blob/master/calibrate_pairwise_distance.py"
 }
-
 test_computation = {
     "id": "ARK:average_predicted_protein_proximities.1/c295abcd-8ad8-44ff-95e3-e5e65f1667da",
     "name": "average predicted protein proximities",
@@ -169,7 +168,7 @@ class TestROCrateSuccess():
         add_software = [
             "rocrate",
             "add",
-            "dataset",
+            "software",
             "--guid ark:59853/UVA/B2AI/rocrate_test/music_software",
             "--name MuSIC",
             f"--author '{test_software['author']}'",
