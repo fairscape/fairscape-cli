@@ -1,0 +1,70 @@
+{
+	"@id": "ark:99999/b2ai_test_schemas",
+	"@context": {
+		"csvw": "http://www.w3.org/ns/csvw#",
+		"evi": "https://w3id.org/EVI",
+		"@vocab": "https://schema.org"
+	},
+	"@graph": [
+		{
+		"csvw:tableSchema": {
+			"@id": "ark:99999/schema/baitlist_schema",
+			"name": "baitlist schema",
+			"csvw:columns": [
+
+				{
+					"name": "GeneSymbol",
+					"@type": "csvw:",
+					"description": "Gene Symbol for Bait Gene",
+					"csvw:datatype": "string",
+					"csvw:number": 0,
+					"csvw:required": true,
+					"csvw:valueURL": "http://edamontology.org/data_1026"
+
+				},
+
+				{
+					"name": "GeneID",
+					"description": "Internal Gene ID for Lundberg Lab Bait Gene",
+					"csvw:datatype": "integer",
+					"csvw:number": 1,
+					"csvw:required": true,
+					"csvw:valueURL": "http://edamontology.org/data_2295"
+				},
+
+				{
+					"name": "# Interactors",
+					"description": "number of prey proteints attracted to the bait protien",
+					"csvw:datatype": "integer",
+					"csvw:number": 2,
+					"csvw:reqruired": true,
+					"csvw:valueURL": null
+				}
+			],
+			"description": "Baitlist Tables contain summary information for each bait protein and their number of detected interactions",
+			"schemaUrl": "https://example.org/ark:99999/schema/baitlist_schema",
+			"foreignKeys": [],
+			"dialect": {
+				"header": true
+			}
+			}
+		},
+
+		{
+		"tableSchema": {
+			"@id": "ark:99999/schema/edgelist_schema",
+			"name": "edgelist schema",
+			"columns": [],
+			"description": "Edge Tables contain the each detected interaction between each bait protien and prey protiens",
+			"schemaUrl": "https://example.org/ark:99999/schema/edgelist_schema",
+			"foreignKeys": []
+		}
+		},
+
+		{
+			"tableSchema": {
+				"@id": ""
+			}
+		}
+	]
+}
