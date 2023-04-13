@@ -1,16 +1,83 @@
 import pydantic
+from enum import Enum
 from typing import (
 	Optional,
 	List,
 	Union
 )
 
+import numpy as np
+import pandas as pd
+
+class DatatypeEnum(str, Enum):
+	"""
+	A Datatype Enum for supported types for validation
+	
+	These Choices are to be expanded until covering the full spec from [CSV on the Web](https://w3c.github.io/csvw/metadata/#datatypes)
+	These datatypes are defined in [XMLSchema](http://www.w3.org/2001/XMLSchema#) as anyAtomicType
+
+	For validation implementation the following datatypes are specified
+	- number with identifier http://www.w3.org/2001/XMLSchema#double
+	- binary with identifier http://www.w3.org/2001/XMLSchema#base64Binary
+	- datetime with identifier http://www.w3.org/2001/XMLSchema#dateTime 
+	- any with identifier http://www.w3.org/2001/XMLSchema#anyAtomicType
+	- xml a subtype of string  http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral 
+	- html a subtype of string  http://www.w3.org/1999/02/22-rdf-syntax-ns#HTML
+	- json a subtype of string http://www.w3.org/ns/csvw#JSON 
+
+	"""
+	string = 'string'
+	integer = 'integer'
+	float = 'float'
+	datetime = 'datetime'
+	binary = 'binary'
+	any = 'any'
+	xml = 'xml'
+	json = 'json'
+	html = 'html'
+
+
+class DatatypeSchema(pydantic.BaseModel):
+	"""
+	A Schema for Datatypes which allows restricting format or value ranges
+
+	The full specification for 
+
+	Attributes
+	----------
+	name: str 
+		(dc:title) title of the datatype 
+	description: str
+		(dc:title) description for the  
+	base: DatatypeEnum
+		(csvw:base) the base datatype of this datatype i.e. str, float, int
+	format: str
+		(csvw:format) the restriction on the base datatype 
+	"""
+	name: str
+	metadataType: str = "csvw:Datatype"
+	description: str
+	base: DatatypeEnum
+	format: str
+	length: Optional[int]
+	minLength: Optional[int]
+	maxLength: Optional[int]
+	min: Optional[Union[int, float]]
+	maximum: Optional[Union[int, float]]
+
+
 class ColumnSchema(pydantic.BaseModel):
 	"""
+	A Schema for Columns on Tabular Data
 
-	name
-	url: url about the value for this column	
-	cells: list of cells in the column, a Column MUST contain one cell from each row in the table
+	Attributes
+	---------
+	name: str
+		(dc:title) Name for this Column Schema
+	url: str
+		(dc:url) url about the value for this column	
+	cells: list
+		list of cells in the column, a Column MUST contain one cell from each row in the table
 	datatype: the expected datatype for the value of cells in this column
 	default: default value for cells whose string value is an empty string
 	null: the string or strings which cause the value of a cell to have a value to be null
@@ -27,33 +94,45 @@ class ColumnSchema(pydantic.BaseModel):
 	name: str
 	metadataType: str = "ColumnSchema"
 	aboutURL: Optional[str]
+	description: str
 	cells: list
-	datatype: str
+	datatype: Union[DatatypeEnum, DatatypeSchema]
 	default: str
 	null: str
 	ordered: bool
 	number: int
-	propertyURL: str
 	valueURL: str
 	required: bool
 	table: list[str]
 	titles: list[str]
 
+	def validate(self, data) -> bool:
 
-class DatatypeSchema(pydantic.BaseModel):
-	name: str
-	
+		# if required check for no missing values
+		if self.required:
+			
+			if data == np.nan:
+				return False
+
+		# check that string value is not 
+
+
+
+
 
 class RowSchema(pydantic.BaseModel):
 	name: str
 
 class TabularDataSchema(pydantic.BaseModel):
+	"""
+	Schema for 	
+	"""
 	guid: str
 	context: dict
 	metadataType: str = "TabularDataSchema"
+	url: str
 	name: str
 	columns: List[ColumnSchema]
-	tableDirection: str
 	foreignKeys: list
 	description: str
 	rows: List[RowSchema]
