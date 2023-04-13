@@ -10,7 +10,7 @@ sys.path.insert(
 )
 
 from click.testing import CliRunner
-from fairscape_cli.__main__ import cli as fairscape_cli_app
+from fairscape_cli.main import cli as fairscape_cli_app
 
 runner = CliRunner()
 

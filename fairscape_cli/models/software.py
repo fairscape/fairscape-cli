@@ -4,8 +4,5 @@ from typing import (
 )
 import fairscape_models
 
-
-
-
 class Software(fairscape_models.Software):
     name: str

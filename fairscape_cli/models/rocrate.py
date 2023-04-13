@@ -1,8 +1,23 @@
+import pathlib
 from fairscape_models import ROCrate as ROCrateModel
+from fairscape_cli.models import (
+    Software,
+    Dataset,
+    Computation
+)
 from prettytable import PrettyTable
+from typing import (
+    Optional,
+    Union,
+    List
+)
 
 class ROCrate(ROCrateModel):
-    path: str
+    guid: Optional[str]
+    metadataType: str = "https://schema.org/Dataset"
+    name: Optional[str]
+    path: pathlib.Path
+    metadataGraph: Optional[List[Union[Dataset,Software, Computation]]]
 
     def print_contents(self):
         rocrate_table = PrettyTable()
@@ -19,5 +34,4 @@ class ROCrate(ROCrateModel):
             )
 
         return rocrate_table
-
 
