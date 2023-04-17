@@ -15,8 +15,11 @@
 				{
 					"name": "GeneSymbol",
 					"@type": "csvw:",
-					"description": "Gene Symbol for Bait Gene",
-					"csvw:datatype": "string",
+					"description": "Gene Symbol for Bait Gene",	
+					"csvw:datatype": {
+						"base": "string",
+						"format": "[A-Z0-9]*"
+					},
 					"csvw:number": 0,
 					"csvw:required": true,
 					"csvw:valueURL": "http://edamontology.org/data_1026"
@@ -35,7 +38,10 @@
 				{
 					"name": "# Interactors",
 					"description": "number of prey proteints attracted to the bait protien",
-					"csvw:datatype": "integer",
+					"csvw:datatype": {
+						"base": "integer",
+						"minimum": 0
+					},
 					"csvw:number": 2,
 					"csvw:reqruired": true,
 					"csvw:valueURL": null
@@ -54,7 +60,55 @@
 		"tableSchema": {
 			"@id": "ark:99999/schema/edgelist_schema",
 			"name": "edgelist schema",
-			"columns": [],
+			"columns": [
+				{
+					"name": "GeneID1",
+					"description": "Interal Gene ID for gene from the Lundberg Lab. This gene in this column is the bait gene",
+					"datatype": {
+						"base": "integer",
+						"maximum": 100000,
+						"minimum": 1
+					},
+					"csvw:number": 0,
+					"csvw:required": true,
+					"csvw:valueURL": "http://edamontology.org/data_2295"
+				},
+				{
+					"name": "Symbol1",
+					"description": "Gene Symbol for the Bait Gene",
+					"datatype": {
+						"base": "string",
+						"format": "[A-Z0-9]*"
+					},
+					"csvw:number": 1,
+					"csvw:required": true,
+					"csvw:valueURL": "http://edamontology.org/data_1026"
+				},
+				{
+					"name": "GeneID2",
+					"description": "Internal Gene ID for the Lundberg Lag. The gene id in this column identifies the prey protein",
+					"datatype": {
+						"base": "integer",
+						"maximum": 100000,
+						"minimum": 1
+					},
+					"csvw:number": 2,
+					"csvw:required": true,
+					"csvw:valueURL": "http://edamontology.org/data_2295"
+				},
+				{
+					"name": "Symbol2",
+					"description": "Gene symbol for the prey protien in the detected interaction.",
+					"datatype": {
+						"base": "string",
+						"format": "[A-Z0-9]*"
+					},
+					"csvw:number": 3,
+					"csvw:required": true,
+					"csvw:valueURL": "http://edamontology.org/data_1026"
+				}
+
+			],
 			"description": "Edge Tables contain the each detected interaction between each bait protien and prey protiens",
 			"schemaUrl": "https://example.org/ark:99999/schema/edgelist_schema",
 			"foreignKeys": []
@@ -63,7 +117,109 @@
 
 		{
 			"tableSchema": {
-				"@id": ""
+				"@id": "ark:99999/schema/samples_schema",
+				"name": "samples unique genes schema",
+				"columns": [
+					{
+						"name": "filename",
+						"description": "",
+						"number": 0,
+						"required": true,
+						"datatype": {
+							"base": "string",
+							"format": "/archive/[0-9]*/[0-9]*_[A-Z][0-9]*_[0-9]*_"
+						}
+					},
+					{
+						"name": "if_plate_id",
+						"description": "Plate Identifier for the immunoflourecent experiment",
+						"number": 1,
+						"required": true,
+						"datatype": {
+							"base": "string"
+						}
+					},
+					{
+						"name": "position",
+						"description": "Position in the given plate for the immunoflourecent experiment",
+						"number": 2,
+						"required": true,
+						"datatype": {
+							"base": "string"
+						}
+					},
+					{
+						"name": "sample",
+						"description": "Sample Identifier for the immunoflourecent image stain",
+						"number": 3,
+						"required": true,
+						"datatype": {
+							"base": "string"
+						}
+					},
+					{
+						"name": "status",
+						"description": "Status code for the experiment, quality control score?",
+						"number": 4,
+						"required": true,
+						"datatype": {
+							"base": "string"
+						}
+					},
+					{
+						"name": "locations",
+						"description": "Cellular Compartments where this protien naturally occurs? or where staining detected it?",
+						"number": 5,
+						"required": true,
+						"datatype": {
+							"base": "string"
+						}
+					},
+					{
+						"name": "antibody",
+						"description": "Human Protien Atlas Identifier for the Antibody used in this given experiment",
+						"number": 6,
+						"required": true,
+						"datatype": {
+							"base": "string"
+						}
+					},
+					{
+						"name": "ensembl_ids",
+						"description": "Ensembl Gene Identifier for the gene of the protien targeted with antibody staining in this experiment",
+						"number": 7,
+						"required": true,
+						"datatype": {
+							"base": "string",
+							"format": "ENS[A-Z]*[FPTG][0-9]{11}"
+						},
+						"valueURL": "http://edamontology.org/data_2610"
+					},
+					{
+						"name": "gene_names",
+						"description": "Gene Symbol for the gene of the protien targeted in this experiment",
+						"number": 8,
+						"required": true,
+						"datatype": {
+							"base": "string"
+						}
+					}
+				],
+				"description": "The Samples table contain metadata about specific experiments"
+			}
+		},
+
+		{
+			"imageSchema": {
+				"@id": "ark:99999/schema/immunofluorescence_image_schema",
+				"description": "Schema for validating the ",
+				"format": "jpg",
+				"height": 10000,
+				"width": 10000,
+				"colorspace": "RGB",
+				"color_subsampling": "444"
+				}
+
 			}
 		}
 	]
