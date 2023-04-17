@@ -9,6 +9,67 @@ from typing import (
 import numpy as np
 import pandas as pd
 
+class ImageFormatEnum(str, Enum):
+	"""
+	Enum of Options for the supported image types for validation	
+
+	"""
+	jpeg = "jpeg"
+	jpg = "jpg"
+	tiff = "tiff"
+	png = "png"
+
+
+class ColorspaceEnum(str, Enum):
+	"""
+	Enum of supported Image Colorspaces for validation
+
+	'RGB', 'BGR', 'RGBX', 'BGRX', 'XBGR', 'XRGB',
+	'GRAY', 'RGBA', 'BGRA', 'ABGR', 'ARGB';
+	'CMYK'
+	"""
+	rgb  = "RGB"
+	bgr  = "BGR"
+	rgbx = "RGBX"
+	bgrx = "BGRX"
+	xbgr = "XBGR"
+	xrgb = "XRGB"
+	gray = "GRAY"
+	rgba = "RGBA"
+	bgra = "BGRA"
+	abgr = "ABGR"
+	argb = "ARGB"
+	cmyk = "CMYK"
+
+
+class ImageSchema(pydantic.BaseClass):
+	"""
+	Image Schema for validating images based on format.
+	May extend to support EXIF metadata on images
+
+	Example Instance
+	-------
+	"imageSchema": {
+				"@id": "ark:99999/schema/immunofluorescence_image_schema",
+				"description": "Schema for validating the ",
+				"format": "jpg",
+				"height": 10000,
+				"width": 10000,
+				"colorspace": "RGB",
+				"color_subsampling": "444"
+				}
+	
+	"""
+	guid: str
+	description: str
+	format: ImageFormatEnum
+	height: int
+	width: int
+	colorspace: ColorspaceEnum
+	color_subsampling: str
+
+
+
 class DatatypeEnum(str, Enum):
 	"""
 	A Datatype Enum for supported types for validation
