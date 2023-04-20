@@ -63,11 +63,11 @@ class ImageSchema(pydantic.BaseModel):
 	"""
 	guid: str
 	description: str
-	format: ImageFormatEnum
+	imageFormat: ImageFormatEnum
 	height: int
 	width: int
 	colorspace: ColorspaceEnum
-	color_subsampling: str
+	colorSubsampling: Optional[str]
 
 
 class ImageValidation():
@@ -84,11 +84,15 @@ class ImageValidation():
         if image_path.exists() != True:
             raise Exception
 
+
+
+    def validate(self) -> None:
+
         # check that image path is one of the supported filetypes
-        ImageFormatEnum(image_path.suffix.replace(".", ""))
+        image_format = ImageFormatEnum(self.ImagePath.suffix.replace(".", "")) 
 
-
-    def validate(self):
+        # check that the image format is valid to the schema
+        assert image_format == self.ImageSchema.imageFormat
 
         # read in image metadata
         image_metadata = iio.imeta(self.ImagePath)

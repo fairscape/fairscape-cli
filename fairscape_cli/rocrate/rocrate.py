@@ -44,9 +44,9 @@ def zip():
 
 @rocrate.command('create')
 @click.option('--guid', required=False, type=str, default="", show_default=False)
-@click.option('--name', required=True, type=str, prompt=True, prompt = "ROCrate Name")
-@click.option('--organization-name', required=True, type=str, prompt=True, prompt = "Organization Name")
-@click.option('--project-name', required=True, type=str, prompt=True, prompt = "Project Name")
+@click.option('--name', required=True, type=str, prompt = "ROCrate Name (e.g. B2AI_ROCRATE)")
+@click.option('--organization-name', required=True, type=str, prompt = "Organization Name")
+@click.option('--project-name', required=True, type=str, prompt = "Project Name")
 @click.argument('crate-path', type=click.Path(exists=False, path_type=pathlib.Path))
 def create(
     guid: str,
@@ -55,6 +55,8 @@ def create(
     project_name: str,
     crate_path: pathlib.Path, 
 ): 
+    '''
+    '''
 
 
     organization_guid = f"ark:/{organization_name.replace(' ', '_')}"
@@ -122,7 +124,7 @@ def create(
 # RO Crate add subcommands
 ##########################
 
-def add_element_ro_crate():
+def add_element_ro_crate(element: Union[Dataset,Computation,Software], ro_crate: pathlib.Path):
     pass
 
 # RO Crate add subcommands

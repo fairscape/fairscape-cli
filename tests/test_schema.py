@@ -1,0 +1,26 @@
+import os
+import sys
+
+sys.path.insert(
+    0, 
+    os.path.abspath(
+        os.path.join(os.path.dirname(__file__), 
+        '..')
+    )
+)
+
+from click.testing import CliRunner
+from fairscape_cli.main import cli as fairscape_cli_app
+
+
+class TestSchemaValidate():
+
+    def test_validate_image(self):
+        pass
+
+    def test_validate_tabular(self):
+        pass
+
+class TestSchemaCLI():
+    def test_cli(self):
+        pass
