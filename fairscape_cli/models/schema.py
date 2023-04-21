@@ -95,20 +95,22 @@ class ImageValidation():
         assert image_format == self.ImageSchema.imageFormat
 
         # read in image metadata
-        image_metadata = iio.imeta(self.ImagePath)
+        image_metadata = iio.immeta(self.ImagePath)
 
         # contains encoding mode i.e. RGB
         colorspace = ColorspaceEnum(image_metadata["mode"])
         assert colorspace == self.ImageSchema.colorspace
 
-        # read in standardized image properties
-        image_properties = iio.improps(self.ImagePath)
         
-        # image_properties.shape contain (height, width, depth)
-        height, width, _ = image_properties.shape
+        # image_metadata['shape'] contains dimension tuple (height, width, depth)
+        image_shape = image_metadata.get("shape")
+
+        height = image_shape[0]
+        width  = image_shape[1]
+
 
         assert height == self.ImageSchema.height
-        assert height == self.ImageSchema.width
+        assert width == self.ImageSchema.width
 
 
 
