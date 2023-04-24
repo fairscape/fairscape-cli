@@ -193,11 +193,11 @@ class DatatypeSchema(pydantic.BaseModel):
 	format: str
 		(csvw:format) the restriction on the base datatype 
 	"""
-	name: str
+	name: Optional[str]
 	metadataType: str = "csvw:Datatype"
-	description: str
+	description: Optional[str]
 	base: DatatypeEnum
-	format: str
+	format: Optional[str]
 	length: Optional[int]
 	minLength: Optional[int]
 	maxLength: Optional[int]
@@ -234,15 +234,15 @@ class ColumnSchema(pydantic.BaseModel):
 	metadataType: str = "ColumnSchema"
 	aboutURL: Optional[str]
 	description: str
-	cells: list
+	cells: Optional[list]
 	datatype: Union[DatatypeEnum, DatatypeSchema]
-	default: str
-	null: str
-	ordered: bool
+	default: Optional[str]
+	null: Optional[str]
+	ordered: Optional[bool]
 	number: int
-	valueURL: str
+	valueURL: Optional[str]
 	required: bool
-	table: list[str]
+	table: Optional[list[str]]
 	titles: list[str]
 
 	def validate_column(self, data) -> bool:
@@ -267,15 +267,15 @@ class TabularDataSchema(pydantic.BaseModel):
 	Schema for 	
 	"""
 	guid: str
-	context: dict
+	context: Optional[dict]
 	metadataType: str = "TabularDataSchema"
-	url: str
+	url: Optional[str]
 	name: str
 	columns: List[ColumnSchema]
-	foreignKeys: list
+	foreignKeys: Optional[list]
 	description: str
-	rows: List[RowSchema]
-	schemaUrl: str
+	rows: Optional[List[RowSchema]]
+	schemaUrl: Optional[str]
 
 	
 	def validate_data(self, data_path):
