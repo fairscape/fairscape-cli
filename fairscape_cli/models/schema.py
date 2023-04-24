@@ -70,6 +70,21 @@ class ImageSchema(pydantic.BaseModel):
 	colorSubsampling: Optional[str]
 
 
+class ImageValidationException(Exception):
+    """Exception Raised when Image Validation Fails
+    """
+    
+    def __init__(self, message="Image Validation Failed"):
+        self.message = message
+        super().__init__(self.message)
+
+
+class ImagePathNotFoundException(Exception):
+    """Exception Raised when Image Path is not Found
+    """
+    pass
+
+
 class ImageValidation():
 
     def __init__(
@@ -82,24 +97,36 @@ class ImageValidation():
 
         # check that image_path exists
         if image_path.exists() != True:
-            raise Exception
+            raise ImagePathNotFoundException
 
 
 
     def validate(self) -> None:
+        """Run the validation for the provided image and image schema
+
+        If any mismatch is found between the Image properties and the ImageSchema
+        Raise an ImageValidationException
+        """
 
         # check that image path is one of the supported filetypes
         image_format = ImageFormatEnum(self.ImagePath.suffix.replace(".", "")) 
 
+        # TODO run all validation checks and then raise exception
         # check that the image format is valid to the schema
-        assert image_format == self.ImageSchema.imageFormat
+        if image_format != self.ImageSchema.imageFormat:
+            raise ImageValidationException(
+                message = f"ImageFormat failed validation {image_format} != {self.ImageSchema.imageFormat}"
+            )
 
         # read in image metadata
         image_metadata = iio.immeta(self.ImagePath)
 
         # contains encoding mode i.e. RGB
         colorspace = ColorspaceEnum(image_metadata["mode"])
-        assert colorspace == self.ImageSchema.colorspace
+        if colorspace != self.ImageSchema.colorspace:
+            raise ImageValidationException(
+                message = f"Colorspace failed validation {colorspace} != {self.ImageSchema.colorspace}"
+                )
 
         
         # image_metadata['shape'] contains dimension tuple (height, width, depth)
@@ -109,8 +136,15 @@ class ImageValidation():
         width  = image_shape[1]
 
 
-        assert height == self.ImageSchema.height
-        assert width == self.ImageSchema.width
+        if height != self.ImageSchema.height:
+            raise ImageValidationException(
+                message = f"Image Height {height} != {self.ImageSchema.height}"
+                )
+            
+        if width != self.ImageSchema.width:
+            raise ImageValidationException(
+                message = f"Image Width {width} != {self.ImageSchema.width}"
+                )
 
 
 
