@@ -46,7 +46,6 @@ class ImageSchema(pydantic.BaseModel):
 	"""
 	Image Schema for validating images based on format.
 	May extend to support EXIF metadata on images
-
         Attributes
         ----------
         guid: str
@@ -368,27 +367,26 @@ class TabularDataSchema(pydantic.BaseModel):
                         "columnReference": "group"
                     }
                 }
-                ]
+            ]
+        }
+        ```
 
-            }
-            ```
         """
-        guid: str
-        context: Optional[dict]
-        metadataType: str = "TabularDataSchema"
-        url: Optional[str]
-        schemaUrl: Optional[str]
-        name: str
-        description: str
-        columns: List[ColumnSchema]
-        delimiter: str
-        doubleQuote: bool
-        lineTerminator: str
-        skipInitialSpace: bool
-        header: bool 
-        foreignKeys: Optional[list]
+	guid: str
+	context: Optional[dict]
+	metadataType: str = "TabularDataSchema"
+	url: Optional[str]
+	schemaUrl: Optional[str]
+	name: str
+	description: str
+	columns: List[ColumnSchema]
+	delimiter: str
+	doubleQuote: bool
+	lineTerminator: str
+	skipInitialSpace: bool
+	header: bool 
+	foreignKeys: Optional[list]
 
-	
 	def validate_data(self, data_path):
 		pass
 
