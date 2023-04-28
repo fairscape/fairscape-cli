@@ -307,6 +307,8 @@ class TestValidateTabular():
             ]
         )
 
+        
+
 
 class TestSchemaCLI():
     def test_cli(self):
