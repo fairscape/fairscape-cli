@@ -13,7 +13,6 @@ import pandas as pd
 class ImageFormatEnum(str, Enum):
 	"""
 	Enum of Options for the supported image types for validation	
-
 	"""
 	jpeg = "jpeg"
 	jpg = "jpg"
@@ -48,7 +47,23 @@ class ImageSchema(pydantic.BaseModel):
 	Image Schema for validating images based on format.
 	May extend to support EXIF metadata on images
 
-	Example Instance
+        Attributes
+        ----------
+        guid: str
+        
+        description: str
+
+        imageFormat: ImageFormatEnum
+
+        height: int
+
+        width: int
+
+        colorspace: ColorpsaceEnum
+
+        colorSubsampling: Optional[str]
+
+	Example
 	-------
 	"imageSchema": {
 				"@id": "ark:99999/schema/immunofluorescence_image_schema",
@@ -217,17 +232,40 @@ class ColumnSchema(pydantic.BaseModel):
 		(dc:url) url about the value for this column	
 	cells: list
 		list of cells in the column, a Column MUST contain one cell from each row in the table
-	datatype: the expected datatype for the value of cells in this column
-	default: default value for cells whose string value is an empty string
-	null: the string or strings which cause the value of a cell to have a value to be null
-	ordered: are the 
-	number: the position of the column amoungst the columns for the associated table
-	propertyURL: creates a URL identifier for the property of each cell value in this column relative to the row it is contained
-	required: boolean for if this value is required
-	seperator: seperator character for tabular data
-	table: the table in which this column schema is used
-	titles: any number of human readable titles for the column
-	valueURL: identifier url for the value datatype in the table
+
+	datatype: 
+            the expected datatype for the value of cells in this column
+
+	default: 
+            default value for cells whose string value is an empty string
+
+	null: 
+            the string or strings that represent a null or na value
+
+	ordered: 
+            are the rows of this column schema ordered
+            ordering is available for numeric and datetime datatypes
+
+	number: 
+            the position of the column amoungst the columns for the associated table
+
+	propertyURL: 
+            creates a URL identifier for the property of each cell value in this column relative to the row it is contained
+
+	required: 
+            boolean for if this value is required
+
+	seperator: 
+            seperator character for tabular data
+
+	table: 
+            the table in which this column schema is used
+
+	titles: 
+            any number of human readable titles for the column
+
+	valueURL: 
+            identifier url for the value datatype in the table
 
 	"""
 	name: str
@@ -239,7 +277,7 @@ class ColumnSchema(pydantic.BaseModel):
 	default: Optional[str]
 	null: Optional[str]
 	ordered: Optional[bool]
-	number: int
+	number: Union[int, str, List[int]]
 	valueURL: Optional[str]
 	required: bool
 	table: Optional[list[str]]
@@ -264,19 +302,128 @@ class RowSchema(pydantic.BaseModel):
 
 class TabularDataSchema(pydantic.BaseModel):
 	"""
-	Schema for 	
-	"""
-	guid: str
-	context: Optional[dict]
-	metadataType: str = "TabularDataSchema"
-	url: Optional[str]
-	name: str
+	Schema for Tabular data validation.
+
+        Each schema recieves a GUID which supports reuse across RO-crates.
+
+        Attributes
+        ---------
+
+        guid: str
+            the local identifier for a class instance of a tabular schema
+        
+        context: Optional[dict]
+            the json-ld context for this tabular schema
+            aliased to @context on serialization to json
+            
+        metadataType: str = "TabularDataSchema"
+            the json-ld @type value, aliased to @type on serialization to json
+        
+        url: str
+            url for resolvable metadata about this schema
+        
+        schemaUrl: str
+            url to resolve the instance of this schema
+
+        name: str
+            name of this tabular data schema
+
+        description: str
+            a writted description of this tabular data schema and its purpose, including the data it will be used to validated
+
+        
 	columns: List[ColumnSchema]
-	foreignKeys: Optional[list]
-	description: str
-	rows: Optional[List[RowSchema]]
-	schemaUrl: Optional[str]
+            a list of columns to be validated, each with thier own validation logic.
+            if the columns attribute do not cover all columns of input data
+            only specified rules will be run but a warning returned
+
+        delimiter: str = ','
+            the file delimiter for seperating values within rows
+            
+        doubleQuote: bool
+            a boolean indicating whether values are to be double quoted.
+            if true double quotes around a feild signify a single value
+
+        lineTerminator: str = '\r\n'
+            the characters indicating the end of a line in the file
+
+        skipInitialSpace: bool = True
+            determines how to handle whitespace
+            if false whitespace preceeding or following a field is included as part of the fields value
+
+        header: bool 
+            header is true if the first line of the file contains column titles
+        
+        foreignKeys: Optional[list]
+             a list of Column References in other tables 
+
+            e.g.
+            ```
+            {
+                "foreignKeys": [
+                {
+                    "columnReference": "country_group",
+                    "reference": {
+                        "resource": "country-groups.csv",
+                        "columnReference": "group"
+                    }
+                }
+                ]
+
+            }
+            ```
+        """
+        guid: str
+        context: Optional[dict]
+        metadataType: str = "TabularDataSchema"
+        url: Optional[str]
+        schemaUrl: Optional[str]
+        name: str
+        description: str
+        columns: List[ColumnSchema]
+        delimiter: str
+        doubleQuote: bool
+        lineTerminator: str
+        skipInitialSpace: bool
+        header: bool 
+        foreignKeys: Optional[list]
 
 	
 	def validate_data(self, data_path):
 		pass
+
+class DataValidationException(Exception):
+
+    def __init__(self, message="DataValidationException: Validation Failed"):
+        self.message = message
+        super().__init__(self.message)
+
+
+class PathNotFoundException(DataValidationException):
+
+    def __init__(self, message="PathNotFound", path: pathlib.Path = None):
+        if path is not None:
+            self.message = f"PathNotFound: {str(path)}"
+        else: 
+            self.message = message
+        super().__init__(self.message)
+
+
+class TabularDataValidation():
+    ''' A class for running the execution of data validation as determined by a TabularDataSchema
+    '''
+
+    def __init__(
+        TabularSchema: TabularDataSchema, 
+        TabularDataPath: pathlib.Path
+    ):
+
+        self.TabularDataPath = TabularDataPath
+        self.TabularSchema = TabularSchema
+
+
+    def validate(self):
+        ''' Execute the 
+        '''
+
+        pass
