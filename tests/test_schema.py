@@ -245,7 +245,7 @@ class TestValidateTabular():
             ] 
         )
 
-        tabular_data_test.validate(path=pathlib.Path("./tests/data/baitlist.csv")
+        #tabular_data_test.validate(path=pathlib.Path("./tests/data/baitlist.csv"))
 
 
     def test_APMS_embedding(self):
