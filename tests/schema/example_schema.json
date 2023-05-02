@@ -23,7 +23,6 @@
 					"csvw:number": 0,
 					"csvw:required": true,
 					"csvw:valueURL": "http://edamontology.org/data_1026"
-
 				},
 
 				{

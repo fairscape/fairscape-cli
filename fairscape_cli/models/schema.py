@@ -280,11 +280,13 @@ class ColumnSchema(pydantic.BaseModel):
 
     def validate_column(self, data) -> bool:
 
-        # if required check for no missing values
-        if self.required:
+        pass
 
-            if data == np.nan:
-                return False
+        # if required check for no missing values
+        #if self.required:
+
+        #    if data == np.nan:
+        #        return False
 
         # check that string value is not
 
@@ -440,7 +442,7 @@ class TabularDataValidation():
         self.TabularSchema = TabularSchema
 
     def validate(self):
-        ''' Execute the 
+        ''' Execute the validation logic specified by the schema on the specified file
         '''
 
         pass
