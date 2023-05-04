@@ -414,7 +414,23 @@ class TabularDataSchema(pydantic.BaseModel):
 
 class DataValidationException(Exception):
 
-    def __init__(self, message="DataValidationException: Validation Failed"):
+    def __init__(self, error, message="DataValidationException: Validation Failed"):
+        self.error = error
+        self.message = message
+        super().__init__(self.message)
+
+
+class NAValidationException(DataValidationException):
+
+    def __init__(self, error, message="DataValidationException: NA Values in required column"):
+        self.error = error
+        self.message = message
+        super().__init__(self.message)
+
+class DatatypeValidationException(DataValidationException):
+
+    def __init__(self, error, message)
+        self.error = error
         self.message = message
         super().__init__(self.message)
 
@@ -422,8 +438,9 @@ class DataValidationException(Exception):
 class PathNotFoundException(DataValidationException):
 
     def __init__(self, message="PathNotFound", path: pathlib.Path = None):
-        if path is not None:
-            self.message = f"PathNotFound: {str(path)}"
+        self.path = path
+        if self.path is not None:
+            self.message = f"PathNotFound: {str(self.path)}"
         else:
             self.message = message
         super().__init__(self.message)

@@ -4,9 +4,13 @@ from fairscape_cli.models.schema import (
     ImageValidation,
     ImageValidationException,
     ImagePathNotFoundException,
+    DatatypeEnum,
     DatatypeSchema,
     ColumnSchema,
-    TabularDataSchema
+    TabularDataSchema,
+    DataValidationException,
+    NAValidationException,
+    PathNotFoundException
 )
 
 apms_datatype = DatatypeSchema(
@@ -70,55 +74,148 @@ embedding_schema = TabularDataSchema(
 
 # test reading the data with the specified schema
 embedding_path = pathlib.Path("./tests/data/APMS_embedding_MUSIC.csv")
-
 embedding_df = embedding_schema.ReadTabularData(embedding_path)
 
 col_schema = embedding_schema.columns[0]
 column = embedding_df.iloc[:,0]
 
 # if values are required check if any missing values are present
-if col_schema.required == True:
-
-    if any(column.isna()):
-        raise Exception
+def ValidateNullValue(null_value: str, column) -> None:
+    if any(column.isna()): 
+        raise NAValidationException()
 
     if any(column == None):
-        pass
+        raise NAValidationException()
 
     # compare to passed null value
-    if any(column == col_schema.null):
-        raise Exception
+    if any(column == null_value):
+        raise NAValidationException()
+
+    return None
+
+
+
+# check if datatype matches schema
+
+def ValidateDatatype(datatype_schema: DatatypeSchema, column) -> List[Exception]:
+        validation_failures = []
+
+
+        # validate length
+        if datatype_schema.length:
+            if all(len(column) == datatype_schema.length) != True:
+                exception_message = "DatatypeValidationException: " + 
+                    "length validation failure" +
+                    f"\n all values do not have length {datatype_schema.length}"
+
+                validation_failures.append(
+                    DatatypeValidationException(
+                        error="length", 
+                        message=exception_message
+                    ) 
+                )
+                
+
+        # validate maxLength
+        if datatype_schema.maxLength:
+            if any(len(column)>datatype_schema.maxLength):
+                exception_message = "DatatypeValidationException: " +
+                "maxLength validation failure" +
+                f"\n some values have lengths > maxLength {datatype_schema.maxLength}"
+
+                validation_failures.append(
+                    DatatypeValidationException(
+                        error="maxLength", 
+                        message=exception_message
+                    ) 
+                )
+
+        # validate minLength
+        if datatype_schema.minLength:
+            if any(len(column)<datatype_schema.minLength):
+                exception_message = "DatatypeValidationException: " +
+                "minLength validation failure" +
+                f"\n some values have lengths < minLength {datatype_schema.minLength}"
+
+                validation_failures.append(
+                    DatatypeValidationException(
+                        error="minLength", 
+                        message=exception_message
+                    ) 
+                )
+
+        # get min
+        if datatype_schema.min:
+            if any(column<datatype_schema.min):
+
+                exception_message = "DatatypeValidationException: " +
+                "min validation failure" +
+                f"\n some values have values < min {datatype_schema.min}"
+
+                validation_failures.append(
+                    DatatypeValidationException(
+                        error="max", 
+                        message=exception_message
+                    ) 
+                )
+
+        # get maximum
+        if datatype_schema.maximum:
+            if any(column<datatype_schema.max):
+
+                exception_message = "DatatypeValidationException: " +
+                "max validation failure" +
+                f"\n some values have values > max {datatype_schema.max}"
+
+                validation_failures.append(
+                    DatatypeValidationException(
+                        error="max", 
+                        message=exception_message
+                    ) 
+                )
+            pass
+
+        # validateFormat
         
-
-match type(col_schema.datatype):
-
-    case DatatypeSchema:
-        print("DatatypeSchema")
-
         # get the base and format
         datatype_base = col_schema.datatype.base
         datatype_format = col_schema.datatype.format
 
-        # get length
+        switch datatype_base:
+            case DatatypeEnum("str"):
+                pass
 
-        # get maxLength
-        
-        # get minLength
+            case DatatypeEnum(
 
-        # get min
 
-        # get maximum
-        pass
+        return validation_failures
 
-    case DatatypeEnum:
-        print("str")
 
-        # cast the column as the 
+def ValidateDatatypeEnum(column, datatype_enum: DatatypeEnum):
+    pass
+
+
+def ValidateColumn(column_schema: ColumnSchema, column):
+    failures = []
+
+    if column_schema.required == True:
         try:
+            ValidateNullValue(column_schema.null, column) 
+        except NAValidationException as e:
+            print(e)
 
-        except ValueError as e:
-            
-        pass
+    # validate the datatype
+    match type(col_schema.datatype):
+
+        case DatatypeSchema():
+            datatype_validation_failures = ValidateDatatype(column, datatype_schema) 
+
+
+        case DatatypeEnum():
+            try:
+                ValidateDatatypeEnum(column, datatype_schema.datatype)
+            except ValueError as e:
+                failures.append(e) 
 
 
 # validation function
