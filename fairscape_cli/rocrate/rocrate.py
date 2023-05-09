@@ -41,6 +41,32 @@ def validate():
 def zip():
     pass
 
+@rocrate.command('init')
+@click.option('--guid', required=False, type=str, default="", show_default=False)
+@click.option('--name', required=True, type=str, prompt = "ROCrate Name (e.g. B2AI_ROCRATE)")
+@click.option('--organization-name', required=True, type=str, prompt = "Organization Name")
+@click.option('--project-name', required=True, type=str, prompt = "Project Name")
+def init(
+    guid: str,
+    name: str,
+    organization_name: str,
+    project_name: str
+)
+
+    passed_crate =ROCrate(
+        guid=guid,
+        name=name,
+        organizationName = organization_name,
+        projectName = project_name,
+        path = pathlib.Path.cwd(), 
+        metadataGraph = []
+    )
+
+    try:
+        passed_crate.initCrate()
+    except Exception as e:
+        click.echo(f"ERROR: {str(e)}")
+    
 
 @rocrate.command('create')
 @click.option('--guid', required=False, type=str, default="", show_default=False)
@@ -55,9 +81,17 @@ def create(
     project_name: str,
     crate_path: pathlib.Path, 
 ): 
-    '''
+    '''Create an ROCrate in a new path specified by the crate-path argument
     '''
 
+    passed_crate = ROCrate(
+        guid=guid,
+        name=name,
+        organizationName = organization_name,
+        projectName = project_name,
+        path = crate_path, 
+        metadataGraph = []
+    )
 
     organization_guid = f"ark:/{organization_name.replace(' ', '_')}"
     project_guid = organization_guid + f"/{project_name.replace(' ', '_')}"
@@ -65,13 +99,6 @@ def create(
     if guid == "":
         guid = project_guid + f"/{name.replace(' ', '_')}"
 
-    # create a empty folder at the specified path
-    try:
-        crate_path.mkdir(exist_ok=False)
-    
-    except FileExistsError:
-        click.echo("ERROR: ROCrate Path Already Exists")
-        click.Abort()
 
     # initilize ro-crate-metadata.json
     ro_crate_metadata_path = crate_path / 'ro-crate-metadata.json'
@@ -112,10 +139,7 @@ def create(
     with ro_crate_metadata_path.open(mode="w") as metadata_file:
         json.dump(rocrate_metadata, metadata_file, indent=2)
     
-    click.echo(f"Created RO Crate at {crate_path}")
-    click.echo(json.dumps(rocrate_metadata, indent=2))
-
-    # TODO add metadata to cache
+    click.echo(crate_guid)
 
 
 

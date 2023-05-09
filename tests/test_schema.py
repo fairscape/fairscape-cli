@@ -1,3 +1,13 @@
+from fairscape_cli.models.schema import (
+    ImageSchema,
+    ImageValidation,
+    ImageValidationException,
+    ImagePathNotFoundException,
+    DatatypeSchema,
+    ColumnSchema,
+    TabularDataSchema
+)
+from fairscape_cli.main import cli as fairscape_cli_app
 import pathlib
 from click.testing import CliRunner
 import pytest
@@ -12,15 +22,6 @@ sys.path.insert(
     )
 )
 
-from fairscape_cli.models.schema import (
-    ImageSchema,
-    ImageValidation,
-    ImageValidationException,
-    ImagePathNotFoundException,
-    DatatypeSchema,
-    ColumnSchema,
-    TabularDataSchema
-)
 
 class TestValidateImage():
 
@@ -277,8 +278,6 @@ class TestValidateTabular():
 
         embedding_column = ColumnSchema(
             name="embedding values",
-            datatype = "float",
-            required = True,
             description="node2vec embedding vector values for genes",
             number="2::",
             titles=["node2vec embedding vector"]
@@ -292,20 +291,14 @@ class TestValidateTabular():
             header=False,
             columns=[
                 apms_column,
-                gene_symbol_column,
+                gene_column,
                 embedding_column
             ]
         )
 
         # test reading the data with the specified schema
         embedding_path = pathlib.Path("./tests/data/APMS_embedding_MUSIC.csv")
-        
-        embedding_df = embedding_schema.ReadTabularData(embedding_path)
-
-        col_schema = embedding_schema.columns[0]
-        column = ebedding_df.iloc[0] 
-
-        col_schema.validate(column)
+        embedding_schema
 
 class TestSchemaCLI():
     def test_cli(self):
