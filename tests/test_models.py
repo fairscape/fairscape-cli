@@ -22,7 +22,22 @@ from fairscape_cli.models import (
 class TestROCrateModel():
 
     def test_rocrate_init(self):
-        pass
+        
+        crate_id = "ark:59853/UVA/B2AI/rocrate_test"
+        crate_name = 'test rocrate'
+        organization_name = "UVA"
+        project_name = "B2AI"
+       
+        test_crate = ROCrate(
+            guid=crate_id,
+            name=crate_name,
+            organizationName=organization_name,
+            project_name= project_name,
+            path = pathlib.Path.cwd(),
+            metadataGraph = []
+        ) 
+
+        test_crate.initCrate()
 
 
     def test_rocrate_add_dataset(self):

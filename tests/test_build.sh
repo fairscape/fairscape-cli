@@ -16,6 +16,9 @@ fairscape-cli rocrate create \
         --project-name $CRATE_PROJ_NAME \
         $CRATE_PATH
 
+# Broken example from Chris
+fairscape-cli rocrate add software --name 'some tool' --description 'A tool to do something' --author 'bob smith' --version 0.1.0 --file-format .py --url https://github.com/someuser/somerepo `pwd`
+
 # add a test dataset 
 
 DATASET_GUID="ARK:APMS_embedding.MuSIC.1/5b3793b6-2bd0-4c51-9f35-c5cd7ddd366c.csv"

@@ -2,6 +2,7 @@ import os
 import sys
 import pathlib
 import json
+import shutil
 
 sys.path.insert(
     0, 
@@ -99,6 +100,10 @@ class TestROCrateSuccess():
    
     def test_rocrate_create(self): 
 
+        # remove existing crate
+        shutil.rmtree(self.rocrate_path)
+         
+
         crate_id = "ark:59853/UVA/B2AI/rocrate_test"
         crate_name = 'test rocrate'
 
@@ -119,7 +124,7 @@ class TestROCrateSuccess():
         print(result.stdout)
 
         assert result.exit_code == 0
-        assert "Created RO Crate at" in result.stdout
+        assert "ark:59853/UVA/B2AI/rocrate_test" in result.stdout
 
         # check that the ro-crate-metadata.json is correct
         rocrate_metadata_path = self.rocrate_path + "/ro-crate-metadata.json"
@@ -175,8 +180,8 @@ class TestROCrateSuccess():
             "--version '1.0'",
             f"--description '{test_software['description']}'",
             f"--associated-publication '{test_software['associatedPublication']}'",
-            "--data-format '.py'",
-            f"--date-published '{test_software['dateModified']}'",
+            "--file-format '.py'",
+            f"--date-modified '{test_software['dateModified']}'",
             "--source-filepath './tests/data/calibrate_pairwise_distance.py'",
             "--destination-filepath './tests/example_rocrate/calibrate_pairwise_distance.py'",
             "'./tests/example_rocrate'", 
@@ -204,7 +209,7 @@ class TestROCrateSuccess():
 
         add_computation = [
             "rocrate",
-            "add",
+            "register",
             "computation",
             "--guid 'ark:59853/UVA/B2AI/rocrate_test/music_test_run'",
             f"--name '{test_computation['name']}'",

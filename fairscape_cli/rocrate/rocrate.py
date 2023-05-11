@@ -7,7 +7,8 @@ from pydantic import ValidationError
 from fairscape_cli.models import (
     Dataset,
     Software,
-    Computation
+    Computation,
+    ROCrate
 )
 
 from fairscape_cli.rocrate.utils import (
@@ -51,7 +52,7 @@ def init(
     name: str,
     organization_name: str,
     project_name: str
-)
+):
 
     passed_crate =ROCrate(
         guid=guid,
@@ -83,62 +84,27 @@ def create(
 ): 
     '''Create an ROCrate in a new path specified by the crate-path argument
     '''
+    
+    organization_guid = f"ark:/{organization_name.replace(' ', '_')}"
+    project_guid = organization_guid + f"/{project_name.replace(' ', '_')}"
+
+    if guid != "":
+        crate_guid = guid
+    else:
+        crate_guid = project_guid + f"/{name.replace(' ', '_')}"
 
     passed_crate = ROCrate(
-        guid=guid,
+        guid=crate_guid,
         name=name,
         organizationName = organization_name,
         projectName = project_name,
         path = crate_path, 
         metadataGraph = []
     )
-
-    organization_guid = f"ark:/{organization_name.replace(' ', '_')}"
-    project_guid = organization_guid + f"/{project_name.replace(' ', '_')}"
-
-    if guid == "":
-        guid = project_guid + f"/{name.replace(' ', '_')}"
-
-
-    # initilize ro-crate-metadata.json
-    ro_crate_metadata_path = crate_path / 'ro-crate-metadata.json'
-    ro_crate_metadata_ark = guid + "/ro-crate-metadata.json"
-
-    rocrate_metadata = {
-        "@id": guid,
-        "@context": {
-            "EVI": "https://w3id.org/EVI#",
-            "@vocab": "https://schema.org/"
-        },
-        "@type": "Dataset",
-        "name": name,
-        "isPartOf": [
-            {
-                "@id": organization_guid,
-                "@type": "Organization",
-                "name": organization_name
-            },
-            {
-                "@id": project_guid,
-                "@type": "Project",
-                "name": project_name
-            }
-        ],
-        "@graph": [
-            {
-                "@id": ro_crate_metadata_ark,
-                "conformsTo": {"@id": "https://w3id.org/ro/crate/1.1"},
-                "about": {"@id": guid},
-                "isPartOf": {"@id": guid},
-                "contentUrl": 'file://' + str(ro_crate_metadata_path),
-            }
-        ]  
-    }
-
-
-    with ro_crate_metadata_path.open(mode="w") as metadata_file:
-        json.dump(rocrate_metadata, metadata_file, indent=2)
     
+    passed_crate.createCrateFolder()
+    passed_crate.initCrate()
+
     click.echo(crate_guid)
 
 
@@ -323,12 +289,16 @@ def computation(
     used_dataset,
     generated
 ):
-    metadata_path = rocrate_path / "ro-crate-metadata.json"
+
+    
     # check if you are in the rocrate path
     # ro-crate-metadata.json should be a local file
+    metadata_path = rocrate_path / "ro-crate-metadata.json"
     if metadata_path.exists() != True:
         click.echo(f"Cannot Find RO-Crate Metadata: {metadata_path}")
         click.Abort()
+
+    crate = ROCrate(path=metadata_path)
 
     if guid == "":
         guid = generate_id(metadata_path, name, "Computation")
@@ -354,7 +324,7 @@ def computation(
         click.echo(e)
         click.Abort()
 
-    crate.registerComputation(dataset_model)
+    crate.registerComputation(computation_model)
     
     click.echo(guid)
         #click.echo("Added Computation")
@@ -401,6 +371,8 @@ def software(
     additional_documentation: Optional[str]
 ):
 
+    source_path = pathlib.Path(source_filepath)
+    destination_path = pathlib.Path(destination_filepath)
     
     metadata_path = rocrate_path / "ro-crate-metadata.json"
 
@@ -493,6 +465,9 @@ def dataset(
     metadata_path = rocrate_path / "ro-crate-metadata.json"
     # check if you are in the rocrate path
     # ro-crate-metadata.json should be a local file
+
+    source_path = pathlib.Path(source_filepath)
+    destination_path = pathlib.Path(destination_filepath)
 
     if metadata_path.exists() != True:
         click.echo(f"Cannot Find RO-Crate Metadata: {metadata_path}")

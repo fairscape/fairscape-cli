@@ -157,6 +157,12 @@ class ImageValidation():
                 message=f"Image Width {width} != {self.ImageSchema.width}"
             )
 
+class FiletypeEnum(str, Enum):
+    """List of supported filetypes with normative naming
+    """
+    csv = "csv"
+    tsv = "tsv"
+    
 
 class DatatypeEnum(str, Enum):
     """

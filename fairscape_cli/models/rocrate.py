@@ -1,4 +1,6 @@
 import pathlib
+import shutil
+import json
 from fairscape_models import ROCrate as ROCrateModel
 from fairscape_cli.models import (
     Software,
@@ -6,6 +8,7 @@ from fairscape_cli.models import (
     Computation
 )
 from prettytable import PrettyTable
+from pydantic import BaseModel
 from typing import (
     Optional,
     Union,
@@ -13,7 +16,7 @@ from typing import (
 )
 
 
-class ROCrate(ROCrateModel):
+class ROCrate(BaseModel):
     guid: Optional[str] = ""
     metadataType: str = "https://schema.org/Dataset"
     name: Optional[str]
@@ -36,38 +39,38 @@ class ROCrate(ROCrateModel):
         project_guid = organization_guid + f"/{self.projectName.replace(' ', '_')}"
 
         if self.guid == "":
-            guid = project_guid + f"/{self.name.replace(' ', '_')}"
+            self.guid = project_guid + f"/{self.name.replace(' ', '_')}"
 
         # create basic rocrate metadata
         ro_crate_metadata_path = self.path / 'ro-crate-metadata.json'
         ro_crate_metadata_ark = self.guid + "/ro-crate-metadata.json"
 
         rocrate_metadata = {
-            "@id": guid,
+            "@id": self.guid,
             "@context": {
                 "EVI": "https://w3id.org/EVI#",
                 "@vocab": "https://schema.org/"
             },
             "@type": "Dataset",
-            "name": name,
+            "name": self.name,
             "isPartOf": [
                 {
                     "@id": organization_guid,
                     "@type": "Organization",
-                    "name": organization_name
+                    "name": self.organizationName
                 },
                 {
                     "@id": project_guid,
                     "@type": "Project",
-                    "name": project_name
+                    "name": self.projectName
                 }
             ],
             "@graph": [
                 {
                     "@id": ro_crate_metadata_ark,
                     "conformsTo": {"@id": "https://w3id.org/ro/crate/1.1"},
-                    "about": {"@id": guid},
-                    "isPartOf": {"@id": guid},
+                    "about": {"@id": self.guid},
+                    "isPartOf": {"@id": self.guid},
                     "contentUrl": 'file://' + str(ro_crate_metadata_path),
                 }
             ]  
@@ -82,7 +85,7 @@ class ROCrate(ROCrateModel):
         #TODO list all contents that need to be registered as warnings   
 
  
-    def copyObject(source_filepath: str, destination_filepath: str):
+    def copyObject(self, source_filepath: str, destination_filepath: str):
 
         if source_filepath == "":
             raise Exception(message="source path is None")
@@ -140,7 +143,7 @@ class ROCrate(ROCrateModel):
 
 
     def registerComputation(self, Computation):
-        self.registerComputation(model=Computation)
+        self.registerObject(model=Computation)
 
 
     def listContents(self):
