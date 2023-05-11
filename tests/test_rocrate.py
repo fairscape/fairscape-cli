@@ -136,6 +136,38 @@ class TestROCrateSuccess():
         assert rocrate_metadata['name'] == crate_name
 
 
+    def test_register_dataset(self):
+
+        add_dataset = [
+            "rocrate",
+            "register",
+            "dataset",
+            f"--name '{test_dataset['name']}'",
+            "--guid 'ark:59853/UVA/B2AI/rocrate_test/music_data'",
+            "--name 'AP-MS embeddings'",
+            f"--description '{test_dataset['description']}'" ,
+            f"--date-published '{test_dataset['datePublished']}'",
+            f"--author '{test_dataset['author']}'",
+            "--version '1.0.0'",
+            f"--associated-publication '{test_dataset['associatedPublication']}'",
+            f"--additional-documentation '{test_dataset['additionalDocumentation'][0]}'",
+            f"--data-format '{test_dataset['format']}'",
+            "--filepath './tests/example_rocrate/APMS_embedding_MUSIC.csv'",
+            "'./tests/example_rocrate'",
+        ]
+
+        print(' '.join(add_dataset))
+
+        result = self.runner.invoke(
+            fairscape_cli_app, 
+            ' '.join(add_dataset) 
+        )
+        print(result.stdout)
+
+        assert result.exit_code == 0
+
+
+
     def test_add_dataset(self):
 
         add_dataset = [
@@ -162,6 +194,33 @@ class TestROCrateSuccess():
         result = self.runner.invoke(
             fairscape_cli_app, 
             ' '.join(add_dataset) 
+        )
+        print(result.stdout)
+
+        assert result.exit_code == 0
+
+
+    def test_register_software(self):
+
+        add_software = [
+            "rocrate",
+            "register",
+            "software",
+            "--guid ark:59853/UVA/B2AI/rocrate_test/music_software",
+            "--name MuSIC",
+            f"--author '{test_software['author']}'",
+            "--version '1.0'",
+            f"--description '{test_software['description']}'",
+            f"--associated-publication '{test_software['associatedPublication']}'",
+            "--file-format '.py'",
+            f"--date-modified '{test_software['dateModified']}'",
+            "--filepath './tests/example_rocrate/calibrate_pairwise_distance.py'",
+            "'./tests/example_rocrate'", 
+        ]
+
+        result = self.runner.invoke(
+            fairscape_cli_app, 
+            ' '.join(add_software) 
         )
         print(result.stdout)
 

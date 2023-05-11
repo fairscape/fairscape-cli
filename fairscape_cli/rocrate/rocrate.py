@@ -261,7 +261,7 @@ def registerDataset(
         click.echo(e)
         click.Abort()
     
-    crate.registerSoftware(software_model)
+    crate.registerDataset(dataset_model)
  
     click.echo(guid)
 
