@@ -118,19 +118,13 @@ class ROCrate(BaseModel):
 
         metadata_path = self.path
 
-        # open the ro-crate-metadata.json
-        with metadata_path.open("r") as rocrate_metadata_file:
+        with metadata_path.open("r+") as rocrate_metadata_file:
             rocrate_metadata = json.load(rocrate_metadata_file)
-
-            # TODO check if the file is redundant
-     
+            
             # add to the @graph
             rocrate_metadata['@graph'].append(model.dict(by_alias=True))
-        
-        # overwrite the ro-crate-metadata.json file
-        with metadata_path.open("w") as f:
-            json_object = json.dumps(rocrate_metadata, indent=2)
-            f.write(json_object)
+            rocrate_metadata_file.seek(0)
+            json.dump(rocrate_metadata, rocrate_metadata_file)
 
 
 
