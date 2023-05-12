@@ -135,7 +135,7 @@ def register():
 @click.option('--file-format', required = True, prompt = "File Format of Software")
 @click.option('--url',     required = False)
 @click.option('--date-modified', required=False)
-@click.option('--filepath', required=True)
+@click.option('--filepath', required=False)
 @click.option('--used-by-computation', required=False, multiple=True)
 @click.option('--associated-publication', required=False)
 @click.option('--additional-documentation', required=False)
@@ -166,9 +166,8 @@ def registerSoftware(
 
     crate = ROCrate(path=metadata_path)
 
-    try:
-        software_model = Software(   
-            **{
+
+    software_metadata = {
             "@id": guid,
             "@type": "https://w3id.org/EVI#Software",
             "url": url,
@@ -181,9 +180,19 @@ def registerSoftware(
             "additionalDocumentation": additional_documentation,
             "format": file_format,
             "usedByComputation": used_by_computation,
-            "contentUrl": "file://" + filepath
             }
-        )
+
+    if filepath != "" and filepath is not None:
+            software_metadata["contentUrl"] = f"file://{str(filepath)}" 
+    else:
+        # if filepath is null and url is null
+        # raise an error
+        if url == "" or url is None:
+            click.echo("Software Validation Error: url and filepath cannot both be null")
+            click.Abort()
+
+    try:
+        software_model = Software(**software_metadata)
 
     except ValidationError as e:
         click.echo("Software Validation Error")
