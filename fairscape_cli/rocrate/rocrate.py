@@ -237,9 +237,7 @@ def registerDataset(
 
     crate = ROCrate(path=metadata_path)
 
-    try:
-        dataset_model = Dataset(   
-            **{
+    dataset_metadata = {
             "@id": guid,
             "@type": "https://w3id.org/EVI#Dataset",
             "url": url,
@@ -254,7 +252,13 @@ def registerDataset(
             "derivedFrom": derived_from,
             "usedBy": used_by
             }
-        )
+
+    if filepath != "" and filepath is not None:
+        dataset_metadata["contentUrl"] = f"file://{str(filepath)}" 
+
+
+    try:
+        dataset_model = Dataset(**dataset_metadata)
 
     except ValidationError as e:
         click.echo("Dataset Validation Error")
