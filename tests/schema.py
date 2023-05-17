@@ -185,7 +185,8 @@ def ValidateDatatype(datatype_schema: DatatypeSchema, column) -> List[Exception]
             case DatatypeEnum("str"):
                 pass
 
-            case DatatypeEnum(
+            case DatatypeEnum(""):
+                pass
 
 
         return validation_failures
