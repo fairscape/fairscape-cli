@@ -67,12 +67,9 @@ test_computation = {
       "random_forest_output (https://github.com/idekerlab/MuSIC/blob/master/random_forest_output.py)"
     ],
     "usedDataset": [ 
-"""predicted protein proximities:
-Fold 1 proximities:
-    IF_emd_1_APMS_emd_1.RF_maxDep_30_nEst_1000.fold_1.pkl""",
+    "IF_emd_1_APMS_emd_1.RF_maxDep_30_nEst_1000.fold_1.pkl",
     "IF_emd_2_APMS_emd_1.RF_maxDep_30_nEst_1000.fold_1.pkl",
-"""Fold 1 proximities:
-      IF_emd_1_APMS_emd_1.RF_maxDep_30_nEst_1000.fold_2.pkl""",
+    "IF_emd_1_APMS_emd_1.RF_maxDep_30_nEst_1000.fold_2.pkl",
     "IF_emd_2_APMS_emd_1.RF_maxDep_30_nEst_1000.fold_2.pkl",
 """Fold 1 proximities:
       IF_emd_1_APMS_emd_1.RF_maxDep_30_nEst_1000.fold_3.pkl""",
@@ -94,14 +91,15 @@ Fold 1 proximities:
 
 class TestROCrateSuccess():
     runner = CliRunner()
-    rocrate_path = "./tests/example_rocrate"
-
-    
-   
+    rocrate_path = "./tests/data/example_rocrate"
+ 
     def test_rocrate_create(self): 
 
-        # remove existing crate
-        shutil.rmtree(self.rocrate_path)
+        try:
+            # remove existing crate
+            shutil.rmtree(self.rocrate_path)
+        except:
+            pass
          
 
         crate_id = "ark:59853/UVA/B2AI/rocrate_test"
@@ -152,8 +150,8 @@ class TestROCrateSuccess():
             f"--associated-publication '{test_dataset['associatedPublication']}'",
             f"--additional-documentation '{test_dataset['additionalDocumentation'][0]}'",
             f"--data-format '{test_dataset['format']}'",
-            "--filepath './tests/example_rocrate/APMS_embedding_MUSIC.csv'",
-            "'./tests/example_rocrate'",
+            f"--filepath '{self.rocrate_path + '/APMS_embedding_MUSIC.csv'}'",
+            f"'{self.rocrate_path}'",
         ]
 
         print(' '.join(add_dataset))
@@ -185,8 +183,8 @@ class TestROCrateSuccess():
             f"--additional-documentation '{test_dataset['additionalDocumentation'][0]}'",
             f"--data-format '{test_dataset['format']}'",
             "--source-filepath './tests/data/APMS_embedding_MUSIC.csv'",
-            "--destination-filepath './tests/example_rocrate/APMS_embedding_MUSIC.csv'",
-            "'./tests/example_rocrate'",
+            f"--destination-filepath '{self.rocrate_path +'/APMS_embedding_MUSIC.csv'}'",
+            f"'{self.rocrate_path}'",
         ]
 
         print(' '.join(add_dataset))
@@ -214,8 +212,8 @@ class TestROCrateSuccess():
             f"--associated-publication '{test_software['associatedPublication']}'",
             "--file-format '.py'",
             f"--date-modified '{test_software['dateModified']}'",
-            "--filepath './tests/example_rocrate/calibrate_pairwise_distance.py'",
-            "'./tests/example_rocrate'", 
+            f"--filepath '{self.rocrate_path + '/calibrate_pairwise_distance.py'}'",
+            f"'{self.rocrate_path}'",
         ]
 
         result = self.runner.invoke(
@@ -242,8 +240,8 @@ class TestROCrateSuccess():
             "--file-format '.py'",
             f"--date-modified '{test_software['dateModified']}'",
             "--source-filepath './tests/data/calibrate_pairwise_distance.py'",
-            "--destination-filepath './tests/example_rocrate/calibrate_pairwise_distance.py'",
-            "'./tests/example_rocrate'", 
+            f"--destination-filepath '{self.rocrate_path + '/calibrate_pairwise_distance.py'}'",
+            f"'{self.rocrate_path}'",
         ]
 
         result = self.runner.invoke(
@@ -279,9 +277,11 @@ class TestROCrateSuccess():
             #f"--used-dataset '[{','.join(datasets)}]'",
             "--command 'wingardium leviosa'",
             f"--used-software ['{test_computation['usedSoftware'][0]}']",
-            f"--used-dataset ['{test_computation['usedDataset'][0]}']", 
+            "--used-dataset 'IF_emd_1_APMS_emd_1.RF_maxDep_30_nEst_1000.fold_1.pkl'",
+            "--used-dataset 'IF_emd_2_APMS_emd_1.RF_maxDep_30_nEst_1000.fold_1.pkl'",
+            "--used-dataset 'IF_emd_1_APMS_emd_1.RF_maxDep_30_nEst_1000.fold_2.pkl'",
             f"--generated ['{test_computation['generated'][0]}']",
-            "'./tests/example_rocrate'"
+            f"'{self.rocrate_path}'",
         ]
 
         print(' '.join(add_computation))

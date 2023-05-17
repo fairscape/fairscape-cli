@@ -124,7 +124,7 @@ class ROCrate(BaseModel):
             # add to the @graph
             rocrate_metadata['@graph'].append(model.dict(by_alias=True))
             rocrate_metadata_file.seek(0)
-            json.dump(rocrate_metadata, rocrate_metadata_file)
+            json.dump(rocrate_metadata, rocrate_metadata_file, indent=2)
 
 
 
