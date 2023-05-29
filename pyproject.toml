@@ -1,6 +1,5 @@
 [project]
 name = "fairscape-cli"
-version = "0.1.0"
 description = "CLI tool for B2AI metadata validation and ROCrate creation"
 readme = "README.md"
 authors = [
@@ -27,7 +26,7 @@ Homepage = "https://github.com/fairscape/fairscape-cli"
 
 [tool.poetry]
 name = "fairscape-cli"
-version = "0.1.5a1"
+version = "0.1.5a2"
 description = "A cli for validating metadata, packaging ROCrates, and interacting with the FAIRSCAPE API"
 authors = ["mlev71 <max.adam.levinson@gmail.com>"]
 license = "LICENSE"
