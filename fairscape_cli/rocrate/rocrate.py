@@ -154,7 +154,6 @@ def registerSoftware(
     associated_publication: Optional[str],
     additional_documentation: Optional[str]
     ):
-
     
     metadata_path = rocrate_path / "ro-crate-metadata.json"
 
@@ -179,8 +178,11 @@ def registerSoftware(
             "associatedPublication": associated_publication,
             "additionalDocumentation": additional_documentation,
             "format": file_format,
-            "usedByComputation": used_by_computation,
-            }
+            # sanitize new line characters for multiple inputs
+            "usedByComputation": [
+                computation.strip("\n") for computation in used_by_computation
+            ],
+        }
 
     if filepath != "" and filepath is not None:
             software_metadata["contentUrl"] = f"file://{str(filepath)}" 
@@ -258,8 +260,14 @@ def registerDataset(
             "associatedPublication": associated_publication,
             "additionalDocumentation": additional_documentation,
             "format": data_format,
-            "derivedFrom": derived_from,
-            "usedBy": used_by
+
+            # sanitize input lists of newline breaks
+            "derivedFrom": [
+                derived.strip("\n") for derived in derived_from
+            ],
+            "usedBy": [
+                used.strip("\n") for used in used_by 
+            ],
             }
 
     if filepath != "" and filepath is not None:
@@ -327,9 +335,16 @@ def computation(
             "runBy": run_by,
             "dateCreated": date_created,
             "description": description,
-            "usedSoftware": used_software,
-            "usedDataset": used_dataset,
-            "generated": generated,
+            # sanitize input lists of newline breaks
+            "usedSoftware": [
+                software.strip("\n") for software in used_software
+            ],
+            "usedDataset": [
+                dataset.strip("\n") for dataset in used_dataset 
+            ],
+            "generated": [
+                output.strip("\n") for output in generated
+            ],
             }
         )
     except ValidationError as e:
@@ -416,7 +431,10 @@ def software(
             "associatedPublication": associated_publication,
             "additionalDocumentation": additional_documentation,
             "format": file_format,
-            "usedByComputation": used_by_computation,
+            # sanitize multiple inputs
+            "usedByComputation": [
+                computation.strip("\n") for computation in used_by_computation
+            ],
             "contentUrl": "file://" + str(destination_path)
             }
         )
