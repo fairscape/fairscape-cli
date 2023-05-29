@@ -102,7 +102,7 @@ def ValidateDatatype(datatype_schema: DatatypeSchema, column) -> List[Exception]
 
 
         # validate length
-        if datatype_schema.length:
+        if datatype_schema.length != None:
             if all(len(column) == datatype_schema.length) != True:
                 exception_message = "DatatypeValidationException: " + 
                     "length validation failure" +
@@ -117,7 +117,7 @@ def ValidateDatatype(datatype_schema: DatatypeSchema, column) -> List[Exception]
                 
 
         # validate maxLength
-        if datatype_schema.maxLength:
+        if datatype_schema.maxLength != None:
             if any(len(column)>datatype_schema.maxLength):
                 exception_message = "DatatypeValidationException: " +
                 "maxLength validation failure" +
@@ -131,7 +131,7 @@ def ValidateDatatype(datatype_schema: DatatypeSchema, column) -> List[Exception]
                 )
 
         # validate minLength
-        if datatype_schema.minLength:
+        if datatype_schema.minLength != None:
             if any(len(column)<datatype_schema.minLength):
                 exception_message = "DatatypeValidationException: " +
                 "minLength validation failure" +
@@ -145,7 +145,7 @@ def ValidateDatatype(datatype_schema: DatatypeSchema, column) -> List[Exception]
                 )
 
         # get min
-        if datatype_schema.min:
+        if datatype_schema.min != None:
             if any(column<datatype_schema.min):
 
                 exception_message = "DatatypeValidationException: " +
@@ -160,7 +160,7 @@ def ValidateDatatype(datatype_schema: DatatypeSchema, column) -> List[Exception]
                 )
 
         # get maximum
-        if datatype_schema.maximum:
+        if datatype_schema.maximum != None:
             if any(column<datatype_schema.max):
 
                 exception_message = "DatatypeValidationException: " +
@@ -173,13 +173,23 @@ def ValidateDatatype(datatype_schema: DatatypeSchema, column) -> List[Exception]
                         message=exception_message
                     ) 
                 )
-            pass
 
-        # validateFormat
-        
+        # validateFormat        
         # get the base and format
         datatype_base = col_schema.datatype.base
         datatype_format = col_schema.datatype.format
+
+        try:
+            ValidateDatatypeFormat(column, datatype_base, datatype_format)
+        except Exception as e:
+            validation_failures.append(e)
+
+        return validation_failures
+
+
+def ValidateDatatypeFormat(column, datatype_base, datatype_format)-> None:
+    """ Validate format constraints for various types according to CSV On the Web Schema
+    """
 
         switch datatype_base:
             case DatatypeEnum("str"):
@@ -188,9 +198,7 @@ def ValidateDatatype(datatype_schema: DatatypeSchema, column) -> List[Exception]
             case DatatypeEnum(""):
                 pass
 
-
-        return validation_failures
-
+    pass
 
 def ValidateDatatypeEnum(column, datatype_enum: DatatypeEnum):
     pass
