@@ -437,7 +437,7 @@ class NAValidationException(DataValidationException):
 
 class DatatypeValidationException(DataValidationException):
 
-    def __init__(self, error, message)
+    def __init__(self, error, message):
         self.error = error
         self.message = message
         super().__init__(self.message)

@@ -1,7 +1,6 @@
 import pathlib
 import shutil
 import json
-from fairscape_models import ROCrate as ROCrateModel
 from fairscape_cli.models import (
     Software,
     Dataset,
