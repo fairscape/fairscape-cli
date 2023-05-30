@@ -1,3 +1,5 @@
+tests/data/
+tests/crate/
 cli_venv/
 
 # Byte-compiled / optimized / DLL files

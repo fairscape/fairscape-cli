@@ -23,7 +23,6 @@
 					"csvw:number": 0,
 					"csvw:required": true,
 					"csvw:valueURL": "http://edamontology.org/data_1026"
-
 				},
 
 				{
@@ -218,8 +217,6 @@
 				"width": 10000,
 				"colorspace": "RGB",
 				"color_subsampling": "444"
-				}
-
 			}
 		}
 	]
