@@ -206,6 +206,7 @@ def registerSoftware(
     click.echo(guid)
 
 
+
 @register.command('dataset')
 @click.argument('rocrate-path', type=click.Path(exists=True, path_type=pathlib.Path))
 @click.option('--guid', required=False, default="", type=str)
@@ -359,6 +360,123 @@ def computation(
         #click.echo(
         #    json.dumps(computation_model.dict(by_alias=True), indent=2)
         #)
+
+
+
+@register.command('dataset-container')
+@click.argument('rocrate-path', type=click.Path(exists=True, path_type=pathlib.Path)
+@click.option('--guid', required=False, default="", type=str, show_default=False)
+@click.option('--name', required=True, prompt="DatasetContainer Name")
+@click.option('--hasPart', required=False, multiple=True)
+@click.option('--isPartOf', required=False, multiple=True)
+def registerDatasetContainer(
+    rocrate_path, 
+    guid, 
+    name, 
+    description, 
+    hasPart, 
+    isPartOf
+):
+    '''Add a DatasetContainer to the ROCrate.
+
+    A Dataset Container is used for grouping sets of datasets. Only Datasets may be added to the dataset container hasPart property.
+    '''
+   
+    # check that crate exists 
+    metadata_path = rocrate_path / "ro-crate-metadata.json"
+    if metadata_path.exists() != True:
+        click.echo(f"Cannot Find RO-Crate Metadata: {metadata_path}")
+        click.Abort()
+
+    crate = ROCrate(path=metadata_path)
+
+    if guid == "":
+        guid = generate_id(metadata_path, name, "Dataset")
+
+    # validate the provided metadata
+    try: 
+        dscontainer = DatasetContainer(**{
+            "guid": guid,
+            "name": name,
+            "description": description,
+            "hasPart": hasPart,
+            "isPartOf": isPartOf
+        })
+
+        crate.registerObject(dscontainer) 
+        click.echo(guid)
+
+    except ValidationError as e:
+        click.echo("DatasetContainer Validation Error")
+        click.echo(e)
+        click.Abort()
+
+    
+
+
+###############################################################################
+#                             Dataset Container Commands                      #
+###############################################################################
+
+@rocrate.group('dataset-container')
+def datasetContainer():
+    pass
+
+@datasetContainer.command('pop')
+@click.argument('rocrate-path', type=click.Path(exists=True, path_type=pathlib.Path))
+@click.option('--dataset-container', required=True)
+@click.option('--dataset-guid', required=True, multiple=True)
+def popDatasetContainer(rocrate_path, dataset_container, dataset_guid):
+    """ Add dataset elements to the specified dataset container
+    """
+    # check that crate exists 
+    metadata_path = rocrate_path / "ro-crate-metadata.json"
+    if metadata_path.exists() != True:
+        click.echo(f"Cannot Find RO-Crate Metadata: {metadata_path}")
+        click.Abort()
+
+    crate = ROCrate(path=metadata_path)
+
+    # TODO check that dataset container is guid
+
+    # TODO check that dataset guid is guid
+
+    try:
+        crate.popDatasetContainer(dataset_container, dataset_guid)
+
+    except Exception as e:
+        click.echo("Error poping element from DatasetContainer")
+        click.Abort()
+
+
+@datasetContainer.command('push')
+@click.argument('rocrate-path', type=click.Path(exists=True, path_type=pathlib.Path))
+@click.option('--dataset-container', required=True)
+@click.option('--dataset-guid', required=True, multiple=True)
+def pushDatasetContainer(rocrate_path, dataset_container, dataset_guid):
+    """ Add dataset elements to the specified dataset container
+    """
+
+    # check that crate exists 
+    metadata_path = rocrate_path / "ro-crate-metadata.json"
+    if metadata_path.exists() != True:
+        click.echo(f"Cannot Find RO-Crate Metadata: {metadata_path}")
+        click.Abort()
+
+    crate = ROCrate(path=metadata_path)
+
+    # TODO check that dataset container is guid
+
+    # TODO check that dataset guid is guid
+
+    try:
+        crate.pushDatasetContainer(dataset_container, dataset_guid)
+
+    except Exception as e:
+        click.echo("Error pushing element to DatasetContainer")
+        click.Abort()
+
+    
 
 
 # RO Crate add subcommands

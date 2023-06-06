@@ -4,7 +4,8 @@ import json
 from fairscape_cli.models import (
     Software,
     Dataset,
-    Computation
+    Computation,
+    DatasetContainer
 )
 from prettytable import PrettyTable
 from pydantic import BaseModel
@@ -108,7 +109,7 @@ class ROCrate(BaseModel):
 
 
 
-    def registerObject(self, model: Union[Dataset, Software, Computation]):
+    def registerObject(self, model: Union[Dataset, Software, Computation, DatasetContainer]):
         ''' Add a specified peice of metadata to the graph of an ROCrate
 
         Marshals a given model into JSON-LD, opens the ro-crate-metadata.json,
@@ -126,7 +127,6 @@ class ROCrate(BaseModel):
             json.dump(rocrate_metadata, rocrate_metadata_file, indent=2)
 
 
-
     def registerDataset(self, Dataset):
         self.registerObject(model=Dataset)
         
@@ -137,6 +137,103 @@ class ROCrate(BaseModel):
 
     def registerComputation(self, Computation):
         self.registerObject(model=Computation)
+
+
+    def pushDatasetContainer(
+        self, 
+        datasetContainerGUID: str, 
+        guids: List[str]
+    ):
+        """ Add Elements from a DatasetContainer and persist in the ro-crate-metadata.json
+        """
+        
+        metadata_path = self.path
+
+        with metadata_path.open("r+") as rocrate_metadata_file:
+            rocrate_metadata = json.load(rocrate_metadata_file)
+            
+             
+            # find the dataset container
+
+            metadata_graph = rocrate_metadata['@graph'] 
+            container_element = list(
+                filter(
+                    lambda meta: meta[1]['@id'] == datasetContainerGUID, 
+                    enumerate(metadata_graph)
+                )
+            )
+
+            # TODO raise more detailed exception
+            if len(container_element) == 0:
+                raise Exception
+
+            dscontainer_index = container_element[0][0]
+
+            # TODO if identifier isn't a dataset container
+
+            # TODO if guids aren't inside the crate
+
+            # TODO if guids aren't datasets
+
+            dscontainer_index = container_element[0][0]
+
+            # modfiy the dataset container
+            metadata_graph[dscontainer_index]["hasPart"].append(guids)
+
+            # set the updated the metadata graph
+            rocrate_metadata['@graph'] = metadata_graph
+
+            # persist to disk
+            rocrate_metadata_file.seek(0)
+            json.dump(rocrate_metadata, rocrate_metadata_file, indent=2)
+
+
+    def popDatasetContainer(
+        self, 
+        datasetContainerGUID: str, 
+        guids: List[str]
+    ):
+        """ Remove Elements from a DatasetContainer and persist in the ro-crate-metadata.json
+        """
+        metadata_path = self.path
+
+        with metadata_path.open("r+") as rocrate_metadata_file:
+            rocrate_metadata = json.load(rocrate_metadata_file)
+            
+             
+            # find the dataset container
+
+            metadata_graph = rocrate_metadata['@graph'] 
+            container_element = list(
+                filter(
+                    lambda meta: meta[1]['@id'] == datasetContainerGUID, 
+                    enumerate(metadata_graph)
+                )
+            )
+
+            # TODO raise more detailed exception
+            if len(container_element) == 0:
+                raise Exception
+
+            dscontainer_index = container_element[0][0]
+
+            # modfiy the dataset container
+
+            for guid in guids: 
+
+                try:
+                    metadata_graph[dscontainer_index]["hasPart"].remove(guid)
+                except ValueError:
+                    # TODO implement warning logger
+                    print(f"WARNING: GUID {guid} not found in datasetContainer {datasetContainerGUID}")
+
+            # set the updated the metadata graph
+            rocrate_metadata['@graph'] = metadata_graph
+
+            # persist to disk
+            rocrate_metadata_file.seek(0)
+            json.dump(rocrate_metadata, rocrate_metadata_file, indent=2)
+
 
 
     def listContents(self):

@@ -48,8 +48,8 @@ class Dataset(FairscapeBaseModel):
 class DatasetContainer(FairscapeBaseModel): 
     guid: str
     metadataType: Optional[str] = "https://w3id.org/EVI#Dataset"
-    author: constr(max_length=64)
-    datePublished: str
+    name: str
     description: constr(min_length=10)
     hasPart: Optional[List[Union[str, Identifier]] = []
     isPartOf: Optional[Union[str, Identifier]]
+
