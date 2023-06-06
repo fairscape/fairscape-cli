@@ -1,4 +1,7 @@
-from fairscape_cli.models.base import FairscapeBaseModel
+from fairscape_cli.models.base import (
+    FairscapeBaseModel,
+    Identifier
+)
 
 from typing import (
     Optional,
@@ -14,7 +17,6 @@ from pydantic import (
 )
 
 
-
 class Dataset(FairscapeBaseModel):
     metadataType: Optional[str] = "https://w3id.org/EVI#Dataset"
     author: constr(max_length=64)
@@ -25,9 +27,9 @@ class Dataset(FairscapeBaseModel):
     additionalDocumentation: Optional[str]
     fileFormat: str
     dataSchema: Optional[Union[str, dict]]
-    generatedBy: Optional[List[str]]
-    derivedFrom: Optional[List[str]]
-    usedBy: Optional[List[str]]
+    generatedBy: Optional[List[Union[str, Identifier]]]
+    derivedFrom: Optional[List[Union[str, Identifier]]]
+    usedBy: Optional[List[Union[str, Identifier]]]
     contentUrl: Optional[str]
 
     class Config:
@@ -41,3 +43,13 @@ class Dataset(FairscapeBaseModel):
                 "alias": "schema"
             }
         }
+
+
+class DatasetContainer(FairscapeBaseModel): 
+    guid: str
+    metadataType: Optional[str] = "https://w3id.org/EVI#Dataset"
+    author: constr(max_length=64)
+    datePublished: str
+    description: constr(min_length=10)
+    hasPart: Optional[List[Union[str, Identifier]] = []
+    isPartOf: Optional[Union[str, Identifier]]

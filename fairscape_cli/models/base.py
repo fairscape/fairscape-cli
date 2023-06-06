@@ -12,6 +12,27 @@ from pydantic import (
 )
 
 
+class Identifier(BaseModel):
+    guid: str
+    metadataType: str
+    name: str
+
+    class Config:
+        fields = {
+            "guid": {
+                "title": "guid",
+                "alias": "@id"
+            },
+            "metadataType": {
+                "title": "metadataType",
+                "alias": "@type"
+            },
+            "name": {
+                "title": "name"
+            }
+        }
+
+
 class FairscapeBaseModel(BaseModel):
     guid: str
     context: Union[str, Dict[str,str]] = {

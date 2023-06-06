@@ -524,8 +524,12 @@ def dataset(
             "associatedPublication": associated_publication,
             "additionalDocumentation": additional_documentation,
             "format": data_format,
-            "derivedFrom": derived_from,
-            "usedBy": used_by,
+            "derivedFrom": [
+                derived.strip("\n") for derived in derived_from
+            ],
+            "usedBy": [
+                used.strip("\n") for used in used_by 
+            ],
             "contentUrl": "file://" + str(destination_path)
             }
         )
