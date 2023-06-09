@@ -26,9 +26,13 @@ Homepage = "https://github.com/fairscape/fairscape-cli"
 
 [tool.poetry]
 name = "fairscape-cli"
-version = "0.1.5a2"
+version = "0.1.5a3"
 description = "A cli for validating metadata, packaging ROCrates, and interacting with the FAIRSCAPE API"
-authors = ["mlev71 <max.adam.levinson@gmail.com>"]
+authors = [
+        { name = "Max Levinson",    email = "mal8ch@virginia.edu"},
+        { name = "Sadnan Al Manir", email = "sadnanalmanir@gmail.com"},
+        { name = "Tim Clark",       email = "twc8q@virginia.edu"}
+]
 license = "LICENSE"
 readme = "README.md"
 packages = [{include = "fairscape_cli"}]
