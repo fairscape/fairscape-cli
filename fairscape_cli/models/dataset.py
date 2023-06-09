@@ -50,6 +50,6 @@ class DatasetContainer(FairscapeBaseModel):
     metadataType: Optional[str] = "https://w3id.org/EVI#Dataset"
     name: str
     description: constr(min_length=10)
-    hasPart: Optional[List[Union[str, Identifier]] = []
-    isPartOf: Optional[Union[str, Identifier]]
+    hasPart: Optional[List[Union[str, Identifier]]] = []
+    isPartOf: Optional[List[Union[str, Identifier]]] = []
 

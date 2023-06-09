@@ -8,6 +8,7 @@ from fairscape_cli.models import (
     Dataset,
     Software,
     Computation,
+    DatasetContainer,
     ROCrate
 )
 
@@ -364,18 +365,19 @@ def computation(
 
 
 @register.command('dataset-container')
-@click.argument('rocrate-path', type=click.Path(exists=True, path_type=pathlib.Path)
+@click.argument('rocrate-path', type=click.Path(exists=True, path_type=pathlib.Path))
 @click.option('--guid', required=False, default="", type=str, show_default=False)
 @click.option('--name', required=True, prompt="DatasetContainer Name")
-@click.option('--hasPart', required=False, multiple=True)
-@click.option('--isPartOf', required=False, multiple=True)
+@click.option('--description', required=True)
+@click.option('--has-part', required=False, multiple=True)
+@click.option('--is-part-of', required=False, multiple=True)
 def registerDatasetContainer(
     rocrate_path, 
     guid, 
     name, 
     description, 
-    hasPart, 
-    isPartOf
+    has_part, 
+    is_part_of
 ):
     '''Add a DatasetContainer to the ROCrate.
 
@@ -399,8 +401,8 @@ def registerDatasetContainer(
             "guid": guid,
             "name": name,
             "description": description,
-            "hasPart": hasPart,
-            "isPartOf": isPartOf
+            "hasPart": has_part,
+            "isPartOf": is_part_of
         })
 
         crate.registerObject(dscontainer) 
