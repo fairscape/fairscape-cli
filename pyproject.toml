@@ -29,9 +29,9 @@ name = "fairscape-cli"
 version = "0.1.5a3"
 description = "A cli for validating metadata, packaging ROCrates, and interacting with the FAIRSCAPE API"
 authors = [
-        { name = "Max Levinson",    email = "mal8ch@virginia.edu"},
-        { name = "Sadnan Al Manir", email = "sadnanalmanir@gmail.com"},
-        { name = "Tim Clark",       email = "twc8q@virginia.edu"}
+        "Max Levinson",
+        "Sadnan Al Manir", 
+        "Tim Clark"
 ]
 license = "LICENSE"
 readme = "README.md"
