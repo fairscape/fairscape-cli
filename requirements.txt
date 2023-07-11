@@ -1,4 +1,0 @@
-pydantic
-pyld
-click
-fairscape-models == 1.3.0
