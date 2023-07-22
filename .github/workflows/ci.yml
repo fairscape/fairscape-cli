@@ -2,8 +2,9 @@ name: ci
 on:
     push:
         branches:
-            - master
-            - main
+            #- master
+            #- main
+            - sadnan-dev-final-bagit
 permissions:
     contents: write
 jobs:
@@ -19,4 +20,4 @@ jobs:
                 key: ${{ github.ref }}
                 path: .cache
             - run: pip install mkdocs-material
-            - run: mkdocs gh-deplou --force 
+            - run: mkdocs gh-deploy --force 
