@@ -5,11 +5,13 @@ from fairscape_cli.models.dataset import (
 from fairscape_cli.models.software import Software
 from fairscape_cli.models.computation import Computation
 from fairscape_cli.models.rocrate import ROCrate
+from fairscape_cli.models.bagit import BagIt
 
 __all__ = [
     'Dataset',
     'DatasetContainer',
     'Software',
     'Computation',
-    'ROCrate'
+    'ROCrate',
+    'BagIt'
 ]
