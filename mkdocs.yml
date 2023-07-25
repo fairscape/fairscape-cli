@@ -4,9 +4,7 @@ site_name: FAIRSACPE CLI - A Validation and Packaging Command Line Tool
 nav:
   - Home: index.md
   - Setup: setup.md
-  - Getting Started:
-    - RO-Crate: ro-crate.md
-    - BagIt: bagit.md
+  - Getting Started: getting-started.md
   - Notes: notes.md
     
 
@@ -58,8 +56,8 @@ markdown_extensions:
   - pymdownx.caret
   - pymdownx.details
   - pymdownx.emoji:
-      emoji_index: !!python/name:materialx.emoji.twemoji
-      emoji_generator: !!python/name:materialx.emoji.to_svg
+      #emoji_index: !!python/name:materialx.emoji.twemoji
+      #emoji_generator: !!python/name:materialx.emoji.to_svg
   - pymdownx.highlight
   - pymdownx.inlinehilite
   - pymdownx.keys

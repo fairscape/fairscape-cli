@@ -1,10 +1,12 @@
+## RO-Crate
+
 The interface uses the `fairscape-cli` root command to invoke all sub-commands.
 
 ### Create a new RO-Crate
 
 All RO-Crate operations are invoked using the `rocrate` sub-command. Creation of an RO-Crate is performed by the `create` sub-command. It uses one optional parameter `guid`, three required parameters `name`, `organization-name`, `project-name`, and a location on the disk `ROCRATE_PATH`  
 
-``` powershell title="test"
+``` powershell
 fairscape-cli rocrate create [OPTIONS] ROCRATE_PATH
 
 Options:
@@ -35,7 +37,7 @@ fairscape-cli rocrate create \
   "/home/sadnan/test_rocrate"
 ```
 
-### Add objects to the RO-Crate
+### Add objects to RO-Crate
 
 The FAIRSCAPE ecosystem treats datasets and software as objects. Adding objects to an RO-Crate is performed by the `add` sub-command. Whenever the `add` command is used, the object is fetched and added to the crate.
 
@@ -49,7 +51,7 @@ Commands:
   dataset
   software
 ```
-#### Add dataset to the RO-Crate
+#### Add dataset object
 
 The sub-command `dataset` is used to add a dataset. It uses eight required parameters `name`, `author`, `version`, `date-published`, `description`, `data-format`, `source-filepath`, and `destination-filepath`. The additional six parameters are optional. Metadata about the dataset are added to the `ro-crate-metadata.json` and the dataset object is copied to the location `ROCRATE_PATH`. 
 
@@ -109,7 +111,7 @@ fairscape-cli rocrate add dataset \
   "/home/sadnan/test_rocrate"
 ```
 
-#### Add software to the RO-Crate
+#### Add software object
 
 The sub-command `software` is used to add a software. It uses eight required parameters `name`, `author`, `version`, `description`, `file-format`, `source-filepath`, `destination-filepath`, and `date-modified`. The additional five parameters are optional. Metadata about the software are added to the `ro-crate-metadata.json` and the software object is copied to the location `ROCRATE_PATH`. 
 
@@ -167,7 +169,7 @@ fairscape-cli rocrate add software \
   "/home/sadnan/test_rocrate"
 ```
 
-### Register metadata
+### Register metadata to RO-Crate
 The sub-command `register` is used to add metadata of the components of an RO-Crate to `ro-crate-metadata.json`. Registration can be performed on instances of four components: `computation`, `dataset`, `dataset-container`, and `software`. 
 
 The sub-commands `add dataset` and `add software` described above issue implicit calls to methods that register metadata about the dataset and software, respectively.
@@ -331,4 +333,60 @@ fairscape-cli rocrate register software \
   --associated-publication "Qin, Y. et al. A multi-scale map of cell structure fusing protein images and interactions. Nature 600, 536–542 2021" \
   --additional-documentation "https://idekerlab.ucsd.edu/music/" \
   "/home/sadnan/test_rocrate"
+```
+
+## BagIt
+
+### Structure of a BagIt
+
+```
+<base directory>/
+   |
+   +-- bag-info.txt
+   |
+   +-- bagit.txt
+   |
+   +-- manifest-md5.txt
+   |
+   +-- manifest-sha256.txt
+   |
+   +-- manifest-sha512.txt
+   |
+   +-- tagmanifest-md5.txt
+   |
+   +-- tagmanifest-sha256.txt 
+   |
+   +-- tagmanifest-sha512.txt 
+   |
+   +-- data/
+   |     |
+   |     +-- [payload files]
+```
+
+### Options and arguments for BagIt creation
+
+``` powershell
+fairscape-cli rocrate package bagit [OPTIONS] ROCRATE_PATH BAGIT_PATH
+
+Options:
+  --Source-Organization TEXT   [required]
+  --Organization-Address TEXT  [required]
+  --Contact-Name TEXT          [required]
+  --Contact-Phone TEXT         [required]
+  --Contact-Email TEXT         [required]
+  --External-Description TEXT  [required]
+```
+
+### Sample command to create a BagIt from a RO-Crate
+
+``` powershell
+fairscape-cli rocrate package bagit \
+   "/home/sadnan/test_rocrate" \
+   "/home/sadnan/test_bagit" \
+   --Source-Organization "FOO University" \
+   --Organization-Address "1 Main St., Cupertino, California, 11111" \
+   --Contact-Name "Jane Doe" \
+   --Contact-Phone "+1 111-111-1111" \
+   --Contact-Email "example@example.com" \
+   --External-Description "Uncompressed greyscale TIFF images from the FOO papers colle..."
 ```
