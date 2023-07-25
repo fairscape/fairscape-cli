@@ -1,6 +1,8 @@
 # fairscape-cli
 Data Validation and Packaging utility for sending evidence graphs to FAIRSCAPE
 
+Documentation: [https://fairscape.github.io/fairscape-cli/](https://fairscape.github.io/fairscape-cli/)
+
 ## Functional Description
 
 The fairscape-cli tool is used for client side remote teams to validate and assemble
