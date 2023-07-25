@@ -1,11 +1,11 @@
 ## Requirements
----
+
 - [python 3.8+](https://www.python.org/downloads/release/python-380/)
 - [Poetry](https://python-poetry.org/docs/#installation)
 - [git](https://git-scm.com/downloads)
 
 ## Installation
---- 
+
 - Clone the repository from Github 
 
     ```

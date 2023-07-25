@@ -719,18 +719,48 @@ def bagit(
     )
     
     
-    click.echo(f"Creating BagIt in: {bagit_path}")
-    bagit.create_bagit_directory()
-    bagit.create_bagit_declaration()
-    #click.echo(click.style('done', fg='green'))
     
+    click.echo(click.style("BagIt path", fg="green") + f": {bagit_path}")
+
+    bagit.create_bagit_directory()
+    
+    # Create bag.txt
+    bagit.create_bagit_declaration()
+    click.echo(click.style("Bag Declaration", fg="green") + f": {bagit_path}/bag.txt")
+    
+    # Populate /data/ directory 
     bagit.create_payload_directory()
+    click.echo(click.style("Payload Directory", fg="green") + f": {bagit_path}/data/")
 
+
+    # Create bag-info.txt
     bagit.create_bagit_metadata()
-
+    click.echo(click.style("Bag Metadata", fg="green") + f": {bagit_path}/bag-info.txt")
+    
+    # Create manifest-sha256.txt
     bagit.create_payload_manifest_sha256()
+    click.echo(click.style("Payload Manifest", fg="green") + f": {bagit_path}/manifest-sha256.txt")
+    # Create tagmanifest-sha256.txt
+    bagit.create_tag_manifest_sha256()
+    click.echo(click.style("Tag Manifest", fg="green") + f": {bagit_path}/tagmanifest-sha256.txt")
+    
+    # Create manifest-sha512.txt
     bagit.create_payload_manifest_sha512()
+    click.echo(click.style("Payload Manifest", fg="green") + f": {bagit_path}/manifest-sha512.txt")
+    # Create tagmanifest-sha512.txt
+    bagit.create_tag_manifest_sha512()
+    click.echo(click.style("Tag Manifest", fg="green") + f": {bagit_path}/tagmanifest-sha512.txt")
+    
+    # Create manifest-md5.txt
     bagit.create_payload_manifest_md5()
+    click.echo(click.style("Payload Manifest", fg="green") + f": {bagit_path}/manifest-md5.txt")
+    # Create tagmanifest-md5.txt
+    bagit.create_tag_manifest_md5()
+    click.echo(click.style("Tag Manifest", fg="green") + f": {bagit_path}/tagmanifest-md5.txt")
+
+    
+    
+
 
     
 

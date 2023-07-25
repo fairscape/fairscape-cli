@@ -18,6 +18,12 @@ The fairscape-cli provides a command line interface that allows the client side 
     * an optional element tag manifest `tagmanifest-algorithm.txt` containing checksum.
 
 
+!!! note
+
+    The prerequisite of creating a BagIt is to create RO-Crate. The FAIRSCAPE ecosystem 
+    currently accepts reserved metadata elements that are generated when RO-Crate is created
+    by the CLI. Therefore, adding BagIt support will become easier in the future when the 
+    metadata is also included.  
 
 
 
