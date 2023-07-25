@@ -130,8 +130,9 @@ class BagIt(BaseModel):
         
         payload_dir = self.bagit_path / 'data'
         payload_manifest_path = self.bagit_path / 'manifest-sha256.txt'
+        tag_manifest_path = self.bagit_path / 'tagmanifest-sha256.txt'
 
-        with payload_manifest_path.open(mode="w") as payload_manifest_file:
+        with payload_manifest_path.open(mode="w") as payload_manifest_file, tag_manifest_path.open(mode="w") as tag_manifest_file:
             for path in pathlib.Path(payload_dir).rglob("*"):
                 if path.is_file():                    
                     sha256_hash = hashlib.sha256()                   
@@ -139,14 +140,16 @@ class BagIt(BaseModel):
                         for byte_block in iter(lambda: f.read(4096),b""):
                             sha256_hash.update(byte_block)                        
                         payload_manifest_file.write('%s %s\n' % (sha256_hash.hexdigest(), os.path.relpath(path, self.bagit_path)))
+                        tag_manifest_file.write('%s\n' % (sha256_hash.hexdigest()))
 
 
     def create_payload_manifest_sha512(self):
         
         payload_dir = self.bagit_path / 'data'
         payload_manifest_path = self.bagit_path / 'manifest-sha512.txt'
+        tag_manifest_path = self.bagit_path / 'tagmanifest-sha512.txt'
 
-        with payload_manifest_path.open(mode="w") as payload_manifest_file:
+        with payload_manifest_path.open(mode="w") as payload_manifest_file, tag_manifest_path.open(mode="w") as tag_manifest_file:
             for path in pathlib.Path(payload_dir).rglob("*"):
                 if path.is_file(): 
                     sha512_hash = hashlib.sha512()                   
@@ -154,14 +157,16 @@ class BagIt(BaseModel):
                         for byte_block in iter(lambda: f.read(4096),b""):
                             sha512_hash.update(byte_block)                        
                         payload_manifest_file.write('%s %s\n' % (sha512_hash.hexdigest(), os.path.relpath(path, self.bagit_path)))
+                        tag_manifest_file.write('%s\n' % (sha512_hash.hexdigest()))
 
 
     def create_payload_manifest_md5(self):
         
         payload_dir = self.bagit_path / 'data'
         payload_manifest_path = self.bagit_path / 'manifest-md5.txt'
+        tag_manifest_path = self.bagit_path / 'tagmanifest-md5.txt'
 
-        with payload_manifest_path.open(mode="w") as payload_manifest_file:
+        with payload_manifest_path.open(mode="w") as payload_manifest_file, tag_manifest_path.open(mode="w") as tag_manifest_file:
             for path in pathlib.Path(payload_dir).rglob("*"):
                 if path.is_file(): 
                     md5_hash = hashlib.md5()                  
@@ -169,3 +174,4 @@ class BagIt(BaseModel):
                         for byte_block in iter(lambda: f.read(4096),b""):
                             md5_hash.update(byte_block)                        
                         payload_manifest_file.write('%s %s\n' % (md5_hash.hexdigest(), os.path.relpath(path, self.bagit_path)))
+                        tag_manifest_file.write('%s\n' % (md5_hash.hexdigest()))
