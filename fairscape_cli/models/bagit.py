@@ -186,7 +186,7 @@ class BagIt(BaseModel):
             for path in pathlib.Path(self.bagit_path).rglob("*"):
                if exclude_payload_dir not in path.parts: 
                 #print(path.stem, path.name, path)
-                if path.is_file(): 
+                if path.is_file() and not path.name.startswith('tagmanifest-'): 
                     md5_hash = hashlib.md5()                  
                     with open(path,"rb") as f:
                         for byte_block in iter(lambda: f.read(4096),b""):
@@ -203,7 +203,7 @@ class BagIt(BaseModel):
             for path in pathlib.Path(self.bagit_path).rglob("*"):
                if exclude_payload_dir not in path.parts: 
                 #print(path.stem, path.name, path)
-                if path.is_file(): 
+                if path.is_file() and not path.name.startswith('tagmanifest-'):  
                     sha256_hash = hashlib.sha256()                  
                     with open(path,"rb") as f:
                         for byte_block in iter(lambda: f.read(4096),b""):
@@ -219,8 +219,8 @@ class BagIt(BaseModel):
         with tag_manifest_path.open(mode="w") as tag_manifest_file:
             for path in pathlib.Path(self.bagit_path).rglob("*"):
                if exclude_payload_dir not in path.parts: 
-                #print(path.stem, path.name, path)
-                if path.is_file(): 
+                print(path.stem, path.name, path)
+                if path.is_file() and not path.name.startswith('tagmanifest-'):  
                     sha512_hash = hashlib.sha512()                  
                     with open(path,"rb") as f:
                         for byte_block in iter(lambda: f.read(4096),b""):
