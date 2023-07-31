@@ -3,13 +3,15 @@ import pathlib
 import shutil
 import json
 from pydantic import ValidationError
+from datetime import datetime
 
 from fairscape_cli.models import (
     Dataset,
     Software,
     Computation,
     DatasetContainer,
-    ROCrate
+    ROCrate,
+    BagIt
 )
 
 from fairscape_cli.rocrate.utils import (
@@ -43,6 +45,7 @@ def validate():
 def zip():
     pass
 
+
 @rocrate.command('init')
 @click.option('--guid', required=False, type=str, default="", show_default=False)
 @click.option('--name', required=True, type=str, prompt = "ROCrate Name (e.g. B2AI_ROCRATE)")
@@ -75,18 +78,18 @@ def init(
 @click.option('--name', required=True, type=str, prompt = "ROCrate Name (e.g. B2AI_ROCRATE)")
 @click.option('--organization-name', required=True, type=str, prompt = "Organization Name")
 @click.option('--project-name', required=True, type=str, prompt = "Project Name")
-@click.argument('crate-path', type=click.Path(exists=False, path_type=pathlib.Path))
+@click.argument('rocrate-path', type=click.Path(exists=False, path_type=pathlib.Path))
 def create(
     guid: str,
     name: str,
     organization_name: str,
     project_name: str,
-    crate_path: pathlib.Path, 
+    rocrate_path: pathlib.Path, 
 ): 
-    '''Create an ROCrate in a new path specified by the crate-path argument
+    '''Create an ROCrate in a new path specified by the rocrate-path argument
     '''
     
-    organization_guid = f"ark:/{organization_name.replace(' ', '_')}"
+    organization_guid = f"ark:5982/{organization_name.replace(' ', '_')}"
     project_guid = organization_guid + f"/{project_name.replace(' ', '_')}"
 
     if guid != "":
@@ -99,7 +102,7 @@ def create(
         name=name,
         organizationName = organization_name,
         projectName = project_name,
-        path = crate_path, 
+        path = rocrate_path, 
         metadataGraph = []
     )
     
@@ -294,12 +297,13 @@ def registerDataset(
 @click.option('--guid', required=False, default="", type=str, show_default=False)
 @click.option('--name', required=True, prompt="Computation Name")
 @click.option('--run-by', required=True, prompt="Computation Run By")
-@click.option('--command', required=False, prompt="Command")
+@click.option('--command', required=False, prompt="Enter the command", prompt_required=False)
 @click.option('--date-created', required=True, prompt="Date Created")
 @click.option('--description', required=True, prompt="Computation Description")
 @click.option('--used-software', required=False, multiple=True)
 @click.option('--used-dataset', required=False, multiple=True)
 @click.option('--generated', required=False, multiple=True)
+
 def computation(
     rocrate_path: pathlib.Path,
     guid: str,
@@ -335,6 +339,7 @@ def computation(
             "@type": "https://w3id.org/EVI#Computation",
             "name": name,
             "runBy": run_by,
+            "command": command,
             "dateCreated": date_created,
             "description": description,
             # sanitize input lists of newline breaks
@@ -498,7 +503,7 @@ def add():
 @click.option('--url',     required = False)
 @click.option('--source-filepath', required=True)
 @click.option('--destination-filepath', required=True)
-@click.option('--date-modified', required=False)
+@click.option('--date-modified', required=True)
 @click.option('--used-by-computation', required=False, multiple=True)
 @click.option('--associated-publication', required=False)
 @click.option('--additional-documentation', required=False)
@@ -588,8 +593,8 @@ def software(
 @click.option('--date-published', required=True, prompt="Date Published")
 @click.option('--description', required=True, prompt="Dataset Description")
 @click.option('--data-format', required=True, prompt="Data Format i.e. (csv, tsv)")
-@click.option('--source-filepath', required=False)
-@click.option('--destination-filepath', required=False)
+@click.option('--source-filepath', required=True)
+@click.option('--destination-filepath', required=True)
 @click.option('--used-by', required=False, multiple=True)
 @click.option('--derived-from', required=False, multiple=True)
 @click.option('--associated-publication', required=False)
@@ -665,6 +670,98 @@ def dataset(
     click.echo(guid) 
 
     # TODO add to cache
+    
+
+
+
+@rocrate.group('package')
+def package():
+    pass
+
+@package.command('bagit')
+@click.argument('rocrate-path', type=click.Path(exists=True, path_type=pathlib.Path))
+@click.argument('bagit-path', type=click.Path(exists=False, path_type=pathlib.Path))
+@click.option('--Source-Organization', required=True, prompt="Source-Organization")
+@click.option('--Organization-Address', required=True, prompt="Organization-Address")
+@click.option('--Contact-Name', required=True, prompt="Contact-Name")
+@click.option('--Contact-Phone', required=True, prompt="Contact-Phone")
+@click.option('--Contact-Email', required=True, prompt="Contact-Email")
+@click.option('--External-Description', required=True, prompt="External-Description")
+#@click.option('--Bagging-Date', required=False)
+#@click.option('--External-Identifier', required=False, prompt="External-Identifier")
+#@click.option('--Payload-Oxum', required=False, prompt="Payload-Oxum")
+#@click.option('--Bag-Group-Identifier', required=False, prompt="Bag-Group-Identifier")
+#@click.option('--Bag-Count', required=False, prompt="Bag-Count")
+#@click.option('--Internal-Sender-Identifier', required=False, prompt="Internal-Sender-Identifier")
+#@click.option('--Internal-Sender-Description', required=False, prompt="Internal-Sender-Description")
+def bagit(
+    rocrate_path: pathlib.Path,
+    bagit_path: pathlib.Path,
+    source_organization: str,
+    organization_address: str,
+    contact_name: str,
+    contact_phone: str,
+    contact_email: str,
+    external_description: str
+):
+    bagit = BagIt(
+        **{    
+            "rocrate_path": rocrate_path,
+            "bagit_path": bagit_path,
+            "source_organization": source_organization,
+            "organization_address": organization_address,
+            "contact_name": contact_name,
+            "contact_phone": contact_phone,
+            "contact_email": contact_email,
+            "external_description": external_description,
+            "bagging_date": datetime.now().strftime("%m/%d/%Y")
+        }
+    )
+    
+    
+    
+    click.echo(click.style("BagIt path", fg="green") + f": {bagit_path}")
+
+    bagit.create_bagit_directory()
+    
+    # Create bag.txt
+    bagit.create_bagit_declaration()
+    click.echo(click.style("Bag Declaration", fg="green") + f": {bagit_path}/bag.txt")
+    
+    # Populate /data/ directory 
+    bagit.create_payload_directory()
+    click.echo(click.style("Payload Directory", fg="green") + f": {bagit_path}/data/")
+
+
+    # Create bag-info.txt
+    bagit.create_bagit_metadata()
+    click.echo(click.style("Bag Metadata", fg="green") + f": {bagit_path}/bag-info.txt")
+    
+    # Create manifest-sha256.txt
+    bagit.create_payload_manifest_sha256()
+    click.echo(click.style("Payload Manifest", fg="green") + f": {bagit_path}/manifest-sha256.txt")
+    # Create tagmanifest-sha256.txt
+    bagit.create_tag_manifest_sha256()
+    click.echo(click.style("Tag Manifest", fg="green") + f": {bagit_path}/tagmanifest-sha256.txt")
+    
+    # Create manifest-sha512.txt
+    bagit.create_payload_manifest_sha512()
+    click.echo(click.style("Payload Manifest", fg="green") + f": {bagit_path}/manifest-sha512.txt")
+    # Create tagmanifest-sha512.txt
+    bagit.create_tag_manifest_sha512()
+    click.echo(click.style("Tag Manifest", fg="green") + f": {bagit_path}/tagmanifest-sha512.txt")
+    
+    # Create manifest-md5.txt
+    bagit.create_payload_manifest_md5()
+    click.echo(click.style("Payload Manifest", fg="green") + f": {bagit_path}/manifest-md5.txt")
+    # Create tagmanifest-md5.txt
+    bagit.create_tag_manifest_md5()
+    click.echo(click.style("Tag Manifest", fg="green") + f": {bagit_path}/tagmanifest-md5.txt")
+
+    
+    
+
+
     
 
 

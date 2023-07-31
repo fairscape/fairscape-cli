@@ -1,0 +1,36 @@
+{
+  "@id": "ark:/UVA/B2AI/rocrate_test",
+  "@context": {
+    "EVI": "https://w3id.org/EVI#",
+    "@vocab": "https://schema.org/"
+  },
+  "@type": "Dataset",
+  "name": "rocrate_test",
+  "isPartOf": [
+    {
+      "@id": "ark:/UVA",
+      "@type": "Organization",
+      "name": "UVA"
+    },
+    {
+      "@id": "ark:/UVA/B2AI",
+      "@type": "Project",
+      "name": "B2AI"
+    }
+  ],
+  "@graph": [
+    {
+      "@id": "ark:/UVA/B2AI/rocrate_test/ro-crate-metadata.json",
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.1"
+      },
+      "about": {
+        "@id": "ark:/UVA/B2AI/rocrate_test"
+      },
+      "isPartOf": {
+        "@id": "ark:/UVA/B2AI/rocrate_test"
+      },
+      "contentUrl": "file:// /ro-crate-metadata.json"
+    }
+  ]
+}
