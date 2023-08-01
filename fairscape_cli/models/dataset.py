@@ -13,16 +13,19 @@ from typing import (
 from pydantic import (
     BaseModel,
     constr,
+    Field,
     AnyUrl
 )
+from datetime import datetime
 
 
 class Dataset(FairscapeBaseModel):
     metadataType: Optional[str] = "https://w3id.org/EVI#Dataset"
-    author: constr(max_length=64)
-    datePublished: str
+    author: str = Field(max_length=64)
+    datePublished: datetime = Field(default_factory=datetime.now)
     version: str
-    description: constr(min_length=10)
+    description: str = Field(min_length=10)
+    keywords: List[str] = Field(...)
     associatedPublication: Optional[str]
     additionalDocumentation: Optional[str]
     fileFormat: str
@@ -49,7 +52,8 @@ class DatasetContainer(FairscapeBaseModel):
     guid: str
     metadataType: Optional[str] = "https://w3id.org/EVI#Dataset"
     name: str
-    description: constr(min_length=10)
+    description: str = Field(min_length=10)
+    keywords: List[str] = Field(...)
     hasPart: Optional[List[Union[str, Identifier]]] = []
     isPartOf: Optional[List[Union[str, Identifier]]] = []
 

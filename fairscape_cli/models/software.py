@@ -1,6 +1,6 @@
 from fairscape_cli.models.base import FairscapeBaseModel
 from pydantic import (
-    constr,
+    Field
     AnyUrl
 )
 from datetime import datetime
@@ -14,10 +14,11 @@ from typing import (
 
 class Software(FairscapeBaseModel): 
     metadataType: str = "https://w3id.org/EVI#Software"
-    author: constr(max_length=64)
+    author: Field(min_length=4, max_length=64)
     dateModified: str
     version: str
-    description: constr(min_length=10)
+    description: str =  Field(min_length=10)
+    keywords: List[str] = Field(...)
     associatedPublication: Optional[str]
     additionalDocumentation: Optional[str]
     fileFormat: str
