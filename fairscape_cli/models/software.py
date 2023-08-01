@@ -1,6 +1,6 @@
 from fairscape_cli.models.base import FairscapeBaseModel
 from pydantic import (
-    Field
+    Field,
     AnyUrl
 )
 from datetime import datetime
