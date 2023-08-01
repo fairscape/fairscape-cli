@@ -7,8 +7,7 @@ from typing import (
     Dict,
 )
 from pydantic import (
-    Field
-    constr,
+    Field,
     AnyUrl
 )
 import re

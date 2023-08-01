@@ -94,7 +94,7 @@ test_computation = {
 
 class TestROCrateSuccess():
     runner = CliRunner()
-    rocrate_path = "./tests/data/example_rocrate"
+    rocrate_path = "./tests/data/automated_test_rocrate"
  
     def test_rocrate_create(self): 
 
@@ -141,7 +141,6 @@ class TestROCrateSuccess():
 
 
     def test_register_dataset(self):
-
         add_dataset = [
             "rocrate",
             "register",
@@ -172,7 +171,6 @@ class TestROCrateSuccess():
         print(result.stdout)
 
         assert result.exit_code == 0
-
 
 
     def test_add_dataset(self):
@@ -224,7 +222,6 @@ class TestROCrateSuccess():
             f"--associated-publication '{test_software['associatedPublication']}'",
             "--file-format '.py'",
             f"--date-modified '{test_software['dateModified']}'",
-            f"--filepath '{self.rocrate_path + '/calibrate_pairwise_distance.py'}'",
             f"'{self.rocrate_path}'",
         ]
 

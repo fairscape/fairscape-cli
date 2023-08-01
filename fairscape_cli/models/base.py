@@ -8,60 +8,48 @@ from typing import (
 from pydantic import (
     BaseModel,
     constr,
-    AnyUrl
+    AnyUrl,
+    Field,
+    ConfigDict
 )
+
+default_context = {
+    "@vocab": "https://schema.org/",
+    "evi": "https://w3id.org/EVI#"
+}
 
 
 class Identifier(BaseModel):
-    guid: str
-    metadataType: str
+    guid: str = Field(
+        title="guid",
+        alias="@id" 
+    )
+    metadataType: str = Field(
+        title="metadataType",
+        alias="@type" 
+    )
     name: str
-
-    class Config:
-        fields = {
-            "guid": {
-                "title": "guid",
-                "alias": "@id"
-            },
-            "metadataType": {
-                "title": "metadataType",
-                "alias": "@type"
-            },
-            "name": {
-                "title": "name"
-            }
-        }
 
 
 class FairscapeBaseModel(BaseModel):
-    guid: str
-    context: Union[str, Dict[str,str]] = {
-                "@vocab": "https://schema.org/",
-                "evi": "https://w3id.org/EVI#"
-            }
-    metadataType: str
+    model_config = ConfigDict(
+        populate_by_name = True,
+        validate_assignment = True,  
+    )
+    guid: str = Field(
+        title="guid",
+        alias="@id"
+    )
+    context: Dict[str,str] = Field(
+        default=default_context,
+        title="context",
+        alias="@context"
+    )
+    metadataType: str = Field(
+        title="metadataType",
+        alias="@type"
+    )
     url: Optional[AnyUrl]
-    name: constr(max_length=64)
-    keywords: List[str] = []
-
-    class Config:
-        allow_population_by_field_name = True
-        validate_assignment = True    
-        fields={
-            "context": {
-                "title": "context",
-                "alias": "@context"
-            },
-            "guid": {
-                "title": "guid",
-                "alias": "@id"
-            },
-            "metadataType": {
-                "title": "metadataType",
-                "alias": "@type"
-            },
-            "name": {
-                "title": "name"
-            }
-        }
+    name: str = Field(max_length=64)
+    keywords: List[str] = Field(default=[])
 

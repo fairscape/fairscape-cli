@@ -131,13 +131,13 @@ class ROCrate(BaseModel):
         appends the new metadata to the @graph, and overwrites the ro-crate-metadata.json
         '''
 
-        metadata_path = self.path
+        metadata_path = pathlib.Path(self.path)
 
         with metadata_path.open("r+") as rocrate_metadata_file:
             rocrate_metadata = json.load(rocrate_metadata_file)
             
             # add to the @graph
-            rocrate_metadata['@graph'].append(model.dict(by_alias=True))
+            rocrate_metadata['@graph'].append(model.model_dump(by_alias=True))
             rocrate_metadata_file.seek(0)
             json.dump(rocrate_metadata, rocrate_metadata_file, indent=2)
 
