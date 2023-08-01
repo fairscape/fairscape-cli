@@ -51,11 +51,15 @@ def zip():
 @click.option('--name', required=True, type=str, prompt = "ROCrate Name (e.g. B2AI_ROCRATE)")
 @click.option('--organization-name', required=True, type=str, prompt = "Organization Name")
 @click.option('--project-name', required=True, type=str, prompt = "Project Name")
+@click.option('--description', required=True, type=str)
+@click.option('--keywords', required=True, multiple=True, type=str)
 def init(
     guid: str,
     name: str,
     organization_name: str,
-    project_name: str
+    project_name: str,
+    description: str,
+    keywords: List[str]
 ):
 
     passed_crate =ROCrate(
@@ -63,6 +67,8 @@ def init(
         name=name,
         organizationName = organization_name,
         projectName = project_name,
+        description = description,
+        keywords = keywords,
         path = pathlib.Path.cwd(), 
         metadataGraph = []
     )
@@ -78,12 +84,16 @@ def init(
 @click.option('--name', required=True, type=str, prompt = "ROCrate Name (e.g. B2AI_ROCRATE)")
 @click.option('--organization-name', required=True, type=str, prompt = "Organization Name")
 @click.option('--project-name', required=True, type=str, prompt = "Project Name")
+@click.option('--description', required=True, type=str)
+@click.option('--keywords', required=True, multiple=True, type=str)
 @click.argument('rocrate-path', type=click.Path(exists=False, path_type=pathlib.Path))
 def create(
     guid: str,
     name: str,
     organization_name: str,
     project_name: str,
+    description: str,
+    keywords: List[str],
     rocrate_path: pathlib.Path, 
 ): 
     '''Create an ROCrate in a new path specified by the rocrate-path argument
@@ -102,6 +112,8 @@ def create(
         name=name,
         organizationName = organization_name,
         projectName = project_name,
+        description = description,
+        keywords = keywords,
         path = rocrate_path, 
         metadataGraph = []
     )
@@ -136,6 +148,7 @@ def register():
 @click.option('--author',  required=True, prompt = "Author Name")
 @click.option('--version', required=True, prompt = "Software Version")
 @click.option('--description', required = True, prompt = "Software Description")
+@click.option('--keywords', required=True, multiple=True)
 @click.option('--file-format', required = True, prompt = "File Format of Software")
 @click.option('--url',     required = False)
 @click.option('--date-modified', required=False)
@@ -150,6 +163,7 @@ def registerSoftware(
     author: str,
     version: str,
     description: str, 
+    keywords: List[str],
     file_format: str,
     url: str,
     date_modified: str,
@@ -178,6 +192,7 @@ def registerSoftware(
             "author": author,
             "dateModified": date_modified,
             "description": description,
+            "keywords": keywords,
             "version": version,
             "associatedPublication": associated_publication,
             "additionalDocumentation": additional_documentation,
@@ -220,6 +235,7 @@ def registerSoftware(
 @click.option('--version', required=True, prompt="Dataset Version")
 @click.option('--date-published', required=True, prompt="Date Published")
 @click.option('--description', required=True, prompt="Dataset Description")
+@click.option('--keywords', required=True, multiple=True)
 @click.option('--data-format', required=True, prompt="Data Format i.e. (csv, tsv)")
 @click.option('--filepath', required=True)
 @click.option('--used-by', required=False, multiple=True)
@@ -233,6 +249,7 @@ def registerDataset(
     url: str,
     author: str,
     description: str,
+    keywords: List[str],
     date_published: str,
     version: str,
     associated_publication: Optional[str],
@@ -260,6 +277,7 @@ def registerDataset(
             "author": author,
             "name": name,
             "description": description,
+            "keywords": keywords,
             "datePublished": date_published,
             "version": version,
             "associatedPublication": associated_publication,
@@ -300,10 +318,10 @@ def registerDataset(
 @click.option('--command', required=False, prompt="Enter the command", prompt_required=False)
 @click.option('--date-created', required=True, prompt="Date Created")
 @click.option('--description', required=True, prompt="Computation Description")
+@click.option('--keywords', required=True, multiple=True)
 @click.option('--used-software', required=False, multiple=True)
 @click.option('--used-dataset', required=False, multiple=True)
 @click.option('--generated', required=False, multiple=True)
-
 def computation(
     rocrate_path: pathlib.Path,
     guid: str,
@@ -312,6 +330,7 @@ def computation(
     command: Optional[Union[str, List[str]]],
     date_created: str,
     description: str,
+    keywords: List[str],
     used_software,
     used_dataset,
     generated
@@ -338,6 +357,8 @@ def computation(
             "@id": guid,
             "@type": "https://w3id.org/EVI#Computation",
             "name": name,
+            "description": description,
+            "keywords": keywords,
             "runBy": run_by,
             "command": command,
             "dateCreated": date_created,
@@ -374,6 +395,7 @@ def computation(
 @click.option('--guid', required=False, default="", type=str, show_default=False)
 @click.option('--name', required=True, prompt="DatasetContainer Name")
 @click.option('--description', required=True)
+@click.option('--keywords', required=True, multiple=True)
 @click.option('--has-part', required=False, multiple=True)
 @click.option('--is-part-of', required=False, multiple=True)
 def registerDatasetContainer(
@@ -381,6 +403,7 @@ def registerDatasetContainer(
     guid, 
     name, 
     description, 
+    keywords,
     has_part, 
     is_part_of
 ):
@@ -406,6 +429,7 @@ def registerDatasetContainer(
             "guid": guid,
             "name": name,
             "description": description,
+            "keywords": keywords,
             "hasPart": has_part,
             "isPartOf": is_part_of
         })
@@ -499,6 +523,7 @@ def add():
 @click.option('--author',  required=True, prompt = "Author Name")
 @click.option('--version', required=True, prompt = "Software Version")
 @click.option('--description', required = True, prompt = "Software Description")
+@click.option('--keywords', required=True, multiple=True)
 @click.option('--file-format', required = True, prompt = "File Format of Software")
 @click.option('--url',     required = False)
 @click.option('--source-filepath', required=True)
@@ -514,6 +539,7 @@ def software(
     author: str,
     version: str,
     description: str, 
+    keywords: List[str],
     file_format: str,
     url: str,
     source_filepath: str,
@@ -552,6 +578,7 @@ def software(
             "author": author,
             "dateModified": date_modified,
             "description": description,
+            "keywords": keywords,
             "version": version,
             "associatedPublication": associated_publication,
             "additionalDocumentation": additional_documentation,
@@ -592,6 +619,7 @@ def software(
 @click.option('--version', required=True, prompt="Dataset Version")
 @click.option('--date-published', required=True, prompt="Date Published")
 @click.option('--description', required=True, prompt="Dataset Description")
+@click.option('--keywords', required=True, multiple=True)
 @click.option('--data-format', required=True, prompt="Data Format i.e. (csv, tsv)")
 @click.option('--source-filepath', required=True)
 @click.option('--destination-filepath', required=True)
@@ -606,6 +634,7 @@ def dataset(
     url: str,
     author: str,
     description: str,
+    keywords: List[str],
     date_published: str,
     version: str,
     associated_publication: Optional[str],
@@ -644,6 +673,7 @@ def dataset(
             "author": author,
             "name": name,
             "description": description,
+            "keywords": keywords,
             "datePublished": date_published,
             "version": version,
             "associatedPublication": associated_publication,
