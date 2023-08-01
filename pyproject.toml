@@ -40,7 +40,6 @@ packages = [{include = "fairscape_cli"}]
 
 [tool.poetry.dependencies]
 python = "^3.8"
-pydantic = "^1.10.7"
 pyld = "^2.0.3"
 click = "^8.1.3"
 fairscape-models = "^0.1.2"
