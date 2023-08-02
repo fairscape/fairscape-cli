@@ -8,7 +8,11 @@ from fairscape_cli.models import (
     DatasetContainer
 )
 from prettytable import PrettyTable
-from pydantic import BaseModel
+from pydantic import (
+    BaseModel,
+    computed_field,
+    Field,
+)
 from typing import (
     Optional,
     Union,
@@ -17,13 +21,22 @@ from typing import (
 
 
 class ROCrate(BaseModel):
-    guid: Optional[str] = ""
-    metadataType: str = "https://schema.org/Dataset"
-    name: Optional[str]
+    guid: Optional[str] = Field(default="")
+    metadataType: str = Field(default="https://schema.org/Dataset")
+    name: str = Field(min_length=10)
+    description: str = Field(min_length=10)
+    keywords: List[str] = Field(...)
     projectName: Optional[str]
     organizationName: Optional[str]
     path: pathlib.Path
     metadataGraph: Optional[List[Union[Dataset,Software, Computation]]]
+
+    # Computed Field implementation for guid generation
+    #@computed_field
+    #def guid(self) -> str:
+    #    organization_guid = f"ark:/{self.organizationName.replace(' ', '_')}"
+    #    project_guid = organization_guid + f"/{self.projectName.replace(' ', '_')}"
+    #    return project_guid + f"/{self.name.replace(' ', '_')}"
 
     def createCrateFolder(self):
         self.path.mkdir(exist_ok=False)
@@ -53,6 +66,8 @@ class ROCrate(BaseModel):
             },
             "@type": "Dataset",
             "name": self.name,
+            "description": self.description,
+            "keywords": self.keywords,
             "isPartOf": [
                 {
                     "@id": organization_guid,
@@ -116,13 +131,13 @@ class ROCrate(BaseModel):
         appends the new metadata to the @graph, and overwrites the ro-crate-metadata.json
         '''
 
-        metadata_path = self.path
+        metadata_path = pathlib.Path(self.path)
 
         with metadata_path.open("r+") as rocrate_metadata_file:
             rocrate_metadata = json.load(rocrate_metadata_file)
             
             # add to the @graph
-            rocrate_metadata['@graph'].append(model.dict(by_alias=True))
+            rocrate_metadata['@graph'].append(model.model_dump(by_alias=True))
             rocrate_metadata_file.seek(0)
             json.dump(rocrate_metadata, rocrate_metadata_file, indent=2)
 

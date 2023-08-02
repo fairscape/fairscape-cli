@@ -2,7 +2,11 @@ import pathlib
 import shutil
 import hashlib
 import os
-from pydantic import BaseModel
+from pydantic import (
+    BaseModel,
+    Field,
+    ConfigDict
+)
 from typing import (
     Optional
 )
@@ -13,52 +17,23 @@ class BagIt(BaseModel):
     The BagIt class represents the optional reserved metadata file bag-info.txt
     It is not considered a required element and created for human consumption.
     """
+    model_config = ConfigDict(
+        populate_by_name=True,
+        validate_assignment=True
+    )
     rocrate_path: pathlib.Path
     bagit_path: pathlib.Path
-    source_organization: str
-    organization_address: str
-    contact_name: str 
-    contact_phone: str 
-    contact_email: str 
-    external_description: str
-    bagging_date: str
-    bag_size: Optional[str]
-    payload_Oxum: Optional[str] 
+    source_organization: str = Field(alias="Source-Organization")
+    organization_address: str = Field(alias="Organization-Address")
+    contact_name: str = Field(alias="Contact-Name")
+    contact_phone: str = Field(alias="Contact-Phone")
+    contact_email: str = Field(alias="Contact-Email")
+    external_description: str = Field(alias="External-Description")
+    bagging_date: str = Field(alias="Bagging-Date")
+    bag_size: Optional[str] = Field(alias="Bag-Size")
+    payload_Oxum: Optional[str] = Field(alias="Payload-Oxum")
     
-    class Config:
-        allow_population_by_field_name = True
-        validate_assignment = True    
-        fields={
-            "source_organization": {                
-                "alias": "Source-Organization"
-            },
-            "organization_address": {                
-                "alias": "Organization-Address"
-            },
-            "contact_name": {
-                "alias": "Contact-Name"
-            },
-            "contact_phone": {
-                "alias": "Contact-Phone"
-            },
-            "contact_email": {
-                "alias": "Contact-Email"
-            },
-            "external_description": {
-                "alias": "External-Description"
-            },
-            "bagging_date": {
-                "alias": "Bagging-Date"
-            },
-            "bag_size": {
-                "alias": "Bag-Size"
-            },
-            "payload_Oxum": {
-                "alias": "Payload-Oxum"
-            }
-        }
-
-        
+ 
     def create_bagit_directory(self):        
         self.bagit_path.mkdir(parents=True, exist_ok=True)        
         
@@ -119,7 +94,7 @@ class BagIt(BaseModel):
         bagit_info_path = self.bagit_path / 'bag-info.txt'
         
         with bagit_info_path.open(mode="w") as bag_info_file:                        
-            for key, value in self.dict(by_alias=True).items():                              
+            for key, value in self.model_dump(by_alias=True).items():                              
                 if key != 'bagit_path' and key != 'rocrate_path':                    
                     bag_info_file.write('%s: %s\n' % (key, value))
 
