@@ -28,24 +28,12 @@ class Dataset(FairscapeBaseModel):
     keywords: List[str] = Field(...)
     associatedPublication: Optional[str]
     additionalDocumentation: Optional[str]
-    fileFormat: str
-    dataSchema: Optional[Union[str, dict]]
+    fileFormat: str = Field(alias="format")
+    dataSchema: Optional[Union[str, dict]] = Field(alias="schema")
     generatedBy: Optional[List[Union[str, Identifier]]]
     derivedFrom: Optional[List[Union[str, Identifier]]]
     usedBy: Optional[List[Union[str, Identifier]]]
     contentUrl: Optional[str]
-
-    class Config:
-        fields={
-            "fileFormat": {
-                "title": "fileFormat",
-                "alias": "format"
-            },
-            "dataSchema": {
-                "title": "dataSchema",
-                "alias": "schema"
-            }
-        }
 
 
 class DatasetContainer(FairscapeBaseModel): 
@@ -54,6 +42,6 @@ class DatasetContainer(FairscapeBaseModel):
     name: str
     description: str = Field(min_length=10)
     keywords: List[str] = Field(...)
-    hasPart: Optional[List[Union[str, Identifier]]] = []
-    isPartOf: Optional[List[Union[str, Identifier]]] = []
+    hasPart: Optional[List[Union[str, Identifier]]] = Field(default=[])
+    isPartOf: Optional[List[Union[str, Identifier]]] = Field(default=[])
 
