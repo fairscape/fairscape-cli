@@ -2,9 +2,7 @@ name: ci
 on:
     push:
         branches:
-            #- master
-            #- main
-            - sadnan-dev-final-bagit
+            - main
 permissions:
     contents: write
 jobs:
