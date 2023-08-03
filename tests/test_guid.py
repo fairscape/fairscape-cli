@@ -1,6 +1,7 @@
 import os
 import sys
 import json
+import shutil
 
 sys.path.insert(
     0, 
@@ -94,7 +95,7 @@ Fold 1 proximities:
 
 class TestROCrateGenerateID():
     runner = CliRunner()
-    rocrate_path = "./tests/guid_test_rocrate"
+    rocrate_path = "./tests/data/guid_rocrate"
    
  
     def test_create_rocrate(self):
@@ -102,6 +103,12 @@ class TestROCrateGenerateID():
         Invoke the create rocrate command without the guid flag and assert
         that a proper guid has been created and the ro crate initilized correctly
         """
+        
+        try:
+            # remove existing crate
+            shutil.rmtree(self.rocrate_path)
+        except:
+            pass
 
         create_rocrate = [
             "rocrate", 
@@ -109,6 +116,8 @@ class TestROCrateGenerateID():
             "--name 'test rocrate'",
             "--organization-name 'UVA'",
             "--project-name 'B2AI'",
+            "--description 'A test crate for provenance of protien protien interactions of the MUSIC pipeline using a U2OS cell line'",
+            "--keywords 'CM4AI'",
             f"'{self.rocrate_path}'",
         ]
         
@@ -120,7 +129,7 @@ class TestROCrateGenerateID():
         print(result.stdout)
 
         assert result.exit_code == 0
-        assert "Created RO Crate at" in result.stdout
+        assert "ark:5982" in result.stdout
         
 
     def test_add_dataset(self):
@@ -134,6 +143,8 @@ class TestROCrateGenerateID():
             "dataset",
             f"--name '{test_dataset['name']}'",
             f"--description '{test_dataset['description']}'" ,
+            "--description 'A test crate for provenance of protien protien interactions of the MUSIC pipeline using a U2OS cell line'",
+            "--keywords 'CM4AI'",
             f"--date-published '{test_dataset['datePublished']}'",
             f"--author '{test_dataset['author']}'",
             "--version '1.0.0'",
@@ -166,6 +177,8 @@ class TestROCrateGenerateID():
             f"--author '{test_software['author']}'",
             "--version '1.0'",
             f"--description '{test_software['description']}'",
+            "--description 'A test crate for provenance of protien protien interactions of the MUSIC pipeline using a U2OS cell line'",
+            "--keywords 'CM4AI'",
             f"--associated-publication '{test_software['associatedPublication']}'",
             "--data-format '.py'",
             f"--date-published '{test_software['dateModified']}'",
@@ -186,12 +199,14 @@ class TestROCrateGenerateID():
     def test_add_computation(self):
         add_computation = [
             "rocrate",
-            "add",
+            "register",
             "computation",
             f"--name '{test_computation['name']}'",
             "--run-by 'Max Levinson'",
             "--date-created '03-17-2023'",
             "--description 'test run of music pipeline using example data'",
+            "--description 'A test crate for provenance of protien protien interactions of the MUSIC pipeline using a U2OS cell line'",
+            "--keywords 'CM4AI'",
             #f"--used-software '[{','.join(software)}]'",
             #f"--used-dataset '[{','.join(datasets)}]'",
             "--command 'wingardium leviosa'",

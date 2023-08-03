@@ -20,25 +20,25 @@ from datetime import datetime
 
 
 class Dataset(FairscapeBaseModel):
-    metadataType: Optional[str] = "https://w3id.org/EVI#Dataset"
+    metadataType: Optional[str] = Field(default="https://w3id.org/EVI#Dataset")
     author: str = Field(max_length=64)
-    datePublished: datetime = Field(default_factory=datetime.now)
+    datePublished: str = Field(...)
     version: str
     description: str = Field(min_length=10)
     keywords: List[str] = Field(...)
-    associatedPublication: Optional[str]
-    additionalDocumentation: Optional[str]
+    associatedPublication: Optional[str] = None
+    additionalDocumentation: Optional[str] = None
     fileFormat: str = Field(alias="format")
     dataSchema: Optional[Union[str, dict]] = Field(alias="schema")
     generatedBy: Optional[List[Union[str, Identifier]]]
     derivedFrom: Optional[List[Union[str, Identifier]]]
     usedBy: Optional[List[Union[str, Identifier]]]
-    contentUrl: Optional[str]
+    contentUrl: Optional[str] = None
 
 
 class DatasetContainer(FairscapeBaseModel): 
-    guid: str
-    metadataType: Optional[str] = "https://w3id.org/EVI#Dataset"
+    guid: str = Field(alias="@id")
+    metadataType: Optional[str] = Field(default="https://w3id.org/EVI#Dataset", alias="@type")
     name: str
     description: str = Field(min_length=10)
     keywords: List[str] = Field(...)

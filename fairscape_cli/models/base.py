@@ -49,7 +49,7 @@ class FairscapeBaseModel(BaseModel):
         title="metadataType",
         alias="@type"
     )
-    url: Optional[AnyUrl]
+    url: Optional[AnyUrl] = Field(default=None)
     name: str = Field(max_length=64)
     keywords: List[str] = Field(default=[])
 

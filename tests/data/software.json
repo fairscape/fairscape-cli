@@ -1,13 +1,15 @@
 {
-    "id": "ARK:calibrate_pariwise_distance.1/467f5ebd-cb29-43a1-beab-aa2d50606eff.py",
+    "@id": "ARK:calibrate_pariwise_distance.1/467f5ebd-cb29-43a1-beab-aa2d50606eff.py",
+    "@type": "evi:Software",
     "name": "calibrate pairwise distance",
-    "type": "evi:Software",
+    "url": "https://idekerlab.ucsd.edu/music/",
     "author": "Qin, Y.",
     "dateModified": "2021-06-20",
     "version": "1.0",
     "description": "script written in python to calibrate pairwise distance.",
+    "keywords": ["apms", "b2ai"],
     "associatedPublication": "Qin, Y. et al. A multi-scale map of cell structure fusing protein images and interactions. Nature 600, 536–542 2021",
-    "additionalDocumentation": ["https://idekerlab.ucsd.edu/music/"],
+    "additionalDocumentation": "https://idekerlab.ucsd.edu/music/",
     "format": "py",
     "usedByComputation": ["ARK:compute_standard_proximities.1/f9aa5f3f-665a-4ab9-8879-8d0d52f05265"],
     "contentUrl": "https://github.com/idekerlab/MuSIC/blob/master/calibrate_pairwise_distance.py"

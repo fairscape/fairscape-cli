@@ -1,10 +1,13 @@
 {
-    "id": "ARK:average_predicted_protein_proximities.1/c295abcd-8ad8-44ff-95e3-e5e65f1667da",
+    "@id": "ARK:average_predicted_protein_proximities.1/c295abcd-8ad8-44ff-95e3-e5e65f1667da",
+    "@type": "evi:Computation",
     "name": "average predicted protein proximities",
-    "type": "evi:Computation",
     "runBy": "Qin, Y.",
+    "calledBy": "Qin, Y.",
     "dateCreated": "2021-05-23",
     "description": "Average the predicted proximities",
+    "keywords": ["b2ai", "cm4ai"],
+    "additionalDocumentation": "https://example.org",
     "usedSoftware":[
       "random_forest_output (https://github.com/idekerlab/MuSIC/blob/master/random_forest_output.py)"
     ],
@@ -22,5 +25,6 @@
     ],
     "generated": [
         "averages of predicted protein proximities (https://github.com/idekerlab/MuSIC/blob/master/Examples/MuSIC_predicted_proximity.txt)"
-        ]
+        ],
+        "command": "ping google.com"
 }

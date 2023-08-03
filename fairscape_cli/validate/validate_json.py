@@ -5,14 +5,16 @@ from fairscape_cli.models import (
 )
 import click
 from pydantic import ValidationError
+from pathlib import Path
+import json
 
 
-def validate_model(path: str):
+def validate_model(path: str, model):
     json_path = Path(path)
     
     with open(json_path, "r") as json_file:
         metadata = json.load(json_file)
-        instance_model = model(**metadata)
+        instance_model = model.model_validate(metadata)
         return instance_model
 
 

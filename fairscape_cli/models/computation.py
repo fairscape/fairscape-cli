@@ -19,8 +19,8 @@ class Computation(FairscapeBaseModel):
     runBy: str
     dateCreated: str 
     description: str = Field(min_length=10, max_length=2056)
-    associatedPublication: Optional[Union[str, AnyUrl]]
-    additionalDocumentation: Optional[Union[str, AnyUrl]]
+    associatedPublication: Optional[str] = Field(default=None)
+    additionalDocumentation: Optional[str] = Field(default=None)
     command: Optional[Union[List[str], str]] 
     usedSoftware: Optional[List[str]]
     calledBy: Optional[str]

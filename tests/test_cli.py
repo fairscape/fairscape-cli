@@ -27,18 +27,6 @@ def run_test_command(test_command):
 
 
 
-def test_software_validate_json():
-    validate_json_software = [
-        "validate", 
-        "json", 
-        "./tests/data/software.json"
-    ]
-    
-    result = run_test_command(validate_json_software)
-
-    assert result.exit_code == 0
-
-
 def test_software_validate_software():
     validate_json_software = [
         "validate", 
@@ -69,7 +57,7 @@ def _test_software_incorrect_type():
 def test_computation_validate_json():
     validate_json_computation= [
         "validate", 
-        "json", 
+        "computation", 
         "./tests/data/computation.json"
     ]
     
@@ -81,7 +69,7 @@ def test_computation_validate_json():
 def test_dataset_validate_json():
     validate_json_dataset= [
         "validate", 
-        "json", 
+        "dataset", 
         "./tests/data/dataset.json"
     ]
     

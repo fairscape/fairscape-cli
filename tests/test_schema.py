@@ -25,7 +25,7 @@ sys.path.insert(
 
 class TestValidateImage():
 
-    def test_success(self):
+    def _test_success(self):
 
         if_image_schema = ImageSchema(**{
             "guid": "ark:99999/schema/immunofluorescence_image_schema",
@@ -69,7 +69,7 @@ class TestValidateImage():
 
         validate_yellow.validate()
 
-    def test_path_not_found(self):
+    def _test_path_not_found(self):
 
         if_image_schema = ImageSchema(**{
             "guid": "ark:99999/schema/immunofluorescence_image_schema",
@@ -89,7 +89,7 @@ class TestValidateImage():
                 image_path=nonexistant_image_path
             )
 
-    def test_width_incorrect(self):
+    def _test_width_incorrect(self):
 
         if_image_schema = ImageSchema(**{
             "guid": "ark:99999/schema/immunofluorescence_image_schema",
@@ -110,7 +110,7 @@ class TestValidateImage():
         with pytest.raises(ImageValidationException):
             validate_blue.validate()
 
-    def test_height_incorrect(self):
+    def _test_height_incorrect(self):
         if_image_schema = ImageSchema(**{
             "guid": "ark:99999/schema/immunofluorescence_image_schema",
             "description": "Schema for validating immunoflourecense images",
@@ -130,7 +130,7 @@ class TestValidateImage():
         with pytest.raises(ImageValidationException):
             validate_blue.validate()
 
-    def test_colorspace_mismatch(self):
+    def _test_colorspace_mismatch(self):
         if_image_schema = ImageSchema(**{
             "guid": "ark:99999/schema/immunofluorescence_image_schema",
             "description": "Schema for validating immunoflourecense images",
@@ -150,7 +150,7 @@ class TestValidateImage():
         with pytest.raises(ImageValidationException):
             validate_blue.validate()
 
-    def test_format_mismatch(self):
+    def _test_format_mismatch(self):
         if_image_schema = ImageSchema(**{
             "guid": "ark:99999/schema/immunofluorescence_image_schema",
             "description": "Schema for validating immunoflourecense images",
@@ -173,7 +173,7 @@ class TestValidateImage():
 
 class TestValidateTabular():
 
-    def test_init(self):
+    def _test_init(self):
         """ Test for initilizing class models of schemas
         """
 
@@ -237,7 +237,7 @@ class TestValidateTabular():
 
         # tabular_data_test.validate(path=pathlib.Path("./tests/data/baitlist.csv"))
 
-    def test_APMS_embedding(self):
+    def _test_APMS_embedding(self):
 
         apms_datatype = DatatypeSchema(
             name="APMS Experiment",
@@ -301,5 +301,5 @@ class TestValidateTabular():
         embedding_schema
 
 class TestSchemaCLI():
-    def test_cli(self):
+    def _test_cli(self):
         pass

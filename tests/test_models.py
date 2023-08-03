@@ -23,18 +23,19 @@ class TestROCrateModel():
 
     def test_rocrate_init(self):
         
-        crate_id = "ark:59853/UVA/B2AI/rocrate_test"
-        crate_name = 'test rocrate'
-        organization_name = "UVA"
-        project_name = "B2AI"
+        rocrate_data = {
+            "@id": "ark:59853/UVA/B2AI/rocrate_test",
+            "name": 'test rocrate',
+            "organizationName": "UVA",
+            "projectName":  "B2AI",
+            "description":  "Testing ROCrate Model",
+            "keywords": ["test", "fair"],
+            "path": pathlib.Path.cwd(),
+            "metadataGraph": []
+        }
        
         test_crate = ROCrate(
-            guid=crate_id,
-            name=crate_name,
-            organizationName=organization_name,
-            project_name= project_name,
-            path = pathlib.Path.cwd(),
-            metadataGraph = []
+            **rocrate_data
         ) 
 
         test_crate.initCrate()
