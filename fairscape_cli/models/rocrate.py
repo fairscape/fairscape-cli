@@ -23,7 +23,7 @@ from typing import (
 class ROCrate(BaseModel):
     guid: Optional[str] = Field(default="")
     metadataType: str = Field(default="https://schema.org/Dataset")
-    name: str = Field(min_length=10)
+    name: str = Field(max_length=200)
     description: str = Field(min_length=10)
     keywords: List[str] = Field(...)
     projectName: Optional[str]

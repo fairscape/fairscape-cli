@@ -26,7 +26,7 @@ Homepage = "https://github.com/fairscape/fairscape-cli"
 
 [tool.poetry]
 name = "fairscape-cli"
-version = "0.1.7"
+version = "0.1.7a1"
 description = "A cli for validating metadata, packaging ROCrates, and interacting with the FAIRSCAPE API"
 authors = [
         "Max Levinson",
