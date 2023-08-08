@@ -21,8 +21,7 @@ class Computation(FairscapeBaseModel):
     description: str = Field(min_length=10, max_length=2056)
     associatedPublication: Optional[str] = Field(default=None)
     additionalDocumentation: Optional[str] = Field(default=None)
-    command: Optional[Union[List[str], str]] 
-    usedSoftware: Optional[List[str]]
-    calledBy: Optional[str]
-    usedDataset: Optional[Union[List[str], str]]
-    generated: Optional[Union[str,List[str]]]
+    command: Optional[Union[List[str], str]] = Field(default="")
+    usedSoftware: Optional[List[str]] = Field(default=[])
+    usedDataset: Optional[Union[List[str], str]] = Field(default=[])
+    generated: Optional[Union[str,List[str]]] = Field(default=[])

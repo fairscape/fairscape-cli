@@ -174,7 +174,7 @@ def registerSoftware(
     ):
     
     metadata_path = rocrate_path / "ro-crate-metadata.json"
-    click.echo(f"METADATA PATH: {str(metadata_path)}")
+    #click.echo(f"METADATA PATH: {str(metadata_path)}")
 
     # check if you are in the rocrate path
     # ro-crate-metadata.json should be a local file
