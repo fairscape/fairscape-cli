@@ -150,7 +150,7 @@ def register():
 @click.option('--description', required = True, prompt = "Software Description")
 @click.option('--keywords', required=True, multiple=True)
 @click.option('--file-format', required = True, prompt = "File Format of Software")
-@click.option('--url',     required = False)
+@click.option('--url', required = False)
 @click.option('--date-modified', required=False)
 @click.option('--filepath', required=False)
 @click.option('--used-by-computation', required=False, multiple=True)
@@ -174,6 +174,7 @@ def registerSoftware(
     ):
     
     metadata_path = rocrate_path / "ro-crate-metadata.json"
+    click.echo(f"METADATA PATH: {str(metadata_path)}")
 
     # check if you are in the rocrate path
     # ro-crate-metadata.json should be a local file
@@ -183,7 +184,7 @@ def registerSoftware(
 
     crate = ROCrate.model_construct(
         _fields_set={"path"}, 
-        **{"path":"metadata_path"}
+        **{"path": metadata_path}
     ) 
 
 
@@ -206,11 +207,13 @@ def registerSoftware(
             ],
         }
 
-    if filepath != "" and filepath is not None:
+    if filepath is not None:
+        if type(filepath) == str:
             # TODO if URL just set
             software_metadata["contentUrl"] = filepath 
-
+        if type(filepath) == pathlib.Path:
             # TODO if pathlike object
+            pass
 
     try:
         software_model = Software(**software_metadata)
@@ -270,7 +273,7 @@ def registerDataset(
 
     crate = ROCrate.model_construct(
         _fields_set={"path"}, 
-        **{"path":"metadata_path"}
+        **{"path": metadata_path}
     ) 
 
     dataset_metadata = {
@@ -349,7 +352,7 @@ def computation(
 
     crate = ROCrate.model_construct(
         _fields_set={"path"}, 
-        **{"path":"metadata_path"}
+        **{"path": metadata_path}
     ) 
 
     if guid == "":
@@ -427,7 +430,7 @@ def registerDatasetContainer(
 
     crate = ROCrate.model_construct(
         _fields_set={"path"}, 
-        **{"path":"metadata_path"}
+        **{"path": metadata_path}
     ) 
 
     if guid == "":
@@ -478,7 +481,7 @@ def popDatasetContainer(rocrate_path, dataset_container, dataset_guid):
 
     crate = ROCrate.model_construct(
         _fields_set={"path"}, 
-        **{"path":"metadata_path"}
+        **{"path": metadata_path}
     ) 
 
     # TODO check that dataset container is guid
@@ -509,7 +512,7 @@ def pushDatasetContainer(rocrate_path, dataset_container, dataset_guid):
 
     crate = ROCrate.model_construct(
         _fields_set={"path"}, 
-        **{"path":"metadata_path"}
+        **{"path": metadata_path}
     ) 
 
     # TODO check that dataset container is guid
@@ -681,7 +684,7 @@ def dataset(
 
     crate = ROCrate.model_construct(
         _fields_set={"path"}, 
-        **{"path":"metadata_path"}
+        **{"path": metadata_path}
     ) 
     
     try:

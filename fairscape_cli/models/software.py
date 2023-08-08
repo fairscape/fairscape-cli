@@ -19,10 +19,9 @@ class Software(FairscapeBaseModel):
     dateModified: str
     version: str
     description: str =  Field(min_length=10)
-    keywords: List[str] = Field(...)
     associatedPublication: Optional[str]
     additionalDocumentation: Optional[str]
     fileFormat: str = Field(title="fileFormat", alias="format")
     usedByComputation: Optional[List[str]]
-    contentUrl: Optional[str]
+    contentUrl: Optional[str] = Field(default=None)
  

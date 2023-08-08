@@ -97,6 +97,8 @@ class TestROCrateSuccess():
     rocrate_path = "./tests/data/automated_test_rocrate"
  
     def test_rocrate_create(self): 
+        """ Remove existing ROCrate and then create a new rocrate
+        """
 
         try:
             # remove existing crate
@@ -206,6 +208,35 @@ class TestROCrateSuccess():
 
         assert result.exit_code == 0
 
+
+    def test_register_software_wo_contentURL(self):
+        """ Register Software without contentURL
+        """
+
+        add_software = [
+            "rocrate",
+            "register",
+            "software",
+            "--guid 'ark:59853/UVA/B2AI/rocrate_test/music_software_no_content_url'",
+            "--name 'MuSIC'",
+            f"--author '{test_software['author']}'",
+            "--version '1.0'",
+            f"--description '{test_software['description']}'",
+            f"--keywords '{test_software['keywords'][0]}'",
+            f"--associated-publication '{test_software['associatedPublication']}'",
+            "--file-format '.py'",
+            f"--date-modified '{test_software['dateModified']}'",
+            f"'{self.rocrate_path}'",
+        ]
+
+        result = self.runner.invoke(
+            fairscape_cli_app, 
+            ' '.join(add_software) 
+        )
+        print(result.stdout)
+
+        assert result.exit_code == 0
+        
 
     def test_register_software(self):
 

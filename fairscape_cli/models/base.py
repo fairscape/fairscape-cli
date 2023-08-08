@@ -49,7 +49,8 @@ class FairscapeBaseModel(BaseModel):
         title="metadataType",
         alias="@type"
     )
-    url: Optional[AnyUrl] = Field(default=None)
-    name: str = Field(max_length=64)
+    url: Optional[str] = Field(default=None)
+    name: str = Field(max_length=200)
     keywords: List[str] = Field(default=[])
+    description: str = Field(min_length=5)
 
