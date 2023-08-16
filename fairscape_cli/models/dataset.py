@@ -42,6 +42,9 @@ class DatasetContainer(FairscapeBaseModel):
     name: str
     description: str = Field(min_length=10)
     keywords: List[str] = Field(...)
+    generatedBy: Optional[List[str]] = Field(default=[])
+    derivedFrom: Optional[List[str]] = Field(default=[])
+    usedBy: Optional[List[str]] = Field(default = [])
     hasPart: Optional[List[str]] = Field(default=[])
     isPartOf: Optional[List[str]] = Field(default=[])
 
