@@ -1,4 +1,4 @@
-name: Test Python Versions
+name: Test Against Multiple Python Versions
 
 on: [push]
 
