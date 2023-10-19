@@ -7,10 +7,6 @@ ENV PYTHONDONTWRITEBYTECODE=1
 # Turns off buffering for easier container logging
 ENV PYTHONUNBUFFERED=1
 
-# Install pip requirements
-#COPY requirements.txt .
-#RUN python -m pip install -r requirements.txt
-
 RUN python3 -m pip install --upgrade pip
 RUN python3 -m pip install pipx 
 RUN python3 -m pipx ensurepath
