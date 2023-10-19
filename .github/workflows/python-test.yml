@@ -1,0 +1,28 @@
+name: Test Python Versions
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.9"]
+        #"3.10", "3.11"]
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      # You can test your matrix by printing the current Python version
+      - name: Display Python version
+        run: python -c "import sys; print(sys.version)"
+      - name: Install pipx
+        run: python3 -m pip install --user pipx && python3 -m pipx ensurepath && pipx install poetry==1.2.0
+      - name: Install dependencies
+        run: poetry install
+      - name: Run ROCrate Tests
+        run: poetry run tests/test_rocrate.py
