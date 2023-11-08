@@ -1,0 +1,8 @@
+{
+	"name": "cli-dev",
+	"build": {
+		"context": "..",
+		"dockerfile": "Dockerfile"
+	},
+	"remoteUser": "root"
+}
