@@ -1,8 +1,10 @@
-from fairscape_cli.models.schema import (
+from fairscape_cli.models.schema.image import (
     ImageSchema,
     ImageValidation,
     ImageValidationException,
     ImagePathNotFoundException,
+)
+from fairscape_cli.models.csvw import (
     DatatypeSchema,
     ColumnSchema,
     TabularDataSchema

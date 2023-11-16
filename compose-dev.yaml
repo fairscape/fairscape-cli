@@ -3,7 +3,8 @@ services:
     entrypoint:
     - sleep
     - infinity
-    image: docker/dev-environments-default:stable-1
+    #image: docker/dev-environments-default:stable-1
+    image: python:3.11.6
     init: true
     volumes:
     - type: bind

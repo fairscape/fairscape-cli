@@ -18,7 +18,7 @@ RUN asdf install python 3.10.13
 RUN asdf install python 3.9.18
 RUN asdf install python 3.8.17
 
-
+RUN asdf remove python 3.11.6
 # run tests with current version
 # set local version
 ## asdf local <name> <version> [<version>...]
