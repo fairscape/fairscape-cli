@@ -14,10 +14,13 @@ fairscape-cli rocrate create \
         --name $CRATE_NAME \
         --organization-name $CRATE_ORG_NAME \
         --project-name $CRATE_PROJ_NAME \
+        --description "example RO crate for testing" \
+        --keywords "test" \
+        --keywords "example" \
         $CRATE_PATH
 
 # Broken example from Chris
-fairscape-cli rocrate add software --name 'some tool' --description 'A tool to do something' --author 'bob smith' --version 0.1.0 --file-format .py --url https://github.com/someuser/somerepo `pwd`
+#fairscape-cli rocrate add software --name 'some tool' --description 'A tool to do something' --author 'bob smith' --version 0.1.0 --file-format .py --url https://github.com/someuser/somerepo `pwd`
 
 # add a test dataset 
 
@@ -35,6 +38,8 @@ fairscape-cli rocrate add dataset \
         --name "$DATASET_NAME" \
         --guid "$DATASET_GUID" \
         --description "$DATASET_DESCRIPTION" \
+        --keywords "example" \
+        --keywords "test" \
         --date-published "$DATASET_DATE_PUB" \
         --author "$DATASET_AUTHOR" \
         --version '1.0.0' \
@@ -63,6 +68,8 @@ fairscape-cli rocrate add software \
         --author "$SOFTWARE_AUTHOR" \
         --version "$SOFTWARE_VERSION" \
         --description "$SOFTWARE_DESCRIPTION" \
+        --keywords "test" \
+        --keywords "example" \
         --file-format "$SOFTWARE_DATA_FORMAT" \
         --date-modified "$SOFTWARE_DATE_PUB" \
         --source-filepath "$SOFTWARE_SOURCE_FILEPATH" \
@@ -71,15 +78,5 @@ fairscape-cli rocrate add software \
         
 # add a test computation 
 
-fairscape-cli rocrate add computation \
-        --guid "ark:59853/UVA/B2AI/rocrate_test/music_test_run" \
-        --name "test_computation['name']}" \
-        --run-by "Max Levinson" \
-        --date-created "03-17-2023" \
-        --description "test run of music pipeline using example data" \
-        --command "wingardium leviosa" \
-        --used-software "$SOFTWARE_GUID" \
-        --used-dataset "IF_emd_1_APMS_emd_1.RF_maxDep_30_nEst_1000.fold_1.pkl" \
-        --generated "https://github.com/idekerlab/MuSIC/blob/master/Examples/MuSIC_predicted_proximity.txt" \
-        $CRATE_PATH
+fairscape-cli rocrate register computation --guid "ark:59853/UVA/B2AI/rocrate_test/music_test_run" --name "test_computation_name" --run-by "Max Levinson" --date-created "03-17-2023" --description "test run of music pipeline using example data" --keywords "test" --keywords "example" --command "wingardium leviosa" --used-software "$SOFTWARE_GUID" --used-dataset "IF_emd_1_APMS_emd_1.RF_maxDep_30_nEst_1000.fold_1.pkl" --generated "https://github.com/idekerlab/MuSIC/blob/master/Examples/MuSIC_predicted_proximity.txt" $CRATE_PATH
 
