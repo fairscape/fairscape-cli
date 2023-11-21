@@ -3,7 +3,7 @@
 # variables for test
 CRATE_NAME="BuildTestCrate"
 CRATE_GUID="ark:99999/BUILDTESTCRATE"
-CRATE_PATH="./tests/build_test_rocrate"
+CRATE_PATH="./tests/test_crates/build_test_rocrate"
 CRATE_ORG_NAME="UVA"
 CRATE_PROJ_NAME="B2AI"
 

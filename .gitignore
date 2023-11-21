@@ -1,4 +1,5 @@
 tests/data/
+tests/test_crates/
 tests/crate/
 cli_venv/
 
