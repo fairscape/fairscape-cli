@@ -12,7 +12,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'fairscape-cli = fairscape_cli.scripts.cli:cli',
+            'fairscape-cli=fairscape_cli.__main__:cli',
         ],
     },
 )
