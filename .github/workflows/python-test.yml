@@ -11,8 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.8", "3.9"]
-        #"3.10", "3.11"]
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
 
     steps:
       - uses: actions/checkout@v4
@@ -21,11 +20,9 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       # You can test your matrix by printing the current Python version
-      - name: Display Python version
-        run: python -c "import sys; print(sys.version)"
-      - name: Install pipx
-        run: python3 -m pip install --user pipx && python3 -m pipx ensurepath && pipx install poetry==1.2.0
-      - name: Install dependencies
-        run: poetry install
-      - name: Run ROCrate Tests
-        run: poetry run tests/test_rocrate.py
+      - name: Upgrade Pip
+        run: pip install --upgrade pip
+      - name: Install Local Code
+        run: pip install .
+      - name: Run local Tests
+        run: chmod +x tests/test_build.sh && ./tests/test_build.sh
