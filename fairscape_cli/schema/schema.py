@@ -55,6 +55,48 @@ def create_tabular(
         click.echo("good choice")
     
 
+@schema.command('addProperty')
+def addProperty(schema_path):
+    """ Add a Property to an existing schema
+    """
+    pass
+
+
+@addProperty.command('string')
+@click.parameter('schema_path', type=str)
+def addPropertyString(schema_path):
+    pass
+
+
+@addProperty.command('number')
+@click.parameter('schema_path', type=str)
+def addPropertyNumber(schema_path):
+    pass
+
+
+@addProperty.command('bool')
+@click.parameter('schema_path', type=str)
+def addPropertyBool(schema_path):
+    pass
+
+
+@addProperty.command('int')
+@click.parameter('schema_path', type=str)
+def addPropertyInt(schema_path):
+    pass
+
+
+@addProperty.command('null')
+@click.parameter('schema_path', type=str)
+def addPropertyNull(schema_path):
+    pass
+
+
+@addProperty.command('array')
+@click.option('--items')
+@click.parameter('schema_path', type=str)
+def addPropertyArray(items, schema_path):
+    pass
 
 
 @create.command('image')
