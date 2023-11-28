@@ -101,4 +101,46 @@ fairscape-cli rocrate register computation \
 mkdir tests/test_crates/init_crate
 cp tests/data/APMS_embedding_MUSIC.csv tests/test_crates/init_crate/
 
+INIT_CRATE_PATH="tests/test_crates/init_crate/"
+INIT_CRATE_DATASET_PATH="APMS_embedding_MUSIC.csv"
+
+cd tests/test_crates/init_crate/
+
 # initialize a crate in the new directory
+fairscape-cli rocrate init \
+        --guid $CRATE_GUID \
+        --name $CRATE_NAME \
+        --organization-name $CRATE_ORG_NAME \
+        --project-name $CRATE_PROJ_NAME \
+        --description "example RO crate for testing" \
+        --keywords "test" \
+        --keywords "example" 
+
+
+fairscape-cli rocrate register dataset \
+        --name "$DATASET_NAME" \
+        --guid "$DATASET_GUID" \
+        --description "$DATASET_DESCRIPTION" \
+        --keywords "example" \
+        --keywords "test" \
+        --date-published "$DATASET_DATE_PUB" \
+        --author "$DATASET_AUTHOR" \
+        --version '1.0.0' \
+        --associated-publication "$DATASET_ASSOC_PUB" \
+        --additional-documentation "$DATASET_ADD_DOC" \
+        --data-format 'CSV' \
+        --filepath "$INIT_CRATE_DATASET_PATH" \
+        .
+
+
+fairscape-cli rocrate register software \
+        --guid "$SOFTWARE_GUID" \
+        --name "$SOFTWARE_NAME" \
+        --author "$SOFTWARE_AUTHOR" \
+        --version "$SOFTWARE_VERSION" \
+        --description "$SOFTWARE_DESCRIPTION" \
+        --keywords "test" \
+        --keywords "example" \
+        --file-format "$SOFTWARE_DATA_FORMAT" \
+        --date-modified "$SOFTWARE_DATE_PUB" \
+        .
