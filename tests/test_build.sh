@@ -1,9 +1,11 @@
 #!/bin/bash
 
+rm -rf tests/test_crates/*
+
 # variables for test
 CRATE_NAME="BuildTestCrate"
 CRATE_GUID="ark:99999/BUILDTESTCRATE"
-CRATE_PATH="./tests/build_test_rocrate"
+CRATE_PATH="./tests/test_crates/build_test_rocrate"
 CRATE_ORG_NAME="UVA"
 CRATE_PROJ_NAME="B2AI"
 
@@ -14,10 +16,13 @@ fairscape-cli rocrate create \
         --name $CRATE_NAME \
         --organization-name $CRATE_ORG_NAME \
         --project-name $CRATE_PROJ_NAME \
+        --description "example RO crate for testing" \
+        --keywords "test" \
+        --keywords "example" \
         $CRATE_PATH
 
 # Broken example from Chris
-fairscape-cli rocrate add software --name 'some tool' --description 'A tool to do something' --author 'bob smith' --version 0.1.0 --file-format .py --url https://github.com/someuser/somerepo `pwd`
+#fairscape-cli rocrate add software --name 'some tool' --description 'A tool to do something' --author 'bob smith' --version 0.1.0 --file-format .py --url https://github.com/someuser/somerepo `pwd`
 
 # add a test dataset 
 
@@ -35,6 +40,8 @@ fairscape-cli rocrate add dataset \
         --name "$DATASET_NAME" \
         --guid "$DATASET_GUID" \
         --description "$DATASET_DESCRIPTION" \
+        --keywords "example" \
+        --keywords "test" \
         --date-published "$DATASET_DATE_PUB" \
         --author "$DATASET_AUTHOR" \
         --version '1.0.0' \
@@ -63,6 +70,8 @@ fairscape-cli rocrate add software \
         --author "$SOFTWARE_AUTHOR" \
         --version "$SOFTWARE_VERSION" \
         --description "$SOFTWARE_DESCRIPTION" \
+        --keywords "test" \
+        --keywords "example" \
         --file-format "$SOFTWARE_DATA_FORMAT" \
         --date-modified "$SOFTWARE_DATE_PUB" \
         --source-filepath "$SOFTWARE_SOURCE_FILEPATH" \
@@ -71,15 +80,67 @@ fairscape-cli rocrate add software \
         
 # add a test computation 
 
-fairscape-cli rocrate add computation \
+fairscape-cli rocrate register computation \
         --guid "ark:59853/UVA/B2AI/rocrate_test/music_test_run" \
-        --name "test_computation['name']}" \
+        --name "test_computation_name" \
         --run-by "Max Levinson" \
         --date-created "03-17-2023" \
         --description "test run of music pipeline using example data" \
+        --keywords "test" \
+        --keywords "example" \
         --command "wingardium leviosa" \
         --used-software "$SOFTWARE_GUID" \
         --used-dataset "IF_emd_1_APMS_emd_1.RF_maxDep_30_nEst_1000.fold_1.pkl" \
         --generated "https://github.com/idekerlab/MuSIC/blob/master/Examples/MuSIC_predicted_proximity.txt" \
         $CRATE_PATH
 
+
+# test rocrate init functionality
+
+# add existing data to a new test path
+mkdir tests/test_crates/init_crate
+cp tests/data/APMS_embedding_MUSIC.csv tests/test_crates/init_crate/
+
+INIT_CRATE_PATH="tests/test_crates/init_crate/"
+INIT_CRATE_DATASET_PATH="APMS_embedding_MUSIC.csv"
+
+cd tests/test_crates/init_crate/
+
+# initialize a crate in the new directory
+fairscape-cli rocrate init \
+        --guid $CRATE_GUID \
+        --name $CRATE_NAME \
+        --organization-name $CRATE_ORG_NAME \
+        --project-name $CRATE_PROJ_NAME \
+        --description "example RO crate for testing" \
+        --keywords "test" \
+        --keywords "example" 
+
+
+fairscape-cli rocrate register dataset \
+        --name "$DATASET_NAME" \
+        --guid "$DATASET_GUID" \
+        --description "$DATASET_DESCRIPTION" \
+        --keywords "example" \
+        --keywords "test" \
+        --date-published "$DATASET_DATE_PUB" \
+        --author "$DATASET_AUTHOR" \
+        --version '1.0.0' \
+        --associated-publication "$DATASET_ASSOC_PUB" \
+        --additional-documentation "$DATASET_ADD_DOC" \
+        --data-format 'CSV' \
+        --filepath "$INIT_CRATE_DATASET_PATH" \
+        .
+
+
+fairscape-cli rocrate register software \
+        --guid "$SOFTWARE_GUID" \
+        --name "$SOFTWARE_NAME" \
+        --author "$SOFTWARE_AUTHOR" \
+        --version "$SOFTWARE_VERSION" \
+        --description "$SOFTWARE_DESCRIPTION" \
+        --keywords "test" \
+        --keywords "example" \
+        --file-format "$SOFTWARE_DATA_FORMAT" \
+        --date-modified "$SOFTWARE_DATE_PUB" \
+        .
