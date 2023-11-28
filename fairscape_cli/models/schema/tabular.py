@@ -78,7 +78,9 @@ class ValidationSchema(BaseModel):
 
 	def load_data(self, path: str) -> pd.DataFrame:
 		# TODO deal with alternative filetypes
-		return pd.read_csv(path, sep=self.seperator,  header=None)
+
+		# pd.read_excel
+		return pd.read_csv(path, sep=self.seperator,  header=self.header)
 
 	def execute_validation(self, data_frame):
 		schema_definition = self.model_dump(by_alias=True)
@@ -137,11 +139,18 @@ class ValidationSchema(BaseModel):
 			return json_output
 
 		# run conversion on data frame 
+		validation_exceptions = {}
 		for i in range(data_frame.shape[0]):
 			data_row = data_frame.iloc[i,:]
 
-			# TODO catch all validation errors and then return
-			validate(
-				instance=json_row(data_row),
-				schema= schema_definition 
-			)
+			# catch all validation errors and then return
+			try: 
+				validate(
+					instance=json_row(data_row),
+					schema= schema_definition 
+				)
+			except Exception as e:
+				# TODO convert property errors into column index
+				validation_exceptions[i] = e
+
+		return validation_exceptions	
