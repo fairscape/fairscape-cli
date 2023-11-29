@@ -63,7 +63,7 @@ class IntegerProperty(BaseProperty):
 PropertyUnion = Union[StringProperty, ArrayProperty, BooleanProperty, NumberProperty, IntegerProperty, NullProperty]
 
 
-class ValidationSchema(BaseModel):
+class TabularValidationSchema(BaseModel):
 	schema_version: str = Field(default="https://json-schema.org/draft/2020-12/schema", alias="schema")
 	name: str
 	description: str
@@ -83,7 +83,11 @@ class ValidationSchema(BaseModel):
 		return pd.read_csv(path, sep=self.seperator,  header=self.header)
 
 	def execute_validation(self, data_frame):
-		schema_definition = self.model_dump(by_alias=True)
+		schema_definition = self.model_dump(
+			by_alias=True, 
+			exclude_unset=True,
+			exclude_none=True
+			)
 
 		property_slice = {
 			property_name: {
