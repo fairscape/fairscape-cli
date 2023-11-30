@@ -27,6 +27,10 @@ class DatatypeEnum(str, Enum):
 	ARRAY = "array"
 
 class Items(BaseModel):
+	model_config = ConfigDict(
+		populate_by_name = True,
+		use_enum_values=True
+	)
 	datatype: DatatypeEnum = Field(alias="type")
 
 class BaseProperty(BaseModel):

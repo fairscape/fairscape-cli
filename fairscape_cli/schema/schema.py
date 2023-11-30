@@ -7,10 +7,38 @@ from fairscape_cli.schema.image import (
     ImagePathNotFoundException,
 )
 from fairscape_cli.schema.tabular import (
-    ValidationSchema,
-
+    TabularValidationSchema,
+    StringProperty,
+    BooleanProperty,
+    NumberProperty,
+    IntegerProperty,
+    ArrayProperty,
+    DatatypeEnum
 )
 
+
+def write_schema(tabular_schema: TabularValidationSchema, schema_file)
+    """ Helper Function for writing files
+    """
+
+    schema_dictionary = schema_model.model_dump(by_alias=True) 
+    schema_json = json.dumps(schema_dictionary, indent=2)
+
+    # dump json to a file
+    with open(schema_file, "w") as output_file:
+        output_file.write(schema_json)
+
+
+def read_schema(schema_path) -> TabularValidationSchema:
+    """ Helper function for reading the schema and marshaling into the pydantic model
+    """
+    # read the schema
+    with open(schema_file, "r") as input_schema:
+        schema_json =  json.load(input_schema) 
+
+    # load the model into 
+    schema_model = TabularValidationSchema(**schema_json)
+    return schema_model
 
 
 @click.group('schema')
@@ -27,76 +55,231 @@ def create():
 @click.option('--description', required=True, type=str)
 @click.option('--sperator', required=True, type=str)
 @click.option('--guid', required=False, type=str, default="", show_default=False)
-@click.option('--additionalProperties', required=False, default=False)
-@click.option('--required', type=str, multiple=True)
+@click.option('--seperator', type=str, multiple=True)
 @click.option('--header', required=False, type=bool, default=False,)
-@click.parameter('output_path', type=str)
+@click.argument('schema_file', type=click.Path(exists=True))
 def create_tabular(
      name,
      description,
      guid,
-     additionalProperties,
-     required,
      header,
-     output_path
+     seperator,
+     schema_file
 ):
-    schema_model = ValidationSchema(
+    # create the model
+    schema_model = TabularValidationSchema(
         name=name,
         description=description,
         guid=guid,
         propeties={},
-        additionalProperties=additionalProperties,
-        required=required,
-        header=header
+        required=[],
+        header=header,
+        seperator= seperator
     )
 
-    if click.confirm("Add a property?"):
-        # add property
-        click.echo("good choice")
-    
+    # TODO if -i flag is included
+    # interactive prompt for creating properties
 
-@schema.command('addProperty')
-def addProperty(schema_path):
+    #if click.confirm("Add a property?"):
+        # add property
+    #    click.echo("good choice")
+
+    schema_dictionary = schema_model.model_dump(by_alias=True) 
+    schema_json = json.dumps(schema_dictionary, indent=2)
+
+    # dump json to a file
+    with open(schema_file, "w") as output_file:
+        output_file.write(schema_json)
+
+    click.echo(f"Wrote Schema: {str(schema_file)}")    
+
+
+
+@schema.group('addProperty')
+def addProperty():
     """ Add a Property to an existing schema
     """
     pass
 
 
 @addProperty.command('string')
-@click.parameter('schema_path', type=str)
-def addPropertyString(schema_path):
-    pass
+@click.option('--name', type=str, required=True)
+@click.option('--number', type=int, required=True)
+@click.option('--description', type=str, required=True)
+@click.option('--valueURL', type=str, required=False)
+@click.option('--pattern', type=str, required=False)
+@click.argument('schema_file', type=click.Path(exists=True))
+def addPropertyString(name, number, description, valueURL, pattern, schema_file):
+
+    try:
+        schema_model = read_schema(schema_file)
+    # TODO improve exception handling
+    except Exception as e:
+        click.echo(f"Exception Loading Schema\n{str(e)}")
+
+    # instantiate the StringProperty
+    property_model = StringProperty(
+        number = number,
+        description = description,
+        valueURL = valueURL,
+        pattern = pattern
+    )
+
+    # set the property
+    schema_model.properties[name] = property_model
+
+    try:
+        write_schema(schema_model, schema_file)
+        click.echo(f"Updated Schema: {schema_file}")      
+    # TODO improve exception handling
+    except Exception as e:
+        click.echo(f"Error Dumping Schema\n{str(e)}")
+
 
 
 @addProperty.command('number')
-@click.parameter('schema_path', type=str)
-def addPropertyNumber(schema_path):
-    pass
+@click.option('--name', type=str, required=True)
+@click.option('--number', type=int, required=True)
+@click.option('--description', type=str, required=True)
+@click.option('--valueURL', type=str, required=False)
+@click.argument('schema_file', type=click.Path(exists=True))
+def addPropertyNumber(name, number, description, valueURL, schema_file):
+
+    try:
+        schema_model = read_schema(schema_file)
+    # TODO improve exception handling
+    except Exception as e:
+        click.echo(f"Exception Loading Schema\n{str(e)}")
+
+    # instantiate the StringProperty
+    property_model = NumberProperty(
+        number = number,
+        description = description,
+        valueURL = valueURL,
+    )
+
+    # set the property
+    schema_model.properties[name] = property_model
+
+    try:
+        write_schema(schema_model, schema_file)
+        click.echo(f"Updated Schema: {schema_file}")      
+    # TODO improve exception handling
+    except Exception as e:
+        click.echo(f"Error Dumping Schema\n{str(e)}")
 
 
 @addProperty.command('bool')
-@click.parameter('schema_path', type=str)
-def addPropertyBool(schema_path):
-    pass
+@click.option('--name', type=str, required=True)
+@click.option('--number', type=int, required=True)
+@click.option('--description', type=str, required=True)
+@click.option('--valueURL', type=str, required=False)
+@click.argument('schema_file', type=click.Path(exists=True))
+def addPropertyBoolean(name, number, description, valueURL, schema_file):
+
+    try:
+        schema_model = read_schema(schema_file)
+    # TODO improve exception handling
+    except Exception as e:
+        click.echo(f"Exception Loading Schema\n{str(e)}")
+
+    # instantiate the StringProperty
+    property_model = BooleanProperty(
+        number = number,
+        description = description,
+        valueURL = valueURL,
+    )
+
+    # set the property
+    schema_model.properties[name] = property_model
+
+    try:
+        write_schema(schema_model, schema_file)
+        click.echo(f"Updated Schema: {schema_file}")      
+    # TODO improve exception handling
+    except Exception as e:
+        click.echo(f"Error Dumping Schema\n{str(e)}")
+
 
 
 @addProperty.command('int')
-@click.parameter('schema_path', type=str)
-def addPropertyInt(schema_path):
-    pass
+@click.option('--name', type=str, required=True)
+@click.option('--number', type=int, required=True)
+@click.option('--description', type=str, required=True)
+@click.option('--valueURL', type=str, required=False)
+@click.argument('schema_file', type=click.Path(exists=True))
+def addPropertyInteger(name, number, description, valueURL, schema_file):
 
+    try:
+        schema_model = read_schema(schema_file)
+    # TODO improve exception handling
+    except Exception as e:
+        click.echo(f"Exception Loading Schema\n{str(e)}")
 
-@addProperty.command('null')
-@click.parameter('schema_path', type=str)
-def addPropertyNull(schema_path):
-    pass
+    # instantiate the StringProperty
+    property_model = IntegerProperty(
+        number = number,
+        description = description,
+        valueURL = valueURL,
+    )
+
+    # set the property
+    schema_model.properties[name] = property_model
+
+    try:
+        write_schema(schema_model, schema_file)
+        click.echo(f"Updated Schema: {schema_file}")      
+    # TODO improve exception handling
+    except Exception as e:
+        click.echo(f"Error Dumping Schema\n{str(e)}")
 
 
 @addProperty.command('array')
-@click.option('--items')
-@click.parameter('schema_path', type=str)
-def addPropertyArray(items, schema_path):
-    pass
+@click.option('--name', type=str, required=True)
+@click.option('--number', type=str, required=True)
+@click.option('--description', type=str, required=True)
+@click.option('--valueURL', type=str, required=False)
+@click.option('--itemsDatatype', type=str, required=True)
+@click.option('--minItems', type=int, required=False)
+@click.option('--maxItems', type=int, required=False)
+@click.option('--uniqueItems', type=bool, required=False)
+@click.argument('schema_file', type=click.Path(exists=True))
+def addPropertyArray(name, number, description, valueURL, itemsDatatype, minItems, maxItems, uniqueItems, schema_file):
+
+    try:
+        items_datatype = DatatypeEnum(itemsDatatype)
+    except Exception as e:
+        click.echo(f"ITEMS Datatype {itemsDatatype} invalid\n" +
+            "ITEMS must be oneOf 'boolean'|'object'|'string'|'number'|'integer'" 
+        )
+        click.exit()
+
+    try:
+        schema_model = read_schema(schema_file)
+    # TODO improve exception handling
+    except Exception as e:
+        click.echo(f"Exception Loading Schema\n{str(e)}")
+
+    # instantiate the StringProperty
+    property_model = ArrayProperty(
+        number = number,
+        description = description,
+        valueURL = valueURL,
+        maxItems = maxItems,
+        minItems = minItems,
+        uniqueItems = uniqueItems,
+        items = Items(datatype=items_datatype)
+    )
+
+    # set the property
+    schema_model.properties[name] = property_model
+
+    try:
+        write_schema(schema_model, schema_file)
+        click.echo(f"Updated Schema: {schema_file}")      
+    # TODO improve exception handling
+    except Exception as e:
+        click.echo(f"Error Dumping Schema\n{str(e)}")
 
 
 @create.command('image')
