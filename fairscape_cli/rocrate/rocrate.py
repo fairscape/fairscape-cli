@@ -24,8 +24,10 @@ from typing import (
     Optional,
     Union
 )
- 
 
+
+
+# Click Commands
 # RO Crate 
 @click.group('rocrate')
 def rocrate():
@@ -129,14 +131,6 @@ def create(
 ##########################
 # RO Crate add subcommands
 ##########################
-
-def add_element_ro_crate(
-    element: Union[Dataset,Computation,Software], 
-    ro_crate: pathlib.Path
-    ):
-    pass
-
-
 @rocrate.group('register')
 def register():
     pass
@@ -747,7 +741,7 @@ def package():
 #@click.option('--Bag-Group-Identifier', required=False, prompt="Bag-Group-Identifier")
 #@click.option('--Bag-Count', required=False, prompt="Bag-Count")
 #@click.option('--Internal-Sender-Identifier', required=False, prompt="Internal-Sender-Identifier")
-#@click.option('--Internal-Sender-Description', required=False, prompt="Internal-Sender-Description")
+@click.option('--Internal-Sender-Description', required=False, prompt="Internal-Sender-Description")
 def bagit(
     rocrate_path: pathlib.Path,
     bagit_path: pathlib.Path,
@@ -811,13 +805,3 @@ def bagit(
     # Create tagmanifest-md5.txt
     bagit.create_tag_manifest_md5()
     click.echo(click.style("Tag Manifest", fg="green") + f": {bagit_path}/tagmanifest-md5.txt")
-
-    
-    
-
-
-    
-
-
-
-

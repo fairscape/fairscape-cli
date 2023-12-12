@@ -1,12 +1,12 @@
 import click
 
-from fairscape_cli.schema.image import (
+from fairscape_cli.models.schema.image import (
     ImageSchema,
     ImageValidation,
     ImageValidationException,
     ImagePathNotFoundException,
 )
-from fairscape_cli.schema.tabular import (
+from fairscape_cli.models.schema.tabular import (
     TabularValidationSchema,
     StringProperty,
     BooleanProperty,
@@ -15,13 +15,14 @@ from fairscape_cli.schema.tabular import (
     ArrayProperty,
     DatatypeEnum
 )
+import json
 
 
-def write_schema(tabular_schema: TabularValidationSchema, schema_file)
+def write_schema(tabular_schema: TabularValidationSchema, schema_file):
     """ Helper Function for writing files
     """
 
-    schema_dictionary = schema_model.model_dump(by_alias=True) 
+    schema_dictionary = tabular_schema.model_dump(by_alias=True) 
     schema_json = json.dumps(schema_dictionary, indent=2)
 
     # dump json to a file
@@ -29,16 +30,17 @@ def write_schema(tabular_schema: TabularValidationSchema, schema_file)
         output_file.write(schema_json)
 
 
-def read_schema(schema_path) -> TabularValidationSchema:
+def read_schema(schema_file) -> TabularValidationSchema:
     """ Helper function for reading the schema and marshaling into the pydantic model
     """
     # read the schema
     with open(schema_file, "r") as input_schema:
-        schema_json =  json.load(input_schema) 
+        input_schema_data = input_schema.read()
+        schema_json =  json.load(input_schema_data) 
 
-    # load the model into 
-    schema_model = TabularValidationSchema(**schema_json)
-    return schema_model
+        # load the model into 
+        schema_model = TabularValidationSchema(**schema_json)
+        return schema_model
 
 
 @click.group('schema')
@@ -50,14 +52,13 @@ def create():
     pass
 
 
-@create.command('tabular')
+@schema.command('create-tabular')
 @click.option('--name', required=True, type=str)
 @click.option('--description', required=True, type=str)
-@click.option('--sperator', required=True, type=str)
 @click.option('--guid', required=False, type=str, default="", show_default=False)
-@click.option('--seperator', type=str, multiple=True)
-@click.option('--header', required=False, type=bool, default=False,)
-@click.argument('schema_file', type=click.Path(exists=True))
+@click.option('--seperator', type=str, required=True)
+@click.option('--header', required=False, type=bool, default=False)
+@click.argument('schema_file', type=click.Path(exists=False))
 def create_tabular(
      name,
      description,
@@ -68,14 +69,15 @@ def create_tabular(
 ):
     # create the model
     schema_model = TabularValidationSchema(
-        name=name,
-        description=description,
-        guid=guid,
-        propeties={},
-        required=[],
-        header=header,
-        seperator= seperator
-    )
+        **{
+        "name": name,
+        "description":description,
+        "guid":guid,
+        "propeties":{},
+        "required": [],
+        "header" :header,
+        "seperator": seperator
+    })
 
     # TODO if -i flag is included
     # interactive prompt for creating properties
@@ -95,21 +97,21 @@ def create_tabular(
 
 
 
-@schema.group('addProperty')
-def addProperty():
+@schema.group('add-property')
+def add_property():
     """ Add a Property to an existing schema
     """
     pass
 
 
-@addProperty.command('string')
+@add_property.command('string')
 @click.option('--name', type=str, required=True)
 @click.option('--number', type=int, required=True)
 @click.option('--description', type=str, required=True)
 @click.option('--valueURL', type=str, required=False)
 @click.option('--pattern', type=str, required=False)
 @click.argument('schema_file', type=click.Path(exists=True))
-def addPropertyString(name, number, description, valueURL, pattern, schema_file):
+def add_property_string(name, number, description, valueURL, pattern, schema_file):
 
     try:
         schema_model = read_schema(schema_file)
@@ -137,13 +139,13 @@ def addPropertyString(name, number, description, valueURL, pattern, schema_file)
 
 
 
-@addProperty.command('number')
+@add_property.command('number')
 @click.option('--name', type=str, required=True)
 @click.option('--number', type=int, required=True)
 @click.option('--description', type=str, required=True)
 @click.option('--valueURL', type=str, required=False)
 @click.argument('schema_file', type=click.Path(exists=True))
-def addPropertyNumber(name, number, description, valueURL, schema_file):
+def add_property_number(name, number, description, valueURL, schema_file):
 
     try:
         schema_model = read_schema(schema_file)
@@ -169,13 +171,13 @@ def addPropertyNumber(name, number, description, valueURL, schema_file):
         click.echo(f"Error Dumping Schema\n{str(e)}")
 
 
-@addProperty.command('bool')
+@add_property.command('bool')
 @click.option('--name', type=str, required=True)
 @click.option('--number', type=int, required=True)
 @click.option('--description', type=str, required=True)
 @click.option('--valueURL', type=str, required=False)
 @click.argument('schema_file', type=click.Path(exists=True))
-def addPropertyBoolean(name, number, description, valueURL, schema_file):
+def add_property_boolean(name, number, description, valueURL, schema_file):
 
     try:
         schema_model = read_schema(schema_file)
@@ -202,13 +204,13 @@ def addPropertyBoolean(name, number, description, valueURL, schema_file):
 
 
 
-@addProperty.command('int')
+@add_property.command('int')
 @click.option('--name', type=str, required=True)
 @click.option('--number', type=int, required=True)
 @click.option('--description', type=str, required=True)
 @click.option('--valueURL', type=str, required=False)
 @click.argument('schema_file', type=click.Path(exists=True))
-def addPropertyInteger(name, number, description, valueURL, schema_file):
+def add_property_integer(name, number, description, valueURL, schema_file):
 
     try:
         schema_model = read_schema(schema_file)

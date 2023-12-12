@@ -1,8 +1,11 @@
 from jsonschema import validate
 import pandas as pd
+import datetime
 
 from pydantic import (
 	BaseModel,
+	ConfigDict,
+	computed_field,
 	Field
 )
 from typing import (
@@ -13,8 +16,22 @@ from typing import (
 	Literal
 )
 
+
 from enum import Enum
 import re
+
+# TODO reorganize for imports
+#  Python Interface for Registering Unique GUIDS
+from sqids import Sqids
+squids = Sqids(min_length=6, )
+
+# TODO set to configuration
+NAAN = "59852"
+
+def GenerateGUID(data: List[int]) -> str:
+    squid_encoded = squids.encode(data)
+    return f"ark:{NAAN}/{squid_encoded}"
+
 
 # datatype enum
 class DatatypeEnum(str, Enum):
@@ -40,51 +57,73 @@ class BaseProperty(BaseModel):
 	#multiple: Optional[bool]
 	#seperator: Optional[str]
 
-class NullProperty(BaseModel):
+class NullProperty(BaseProperty):
 	datatype: Literal['null'] = Field(alias="type")
 
 class StringProperty(BaseProperty):
 	datatype: Literal['string'] = Field(alias="type")
 	pattern: Optional[str] = Field(description="regex pattern for field", default=None)
+	number: int
 
 class ArrayProperty(BaseProperty):
 	datatype: Literal['array'] = Field(alias="type")
 	maxItems: int = Field(description="max items in array, validation fails if length is greater than this value")
 	minItems: Optional[int] = Field(description="min items in array, validation fails if lenght is shorter than this value")
 	uniqueItems: Optional[bool] = Field()
+	number: str
 	items: Items
 
 class BooleanProperty(BaseProperty):
 	datatype: Literal['boolean'] = Field(alias="type")
+	number: int
 
 class NumberProperty(BaseProperty):
 	datatype: Literal['number'] = Field(alias="type")
+	number: int
 
 class IntegerProperty(BaseProperty):
 	datatype: Literal['integer'] = Field(alias="type")
+	number: int
 
 
 PropertyUnion = Union[StringProperty, ArrayProperty, BooleanProperty, NumberProperty, IntegerProperty, NullProperty]
+
 
 
 class TabularValidationSchema(BaseModel):
 	schema_version: str = Field(default="https://json-schema.org/draft/2020-12/schema", alias="schema")
 	name: str
 	description: str
-	guid: str = Field(alias="@id")
-	properties: Dict[str, PropertyUnion]
+	properties: Dict[str, PropertyUnion] = Field(default={})
 	datatype: str = Field(default="object", alias="type")
-	additionalProperties: bool = Field()
-	required: List[str] = Field(description="list of required properties by name")
+	additionalProperties: bool = Field(default=True)
+	required: List[str] = Field(description="list of required properties by name", default=[])
 	seperator: str = Field(description="Field seperator for the file")
-	header: bool = Field(description="Do files of this schema have a header row")
-	examples: Optional[List[Dict[str, str ]]]
+	header: bool = Field(description="Do files of this schema have a header row", default=False)
+	examples: Optional[List[Dict[str, str ]]] = Field(default=[])
 
-	def load_data(self, path: str) -> pd.DataFrame:
+	# Computed Field implementation for guid generation
+	@computed_field(alias="@id")
+	def guid(self) -> str:
+
+		return GenerateGUID(
+			[int(datetime.datetime.utcnow().timestamp())]
+		)
+
+		#return GenerateGUID([ int(elem) for elem in
+		#	str(int.from_bytes(self.name.encode("utf-8"), byteorder="big"))
+		#])
+
+	def load_data(self, dataPath: str) -> pd.DataFrame:
 		# TODO deal with alternative filetypes
 
+		# grab file extension with pathlib
+		# if pathlib.Path(dataPath).extension() ==".xls":
+			# return pd.read_excel()
+
 		# pd.read_excel
-		return pd.read_csv(path, sep=self.seperator,  header=self.header)
+		return pd.read_csv(dataPath, sep=self.seperator,  header=self.header)
+
 
 	def execute_validation(self, data_frame):
 		schema_definition = self.model_dump(
@@ -148,6 +187,9 @@ class TabularValidationSchema(BaseModel):
 
 		# run conversion on data frame 
 		validation_exceptions = {}
+
+		json_list = [ {} for i in range(data_frame.shape[0])]
+
 		for i in range(data_frame.shape[0]):
 			data_row = data_frame.iloc[i,:]
 
