@@ -13,7 +13,8 @@ from fairscape_cli.models.schema.tabular import (
     NumberProperty,
     IntegerProperty,
     ArrayProperty,
-    DatatypeEnum
+    DatatypeEnum,
+    Items
 )
 import json
 
