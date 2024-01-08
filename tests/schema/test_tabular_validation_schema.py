@@ -35,6 +35,7 @@ testSchemaData = {
 }
 
 testStringPropertyData = {
+    "type": "string", 
 	"name": "Gene Name",
 	"number": 1,
 	"description": "Gene Name for APMS Data",
@@ -49,6 +50,7 @@ testBooleanPropertyData = {}
 testNumberPropertyData = {}
 
 testArrayPropertyData = {
+    "type": "array",
 	"name":	"embedding",
 	"number": "5::",
 	"minItems": 1024,
@@ -67,19 +69,20 @@ def test_models_0_tabular_validation():
 	assert schema_output_dict is not None 
 
 def test_models_1_string_property():
-	string_property_model = StringProperty(**string_property_data)
+	string_property_model = StringProperty(**testStringPropertyData)
 	string_property_output = string_property_model.model_dump(by_alias=True)
 	pass
     
 def test_models_2_array_property():		
 	array_property_model = ArrayProperty(
+        type = "array",
 		number = testArrayPropertyData['number'],
 		description = testArrayPropertyData['description'],
-		valueURL = testArrayPropertyData['valueURL'],
+		valueURL = testArrayPropertyData.get('valueURL'),
 		maxItems = testArrayPropertyData['maxItems'],
 		minItems = testArrayPropertyData['minItems'],
 		uniqueItems = testArrayPropertyData['uniqueItems'],
-		items = Items(datatype=testArrayPropertyData['items_datatype'])
+		items = Items(datatype=testArrayPropertyData['itemsDatatype'])
     )
 
 def test_schema_creation():

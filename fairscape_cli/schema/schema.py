@@ -237,7 +237,7 @@ def add_property_integer(name, number, description, valueURL, schema_file):
         click.echo(f"Error Dumping Schema\n{str(e)}")
 
 
-@addProperty.command('array')
+@add_property.command('array')
 @click.option('--name', type=str, required=True)
 @click.option('--number', type=str, required=True)
 @click.option('--description', type=str, required=True)
@@ -247,7 +247,7 @@ def add_property_integer(name, number, description, valueURL, schema_file):
 @click.option('--maxItems', type=int, required=False)
 @click.option('--uniqueItems', type=bool, required=False)
 @click.argument('schema_file', type=click.Path(exists=True))
-def addPropertyArray(name, number, description, valueURL, itemsDatatype, minItems, maxItems, uniqueItems, schema_file):
+def add_property_array(name, number, description, valueURL, itemsDatatype, minItems, maxItems, uniqueItems, schema_file):
 
     try:
         items_datatype = DatatypeEnum(itemsDatatype)
