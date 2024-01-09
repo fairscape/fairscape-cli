@@ -105,10 +105,7 @@ class TabularValidationSchema(BaseModel):
 	# Computed Field implementation for guid generation
 	@computed_field(alias="@id")
 	def guid(self) -> str:
-
-		return GenerateGUID(
-			[int(datetime.datetime.utcnow().timestamp())]
-		)
+		return GenerateGUID([int(datetime.datetime.now(datetime.UTC).timestamp())])
 
 		#return GenerateGUID([ int(elem) for elem in
 		#	str(int.from_bytes(self.name.encode("utf-8"), byteorder="big"))

@@ -37,11 +37,10 @@ def read_schema(schema_file) -> TabularValidationSchema:
     # read the schema
     with open(schema_file, "r") as input_schema:
         input_schema_data = input_schema.read()
-        schema_json =  json.load(input_schema_data) 
+        schema_json =  json.loads(input_schema_data) 
 
         # load the model into 
-        schema_model = TabularValidationSchema(**schema_json)
-        return schema_model
+        return TabularValidationSchema(**schema_json)
 
 
 @click.group('schema')
@@ -94,7 +93,7 @@ def create_tabular(
     with open(schema_file, "w") as output_file:
         output_file.write(schema_json)
 
-    click.echo(f"Wrote Schema: {str(schema_file)}")    
+    #click.echo(f"Wrote Schema: {str(schema_file)}")    
 
 
 
@@ -109,10 +108,10 @@ def add_property():
 @click.option('--name', type=str, required=True)
 @click.option('--number', type=int, required=True)
 @click.option('--description', type=str, required=True)
-@click.option('--valueURL', type=str, required=False)
+@click.option('--value-url', type=str, required=False)
 @click.option('--pattern', type=str, required=False)
 @click.argument('schema_file', type=click.Path(exists=True))
-def add_property_string(name, number, description, valueURL, pattern, schema_file):
+def add_property_string(name, number, description, value_url, pattern, schema_file):
 
     try:
         schema_model = read_schema(schema_file)
@@ -122,9 +121,10 @@ def add_property_string(name, number, description, valueURL, pattern, schema_fil
 
     # instantiate the StringProperty
     property_model = StringProperty(
+        type = "string",
         number = number,
         description = description,
-        valueURL = valueURL,
+        valueURL = value_url,
         pattern = pattern
     )
 
@@ -144,9 +144,9 @@ def add_property_string(name, number, description, valueURL, pattern, schema_fil
 @click.option('--name', type=str, required=True)
 @click.option('--number', type=int, required=True)
 @click.option('--description', type=str, required=True)
-@click.option('--valueURL', type=str, required=False)
+@click.option('--value-url', type=str, required=False)
 @click.argument('schema_file', type=click.Path(exists=True))
-def add_property_number(name, number, description, valueURL, schema_file):
+def add_property_number(name, number, description, value_url, schema_file):
 
     try:
         schema_model = read_schema(schema_file)
@@ -156,9 +156,10 @@ def add_property_number(name, number, description, valueURL, schema_file):
 
     # instantiate the StringProperty
     property_model = NumberProperty(
+        type = "number",
         number = number,
         description = description,
-        valueURL = valueURL,
+        valueURL = value_url,
     )
 
     # set the property
@@ -167,18 +168,20 @@ def add_property_number(name, number, description, valueURL, schema_file):
     try:
         write_schema(schema_model, schema_file)
         click.echo(f"Updated Schema: {schema_file}")      
+        click.exit(code=0)
     # TODO improve exception handling
     except Exception as e:
         click.echo(f"Error Dumping Schema\n{str(e)}")
+        click.exit(code=1)
 
 
-@add_property.command('bool')
+@add_property.command('boolean')
 @click.option('--name', type=str, required=True)
 @click.option('--number', type=int, required=True)
 @click.option('--description', type=str, required=True)
-@click.option('--valueURL', type=str, required=False)
+@click.option('--value-url', type=str, required=False)
 @click.argument('schema_file', type=click.Path(exists=True))
-def add_property_boolean(name, number, description, valueURL, schema_file):
+def add_property_boolean(name, number, description, value_url, schema_file):
 
     try:
         schema_model = read_schema(schema_file)
@@ -188,9 +191,10 @@ def add_property_boolean(name, number, description, valueURL, schema_file):
 
     # instantiate the StringProperty
     property_model = BooleanProperty(
+        type = "boolean",
         number = number,
         description = description,
-        valueURL = valueURL,
+        valueURL = value_url,
     )
 
     # set the property
@@ -205,13 +209,13 @@ def add_property_boolean(name, number, description, valueURL, schema_file):
 
 
 
-@add_property.command('int')
+@add_property.command('integer')
 @click.option('--name', type=str, required=True)
 @click.option('--number', type=int, required=True)
 @click.option('--description', type=str, required=True)
-@click.option('--valueURL', type=str, required=False)
+@click.option('--value-url', type=str, required=False)
 @click.argument('schema_file', type=click.Path(exists=True))
-def add_property_integer(name, number, description, valueURL, schema_file):
+def add_property_integer(name, number, description, value_url, schema_file):
 
     try:
         schema_model = read_schema(schema_file)
@@ -221,9 +225,10 @@ def add_property_integer(name, number, description, valueURL, schema_file):
 
     # instantiate the StringProperty
     property_model = IntegerProperty(
+        type = "integer",
         number = number,
         description = description,
-        valueURL = valueURL,
+        valueURL = value_url,
     )
 
     # set the property
@@ -241,16 +246,16 @@ def add_property_integer(name, number, description, valueURL, schema_file):
 @click.option('--name', type=str, required=True)
 @click.option('--number', type=str, required=True)
 @click.option('--description', type=str, required=True)
-@click.option('--valueURL', type=str, required=False)
-@click.option('--itemsDatatype', type=str, required=True)
-@click.option('--minItems', type=int, required=False)
-@click.option('--maxItems', type=int, required=False)
-@click.option('--uniqueItems', type=bool, required=False)
+@click.option('--value-url', type=str, required=False)
+@click.option('--items-datatype', type=str, required=True)
+@click.option('--min-items', type=int, required=False)
+@click.option('--max-items', type=int, required=False)
+@click.option('--unique-items', type=bool, required=False)
 @click.argument('schema_file', type=click.Path(exists=True))
-def add_property_array(name, number, description, valueURL, itemsDatatype, minItems, maxItems, uniqueItems, schema_file):
-
+def add_property_array(name, number, description, value_url, items_datatype, min_items, max_items, unique_items, schema_file):
+# {{{
     try:
-        items_datatype = DatatypeEnum(itemsDatatype)
+        datatype_enum = DatatypeEnum(items_datatype)
     except Exception as e:
         click.echo(f"ITEMS Datatype {itemsDatatype} invalid\n" +
             "ITEMS must be oneOf 'boolean'|'object'|'string'|'number'|'integer'" 
@@ -259,19 +264,21 @@ def add_property_array(name, number, description, valueURL, itemsDatatype, minIt
 
     try:
         schema_model = read_schema(schema_file)
+
     # TODO improve exception handling
     except Exception as e:
         click.echo(f"Exception Loading Schema\n{str(e)}")
 
     # instantiate the StringProperty
     property_model = ArrayProperty(
+        type = "array",
         number = number,
         description = description,
-        valueURL = valueURL,
-        maxItems = maxItems,
-        minItems = minItems,
-        uniqueItems = uniqueItems,
-        items = Items(datatype=items_datatype)
+        valueURL = value_url,
+        maxItems = max_items,
+        minItems = min_items,
+        uniqueItems = unique_items,
+        items = Items(datatype=datatype_enum)
     )
 
     # set the property
@@ -282,7 +289,7 @@ def add_property_array(name, number, description, valueURL, itemsDatatype, minIt
         click.echo(f"Updated Schema: {schema_file}")      
     # TODO improve exception handling
     except Exception as e:
-        click.echo(f"Error Dumping Schema\n{str(e)}")
+        click.echo(f"Error Dumping Schema\n{str(e)}")# }}}
 
 
 @create.command('image')
