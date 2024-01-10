@@ -43,6 +43,7 @@ def read_schema(schema_file) -> TabularValidationSchema:
         return TabularValidationSchema(**schema_json)
 
 
+
 @click.group('schema')
 def schema():
     pass

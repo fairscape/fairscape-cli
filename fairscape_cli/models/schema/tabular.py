@@ -1,6 +1,8 @@
 from jsonschema import validate
 import pandas as pd
 import datetime
+import pathlib
+import json
 
 from pydantic import (
 	BaseModel,
@@ -201,3 +203,73 @@ class TabularValidationSchema(BaseModel):
 				validation_exceptions[i] = e
 
 		return validation_exceptions	
+
+
+
+def AddProperty(schemaFilepath: str, metadata: dict, propertyClass) -> None:
+    
+    # check that schemaFile exists
+    schemaPath = pathlib.Path(schemaFilepath)
+
+    if not schemaPath.exists():
+        raise Exception
+
+    # unmarshal metadata into propertyClass
+    modelInstance = propertyClass(**metadata)
+
+    # open schemafile
+    with schemaPath.open("r+") as schemaFile:
+        schemaFileContents = schemaFile.read()
+        schemaJson =  json.loads(schemaFileContents) 
+
+        # load the model into a 
+        schemaModel = TabularValidationSchema(**schemaJson)
+
+        # check for inconsitencies
+        
+        # does there exist a property with same name
+        propertyName = metadata.get("name")
+        if propertyName in [key for key in schemaModel.properties.keys()]:
+            # TODO raise more descriptive exception
+            raise Exception
+
+        # does there exist a property with same column number
+        if modelInstance.number in [ val.number for val in schemaModel.properties.values()]:
+            # TODO raise more descriptive exception
+            raise Exception
+
+        # add new property to schema
+        schemaModel.properties[propertyName] = modelInstance
+  
+        # serialize model to json
+        schemaJson = json.dumps(schemaModel.model_dump(by_alias=True) , indent=2)
+
+        # overwrite file contents
+        schemaFile.seek(0)
+        schemaFile.write(schemaJson)
+
+        return None
+
+
+def ReadSchema(schema_file: str) -> TabularValidationSchema:
+    """ Helper function for reading the schema and marshaling into the pydantic model
+    """
+    # read the schema
+    with open(schema_file, "r") as input_schema:
+        input_schema_data = input_schema.read()
+        schema_json =  json.loads(input_schema_data) 
+
+        # load the model into 
+        return TabularValidationSchema(**schema_json)
+
+
+def WriteSchema(tabular_schema: TabularValidationSchema, schema_file):
+    """ Helper Function for writing files
+    """
+
+    schema_dictionary = tabular_schema.model_dump(by_alias=True) 
+    schema_json = json.dumps(schema_dictionary, indent=2)
+
+    # dump json to a file
+    with open(schema_file, "w") as output_file:
+        output_file.write(schema_json)

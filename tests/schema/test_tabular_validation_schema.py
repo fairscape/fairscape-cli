@@ -19,7 +19,12 @@ BooleanProperty,
 IntegerProperty,
 NumberProperty,
 ArrayProperty,
-Items
+Items,
+AddProperty,
+ReadSchema
+)
+from typing import (
+    Dict, List
 )
 from fairscape_cli.__main__ import cli as fairscape_cli_app
 
@@ -126,9 +131,115 @@ def test_models_5_number_property():
     assert num_property_output is not None
 
 
+def test_addProperty():
+    # create a test schema to add properties to
+    outputPath = "tests/data/schema/add_property_schema.json"
 
-def _test_schema_cli_0_creation():
+    # clear the test schema
+    pathlib.Path(outputPath).unlink(missing_ok=True)
 
+    # create a test schema
+    test_command = [
+        "schema",
+        "create-tabular",
+        "--name",
+        testSchemaData['name'],
+        "--description",
+        testSchemaData['description'],
+        "--seperator",
+        testSchemaData['seperator'],
+        "--header",
+        testSchemaData['header'],
+        outputPath
+    ]
+
+    result = runner.invoke(
+        fairscape_cli_app, 
+        test_command
+        )
+
+    assert result.exit_code == 0 
+
+    # add a string property to the schema
+    stringMetadata = {
+        "type": "string",
+        "name": "string property",
+        "number": 0,
+        "description": "an example string property",
+        "pattern": "r'[0-3]'", 
+    }
+
+    AddProperty(outputPath, stringMetadata, StringProperty)
+
+    # read the schema and assert a string property is set correctly
+    schemaModel = ReadSchema(outputPath)
+
+    def checkPropertiesSet(passedSchemaModel: TabularValidationSchema, metadata: Dict, attributesToCheck: List[str]): 
+        propertyName = metadata.get("name")
+    
+        assert propertyName in list(passedSchemaModel.properties.keys())
+
+        propertyObject = passedSchemaModel.properties[propertyName].model_dump(by_alias=True)
+        for metadataAttribute in attributesToCheck:
+            assert propertyObject[metadataAttribute] == metadata[metadataAttribute]
+
+
+    # check that the string property is instantiated
+    assert schemaModel.properties != {} 
+    assert len(list(schemaModel.properties.keys())) == 1
+
+
+    # check the attributes of the string property
+    checkPropertiesSet(schemaModel, stringMetadata, ['number', 'description', 'pattern'])
+
+    # add an integer property to the schema
+    integerMetadata = {
+        "type": "integer",
+        "name": "integer property",
+        "number": 1,
+        "description": "an example integer property",
+    }
+    AddProperty(outputPath, integerMetadata, IntegerProperty)
+
+    # read the schema model again
+    schemaModel = ReadSchema(outputPath)
+    assert len(list(schemaModel.properties.keys())) == 2
+    checkPropertiesSet(schemaModel, integerMetadata, ['number', 'description'])
+
+    # add a number property to the schema
+    numberMetadata = {
+        "type": "number",
+        "name": "number property",
+        "number": 2,
+        "description": "an example number property",
+    }
+    AddProperty(outputPath, numberMetadata, NumberProperty)
+
+    # read the schema model again
+    schemaModel = ReadSchema(outputPath)
+    assert len(list(schemaModel.properties.keys())) == 3
+    checkPropertiesSet(schemaModel, numberMetadata, ['number', 'description'])
+
+    # add a boolean property to the schema
+    booleanMetadata = {
+        "type": "boolean",
+        "name": "boolean property",
+        "number": 3,
+        "description": "an example boolean property",
+    }
+    AddProperty(outputPath, booleanMetadata, BooleanProperty)
+
+    # read the schema model again
+    schemaModel = ReadSchema(outputPath)
+    assert len(list(schemaModel.properties.keys())) == 4
+    checkPropertiesSet(schemaModel, numberMetadata, ['number', 'description'])
+
+    # add an array property to the schema
+
+    pass
+
+
+def test_schema_cli_0_creation():
     output_path = "tests/data/schema/test_schema.json"
 
     # clear the test schema
@@ -155,10 +266,11 @@ def _test_schema_cli_0_creation():
         )
 
     print(result.output)
-    assert result.exit_code == 0
+    assert result.exit_code == 0 
+
 
 def test_schema_cli_1_property_string():
-
+# {{{
     # add a string property
     string_test_command = [
         "schema",
@@ -181,11 +293,11 @@ def test_schema_cli_1_property_string():
         string_test_command
     )
     print(string_result.output)
-    assert string_result.exit_code == 0
+    assert string_result.exit_code == 0# }}}
 
 
 def test_schema_cli_2_property_int():
-
+# {{{
     # add a int property
     int_test_command = [
         "schema",
@@ -203,7 +315,8 @@ def test_schema_cli_2_property_int():
         fairscape_cli_app, 
         int_test_command
     )
-    assert int_result.exit_code == 0
+    assert int_result.exit_code == 0# }}}
+
 
 def test_schema_cli_3_property_bool():
     # add a boolean property
