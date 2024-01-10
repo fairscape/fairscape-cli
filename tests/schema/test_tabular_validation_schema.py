@@ -19,8 +19,10 @@ BooleanProperty,
 IntegerProperty,
 NumberProperty,
 ArrayProperty,
+DatatypeEnum,
 Items,
 AddProperty,
+AppendProperty,
 ReadSchema
 )
 from typing import (
@@ -235,8 +237,33 @@ def test_addProperty():
     checkPropertiesSet(schemaModel, numberMetadata, ['number', 'description'])
 
     # add an array property to the schema
+    arrayMetadata = {
+        "type": "array",
+        "number": "4::",
+        "name": "array property",
+        "description": "an example array property",
+        "minItems": 4,
+        "maxItems": 6,
+        "uniqueItems": False,
+        "items":{"type":  "number"},
+    }
+    
+    arrayPropertyModel = ArrayProperty(
+        type = "array",
+        number = "4::",
+        description = "an example array property",
+        valueURL = None,
+        minItems = 4,
+        maxItems = 6,
+        uniqueItems = False,
+        items = Items(datatype="number")
+    )
 
-    pass
+    AppendProperty(outputPath,  arrayPropertyModel, "array property")
+    schemaModel = ReadSchema(outputPath)
+    # check that properties are set 
+    assert len(list(schemaModel.properties.keys())) == 5
+    checkPropertiesSet(schemaModel, arrayMetadata, ['number', 'description', "minItems", "maxItems", "uniqueItems"])
 
 
 def test_schema_cli_0_creation():

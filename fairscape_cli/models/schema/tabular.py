@@ -206,6 +206,44 @@ class TabularValidationSchema(BaseModel):
 
 
 
+def AppendProperty(schemaFilepath: str, propertyInstance, propertyName: str) -> None: 
+    # check that schemaFile exists
+    schemaPath = pathlib.Path(schemaFilepath)
+
+    if not schemaPath.exists():
+        raise Exception
+
+    with schemaPath.open("r+") as schemaFile:
+        schemaFileContents = schemaFile.read()
+        schemaJson =  json.loads(schemaFileContents) 
+
+        # load the model into a 
+        schemaModel = TabularValidationSchema(**schemaJson)
+
+        # check for inconsitencies
+        
+        # does there exist a property with same name
+        if propertyName in [key for key in schemaModel.properties.keys()]:
+            # TODO raise more descriptive exception
+            raise Exception
+
+        # does there exist a property with same column number
+        if propertyInstance.number in [ val.number for val in schemaModel.properties.values()]:
+            # TODO raise more descriptive exception
+            raise Exception
+
+        # add new property to schema
+        schemaModel.properties[propertyName] = propertyInstance
+  
+        # serialize model to json
+        schemaJson = json.dumps(schemaModel.model_dump(by_alias=True) , indent=2)
+
+        # overwrite file contents
+        schemaFile.seek(0)
+        schemaFile.write(schemaJson)
+
+
+
 def AddProperty(schemaFilepath: str, metadata: dict, propertyClass) -> None:
     
     # check that schemaFile exists
