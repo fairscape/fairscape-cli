@@ -6,18 +6,18 @@ import json
 import click
 
 from pydantic import (
-	BaseModel,
-	ConfigDict,
-	computed_field,
-	Field,
+    BaseModel,
+    ConfigDict,
+    computed_field,
+    Field,
     ValidationError,
 )
 from typing import (
-	Dict, 
-	List, 
-	Optional,
-	Union,
-	Literal
+    Dict, 
+    List, 
+    Optional,
+    Union,
+    Literal
 )
 
 
@@ -39,60 +39,56 @@ def GenerateGUID(data: List[int]) -> str:
 
 # datatype enum
 class DatatypeEnum(str, Enum):
-	NULL = "null"
-	BOOLEAN = "boolean"
-	OBJECT = "object"
-	STRING = "string"
-	NUMBER = "number"
-	INTEGER = "integer"
-	ARRAY = "array"
+    NULL = "null"
+    BOOLEAN = "boolean"
+    OBJECT = "object"
+    STRING = "string"
+    NUMBER = "number"
+    INTEGER = "integer"
+    ARRAY = "array"
 
 class Items(BaseModel):
-	model_config = ConfigDict(
-		populate_by_name = True,
-		use_enum_values=True
-	)
-	datatype: DatatypeEnum = Field(alias="type")
+    model_config = ConfigDict(
+            populate_by_name = True,
+            use_enum_values=True
+    )
+    datatype: DatatypeEnum = Field(alias="type")
 
 class BaseProperty(BaseModel):
-	model_config = ConfigDict(
-		populate_by_name = True,
-		use_enum_values=True
-	)
-	description: str = Field(description="description of field")
-	model_config = ConfigDict(populate_by_name = True)
-	number: Union[int,str] = Field(description="index of the column for this value")
-	valueURL: Optional[str] = Field(default=None)	
-	#multiple: Optional[bool]
-	#seperator: Optional[str]
+    description: str = Field(description="description of field")
+    model_config = ConfigDict(populate_by_name = True)
+    number: Union[int,str] = Field(description="index of the column for this value")
+    valueURL: Optional[str] = Field(default=None)	
+    #multiple: Optional[bool]
+    #seperator: Optional[str]
 
 class NullProperty(BaseProperty):
-	datatype: Literal['null'] = Field(alias="type")
+    datatype: Literal['null'] = Field(alias="type", default='null')
 
 class StringProperty(BaseProperty):
-	datatype: Literal['string'] = Field(alias="type")
-	pattern: Optional[str] = Field(description="regex pattern for field", default=None)
-	number: int
+    datatype: Literal['string'] = Field(alias="type")
+    pattern: Optional[str] = Field(description="regex pattern for field", default=None)
+    number: int
 
 class ArrayProperty(BaseProperty):
-	datatype: Literal['array'] = Field(alias="type")
-	maxItems: int = Field(description="max items in array, validation fails if length is greater than this value")
-	minItems: Optional[int] = Field(description="min items in array, validation fails if lenght is shorter than this value")
-	uniqueItems: Optional[bool] = Field()
-	number: str
-	items: Items
+    datatype: Literal['array'] = Field(alias="type")
+    maxItems: int = Field(description="max items in array, validation fails if length is greater than this value")
+    minItems: Optional[int] = Field(description="min items in array, validation fails if lenght is shorter than this value")
+    uniqueItems: Optional[bool] = Field()
+    number: str
+    items: Items
 
 class BooleanProperty(BaseProperty):
-	datatype: Literal['boolean'] = Field(alias="type")
-	number: int
+    datatype: Literal['boolean'] = Field(alias="type")
+    number: int
 
 class NumberProperty(BaseProperty):
-	datatype: Literal['number'] = Field(alias="type")
-	number: int
+    datatype: Literal['number'] = Field(alias="type")
+    number: int
 
 class IntegerProperty(BaseProperty):
-	datatype: Literal['integer'] = Field(alias="type")
-	number: int
+    datatype: Literal['integer'] = Field(alias="type")
+    number: int
 
 
 PropertyUnion = Union[StringProperty, ArrayProperty, BooleanProperty, NumberProperty, IntegerProperty, NullProperty]
@@ -100,116 +96,116 @@ PropertyUnion = Union[StringProperty, ArrayProperty, BooleanProperty, NumberProp
 
 
 class TabularValidationSchema(BaseModel):
-	schema_version: str = Field(default="https://json-schema.org/draft/2020-12/schema", alias="schema")
-	name: str
-	description: str
-	properties: Dict[str, PropertyUnion] = Field(default={})
-	datatype: str = Field(default="object", alias="type")
-	additionalProperties: bool = Field(default=True)
-	required: List[str] = Field(description="list of required properties by name", default=[])
-	seperator: str = Field(description="Field seperator for the file")
-	header: bool = Field(description="Do files of this schema have a header row", default=False)
-	examples: Optional[List[Dict[str, str ]]] = Field(default=[])
+    schema_version: str = Field(default="https://json-schema.org/draft/2020-12/schema", alias="schema")
+    name: str
+    description: str
+    properties: Dict[str, PropertyUnion] = Field(default={})
+    datatype: str = Field(default="object", alias="type")
+    additionalProperties: bool = Field(default=True)
+    required: List[str] = Field(description="list of required properties by name", default=[])
+    seperator: str = Field(description="Field seperator for the file")
+    header: bool = Field(description="Do files of this schema have a header row", default=False)
+    examples: Optional[List[Dict[str, str ]]] = Field(default=[])
 
-	# Computed Field implementation for guid generation
-	@computed_field(alias="@id")
-	def guid(self) -> str:
-		return GenerateGUID([int(datetime.datetime.now(datetime.UTC).timestamp())])
+    # Computed Field implementation for guid generation
+    @computed_field(alias="@id")
+    def guid(self) -> str:
+        return GenerateGUID([int(datetime.datetime.now(datetime.UTC).timestamp())])
 
-		#return GenerateGUID([ int(elem) for elem in
-		#	str(int.from_bytes(self.name.encode("utf-8"), byteorder="big"))
-		#])
+        #return GenerateGUID([ int(elem) for elem in
+        #	str(int.from_bytes(self.name.encode("utf-8"), byteorder="big"))
+        #])
 
-	def load_data(self, dataPath: str) -> pd.DataFrame:
-		# TODO deal with alternative filetypes
+    def load_data(self, dataPath: str) -> pd.DataFrame:
+        # TODO deal with alternative filetypes
 
-		# grab file extension with pathlib
-		# if pathlib.Path(dataPath).extension() ==".xls":
-			# return pd.read_excel()
+        # grab file extension with pathlib
+        # if pathlib.Path(dataPath).extension() ==".xls":
+        # return pd.read_excel()
 
-		# pd.read_excel
-		return pd.read_csv(dataPath, sep=self.seperator,  header=self.header)
-
-
-	def execute_validation(self, data_frame):
-		schema_definition = self.model_dump(
-			by_alias=True, 
-			exclude_unset=True,
-			exclude_none=True
-			)
-
-		property_slice = {
-			property_name: {
-				"number": property_data.get("number"),
-				"type": property_data.get("type")
-			}
-			for property_name, property_data in schema_definition.get("properties").items()
-		}
+        # pd.read_excel
+        return pd.read_csv(dataPath, sep=self.seperator,  header=self.header)
 
 
-		def json_row(row):
-			json_output = {}
-			for property_name, property_values in property_slice.items():
-			
-				index_slice = property_values.get("number")
-				datatype = property_values.get("type")
+    def execute_validation(self, data_frame):
+        schema_definition = self.model_dump(
+                by_alias=True, 
+                exclude_unset=True,
+                exclude_none=True
+                )
 
-				if isinstance(index_slice, int): 
+        property_slice = {
+                property_name: {
+                        "number": property_data.get("number"),
+                        "type": property_data.get("type")
+                }
+                for property_name, property_data in schema_definition.get("properties").items()
+        }
 
-					if datatype == "boolean":
-						json_output[property_name] = bool(row.iloc[index_slice])
-					else:
-						json_output[property_name] = row.iloc[index_slice]
-				
-				elif isinstance(index_slice, str):
 
-					n_to_end_slice_match = re.search("^([0-9]*)::$", index_slice)
-					start_to_n_slice_match = re.search("^::([0-9]*)$", index_slice)
-					n_to_m_slice_match = re.search("^([0-9]*):([0-9]*)$", index_slice)
+        def json_row(row):
+            json_output = {}
+            for property_name, property_values in property_slice.items():
 
-					if n_to_end_slice_match:
-						start = int(n_to_end_slice_match.group(1))
-						generated_slice = slice(start, len(row))
-					elif start_to_n_slice_match:
-						end = int(start_to_n_slice_match.group(1))
-						generated_slice = slice(0,end)
-					elif n_to_m_slice_match:
-						start = int(n_to_m_slice_match.group(1))
-						end = int(n_to_m_slice_match.group(2))
-						generated_slice = slice(start, end)
-					else:
-						# raise exception for improperly passing a slice 
-						raise Exception()
+                index_slice = property_values.get("number")
+                datatype = property_values.get("type")
 
-					# slice rows according to matched slice
+                if isinstance(index_slice, int): 
 
-					# if datatype is boolean coerce datatype
-					if datatype=="boolean":
-						json_output[property_name] = [ bool(item) for item in list(row.iloc[generated_slice])]
-					else:
-						json_output[property_name] = list(row.iloc[generated_slice])
+                    if datatype == "boolean":
+                        json_output[property_name] = bool(row.iloc[index_slice])
+                    else:
+                        json_output[property_name] = row.iloc[index_slice]
 
-			return json_output
+                elif isinstance(index_slice, str):
 
-		# run conversion on data frame 
-		validation_exceptions = {}
+                    n_to_end_slice_match = re.search("^([0-9]*)::$", index_slice)
+                    start_to_n_slice_match = re.search("^::([0-9]*)$", index_slice)
+                    n_to_m_slice_match = re.search("^([0-9]*):([0-9]*)$", index_slice)
 
-		json_list = [ {} for i in range(data_frame.shape[0])]
+                    if n_to_end_slice_match:
+                        start = int(n_to_end_slice_match.group(1))
+                        generated_slice = slice(start, len(row))
+                    elif start_to_n_slice_match:
+                        end = int(start_to_n_slice_match.group(1))
+                        generated_slice = slice(0,end)
+                    elif n_to_m_slice_match:
+                        start = int(n_to_m_slice_match.group(1))
+                        end = int(n_to_m_slice_match.group(2))
+                        generated_slice = slice(start, end)
+                    else:
+                        # raise exception for improperly passing a slice 
+                        raise Exception()
 
-		for i in range(data_frame.shape[0]):
-			data_row = data_frame.iloc[i,:]
+                    # slice rows according to matched slice
 
-			# catch all validation errors and then return
-			try: 
-				validate(
-					instance=json_row(data_row),
-					schema= schema_definition 
-				)
-			except Exception as e:
-				# TODO convert property errors into column index
-				validation_exceptions[i] = e
+                    # if datatype is boolean coerce datatype
+                    if datatype=="boolean":
+                        json_output[property_name] = [ bool(item) for item in list(row.iloc[generated_slice])]
+                    else:
+                        json_output[property_name] = list(row.iloc[generated_slice])
 
-		return validation_exceptions	
+            return json_output
+
+        # run conversion on data frame 
+        validation_exceptions = {}
+
+        json_list = [ {} for i in range(data_frame.shape[0])]
+
+        for i in range(data_frame.shape[0]):
+            data_row = data_frame.iloc[i,:]
+
+            # catch all validation errors and then return
+            try: 
+                validate(
+                        instance=json_row(data_row),
+                        schema= schema_definition 
+                )
+            except Exception as e:
+                # TODO convert property errors into column index
+                validation_exceptions[i] = e
+
+        return validation_exceptions	
 
 
 class PropertyNameException(Exception):
@@ -242,7 +238,7 @@ def AppendProperty(schemaFilepath: str, propertyInstance, propertyName: str) -> 
         schemaModel = TabularValidationSchema(**schemaJson)
 
         # check for inconsitencies
-        
+
         # does there exist a property with same name
         if propertyName in [key for key in schemaModel.properties.keys()]:
             raise PropertyNameException(propertyName)
@@ -253,20 +249,20 @@ def AppendProperty(schemaFilepath: str, propertyInstance, propertyName: str) -> 
 
         # add new property to schema
         schemaModel.properties[propertyName] = propertyInstance
-  
+
         # serialize model to json
         schemaJson = json.dumps(schemaModel.model_dump(by_alias=True) , indent=2)
 
         # overwrite file contents
         schemaFile.seek(0)
         schemaFile.write(schemaJson)
-    
+
 
 def ClickAppendProperty(ctx, schemaFile, propertyModel, name): 
     try:
         # append the property to the 
         AppendProperty(schemaFile,  propertyModel, name)
-        click.echo(f"Added Property\tname: {name}\ttype: {propertyModel.type}")
+        click.echo(f"Added Property\tname: {name}\ttype: {propertyModel.datatype}")
         ctx.exit(code=0)
 
     except ColumnIndexException as indexException:
@@ -302,6 +298,107 @@ def WriteSchema(tabular_schema: TabularValidationSchema, schema_file):
     with open(schema_file, "w") as output_file:
         output_file.write(schema_json)
 
+
+def InstantiateStringModel(ctx, name, number, description, value_url, pattern):
+    try:
+        modelInstance = StringProperty(
+            datatype = 'string',
+            number = number,
+            description = description,
+            valueURL = value_url,
+            pattern = pattern
+        )
+        return modelInstance
+
+    except ValidationError as metadataError:
+        click.echo("ERROR: MetadataValidationError")
+        click.echo(metadataError)
+        #for validationFailure in metadataError.errors():
+        #    click.echo(f"loc: {validationFailure.loc}\tinput: {validationFailure.input}\tmsg: {validationFailure.msg}")
+        ctx.exit(code=1)
+
+
+def InstantiateNumberModel(ctx, name, number, description, value_url):
+    try:
+        modelInstance = NumberProperty(
+            datatype = 'number',
+            number = number,
+            description = description,
+            valueURL = value_url
+            )
+        return modelInstance
+
+    except ValidationError as metadataError:
+        click.echo("ERROR: MetadataValidationError")
+        click.echo(metadataError)
+        #for validationFailure in metadataError.errors():
+        #    click.echo(f"loc: {validationFailure.loc}\tinput: {validationFailure.input}\tmsg: {validationFailure.msg}")
+        ctx.exit(code=1)
+
+
+def InstantiateBooleanModel(ctx, name, number, description, value_url):
+    try:
+        booleanInstance = BooleanProperty(
+            datatype = 'boolean',
+            number = number,
+            description = description,
+            valueURL = value_url,
+            )
+        return booleanInstance
+
+    except ValidationError as metadataError:
+        click.echo("ERROR: MetadataValidationError")
+        click.echo(metadataError)
+        #for validationFailure in metadataError.errors():
+        #    click.echo(f"loc: {validationFailure.loc}\tinput: {validationFailure.input}\tmsg: {validationFailure.msg}")
+        ctx.exit(code=1)
+
+
+def InstantiateIntegerModel(ctx, name, number, description, value_url):
+    try:
+        integerInstance = IntegerProperty(
+            datatype = 'integer',
+            number = number,
+            description = description,
+            valueURL = value_url,
+        )
+        return integerInstance
+
+    except ValidationError as metadataError:
+        click.echo("ERROR: MetadataValidationError")
+        click.echo(metadataError)
+        #for validationFailure in metadataError.errors():
+        #    click.echo(f"loc: {validationFailure.loc}\tinput: {validationFailure.input}\tmsg: {validationFailure.msg}")
+        ctx.exit(code=1)
+
+
+def InstantiateArrayModel(ctx, name, number, description, value_url, items_datatype, min_items, max_items, unique_items):
+    try:
+        datatype_enum = DatatypeEnum(items_datatype)
+    except Exception:
+        click.echo(f"ITEMS Datatype {itemsDatatype} invalid\n" +
+            "ITEMS must be oneOf 'boolean'|'object'|'string'|'number'|'integer'" 
+        )
+        ctx.exit(code=1)
+    try:
+        modelInstance = ArrayProperty(
+            datatype = 'array',
+            number = number,
+            description = description,
+            valueURL = value_url,
+            maxItems = max_items,
+            minItems = min_items,
+            uniqueItems = unique_items,
+            items = Items(datatype=datatype_enum)
+            )
+        return modelInstance
+
+    except ValidationError as metadataError:
+        click.echo("ERROR: MetadataValidationError")
+        click.echo(metadataError)
+        #for validationFailure in metadataError.errors():
+        #    click.echo(f"loc: {validationFailure.loc}\tinput: {validationFailure.input}\tmsg: {validationFailure.msg}")
+        ctx.exit(code=1)
 
 def ValidateModel(ctx, createModel):
     try:

@@ -8,15 +8,12 @@ from fairscape_cli.models.schema.image import (
 )
 from fairscape_cli.models.schema.tabular import (
     TabularValidationSchema,
-    StringProperty,
-    BooleanProperty,
-    NumberProperty,
-    IntegerProperty,
-    ArrayProperty,
-    DatatypeEnum,
-    Items,
     WriteSchema,
-    ValidateModel,
+    InstantiateStringModel,
+    InstantiateBooleanModel,
+    InstantiateIntegerModel,
+    InstantiateNumberModel,
+    InstantiateArrayModel,
     ClickAppendProperty,
     PropertyNameException,
     ColumnIndexException,
@@ -84,18 +81,8 @@ def add_property():
 @click.argument('schema_file', type=click.Path(exists=True))
 @click.pass_context
 def add_property_string(ctx, name, number, description, value_url, pattern, schema_file):
-
     # instantiate the StringProperty
-    def InstantiateStringModel():
-        return StringProperty(
-            datatype = "string",
-            number = number,
-            description = description,
-            valueURL = value_url,
-            pattern = pattern
-        )
-
-    stringPropertyModel = ValidateModel(ctx, InstantiateStringModel)
+    stringPropertyModel = InstantiateStringModel(ctx, name, number, description, value_url, pattern)
     ClickAppendProperty(ctx, schema_file, stringPropertyModel, name)
 
 
@@ -113,15 +100,7 @@ def add_property_number(ctx, name, number, description, value_url, schema_file):
     ctx = click.get_context()
 
     # instantiate the StringProperty
-    def InstantiateNumberModel():
-        return NumberProperty(
-            datatype = "number",
-            number = number,
-            description = description,
-            valueURL = value_url,
-        )
-
-    numberPropertyModel = ValidateModel(ctx, InstantiateNumberModel)
+    numberPropertyModel = InstantiateStringModel(ctx, name, number, description, value_url, schema_file)
     ClickAppendProperty(ctx, schema_file, numberPropertyModel, name)
 
 
@@ -134,16 +113,7 @@ def add_property_number(ctx, name, number, description, value_url, schema_file):
 @click.argument('schema_file', type=click.Path(exists=True))
 @click.pass_context
 def add_property_boolean(ctx, name, number, description, value_url, schema_file):
-
-    def InstantiateBooleanModel():
-        return BooleanProperty(
-            datatype = "boolean",
-            number = number,
-            description = description,
-            valueURL = value_url,
-        )
-
-    booleanPropertyModel = ValidateModel(ctx, InstantiateBooleanModel)
+    booleanPropertyModel = InstantiateBooleanModel(ctx, name, number, description, value_url) 
     ClickAppendProperty(ctx, schema_file, booleanPropertyModel, name)
 
 
@@ -155,17 +125,8 @@ def add_property_boolean(ctx, name, number, description, value_url, schema_file)
 @click.argument('schema_file', type=click.Path(exists=True))
 @click.pass_context
 def add_property_integer(ctx, name, number, description, value_url, schema_file):
-
     # instantiate the StringProperty
-    def InstantiateIntegerModel():
-        return IntegerProperty(
-            datatype = "integer",
-            number = number,
-            description = description,
-            valueURL = value_url,
-        )
-
-    integerPropertyModel = ValidateModel(ctx, InstantiateIntegerModel)
+    integerPropertyModel = InstantiateIntegerModel(ctx, name, number, description, value_url)
     ClickAppendProperty(ctx, schema_file, integerPropertyModel, name)
 
 
@@ -182,28 +143,7 @@ def add_property_integer(ctx, name, number, description, value_url, schema_file)
 @click.pass_context
 def add_property_array(ctx, name, number, description, value_url, items_datatype, min_items, max_items, unique_items, schema_file):
 # {{{
-    try:
-        datatype_enum = DatatypeEnum(items_datatype)
-    except Exception as e:
-        click.echo(f"ITEMS Datatype {itemsDatatype} invalid\n" +
-            "ITEMS must be oneOf 'boolean'|'object'|'string'|'number'|'integer'" 
-        )
-        ctx.exit(code=1)
-
-
-    def InstantiateArrayModel():
-        return ArrayProperty(
-            datatype = "array",
-            number = number,
-            description = description,
-            valueURL = value_url,
-            maxItems = max_items,
-            minItems = min_items,
-            uniqueItems = unique_items,
-            items = Items(datatype=datatype_enum)
-        )
-
-    arrayPropertyModel = ValidateModel(ctx, InstantiateArrayModel)
+    arrayPropertyModel = InstantiateArrayModel(ctx, name, number, description, value_url, items_datatype, min_items, max_items, unique_items)
     ClickAppendProperty(ctx, schema_file, arrayPropertyModel, name)
     
 

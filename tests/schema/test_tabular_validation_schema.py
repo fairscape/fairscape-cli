@@ -13,16 +13,16 @@ import pathlib
 import json
 from click.testing import CliRunner
 from fairscape_cli.models.schema.tabular import (
-TabularValidationSchema,
-StringProperty,
-BooleanProperty,
-IntegerProperty,
-NumberProperty,
-ArrayProperty,
-DatatypeEnum,
-Items,
-AppendProperty,
-ReadSchema
+    TabularValidationSchema,
+    StringProperty,
+    BooleanProperty,
+    IntegerProperty,
+    NumberProperty,
+    ArrayProperty,
+    DatatypeEnum,
+    Items,
+    AppendProperty,
+    ReadSchema
 )
 from typing import (
     Dict, List
@@ -34,11 +34,11 @@ runner = CliRunner()
 output_path = "tests/data/schema/test_schema.json"
 
 testSchemaData = {
-"name": "test-schema",
-"guid": "ark:99999/test-schema",
-"description": "A Test Schema for APMS Embedding Data",
-"seperator": ",",
-"header": False
+    "name": "test-schema",
+    "guid": "ark:99999/test-schema",
+    "description": "A Test Schema for APMS Embedding Data",
+    "seperator": ",",
+    "header": False
 }
 
 testStringPropertyData = {
@@ -98,10 +98,10 @@ def test_models_1_string_property():
     string_property_output = string_property_model.model_dump(by_alias=True)
     assert string_property_output is not None
 
-    
+
 def test_models_2_array_property():
     array_property_model = ArrayProperty(
-        type = "array",
+        datatype = "array",
         number = testArrayPropertyData['number'],
         description = testArrayPropertyData['description'],
         valueURL = testArrayPropertyData.get('valueURL'),
@@ -163,7 +163,7 @@ def test_addProperty():
 
     # add a string property to the schema
     stringMetadata = {
-        "type": "string",
+        "datatype": "string",
         "name": "string property",
         "number": 0,
         "description": "an example string property",
@@ -177,7 +177,7 @@ def test_addProperty():
 
     def checkPropertiesSet(passedSchemaModel: TabularValidationSchema, metadata: Dict, attributesToCheck: List[str]): 
         propertyName = metadata.get("name")
-    
+
         assert propertyName in list(passedSchemaModel.properties.keys())
 
         propertyObject = passedSchemaModel.properties[propertyName].model_dump(by_alias=True)
@@ -240,7 +240,6 @@ def test_addProperty():
 
     # add an array property to the schema
     arrayMetadata = {
-        "type": "array",
         "number": "4::",
         "name": "array property",
         "description": "an example array property",
@@ -249,7 +248,7 @@ def test_addProperty():
         "uniqueItems": False,
         "items":{"type":  "number"},
     }
-    
+
     arrayPropertyModel = ArrayProperty(
         datatype = "array",
         number = "4::",
@@ -299,7 +298,7 @@ def test_schema_cli_0_creation():
 
 
 def test_schema_cli_1_property_string():
-# {{{
+    # {{{
     # add a string property
     string_test_command = [
         "schema",
@@ -326,7 +325,7 @@ def test_schema_cli_1_property_string():
 
 
 def test_schema_cli_2_property_int():
-# {{{
+    # {{{
     # add a int property
     int_test_command = [
         "schema",
@@ -395,9 +394,9 @@ def test_schema_cli_4_array():
         array_test_command
     )
     assert array_result.exit_code == 0
-    
+
 
 
     # read schema file and assert that the property exists
     #with open(output_path, "r") as schema_jsonfile:
-    #	schema_dict = json.loads(schema_jsonfile.read())
+    #   schema_dict = json.loads(schema_jsonfile.read())
