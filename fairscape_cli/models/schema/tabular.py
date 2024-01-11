@@ -3,12 +3,14 @@ import pandas as pd
 import datetime
 import pathlib
 import json
+import click
 
 from pydantic import (
 	BaseModel,
 	ConfigDict,
 	computed_field,
-	Field
+	Field,
+    ValidationError,
 )
 from typing import (
 	Dict, 
@@ -53,7 +55,12 @@ class Items(BaseModel):
 	datatype: DatatypeEnum = Field(alias="type")
 
 class BaseProperty(BaseModel):
+	model_config = ConfigDict(
+		populate_by_name = True,
+		use_enum_values=True
+	)
 	description: str = Field(description="description of field")
+	model_config = ConfigDict(populate_by_name = True)
 	number: Union[int,str] = Field(description="index of the column for this value")
 	valueURL: Optional[str] = Field(default=None)	
 	#multiple: Optional[bool]
@@ -205,6 +212,20 @@ class TabularValidationSchema(BaseModel):
 		return validation_exceptions	
 
 
+class PropertyNameException(Exception):
+
+    def __init__(self, propertyName):
+        self.propertyName = propertyName
+        self.message = f"PropertyNameException: Property with name '{propertyName}' already present in schema"
+        super().__init__(self.message)
+
+
+class ColumnIndexException(Exception):
+    def __init__(self, index):
+        self.index = index 
+        self.message = f"ColumnIndexException: Column number '{index}' already present in schema"
+        super().__init__(self.message)
+
 
 def AppendProperty(schemaFilepath: str, propertyInstance, propertyName: str) -> None: 
     # check that schemaFile exists
@@ -224,13 +245,11 @@ def AppendProperty(schemaFilepath: str, propertyInstance, propertyName: str) -> 
         
         # does there exist a property with same name
         if propertyName in [key for key in schemaModel.properties.keys()]:
-            # TODO raise more descriptive exception
-            raise Exception
+            raise PropertyNameException(propertyName)
 
         # does there exist a property with same column number
         if propertyInstance.number in [ val.number for val in schemaModel.properties.values()]:
-            # TODO raise more descriptive exception
-            raise Exception
+            raise ColumnIndexException(ColumnIndexException)
 
         # add new property to schema
         schemaModel.properties[propertyName] = propertyInstance
@@ -241,52 +260,23 @@ def AppendProperty(schemaFilepath: str, propertyInstance, propertyName: str) -> 
         # overwrite file contents
         schemaFile.seek(0)
         schemaFile.write(schemaJson)
-
-
-
-def AddProperty(schemaFilepath: str, metadata: dict, propertyClass) -> None:
     
-    # check that schemaFile exists
-    schemaPath = pathlib.Path(schemaFilepath)
 
-    if not schemaPath.exists():
-        raise Exception
+def ClickAppendProperty(ctx, schemaFile, propertyModel, name): 
+    try:
+        # append the property to the 
+        AppendProperty(schemaFile,  propertyModel, name)
+        click.echo(f"Added Property\tname: {name}\ttype: {propertyModel.type}")
+        ctx.exit(code=0)
 
-    # unmarshal metadata into propertyClass
-    modelInstance = propertyClass(**metadata)
-
-    # open schemafile
-    with schemaPath.open("r+") as schemaFile:
-        schemaFileContents = schemaFile.read()
-        schemaJson =  json.loads(schemaFileContents) 
-
-        # load the model into a 
-        schemaModel = TabularValidationSchema(**schemaJson)
-
-        # check for inconsitencies
-        
-        # does there exist a property with same name
-        propertyName = metadata.get("name")
-        if propertyName in [key for key in schemaModel.properties.keys()]:
-            # TODO raise more descriptive exception
-            raise Exception
-
-        # does there exist a property with same column number
-        if modelInstance.number in [ val.number for val in schemaModel.properties.values()]:
-            # TODO raise more descriptive exception
-            raise Exception
-
-        # add new property to schema
-        schemaModel.properties[propertyName] = modelInstance
-  
-        # serialize model to json
-        schemaJson = json.dumps(schemaModel.model_dump(by_alias=True) , indent=2)
-
-        # overwrite file contents
-        schemaFile.seek(0)
-        schemaFile.write(schemaJson)
-
-        return None
+    except ColumnIndexException as indexException:
+        click.echo("ERROR: ColumnIndexError")
+        click.echo(str(indexException))
+        ctx.exit(code=1)
+    except PropertyNameException as propertyException:
+        click.echo("ERROR: PropertyNameError")
+        click.echo(str(propertyException))
+        ctx.exit(code=1)
 
 
 def ReadSchema(schema_file: str) -> TabularValidationSchema:
@@ -311,3 +301,16 @@ def WriteSchema(tabular_schema: TabularValidationSchema, schema_file):
     # dump json to a file
     with open(schema_file, "w") as output_file:
         output_file.write(schema_json)
+
+
+def ValidateModel(ctx, createModel):
+    try:
+        modelInstance = createModel()
+        return modelInstance
+
+    except ValidationError as metadataError:
+        click.echo("ERROR: MetadataValidationError")
+        click.echo(metadataError)
+        #for validationFailure in metadataError.errors():
+        #    click.echo(f"loc: {validationFailure.loc}\tinput: {validationFailure.input}\tmsg: {validationFailure.msg}")
+        ctx.exit(code=1)

@@ -21,7 +21,6 @@ NumberProperty,
 ArrayProperty,
 DatatypeEnum,
 Items,
-AddProperty,
 AppendProperty,
 ReadSchema
 )
@@ -43,7 +42,7 @@ testSchemaData = {
 }
 
 testStringPropertyData = {
-    "type": "string", 
+    "datatype": "string", 
     "name": "Gene Name",
     "number": 1,
     "description": "Gene Name for APMS Data",
@@ -52,7 +51,7 @@ testStringPropertyData = {
 }
 
 testIntegerPropertyData = {
-    "type": "integer",
+    "datatype": "integer",
     "name": "Example Integer Property",
     "number": 2,
     "description": "Example integer property",
@@ -61,7 +60,7 @@ testIntegerPropertyData = {
 }
 
 testBooleanPropertyData = {
-    "type": "boolean",
+    "datatype": "boolean",
     "name": "Example Bool Property",
     "number": 3,
     "description": "Test Boolean Property",
@@ -69,7 +68,7 @@ testBooleanPropertyData = {
 }
 
 testNumberPropertyData = {
-    "type": "number",
+    "datatype": "number",
     "name": "Example Number Property",
     "number": 4,
     "description": "Testing Number Property",
@@ -77,7 +76,7 @@ testNumberPropertyData = {
 }
 
 testArrayPropertyData = {
-    "type": "array",
+    "datatype": "array",
     "name": "embedding",
     "number": "5::",
     "minItems": 1024,
@@ -170,8 +169,8 @@ def test_addProperty():
         "description": "an example string property",
         "pattern": "r'[0-3]'", 
     }
-
-    AddProperty(outputPath, stringMetadata, StringProperty)
+    stringInstance = StringProperty(**stringMetadata)
+    AppendProperty(outputPath, stringInstance, "string property")
 
     # read the schema and assert a string property is set correctly
     schemaModel = ReadSchema(outputPath)
@@ -196,12 +195,13 @@ def test_addProperty():
 
     # add an integer property to the schema
     integerMetadata = {
-        "type": "integer",
+        "datatype": "integer",
         "name": "integer property",
         "number": 1,
         "description": "an example integer property",
     }
-    AddProperty(outputPath, integerMetadata, IntegerProperty)
+    integerInstance = IntegerProperty(**integerMetadata)
+    AppendProperty(outputPath, integerInstance, "integer property")
 
     # read the schema model again
     schemaModel = ReadSchema(outputPath)
@@ -210,12 +210,13 @@ def test_addProperty():
 
     # add a number property to the schema
     numberMetadata = {
-        "type": "number",
+        "datatype": "number",
         "name": "number property",
         "number": 2,
         "description": "an example number property",
     }
-    AddProperty(outputPath, numberMetadata, NumberProperty)
+    numberInstance = NumberProperty(**numberMetadata)
+    AppendProperty(outputPath, numberInstance, "number property")
 
     # read the schema model again
     schemaModel = ReadSchema(outputPath)
@@ -224,12 +225,13 @@ def test_addProperty():
 
     # add a boolean property to the schema
     booleanMetadata = {
-        "type": "boolean",
+        "datatype": "boolean",
         "name": "boolean property",
         "number": 3,
         "description": "an example boolean property",
     }
-    AddProperty(outputPath, booleanMetadata, BooleanProperty)
+    booleanInstance = BooleanProperty(**booleanMetadata)
+    AppendProperty(outputPath, booleanInstance, "boolean property")
 
     # read the schema model again
     schemaModel = ReadSchema(outputPath)
@@ -249,7 +251,7 @@ def test_addProperty():
     }
     
     arrayPropertyModel = ArrayProperty(
-        type = "array",
+        datatype = "array",
         number = "4::",
         description = "an example array property",
         valueURL = None,

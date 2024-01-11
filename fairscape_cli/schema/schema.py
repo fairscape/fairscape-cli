@@ -14,33 +14,15 @@ from fairscape_cli.models.schema.tabular import (
     IntegerProperty,
     ArrayProperty,
     DatatypeEnum,
-    Items
+    Items,
+    WriteSchema,
+    ValidateModel,
+    ClickAppendProperty,
+    PropertyNameException,
+    ColumnIndexException,
 )
 import json
 
-
-def write_schema(tabular_schema: TabularValidationSchema, schema_file):
-    """ Helper Function for writing files
-    """
-
-    schema_dictionary = tabular_schema.model_dump(by_alias=True) 
-    schema_json = json.dumps(schema_dictionary, indent=2)
-
-    # dump json to a file
-    with open(schema_file, "w") as output_file:
-        output_file.write(schema_json)
-
-
-def read_schema(schema_file) -> TabularValidationSchema:
-    """ Helper function for reading the schema and marshaling into the pydantic model
-    """
-    # read the schema
-    with open(schema_file, "r") as input_schema:
-        input_schema_data = input_schema.read()
-        schema_json =  json.loads(input_schema_data) 
-
-        # load the model into 
-        return TabularValidationSchema(**schema_json)
 
 
 
@@ -80,21 +62,9 @@ def create_tabular(
         "seperator": seperator
     })
 
-    # TODO if -i flag is included
-    # interactive prompt for creating properties
 
-    #if click.confirm("Add a property?"):
-        # add property
-    #    click.echo("good choice")
-
-    schema_dictionary = schema_model.model_dump(by_alias=True) 
-    schema_json = json.dumps(schema_dictionary, indent=2)
-
-    # dump json to a file
-    with open(schema_file, "w") as output_file:
-        output_file.write(schema_json)
-
-    #click.echo(f"Wrote Schema: {str(schema_file)}")    
+    WriteSchema(schema_model, schema_file)
+    click.echo(f"Wrote Schema: {str(schema_file)}") 
 
 
 
@@ -112,32 +82,23 @@ def add_property():
 @click.option('--value-url', type=str, required=False)
 @click.option('--pattern', type=str, required=False)
 @click.argument('schema_file', type=click.Path(exists=True))
-def add_property_string(name, number, description, value_url, pattern, schema_file):
-
-    try:
-        schema_model = read_schema(schema_file)
-    # TODO improve exception handling
-    except Exception as e:
-        click.echo(f"Exception Loading Schema\n{str(e)}")
+@click.pass_context
+def add_property_string(ctx, name, number, description, value_url, pattern, schema_file):
 
     # instantiate the StringProperty
-    property_model = StringProperty(
-        type = "string",
-        number = number,
-        description = description,
-        valueURL = value_url,
-        pattern = pattern
-    )
+    def InstantiateStringModel():
+        return StringProperty(
+            datatype = "string",
+            number = number,
+            description = description,
+            valueURL = value_url,
+            pattern = pattern
+        )
 
-    # set the property
-    schema_model.properties[name] = property_model
+    stringPropertyModel = ValidateModel(ctx, InstantiateStringModel)
+    ClickAppendProperty(ctx, schema_file, stringPropertyModel, name)
 
-    try:
-        write_schema(schema_model, schema_file)
-        click.echo(f"Updated Schema: {schema_file}")      
-    # TODO improve exception handling
-    except Exception as e:
-        click.echo(f"Error Dumping Schema\n{str(e)}")
+
 
 
 
@@ -147,33 +108,22 @@ def add_property_string(name, number, description, value_url, pattern, schema_fi
 @click.option('--description', type=str, required=True)
 @click.option('--value-url', type=str, required=False)
 @click.argument('schema_file', type=click.Path(exists=True))
-def add_property_number(name, number, description, value_url, schema_file):
-
-    try:
-        schema_model = read_schema(schema_file)
-    # TODO improve exception handling
-    except Exception as e:
-        click.echo(f"Exception Loading Schema\n{str(e)}")
+@click.pass_context
+def add_property_number(ctx, name, number, description, value_url, schema_file):
+    ctx = click.get_context()
 
     # instantiate the StringProperty
-    property_model = NumberProperty(
-        type = "number",
-        number = number,
-        description = description,
-        valueURL = value_url,
-    )
+    def InstantiateNumberModel():
+        return NumberProperty(
+            datatype = "number",
+            number = number,
+            description = description,
+            valueURL = value_url,
+        )
 
-    # set the property
-    schema_model.properties[name] = property_model
+    numberPropertyModel = ValidateModel(ctx, InstantiateNumberModel)
+    ClickAppendProperty(ctx, schema_file, numberPropertyModel, name)
 
-    try:
-        write_schema(schema_model, schema_file)
-        click.echo(f"Updated Schema: {schema_file}")      
-        click.exit(code=0)
-    # TODO improve exception handling
-    except Exception as e:
-        click.echo(f"Error Dumping Schema\n{str(e)}")
-        click.exit(code=1)
 
 
 @add_property.command('boolean')
@@ -182,32 +132,19 @@ def add_property_number(name, number, description, value_url, schema_file):
 @click.option('--description', type=str, required=True)
 @click.option('--value-url', type=str, required=False)
 @click.argument('schema_file', type=click.Path(exists=True))
-def add_property_boolean(name, number, description, value_url, schema_file):
+@click.pass_context
+def add_property_boolean(ctx, name, number, description, value_url, schema_file):
 
-    try:
-        schema_model = read_schema(schema_file)
-    # TODO improve exception handling
-    except Exception as e:
-        click.echo(f"Exception Loading Schema\n{str(e)}")
+    def InstantiateBooleanModel():
+        return BooleanProperty(
+            datatype = "boolean",
+            number = number,
+            description = description,
+            valueURL = value_url,
+        )
 
-    # instantiate the StringProperty
-    property_model = BooleanProperty(
-        type = "boolean",
-        number = number,
-        description = description,
-        valueURL = value_url,
-    )
-
-    # set the property
-    schema_model.properties[name] = property_model
-
-    try:
-        write_schema(schema_model, schema_file)
-        click.echo(f"Updated Schema: {schema_file}")      
-    # TODO improve exception handling
-    except Exception as e:
-        click.echo(f"Error Dumping Schema\n{str(e)}")
-
+    booleanPropertyModel = ValidateModel(ctx, InstantiateBooleanModel)
+    ClickAppendProperty(ctx, schema_file, booleanPropertyModel, name)
 
 
 @add_property.command('integer')
@@ -216,31 +153,20 @@ def add_property_boolean(name, number, description, value_url, schema_file):
 @click.option('--description', type=str, required=True)
 @click.option('--value-url', type=str, required=False)
 @click.argument('schema_file', type=click.Path(exists=True))
-def add_property_integer(name, number, description, value_url, schema_file):
-
-    try:
-        schema_model = read_schema(schema_file)
-    # TODO improve exception handling
-    except Exception as e:
-        click.echo(f"Exception Loading Schema\n{str(e)}")
+@click.pass_context
+def add_property_integer(ctx, name, number, description, value_url, schema_file):
 
     # instantiate the StringProperty
-    property_model = IntegerProperty(
-        type = "integer",
-        number = number,
-        description = description,
-        valueURL = value_url,
-    )
+    def InstantiateIntegerModel():
+        return IntegerProperty(
+            datatype = "integer",
+            number = number,
+            description = description,
+            valueURL = value_url,
+        )
 
-    # set the property
-    schema_model.properties[name] = property_model
-
-    try:
-        write_schema(schema_model, schema_file)
-        click.echo(f"Updated Schema: {schema_file}")      
-    # TODO improve exception handling
-    except Exception as e:
-        click.echo(f"Error Dumping Schema\n{str(e)}")
+    integerPropertyModel = ValidateModel(ctx, InstantiateIntegerModel)
+    ClickAppendProperty(ctx, schema_file, integerPropertyModel, name)
 
 
 @add_property.command('array')
@@ -253,7 +179,8 @@ def add_property_integer(name, number, description, value_url, schema_file):
 @click.option('--max-items', type=int, required=False)
 @click.option('--unique-items', type=bool, required=False)
 @click.argument('schema_file', type=click.Path(exists=True))
-def add_property_array(name, number, description, value_url, items_datatype, min_items, max_items, unique_items, schema_file):
+@click.pass_context
+def add_property_array(ctx, name, number, description, value_url, items_datatype, min_items, max_items, unique_items, schema_file):
 # {{{
     try:
         datatype_enum = DatatypeEnum(items_datatype)
@@ -261,36 +188,28 @@ def add_property_array(name, number, description, value_url, items_datatype, min
         click.echo(f"ITEMS Datatype {itemsDatatype} invalid\n" +
             "ITEMS must be oneOf 'boolean'|'object'|'string'|'number'|'integer'" 
         )
-        click.exit()
+        ctx.exit(code=1)
 
-    try:
-        schema_model = read_schema(schema_file)
 
-    # TODO improve exception handling
-    except Exception as e:
-        click.echo(f"Exception Loading Schema\n{str(e)}")
+    def InstantiateArrayModel():
+        return ArrayProperty(
+            datatype = "array",
+            number = number,
+            description = description,
+            valueURL = value_url,
+            maxItems = max_items,
+            minItems = min_items,
+            uniqueItems = unique_items,
+            items = Items(datatype=datatype_enum)
+        )
 
-    # instantiate the StringProperty
-    property_model = ArrayProperty(
-        type = "array",
-        number = number,
-        description = description,
-        valueURL = value_url,
-        maxItems = max_items,
-        minItems = min_items,
-        uniqueItems = unique_items,
-        items = Items(datatype=datatype_enum)
-    )
+    arrayPropertyModel = ValidateModel(ctx, InstantiateArrayModel)
+    ClickAppendProperty(ctx, schema_file, arrayPropertyModel, name)
+    
 
-    # set the property
-    schema_model.properties[name] = property_model
 
-    try:
-        write_schema(schema_model, schema_file)
-        click.echo(f"Updated Schema: {schema_file}")      
-    # TODO improve exception handling
-    except Exception as e:
-        click.echo(f"Error Dumping Schema\n{str(e)}")# }}}
+
+    
 
 
 @create.command('image')
