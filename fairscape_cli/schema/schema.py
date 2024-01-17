@@ -39,26 +39,32 @@ def create():
 @click.option('--seperator', type=str, required=True)
 @click.option('--header', required=False, type=bool, default=False)
 @click.argument('schema_file', type=click.Path(exists=False))
+@click.pass_context
 def create_tabular(
      name,
      description,
      guid,
      header,
      seperator,
-     schema_file
+     schema_file,
+     ctx
 ):
     # create the model
-    schema_model = TabularValidationSchema(
-        **{
-        "name": name,
-        "description":description,
-        "guid":guid,
-        "propeties":{},
-        "required": [],
-        "header" :header,
-        "seperator": seperator
-    })
-
+    try:
+        schema_model = TabularValidationSchema.model_validate({
+            "name": name,
+            "description":description,
+            "guid":guid,
+            "propeties":{},
+            "required": [],
+            "header" :header,
+            "seperator": seperator
+        })
+    except ValidationError as metadataError:
+        click.echo("ERROR Validating TabularValidationSchema")
+        for validationFailure in metadataError.errors():
+            click.echo(f"loc: {validationFailure.loc}\tinput: {validationFailure.input}\tmsg: {validationFailure.msg}")
+        click.exit(code=1)
 
     WriteSchema(schema_model, schema_file)
     click.echo(f"Wrote Schema: {str(schema_file)}") 
@@ -142,15 +148,9 @@ def add_property_integer(ctx, name, number, description, value_url, schema_file)
 @click.argument('schema_file', type=click.Path(exists=True))
 @click.pass_context
 def add_property_array(ctx, name, number, description, value_url, items_datatype, min_items, max_items, unique_items, schema_file):
-# {{{
     arrayPropertyModel = InstantiateArrayModel(ctx, name, number, description, value_url, items_datatype, min_items, max_items, unique_items)
     ClickAppendProperty(ctx, schema_file, arrayPropertyModel, name)
     
-
-
-
-    
-
 
 @create.command('image')
 def create_image():

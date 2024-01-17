@@ -20,21 +20,18 @@ from typing import (
     Literal
 )
 
+from fairscape_cli.models.tabular.utils import (
+    GenerateSlice,
+    GenerateGUID
+)
+
 
 from enum import Enum
 import re
 
-# TODO reorganize for imports
-#  Python Interface for Registering Unique GUIDS
-from sqids import Sqids
-squids = Sqids(min_length=6, )
 
 # TODO set to configuration
 NAAN = "59852"
-
-def GenerateGUID(data: List[int]) -> str:
-    squid_encoded = squids.encode(data)
-    return f"ark:{NAAN}/{squid_encoded}"
 
 
 # datatype enum
@@ -54,6 +51,7 @@ class Items(BaseModel):
     )
     datatype: DatatypeEnum = Field(alias="type")
 
+
 class BaseProperty(BaseModel):
     description: str = Field(description="description of field")
     model_config = ConfigDict(populate_by_name = True)
@@ -62,13 +60,18 @@ class BaseProperty(BaseModel):
     #multiple: Optional[bool]
     #seperator: Optional[str]
 
+
 class NullProperty(BaseProperty):
     datatype: Literal['null'] = Field(alias="type", default='null')
 
+
 class StringProperty(BaseProperty):
     datatype: Literal['string'] = Field(alias="type")
-    pattern: Optional[str] = Field(description="regex pattern for field", default=None)
+    pattern: Optional[str] = Field(description="Regex pattern to execute against values", default=None)
+    maxLength: Optional[int] = Field(description="Inclusive maximum length for string values", default=None)
+    minLength: Optional[int] = Field(description="Inclusive minimum length for string values", default=None)
     number: int
+
 
 class ArrayProperty(BaseProperty):
     datatype: Literal['array'] = Field(alias="type")
@@ -78,16 +81,23 @@ class ArrayProperty(BaseProperty):
     number: str
     items: Items
 
+
 class BooleanProperty(BaseProperty):
     datatype: Literal['boolean'] = Field(alias="type")
     number: int
 
+
 class NumberProperty(BaseProperty):
     datatype: Literal['number'] = Field(alias="type")
+    maximum: Optional[float] = Field(description="Inclusive Upper Limit for Values", default=None)
+    minimum: Optional[float] = Field(description="Inclusive Lower Limit for Values", default=None)
     number: int
+
 
 class IntegerProperty(BaseProperty):
     datatype: Literal['integer'] = Field(alias="type")
+    maximum: Optional[int] = Field(description="Inclusive Upper Limit for Values", default=None)
+    minimum: Optional[int] = Field(description="Inclusive Lower Limit for Values", default=None)
     number: int
 
 
@@ -116,6 +126,7 @@ class TabularValidationSchema(BaseModel):
         #	str(int.from_bytes(self.name.encode("utf-8"), byteorder="big"))
         #])
 
+
     def load_data(self, dataPath: str) -> pd.DataFrame:
         # TODO deal with alternative filetypes
 
@@ -124,10 +135,10 @@ class TabularValidationSchema(BaseModel):
         # return pd.read_excel()
 
         # pd.read_excel
-        return pd.read_csv(dataPath, sep=self.seperator,  header=self.header)
+        return pd.read_csv(dataPath, sep=self.seperator)
+        
 
-
-    def execute_validation(self, data_frame):
+    def convert_data_to_json(self, data_frame):
         schema_definition = self.model_dump(
                 by_alias=True, 
                 exclude_unset=True,
@@ -143,9 +154,9 @@ class TabularValidationSchema(BaseModel):
         }
 
 
-        def json_row(row):
+        def json_row(row, passed_property_slice):
             json_output = {}
-            for property_name, property_values in property_slice.items():
+            for property_name, property_values in passed_property_slice.items():
 
                 index_slice = property_values.get("number")
                 datatype = property_values.get("type")
@@ -158,27 +169,9 @@ class TabularValidationSchema(BaseModel):
                         json_output[property_name] = row.iloc[index_slice]
 
                 elif isinstance(index_slice, str):
-
-                    n_to_end_slice_match = re.search("^([0-9]*)::$", index_slice)
-                    start_to_n_slice_match = re.search("^::([0-9]*)$", index_slice)
-                    n_to_m_slice_match = re.search("^([0-9]*):([0-9]*)$", index_slice)
-
-                    if n_to_end_slice_match:
-                        start = int(n_to_end_slice_match.group(1))
-                        generated_slice = slice(start, len(row))
-                    elif start_to_n_slice_match:
-                        end = int(start_to_n_slice_match.group(1))
-                        generated_slice = slice(0,end)
-                    elif n_to_m_slice_match:
-                        start = int(n_to_m_slice_match.group(1))
-                        end = int(n_to_m_slice_match.group(2))
-                        generated_slice = slice(start, end)
-                    else:
-                        # raise exception for improperly passing a slice 
-                        raise Exception()
+                    generated_slice = GenerateSlice(index_slice)
 
                     # slice rows according to matched slice
-
                     # if datatype is boolean coerce datatype
                     if datatype=="boolean":
                         json_output[property_name] = [ bool(item) for item in list(row.iloc[generated_slice])]
@@ -187,25 +180,41 @@ class TabularValidationSchema(BaseModel):
 
             return json_output
 
+        # apply json conversion to each row
+        return [ json_row(row_elem, property_slice) for _, row_elem in data_frame.iterrows()]
+
+
+    def execute_validation(self, data_path: str) -> Dict[int, ValidationError]:
+        """ Use the TabularValidationSchema to execute data validation on a given file
+        """
+
+        data_frame = self.load_data(data_path)
+        
+        schema_definition = self.model_dump(
+                by_alias=True, 
+                exclude_unset=True,
+                exclude_none=True
+                )
+
+
+        json_objects = self.convert_data_to_json(data_frame)
         # run conversion on data frame 
         validation_exceptions = {}
 
-        json_list = [ {} for i in range(data_frame.shape[0])]
-
-        for i in range(data_frame.shape[0]):
-            data_row = data_frame.iloc[i,:]
-
-            # catch all validation errors and then return
+        for i, json_elem in enumerate(json_objects):
             try: 
                 validate(
-                        instance=json_row(data_row),
+                        instance=json_elem,
                         schema= schema_definition 
                 )
+                print(".", end="")
             except Exception as e:
                 # TODO convert property errors into column index
+                print("x", end="")
                 validation_exceptions[i] = e
 
         return validation_exceptions	
+
 
 
 class PropertyNameException(Exception):
@@ -216,11 +225,6 @@ class PropertyNameException(Exception):
         super().__init__(self.message)
 
 
-class ColumnIndexException(Exception):
-    def __init__(self, index):
-        self.index = index 
-        self.message = f"ColumnIndexException: Column number '{index}' already present in schema"
-        super().__init__(self.message)
 
 
 def AppendProperty(schemaFilepath: str, propertyInstance, propertyName: str) -> None: 
@@ -244,8 +248,11 @@ def AppendProperty(schemaFilepath: str, propertyInstance, propertyName: str) -> 
             raise PropertyNameException(propertyName)
 
         # does there exist a property with same column number
-        if propertyInstance.number in [ val.number for val in schemaModel.properties.values()]:
-            raise ColumnIndexException(ColumnIndexException)
+        schema_indicies = [ val.number for val in schemaModel.properties.values()]
+
+        # check overlap of indicies
+        # CheckOverlap
+
 
         # add new property to schema
         schemaModel.properties[propertyName] = propertyInstance
@@ -311,8 +318,8 @@ def InstantiateStringModel(ctx, name, number, description, value_url, pattern):
         return modelInstance
 
     except ValidationError as metadataError:
-        click.echo("ERROR: MetadataValidationError")
-        click.echo(metadataError)
+        ctx.echo("ERROR: MetadataValidationError")
+        ctx.echo(metadataError)
         #for validationFailure in metadataError.errors():
         #    click.echo(f"loc: {validationFailure.loc}\tinput: {validationFailure.input}\tmsg: {validationFailure.msg}")
         ctx.exit(code=1)
@@ -399,6 +406,7 @@ def InstantiateArrayModel(ctx, name, number, description, value_url, items_datat
         #for validationFailure in metadataError.errors():
         #    click.echo(f"loc: {validationFailure.loc}\tinput: {validationFailure.input}\tmsg: {validationFailure.msg}")
         ctx.exit(code=1)
+
 
 def ValidateModel(ctx, createModel):
     try:

@@ -86,50 +86,53 @@ testArrayPropertyData = {
     "description": "embedding vector values for genes determined by running node2vec on APMS networks",
 }
 
-
-def test_models_0_tabular_validation():
-    schema_model = TabularValidationSchema(**testSchemaData)
-    schema_output_dict = schema_model.model_dump(by_alias=True)
-    assert schema_output_dict is not None 
+class TestModelGroup():
 
 
-def test_models_1_string_property():
-    string_property_model = StringProperty(**testStringPropertyData)
-    string_property_output = string_property_model.model_dump(by_alias=True)
-    assert string_property_output is not None
+    def test_0_tabular_validation(self):
+        schema_model = TabularValidationSchema(**testSchemaData)
+        schema_output_dict = schema_model.model_dump(by_alias=True)
+        assert schema_output_dict is not None 
 
 
-def test_models_2_array_property():
-    array_property_model = ArrayProperty(
-        datatype = "array",
-        number = testArrayPropertyData['number'],
-        description = testArrayPropertyData['description'],
-        valueURL = testArrayPropertyData.get('valueURL'),
-        maxItems = testArrayPropertyData['maxItems'],
-        minItems = testArrayPropertyData['minItems'],
-        uniqueItems = testArrayPropertyData['uniqueItems'],
-        items = Items(datatype=testArrayPropertyData['itemsDatatype'])
-    )
-    array_property_output = array_property_model.model_dump(by_alias=True)
-    assert array_property_output is not None
+    def test_1_string_property(self):
+        string_property_model = StringProperty(**testStringPropertyData)
+        string_property_output = string_property_model.model_dump(by_alias=True)
+        assert string_property_output is not None
 
 
-def test_models_3_boolean_property():
-    bool_property_model = BooleanProperty(**testBooleanPropertyData)
-    bool_property_output = bool_property_model.model_dump(by_alias=True)
-    assert bool_property_output is not None
+    def test_2_array_property(self):
+        array_property_model = ArrayProperty(
+            datatype = "array",
+            number = testArrayPropertyData['number'],
+            description = testArrayPropertyData['description'],
+            valueURL = testArrayPropertyData.get('valueURL'),
+            maxItems = testArrayPropertyData['maxItems'],
+            minItems = testArrayPropertyData['minItems'],
+            uniqueItems = testArrayPropertyData['uniqueItems'],
+            items = Items(datatype=testArrayPropertyData['itemsDatatype'])
+        )
+        array_property_output = array_property_model.model_dump(by_alias=True)
+        assert array_property_output is not None
 
 
-def test_models_4_integer_property():
-    int_property_model = IntegerProperty(**testIntegerPropertyData)
-    int_property_output = int_property_model.model_dump(by_alias=True)
-    assert int_property_output is not None
+    def test_models_3_boolean_property(self):
+        bool_property_model = BooleanProperty(**testBooleanPropertyData)
+        bool_property_output = bool_property_model.model_dump(by_alias=True)
+        assert bool_property_output is not None
 
 
-def test_models_5_number_property():
-    num_property_model = NumberProperty(**testNumberPropertyData)
-    num_property_output = num_property_model.model_dump(by_alias=True)
-    assert num_property_output is not None
+    def test_models_4_integer_property(self):
+        int_property_model = IntegerProperty(**testIntegerPropertyData)
+        int_property_output = int_property_model.model_dump(by_alias=True)
+        assert int_property_output is not None
+
+
+    def test_models_5_number_property(self):
+        num_property_model = NumberProperty(**testNumberPropertyData)
+        num_property_output = num_property_model.model_dump(by_alias=True)
+        assert num_property_output is not None
+
 
 
 def test_addProperty():
@@ -267,136 +270,139 @@ def test_addProperty():
     checkPropertiesSet(schemaModel, arrayMetadata, ['number', 'description', "minItems", "maxItems", "uniqueItems"])
 
 
-def test_schema_cli_0_creation():
-    output_path = "tests/data/schema/test_schema.json"
 
-    # clear the test schema
-    pathlib.Path(output_path).unlink(missing_ok=True)
+class TestCLI():
+    output_path = "tests/data/schema/test_cli_schema.json"
 
-    # create a test schema
-    test_command = [
-        "schema",
-        "create-tabular",
-        "--name",
-        testSchemaData['name'],
-        "--description",
-        testSchemaData['description'],
-        "--seperator",
-        testSchemaData['seperator'],
-        "--header",
-        testSchemaData['header'],
-        output_path
-    ]
+    def test_0_create_schema(self):
 
-    result = runner.invoke(
-        fairscape_cli_app, 
-        test_command
+        # clear the test schema
+        pathlib.Path(output_path).unlink(missing_ok=True)
+
+        # create a test schema
+        test_command = [
+            "schema",
+            "create-tabular",
+            "--name",
+            testSchemaData['name'],
+            "--description",
+            testSchemaData['description'],
+            "--seperator",
+            testSchemaData['seperator'],
+            "--header",
+            testSchemaData['header'],
+            self.output_path
+        ]
+
+        result = runner.invoke(
+            fairscape_cli_app, 
+            test_command
+            )
+
+        print(result.output)
+        assert result.exit_code == 0 
+
+        # read the schema
+        tabular_schema = ReadSchema(self.output_path)
+
+
+
+    def test_schema_cli_1_property_string(self):
+        # add a string property
+        string_test_command = [
+            "schema",
+            "add-property",
+            "string",
+            "--number",
+            testStringPropertyData['number'],
+            "--name",
+            testStringPropertyData['name'],
+            "--description",
+            testStringPropertyData['description'],
+            "--pattern",
+            testStringPropertyData['pattern'],
+            "--value-url",
+            testStringPropertyData['valueURL'],
+            self.output_path
+        ]
+        string_result = runner.invoke(
+            fairscape_cli_app, 
+            string_test_command
         )
-
-    print(result.output)
-    assert result.exit_code == 0 
-
-
-def test_schema_cli_1_property_string():
-    # {{{
-    # add a string property
-    string_test_command = [
-        "schema",
-        "add-property",
-        "string",
-        "--number",
-        testStringPropertyData['number'],
-        "--name",
-        testStringPropertyData['name'],
-        "--description",
-        testStringPropertyData['description'],
-        "--pattern",
-        testStringPropertyData['pattern'],
-        "--value-url",
-        testStringPropertyData['valueURL'],
-        output_path
-    ]
-    string_result = runner.invoke(
-        fairscape_cli_app, 
-        string_test_command
-    )
-    print(string_result.output)
-    assert string_result.exit_code == 0# }}}
+        print(string_result.output)
+        assert string_result.exit_code == 0
 
 
-def test_schema_cli_2_property_int():
-    # {{{
-    # add a int property
-    int_test_command = [
-        "schema",
-        "add-property",
-        "integer",
-        "--number",
-        testIntegerPropertyData['number'],
-        "--name",
-        testIntegerPropertyData['name'],
-        "--description",
-        testIntegerPropertyData['description'],
-        output_path
-    ]
-    int_result = runner.invoke(
-        fairscape_cli_app, 
-        int_test_command
-    )
-    assert int_result.exit_code == 0# }}}
+    def test_schema_cli_2_property_int(self):
+        # add a int property
+        int_test_command = [
+            "schema",
+            "add-property",
+            "integer",
+            "--number",
+            testIntegerPropertyData['number'],
+            "--name",
+            testIntegerPropertyData['name'],
+            "--description",
+            testIntegerPropertyData['description'],
+            self.output_path
+        ]
+        int_result = runner.invoke(
+            fairscape_cli_app, 
+            int_test_command
+        )
+        assert int_result.exit_code == 0# }}}
 
 
-def test_schema_cli_3_property_bool():
-    # add a boolean property
-    bool_test_command = [
-        "schema",
-        "add-property",
-        "boolean",
-        "--number",
-        testBooleanPropertyData['number'],
-        "--name",
-        testBooleanPropertyData['name'],
-        "--description",
-        testBooleanPropertyData['description'],
-        output_path
-    ]
-    bool_result = runner.invoke(
-        fairscape_cli_app, 
-        bool_test_command
-    )
-    assert bool_result.exit_code == 0
+    def test_schema_cli_3_property_bool(self):
+        # add a boolean property
+        bool_test_command = [
+            "schema",
+            "add-property",
+            "boolean",
+            "--number",
+            testBooleanPropertyData['number'],
+            "--name",
+            testBooleanPropertyData['name'],
+            "--description",
+            testBooleanPropertyData['description'],
+            self.output_path
+        ]
+        bool_result = runner.invoke(
+            fairscape_cli_app, 
+            bool_test_command
+        )
+        assert bool_result.exit_code == 0
 
 
-def test_schema_cli_4_array():
-    # add an array property
-    array_test_command = [
-        "schema",
-        "add-property",
-        "array",
-        "--number",
-        testArrayPropertyData['number'],
-        "--name",
-        testArrayPropertyData['name'],
-        "--description",
-        testArrayPropertyData['description'],
-        "--items-datatype",
-        testArrayPropertyData['itemsDatatype'],
-        "--unique-items",
-        testArrayPropertyData['uniqueItems'],
-        "--max-items",
-        testArrayPropertyData['maxItems'],
-        "--min-items",
-        testArrayPropertyData['minItems'],
-        output_path
-    ]
-    array_result = runner.invoke(
-        fairscape_cli_app, 
-        array_test_command
-    )
-    assert array_result.exit_code == 0
+    def test_schema_cli_4_array(self):
+        # add an array property
+        array_test_command = [
+            "schema",
+            "add-property",
+            "array",
+            "--number",
+            testArrayPropertyData['number'],
+            "--name",
+            testArrayPropertyData['name'],
+            "--description",
+            testArrayPropertyData['description'],
+            "--items-datatype",
+            testArrayPropertyData['itemsDatatype'],
+            "--unique-items",
+            testArrayPropertyData['uniqueItems'],
+            "--max-items",
+            testArrayPropertyData['maxItems'],
+            "--min-items",
+            testArrayPropertyData['minItems'],
+            self.output_path
+        ]
+        array_result = runner.invoke(
+            fairscape_cli_app, 
+            array_test_command
+        )
+        assert array_result.exit_code == 0
 
 
+def test_json_conversion():
 
-    # read schema file and assert that the property exists
-    #with open(output_path, "r") as schema_jsonfile:
-    #   schema_dict = json.loads(schema_jsonfile.read())
