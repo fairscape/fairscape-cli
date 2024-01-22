@@ -237,6 +237,7 @@ def registerSoftware(
 @click.option('--filepath', required=True)
 @click.option('--used-by', required=False, multiple=True)
 @click.option('--derived-from', required=False, multiple=True)
+@click.option('--schema', required=False, type=str)
 @click.option('--associated-publication', required=False)
 @click.option('--additional-documentation', required=False)
 def registerDataset(
@@ -244,17 +245,18 @@ def registerDataset(
     guid: str,
     name: str,
     url: str,
-    author: str,
+    author: str, 
+    version: str,
+    date_published: str,
     description: str,
     keywords: List[str],
-    date_published: str,
-    version: str,
-    associated_publication: Optional[str],
-    additional_documentation: Optional[List[str]],
     data_format: str,
     filepath: str,
-    derived_from: Optional[List[str]],
     used_by: Optional[List[str]],
+    derived_from: Optional[List[str]],
+    schema: str,
+    associated_publication: Optional[str],
+    additional_documentation: Optional[List[str]],
 ):
     
     metadata_path = rocrate_path / "ro-crate-metadata.json"
@@ -269,6 +271,7 @@ def registerDataset(
         _fields_set={"path"}, 
         **{"path": metadata_path}
     ) 
+
 
     dataset_metadata = {
             "@id": guid,
@@ -291,14 +294,16 @@ def registerDataset(
             "usedBy": [
                 used.strip("\n") for used in used_by 
             ],
+            "schema": schema
             }
 
+    # TODO set relative filepath to root of crate
     if filepath != "" and filepath is not None:
         dataset_metadata["contentUrl"] = f"file://{str(filepath)}" 
 
 
     try:
-        dataset_model = Dataset(**dataset_metadata)
+        dataset_model = Dataset.model_validate(dataset_metadata)
         crate.registerDataset(dataset_model)
 
     except ValidationError as e:
@@ -639,6 +644,7 @@ def software(
 @click.option('--destination-filepath', required=True)
 @click.option('--used-by', required=False, multiple=True)
 @click.option('--derived-from', required=False, multiple=True)
+@click.option('--schema', required=False, type=str)
 @click.option('--associated-publication', required=False)
 @click.option('--additional-documentation', required=False)
 def dataset(
@@ -658,6 +664,7 @@ def dataset(
     destination_filepath: str,
     derived_from: Optional[List[str]],
     used_by: Optional[List[str]],
+    schema: str,
 ):
 
 
@@ -682,8 +689,7 @@ def dataset(
     ) 
     
     try:
-        dataset_model = Dataset(   
-            **{
+        dataset_model = Dataset.model_validate({
             "@id": guid,
             "@type": "https://w3id.org/EVI#Dataset",
             "url": url,
@@ -702,9 +708,9 @@ def dataset(
             "usedBy": [
                 used.strip("\n") for used in used_by 
             ],
+            "schema": schema,
             "contentUrl": "file://" + str(destination_path)
-            }
-        )
+            })
 
         crate.registerDataset(dataset_model)
         crate.copyObject(source_filepath, destination_filepath)

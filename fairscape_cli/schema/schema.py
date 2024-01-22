@@ -1,4 +1,5 @@
 import click
+import json
 
 from fairscape_cli.models.schema.image import (
     ImageSchema,
@@ -18,7 +19,11 @@ from fairscape_cli.models.schema.tabular import (
     PropertyNameException,
     ColumnIndexException,
 )
-import json
+
+from fairscape_cli.config import (
+    FAIRSCAPE_URI
+)
+
 
 
 
@@ -93,8 +98,6 @@ def add_property_string(ctx, name, number, description, value_url, pattern, sche
 
 
 
-
-
 @add_property.command('number')
 @click.option('--name', type=str, required=True)
 @click.option('--number', type=int, required=True)
@@ -157,9 +160,53 @@ def create_image():
     pass
 
 @schema.command('validate')
-def validate():
-    pass
+@click.option('--schema', type=str, required=True)
+@click.option('--data', type=str, required=True)
+@click.option('--ro-crate', type=str, required=False, default=None)
+def validate(schema, data, ro_crate):
+
+    # if ro-crate was passed
+    if ro_crate:
+        pass
+
+        # TODO find all schemas in RO-Crate
+        # TODO find all data using schemas in RO-Crate
+
+        # TODO execute validation on all RO-Crate schema
+
+    elif schema and data:
+        tabular_schema = ReadSchema(schema)
+        validation_errors = tabular_schema.execute_validation(data)
+
+        if len(validation_errors) !=0:
+            # print out all errors
+            click.echo('Errors Validating Data')
+            for key, value in validation_errors:
+                click.echo(f'{key}: {value}')
+            click.exit(1)
+
+        else:
+            click,echo('\nValidation Success')
+            click.exit(0)
+
+    else:
+        click.echo('ERROR: must pass either schema & data or ro_crate path')
+
 
 @schema.command('register')
-def add_column():
+@click.option('--schema', type=str, required=True)
+def register(schema):
+
+    # read the schema
+
+    # upload 
     pass
+
+
+@schema.command('list')
+@click.option('--fairscape', type=str, required=False, default=FAIRSCAPE_URI)
+def list()
+    pass
+
+@schema.command('get')
+def get(schema)

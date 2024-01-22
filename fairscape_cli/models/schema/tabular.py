@@ -20,18 +20,15 @@ from typing import (
     Literal
 )
 
-from fairscape_cli.models.tabular.utils import (
+from fairscape_cli.models.schema.utils import (
     GenerateSlice,
-    GenerateGUID
+    GenerateGUID,
+    PropertyNameException
 )
 
 
 from enum import Enum
 import re
-
-
-# TODO set to configuration
-NAAN = "59852"
 
 
 # datatype enum
@@ -57,8 +54,6 @@ class BaseProperty(BaseModel):
     model_config = ConfigDict(populate_by_name = True)
     number: Union[int,str] = Field(description="index of the column for this value")
     valueURL: Optional[str] = Field(default=None)	
-    #multiple: Optional[bool]
-    #seperator: Optional[str]
 
 
 class NullProperty(BaseProperty):
@@ -122,10 +117,6 @@ class TabularValidationSchema(BaseModel):
     def guid(self) -> str:
         return GenerateGUID([int(datetime.datetime.now(datetime.UTC).timestamp())])
 
-        #return GenerateGUID([ int(elem) for elem in
-        #	str(int.from_bytes(self.name.encode("utf-8"), byteorder="big"))
-        #])
-
 
     def load_data(self, dataPath: str) -> pd.DataFrame:
         # TODO deal with alternative filetypes
@@ -169,7 +160,7 @@ class TabularValidationSchema(BaseModel):
                         json_output[property_name] = row.iloc[index_slice]
 
                 elif isinstance(index_slice, str):
-                    generated_slice = GenerateSlice(index_slice)
+                    generated_slice = GenerateSlice(index_slice, len(row))
 
                     # slice rows according to matched slice
                     # if datatype is boolean coerce datatype
@@ -214,16 +205,6 @@ class TabularValidationSchema(BaseModel):
                 validation_exceptions[i] = e
 
         return validation_exceptions	
-
-
-
-class PropertyNameException(Exception):
-
-    def __init__(self, propertyName):
-        self.propertyName = propertyName
-        self.message = f"PropertyNameException: Property with name '{propertyName}' already present in schema"
-        super().__init__(self.message)
-
 
 
 
@@ -305,24 +286,6 @@ def WriteSchema(tabular_schema: TabularValidationSchema, schema_file):
     with open(schema_file, "w") as output_file:
         output_file.write(schema_json)
 
-
-def InstantiateStringModel(ctx, name, number, description, value_url, pattern):
-    try:
-        modelInstance = StringProperty(
-            datatype = 'string',
-            number = number,
-            description = description,
-            valueURL = value_url,
-            pattern = pattern
-        )
-        return modelInstance
-
-    except ValidationError as metadataError:
-        ctx.echo("ERROR: MetadataValidationError")
-        ctx.echo(metadataError)
-        #for validationFailure in metadataError.errors():
-        #    click.echo(f"loc: {validationFailure.loc}\tinput: {validationFailure.input}\tmsg: {validationFailure.msg}")
-        ctx.exit(code=1)
 
 
 def InstantiateNumberModel(ctx, name, number, description, value_url):
