@@ -9,15 +9,20 @@ from fairscape_cli.models.schema.image import (
 )
 from fairscape_cli.models.schema.tabular import (
     TabularValidationSchema,
+    ReadSchema,
     WriteSchema,
-    InstantiateStringModel,
-    InstantiateBooleanModel,
-    InstantiateIntegerModel,
-    InstantiateNumberModel,
-    InstantiateArrayModel,
+    StringProperty,
+    NumberProperty,
+    IntegerProperty,
+    BooleanProperty,
+    ArrayProperty,
     ClickAppendProperty,
     PropertyNameException,
     ColumnIndexException,
+)
+
+from fairscape_cli.models.utils import (
+    InstantiateModel
 )
 
 from fairscape_cli.config import (
@@ -93,7 +98,15 @@ def add_property():
 @click.pass_context
 def add_property_string(ctx, name, number, description, value_url, pattern, schema_file):
     # instantiate the StringProperty
-    stringPropertyModel = InstantiateStringModel(ctx, name, number, description, value_url, pattern)
+    stringPropertyMetadata = {
+            "name": name,
+            "number": number,
+            "type": "string",
+            "description": description,
+            "valueURL": value_url,
+            "pattern": pattern
+            }
+    stringPropertyModel = InstantiateModel(ctx, stringPropertyMetadata, StringProperty)
     ClickAppendProperty(ctx, schema_file, stringPropertyModel, name)
 
 
@@ -106,10 +119,14 @@ def add_property_string(ctx, name, number, description, value_url, pattern, sche
 @click.argument('schema_file', type=click.Path(exists=True))
 @click.pass_context
 def add_property_number(ctx, name, number, description, value_url, schema_file):
-    ctx = click.get_context()
-
-    # instantiate the StringProperty
-    numberPropertyModel = InstantiateStringModel(ctx, name, number, description, value_url, schema_file)
+    # instantiate the NumberPropertyModel
+    numberPropertyMetadata = {
+        "name": name,
+        "number": number,
+        "description": description,
+        "valueURL": value_url
+        }
+    numberPropertyModel = InstantiateModel(ctx, numberPropertyMetadata, NumberProperty)
     ClickAppendProperty(ctx, schema_file, numberPropertyModel, name)
 
 
@@ -122,7 +139,13 @@ def add_property_number(ctx, name, number, description, value_url, schema_file):
 @click.argument('schema_file', type=click.Path(exists=True))
 @click.pass_context
 def add_property_boolean(ctx, name, number, description, value_url, schema_file):
-    booleanPropertyModel = InstantiateBooleanModel(ctx, name, number, description, value_url) 
+    booleanPropertyMetadata = {
+        "name": name,
+        "number": number,
+        "description": description,
+        "valueURL": value_url
+        }
+    booleanPropertyModel = InstantiateModel(ctx, booleanPropertyMetadata, BooleanProperty) 
     ClickAppendProperty(ctx, schema_file, booleanPropertyModel, name)
 
 
@@ -134,8 +157,13 @@ def add_property_boolean(ctx, name, number, description, value_url, schema_file)
 @click.argument('schema_file', type=click.Path(exists=True))
 @click.pass_context
 def add_property_integer(ctx, name, number, description, value_url, schema_file):
-    # instantiate the StringProperty
-    integerPropertyModel = InstantiateIntegerModel(ctx, name, number, description, value_url)
+    integerPropertyMetadata = {
+        "name": name,
+        "number": number,
+        "description": description,
+        "valueURL": value_url
+        }
+    integerPropertyModel = InstantiateModel(ctx, integerPropertyMetadata, IntegerProperty)
     ClickAppendProperty(ctx, schema_file, integerPropertyModel, name)
 
 
@@ -163,11 +191,13 @@ def create_image():
 @click.option('--schema', type=str, required=True)
 @click.option('--data', type=str, required=True)
 @click.option('--ro-crate', type=str, required=False, default=None)
-def validate(schema, data, ro_crate):
+@click.pass_context
+def validate(ctx, schema, data, ro_crate):
 
     # if ro-crate was passed
     if ro_crate:
-        pass
+        print('Not Yet Implemented')
+        ctx.exit(0)
 
         # TODO find all schemas in RO-Crate
         # TODO find all data using schemas in RO-Crate
@@ -180,33 +210,41 @@ def validate(schema, data, ro_crate):
 
         if len(validation_errors) !=0:
             # print out all errors
-            click.echo('Errors Validating Data')
+            print('Errors Validating Data')
             for key, value in validation_errors:
-                click.echo(f'{key}: {value}')
-            click.exit(1)
+                print(f'{key}: {value}')
+            ctx.exit(1)
 
         else:
-            click,echo('\nValidation Success')
-            click.exit(0)
+            print('\nValidation Success')
+            ctx.exit(0)
 
     else:
-        click.echo('ERROR: must pass either schema & data or ro_crate path')
+        print('ERROR: must pass either schema & data or ro_crate path')
 
 
 @schema.command('register')
 @click.option('--schema', type=str, required=True)
 def register(schema):
 
-    # read the schema
+    # TODO read the schema
 
-    # upload 
+    # TODO upload to remote fairscape
     pass
 
 
 @schema.command('list')
-@click.option('--fairscape', type=str, required=False, default=FAIRSCAPE_URI)
-def list()
+@click.option('--fairscape-uri', type=str, required=False, default=FAIRSCAPE_URI)
+def list(fairscape_uri):
+
+    # TODO list all schemas from fairscape remote
     pass
 
+
 @schema.command('get')
-def get(schema)
+@click.option('--schema-guid', type=str, required=True)
+@click.option('--fairscape-uri', type=str, required=False, default=FAIRSCAPE_URI)
+def get(schema_guid, fairscape_uri):
+
+    # TODO get schema spec from fairscape remote
+    pass

@@ -4,7 +4,7 @@ from fairscape_cli.models import (
     Computation,
     DatasetContainer
 )
-from fairscape_cli.models.utils import GenerateGUID
+from fairscape_cli.models.utils import GenerateDatetimeGUID
 
 import pathlib
 import shutil
@@ -35,12 +35,9 @@ class ROCrate(BaseModel):
     # Computed Field implementation for guid generation
     @computed_field
     def guid(self) -> str:
-        return GenerateGUID({
-            "@type": "ROCrate",
-            "name": self.name,
-            "description": self.description,
-            "keywords": self.keywords
-            })
+        return GenerateDatetimeGUID(
+                prefix=f"rocrate-{self.name.strip()}"
+                )
 
 
     def createCrateFolder(self):
@@ -124,9 +121,8 @@ class ROCrate(BaseModel):
 
     def registerObject(self, model: Union[Dataset, Software, Computation, DatasetContainer]):
         ''' Add a specified peice of metadata to the graph of an ROCrate
-
-        Marshals a given model into JSON-LD, opens the ro-crate-metadata.json,
-        appends the new metadata to the @graph, and overwrites the ro-crate-metadata.json
+            Marshals a given model into JSON-LD, opens the ro-crate-metadata.json,
+            appends the new metadata to the @graph, and overwrites the ro-crate-metadata.json
         '''
 
         metadata_path = pathlib.Path(self.path)
@@ -142,19 +138,16 @@ class ROCrate(BaseModel):
 
     def registerDataset(self, Dataset):
         # TODO check for entailment
-
         self.registerObject(model=Dataset)
         
 
     def registerSoftware(self, Software):
         # TODO check for entailment
-
         self.registerObject(model=Software)
 
 
     def registerComputation(self, Computation):
         # TODO check for entailment
-
         self.registerObject(model=Computation)
 
 

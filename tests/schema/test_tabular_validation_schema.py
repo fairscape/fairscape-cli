@@ -56,7 +56,8 @@ testIntegerPropertyData = {
     "number": 2,
     "description": "Example integer property",
     "valueURL": None,
-
+    "minimum": 4,
+    "maximum": 10
 }
 
 testBooleanPropertyData = {
@@ -345,6 +346,10 @@ class TestCLI():
             testIntegerPropertyData['name'],
             "--description",
             testIntegerPropertyData['description'],
+            "--minimum",
+            testIntegerPropertyData['minimum'],
+            "--maximum",
+            testIntegerPropertyData['maximum'],
             self.output_path
         ]
         int_result = runner.invoke(

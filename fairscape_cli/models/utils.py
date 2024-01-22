@@ -3,6 +3,10 @@ from sqids import Sqids
 from pydantic import (
     ValidationError
 )
+from typing import (
+    List
+    )
+import datetime
 from fairscape_cli.config import (
     NAAN
     )
@@ -11,7 +15,14 @@ from fairscape_cli.config import (
 squids = Sqids(min_length=6)
 
 
-def GenerateGUID(data, prefix):
+def GenerateDatetimeSquid():
+    return squids.encode([int(datetime.datetime.now(datetime.UTC).timestamp())])
+
+def GenerateDatetimeGUID(prefix: str)->str:
+    datetime_squid = GenerateDatetimeSquid()
+    return f"ark:{NAAN}/{prefix}-{datetime_squid}"
+
+def GenerateGUID(data: List[int], prefix: str)-> str:
     squid_encoded = squids.encode(data)
     return f"ark:{NAAN}/{prefix}-{squid_encoded}"
 

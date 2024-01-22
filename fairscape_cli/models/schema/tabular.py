@@ -1,9 +1,7 @@
 from jsonschema import validate
 import pandas as pd
-import datetime
 import pathlib
 import json
-import click
 
 from pydantic import (
     BaseModel,
@@ -20,10 +18,14 @@ from typing import (
     Literal
 )
 
+from fairscape_cli.models.utils import (
+    GenerateDatetimeGUID
+)
+
 from fairscape_cli.models.schema.utils import (
     GenerateSlice,
-    GenerateGUID,
-    PropertyNameException
+    PropertyNameException,
+    ColumnIndexException,
 )
 
 
@@ -88,12 +90,39 @@ class NumberProperty(BaseProperty):
     minimum: Optional[float] = Field(description="Inclusive Lower Limit for Values", default=None)
     number: int
 
+    @model_validator(mode='after')
+    def check_max_min(self) -> 'IntegerProperty':
+        minimum = self.minimum
+        maximum = self.maximum
+
+        if maximum is not None and minimum is not None:
+
+            if maximum == minimum:
+                raise ValueError('IntegerProperty attribute minimum != maximum')
+            elif maximum < minimum:
+                raise ValueError('IntegerProperty attribute maximum !< minimum')
+        return self
+
 
 class IntegerProperty(BaseProperty):
     datatype: Literal['integer'] = Field(alias="type")
     maximum: Optional[int] = Field(description="Inclusive Upper Limit for Values", default=None)
     minimum: Optional[int] = Field(description="Inclusive Lower Limit for Values", default=None)
     number: int
+
+    @model_validator(mode='after')
+    def check_max_min(self) -> 'IntegerProperty':
+        minimum = self.minimum
+        maximum = self.maximum
+
+        if maximum is not None and minimum is not None:
+
+            if maximum == minimum:
+                raise ValueError('IntegerProperty attribute minimum != maximum')
+            elif maximum < minimum:
+                raise ValueError('IntegerProperty attribute maximum !< minimum')
+        return self
+
 
 
 PropertyUnion = Union[StringProperty, ArrayProperty, BooleanProperty, NumberProperty, IntegerProperty, NullProperty]
@@ -115,7 +144,8 @@ class TabularValidationSchema(BaseModel):
     # Computed Field implementation for guid generation
     @computed_field(alias="@id")
     def guid(self) -> str:
-        return GenerateGUID([int(datetime.datetime.now(datetime.UTC).timestamp())])
+        return GenerateDatetimeGUID(prefix=f"schema-{self.name.strip()}")
+                
 
 
     def load_data(self, dataPath: str) -> pd.DataFrame:
@@ -250,16 +280,16 @@ def ClickAppendProperty(ctx, schemaFile, propertyModel, name):
     try:
         # append the property to the 
         AppendProperty(schemaFile,  propertyModel, name)
-        click.echo(f"Added Property\tname: {name}\ttype: {propertyModel.datatype}")
+        print(f"Added Property\tname: {name}\ttype: {propertyModel.datatype}")
         ctx.exit(code=0)
 
     except ColumnIndexException as indexException:
-        click.echo("ERROR: ColumnIndexError")
-        click.echo(str(indexException))
+        print("ERROR: ColumnIndexError")
+        print(str(indexException))
         ctx.exit(code=1)
     except PropertyNameException as propertyException:
-        click.echo("ERROR: PropertyNameError")
-        click.echo(str(propertyException))
+        print("ERROR: PropertyNameError")
+        print(str(propertyException))
         ctx.exit(code=1)
 
 
@@ -287,66 +317,11 @@ def WriteSchema(tabular_schema: TabularValidationSchema, schema_file):
         output_file.write(schema_json)
 
 
-
-def InstantiateNumberModel(ctx, name, number, description, value_url):
-    try:
-        modelInstance = NumberProperty(
-            datatype = 'number',
-            number = number,
-            description = description,
-            valueURL = value_url
-            )
-        return modelInstance
-
-    except ValidationError as metadataError:
-        click.echo("ERROR: MetadataValidationError")
-        click.echo(metadataError)
-        #for validationFailure in metadataError.errors():
-        #    click.echo(f"loc: {validationFailure.loc}\tinput: {validationFailure.input}\tmsg: {validationFailure.msg}")
-        ctx.exit(code=1)
-
-
-def InstantiateBooleanModel(ctx, name, number, description, value_url):
-    try:
-        booleanInstance = BooleanProperty(
-            datatype = 'boolean',
-            number = number,
-            description = description,
-            valueURL = value_url,
-            )
-        return booleanInstance
-
-    except ValidationError as metadataError:
-        click.echo("ERROR: MetadataValidationError")
-        click.echo(metadataError)
-        #for validationFailure in metadataError.errors():
-        #    click.echo(f"loc: {validationFailure.loc}\tinput: {validationFailure.input}\tmsg: {validationFailure.msg}")
-        ctx.exit(code=1)
-
-
-def InstantiateIntegerModel(ctx, name, number, description, value_url):
-    try:
-        integerInstance = IntegerProperty(
-            datatype = 'integer',
-            number = number,
-            description = description,
-            valueURL = value_url,
-        )
-        return integerInstance
-
-    except ValidationError as metadataError:
-        click.echo("ERROR: MetadataValidationError")
-        click.echo(metadataError)
-        #for validationFailure in metadataError.errors():
-        #    click.echo(f"loc: {validationFailure.loc}\tinput: {validationFailure.input}\tmsg: {validationFailure.msg}")
-        ctx.exit(code=1)
-
-
 def InstantiateArrayModel(ctx, name, number, description, value_url, items_datatype, min_items, max_items, unique_items):
     try:
         datatype_enum = DatatypeEnum(items_datatype)
     except Exception:
-        click.echo(f"ITEMS Datatype {itemsDatatype} invalid\n" +
+        print(f"ITEMS Datatype {itemsDatatype} invalid\n" +
             "ITEMS must be oneOf 'boolean'|'object'|'string'|'number'|'integer'" 
         )
         ctx.exit(code=1)
@@ -364,21 +339,8 @@ def InstantiateArrayModel(ctx, name, number, description, value_url, items_datat
         return modelInstance
 
     except ValidationError as metadataError:
-        click.echo("ERROR: MetadataValidationError")
-        click.echo(metadataError)
-        #for validationFailure in metadataError.errors():
-        #    click.echo(f"loc: {validationFailure.loc}\tinput: {validationFailure.input}\tmsg: {validationFailure.msg}")
-        ctx.exit(code=1)
-
-
-def ValidateModel(ctx, createModel):
-    try:
-        modelInstance = createModel()
-        return modelInstance
-
-    except ValidationError as metadataError:
-        click.echo("ERROR: MetadataValidationError")
-        click.echo(metadataError)
-        #for validationFailure in metadataError.errors():
-        #    click.echo(f"loc: {validationFailure.loc}\tinput: {validationFailure.input}\tmsg: {validationFailure.msg}")
+        print("ERROR: MetadataValidationError")
+        print(metadataError)
+        for validationFailure in metadataError.errors():
+            print(f"loc: {validationFailure.loc}\tinput: {validationFailure.input}\tmsg: {validationFailure.msg}")
         ctx.exit(code=1)
