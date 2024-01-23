@@ -3,6 +3,9 @@ from fairscape_cli.models.base import (
     Identifier
 )
 from fairscape_cli.models.utils import GenerateGUID
+from fairscape_cli.models.schema.tabular import (
+    TabularValidationSchema
+)
 
 from typing import (
     Optional,
@@ -30,56 +33,12 @@ class Dataset(FairscapeBaseModel):
     associatedPublication: Optional[str] = None
     additionalDocumentation: Optional[str] = None
     fileFormat: str = Field(alias="format")
-    dataSchema: Optional[dict] = Field(alias="schema", default={})
+    dataSchema: Optional[Union[str, TabularValidationSchema]] = Field(alias="schema", default=None)
     generatedBy: Optional[List[str]] = Field(default=[])
     derivedFrom: Optional[List[str]] = Field(default=[])
     usedBy: Optional[List[str]] = Field(default=[])
     contentUrl: Optional[str] = None
 
-
-def GenerateDataset(
-    name: str,
-    url: str,
-    author: str,
-    description: str,
-    keywords: List[str],
-    date_published: str,
-    version: str,
-    associated_publication: Optional[str],
-    additional_documentation: Optional[List[str]],
-    data_format: str,
-    filepath: str,
-    derived_from: Optional[List[str]],
-    used_by: Optional[List[str]],
-) -> Dataset:
-    """ Generate a Dataset model class
-    """
-    dataset_metadata = {
-            "@type": "https://w2id.org/EVI#Dataset",
-            "url": url,
-            "author": author,
-            "name": name,
-            "description": description,
-            "keywords": keywords,
-            "datePublished": date_published,
-            "version": version,
-            "associatedPublication": associated_publication,
-            "additionalDocumentation": additional_documentation,
-            "format": data_format,
-            # sanitize input lists of newline breaks
-            "derivedFrom": [
-                derived.strip("\n") for derived in derived_from
-            ],
-            "usedBy": [
-                used.strip("\n") for used in used_by 
-            ],
-            }
-
-    if filepath != "" and filepath is not None:
-        dataset_metadata["contentUrl"] = f"file://{str(filepath)}" 
-
-    dataset_model = Dataset(**dataset_metadata)
-    return dataset_model
 
 
 class DatasetContainer(FairscapeBaseModel): 

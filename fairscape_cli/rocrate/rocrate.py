@@ -286,7 +286,7 @@ def registerDataset(
             "associatedPublication": associated_publication,
             "additionalDocumentation": additional_documentation,
             "format": data_format,
-
+            "schema": schema,
             # sanitize input lists of newline breaks
             "derivedFrom": [
                 derived.strip("\n") for derived in derived_from
@@ -294,7 +294,6 @@ def registerDataset(
             "usedBy": [
                 used.strip("\n") for used in used_by 
             ],
-            "schema": schema
             }
 
     # TODO set relative filepath to root of crate
@@ -653,18 +652,18 @@ def dataset(
     name: str,
     url: str,
     author: str,
+    version: str,
+    date_published: str,
     description: str,
     keywords: List[str],
-    date_published: str,
-    version: str,
-    associated_publication: Optional[str],
-    additional_documentation: Optional[List[str]],
     data_format: str,
     source_filepath: str,
     destination_filepath: str,
-    derived_from: Optional[List[str]],
     used_by: Optional[List[str]],
+    derived_from: Optional[List[str]],
     schema: str,
+    associated_publication: Optional[str],
+    additional_documentation: Optional[List[str]],
 ):
 
 
@@ -702,6 +701,7 @@ def dataset(
             "associatedPublication": associated_publication,
             "additionalDocumentation": additional_documentation,
             "format": data_format,
+            "schema": schema,
             "derivedFrom": [
                 derived.strip("\n") for derived in derived_from
             ],
