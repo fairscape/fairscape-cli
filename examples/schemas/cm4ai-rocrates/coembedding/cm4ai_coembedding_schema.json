@@ -1,0 +1,32 @@
+{
+  "@id": "ark:59852/schema-amps-coembedding-cm4ai",
+  "name": "APMS coembedding CM4AI",
+  "description": "Schema for APMS coembeddings, merging the embeddings from IF images and APMS protien-protien interaction networks",
+  "properties": {
+    "gene-symbol": {
+      "description": "Gene Symbol for APMS Data",
+      "number": 0,
+      "valueURL": "http://edamontology.org/data_1026",
+      "type": "string",
+      "pattern": "[A-Z0-9]*"
+    },
+    "coembedding": {
+      "description": "embedding vector values for genes determined by running node2vec on APMS networks",
+      "number": "1::",
+      "valueURL": null,
+      "type": "array",
+      "maxItems": 127,
+      "minItems": 127,
+      "uniqueItems": false,
+      "items": {
+        "type": "number"
+      }
+    }
+  },
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["gene-symbol", "coembedding"],
+  "seperator": "\t",
+  "header": true,
+  "examples": []
+}

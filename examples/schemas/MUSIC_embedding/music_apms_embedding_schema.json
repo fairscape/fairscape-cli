@@ -1,0 +1,40 @@
+{
+  "schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "test-schema",
+  "description": "A Test Schema for APMS Embedding Data",
+  "properties": {
+    "Experiment Identifier": {
+        "description": "Identifier for APMS Experiment",
+        "number": 0,
+        "valueURL": null,
+        "type": "string",
+        "pattern": "APMS_[0-9]*"
+    },
+    "Gene Name": {
+      "description": "Gene Name for APMS Data",
+      "number": 1,
+      "valueURL": "http://edamontology.org/data_1026",
+      "type": "string",
+      "pattern": "[A-Z0-9]*"
+    },
+    "embedding": {
+      "description": "embedding vector values for genes determined by running node2vec on APMS networks",
+      "number": "2::",
+      "valueURL": null,
+      "type": "array",
+      "maxItems": 1024,
+      "minItems": 1024,
+      "uniqueItems": false,
+      "items": {
+        "type": "number"
+      }
+    }
+  },
+  "type": "object",
+  "additionalProperties": true,
+  "required": [],
+  "seperator": ",",
+  "header": false,
+  "examples": [],
+  "@id": "ark:59852/izNjXSs"
+}

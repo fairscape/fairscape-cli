@@ -1,0 +1,217 @@
+{
+  "@id": "ark:59852/schema-cm4ai-labels-prob",
+  "name": "CM4AI Schema IF Image Labels Probability",
+  "description": "Schema for probabilities of ",
+  "properties": {
+    "gene-symbol": {
+      "description": "Gene Symbol for Protein depicted in IF Images",
+      "index": 0,
+      "valueURL": "http://edamontology.org/data_1026",
+      "type": "string",
+      "pattern": "[A-Z0-9]*"
+    },
+
+    "Nucleoplasm": {
+        "description": "",
+        "index": 1,
+        "type": "number",
+        "minimum": 0,
+        "valueURL": null
+    },
+    "N. membrane": {
+        "description": "",
+        "index": 2,
+        "type": "number",
+        "minimum": 0,
+        "valueURL": null
+    },
+    "Nucleoli": {
+        "description": "",
+        "index": 3,
+        "type": "number",
+        "minimum": 0,
+        "valueURL": null
+    },
+    "N. fibrillar c.": {
+        "description": "",
+        "index": 4,
+        "type": "number",
+        "minimum": 0,
+        "valueURL": null
+    },
+    "N. speckles": {
+        "description": "",
+        "index": 5,
+        "type": "number",
+        "minimum": 0,
+        "valueURL": null
+        },
+    "N. bodies": {
+        "description": "",
+        "index": 6,
+        "type": "number",
+        "minimum": 0,
+        "valueURL": null
+    },
+    "ER": {
+        "description": "",
+        "index": 7,
+        "type": "number",
+        "minimum": 0,
+        "valueURL": null
+    },
+    "Golgi app.": {
+        "description": "",
+        "index": 8,
+        "type": "number",
+        "minimum": 0,
+        "valueURL": null
+    },
+    "Peroxisomes": {
+        "description": "",
+        "index": 9,
+        "type": "number",
+        "minimum": 0,
+        "valueURL": null
+    },
+    "Endosomes": {
+        "description": "",
+        "index": 10,
+        "type": "number",
+        "minimum": 0,
+        "valueURL": null
+    },
+    "Lysosomes": {
+        "description": "",
+        "index": 11,
+        "type": "number",
+        "minimum": 0,
+        "valueURL": null
+    },
+    "Int. fil.": {
+        "description": "",
+        "index": 12,
+        "type": "number",
+        "minimum": 0,
+        "valueURL": null
+    },
+    "Actin fil.": {
+        "description": "",
+        "index": 13,
+        "type": "number",
+        "minimum": 0,
+        "valueURL": null
+    },
+    "F. a. sites":{
+        "description": "",
+        "index": 14,
+        "type": "number",
+        "minimum": 0,
+        "valueURL": null
+    },
+    "Microtubules":{	
+        "description": "",
+        "index": 15,
+        "type": "number",
+        "minimum": 0,
+        "valueURL": null
+    },
+    "M. ends": {	
+        "description": "",
+        "index": 16,
+        "type": "number",
+        "minimum": 0,
+        "valueURL": null
+    },
+    "Cyt. bridge": {	
+        "description": "",
+        "index": 17,
+        "type": "number",
+        "minimum": 0,
+        "valueURL": null
+    },
+    "Mitotic spindle": {
+        "description": "",
+        "index": 18,
+        "type": "number",
+        "minimum": 0,
+        "valueURL": null
+    },
+    "MTOC":{
+        "description": "",
+        "index": 19,
+        "type": "number",
+        "minimum": 0,
+        "valueURL": null
+    },
+    "Centrosome":{	
+        "description": "",
+        "index": 20,
+        "type": "number",
+        "minimum": 0,
+        "valueURL": null
+    },
+    "Lipid droplets": {
+        "description": "",
+        "index": 21,
+        "type": "number",
+        "minimum": 0,
+        "valueURL": null
+    },
+    "PM": {
+        "description": "",
+        "index": 22,
+        "type": "number",
+        "minimum": 0,
+        "valueURL": null
+    },
+    "C. Junctions": {
+        "description": "",
+        "index": 23,
+        "type": "number",
+        "minimum": 0,
+        "valueURL": null
+    },
+    "Mitochondria": {
+        "description": "",
+        "index": 24,
+        "type": "number",
+        "minimum": 0,
+        "valueURL": null
+    },
+    "Aggresome": {
+        "description": "",
+        "index": 25,
+        "type": "number",
+        "minimum": 0,
+        "valueURL": null
+      },
+    "Cytosol": {
+        "description": "",
+        "index": 26,
+        "type": "number",
+        "minimum": 0,
+        "valueURL": null
+    },
+    "C. bodies": {
+        "description": "",
+        "index": 27,
+        "type": "number",
+        "minimum": 0,
+        "valueURL": null
+    },
+    "Rods & Rings": {
+        "description": "",
+        "index": 28,
+        "type": "number",
+        "minimum": 0,
+        "valueURL": null
+    }
+  },
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["gene-symbol"],
+  "seperator": "\t",
+  "header": true,
+  "examples": []
+}

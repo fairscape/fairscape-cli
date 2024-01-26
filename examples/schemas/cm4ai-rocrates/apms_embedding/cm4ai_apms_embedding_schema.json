@@ -1,0 +1,32 @@
+{
+  "@id": "ark:59852/schema-amps-embedding-cm4ai",
+  "name": "APMS Embedding CM4AI",
+  "description": "Schema for APMS embeddings, derived from running node2vec on protien-protien interaction networks obtained from APMS experiments",
+  "properties": {
+    "gene-symbol": {
+      "description": "Gene Symbol for APMS Data",
+      "number": 0,
+      "valueURL": "http://edamontology.org/data_1026",
+      "type": "string",
+      "pattern": "[A-Z0-9]*"
+    },
+    "embedding": {
+      "description": "embedding vector values for genes determined by running node2vec on APMS networks",
+      "number": "1::",
+      "valueURL": null,
+      "type": "array",
+      "maxItems": 1024,
+      "minItems": 1024,
+      "uniqueItems": false,
+      "items": {
+        "type": "number"
+      }
+    }
+  },
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["gene-symbol", "embedding"],
+  "seperator": ",",
+  "header": true,
+  "examples": []
+}
