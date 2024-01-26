@@ -5,14 +5,14 @@
   "properties": {
     "geneA": {
       "description": "Gene Symbol for APMS Bait Protien",
-      "number": 0,
+      "index": 0,
       "valueURL": "http://edamontology.org/data_1026",
       "type": "string",
       "pattern": "[A-Z0-9]*"
     },
     "geneB": {
       "description": "Gene Symbol for APMS Prey Protien",
-      "number": 1,
+      "index": 1,
       "valueURL": "http://edamontology.org/data_1026",
       "type": "string",
       "pattern": "[A-Z0-9]*"

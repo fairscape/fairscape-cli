@@ -1,18 +1,18 @@
 {
-  "@id": "ark:59852/schema-amps-coembedding-cm4ai",
-  "name": "APMS coembedding CM4AI",
+  "@id": "ark:59852/schema-if-image-embedding-cm4ai",
+  "name": "CM4AI Schema IF Image Embeddings",
   "description": "Schema for Image Embeddings",
   "properties": {
     "gene-symbol": {
-      "description": "Gene Symbol for APMS Data",
-      "number": 0,
+      "description": "Gene Symbol for IF Image protein tagged",
+      "index": 0,
       "valueURL": "http://edamontology.org/data_1026",
       "type": "string",
       "pattern": "[A-Z0-9]*"
     },
     "image-embedding": {
       "description": "embedding vector values generated from IF images",
-      "number": "1::",
+      "index": "1::",
       "valueURL": null,
       "type": "array",
       "maxItems": 1024,

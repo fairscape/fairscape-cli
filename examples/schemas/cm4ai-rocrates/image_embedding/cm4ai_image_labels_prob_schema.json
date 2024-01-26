@@ -1,7 +1,7 @@
 {
   "@id": "ark:59852/schema-cm4ai-labels-prob",
   "name": "CM4AI Schema IF Image Labels Probability",
-  "description": "Schema for probabilities of ",
+  "description": "Schema for probabilities of a tagged protien appearing in a cellular Component",
   "properties": {
     "gene-symbol": {
       "description": "Gene Symbol for Protein depicted in IF Images",
