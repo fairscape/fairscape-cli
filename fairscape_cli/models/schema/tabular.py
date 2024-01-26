@@ -54,7 +54,7 @@ class Items(BaseModel):
 class BaseProperty(BaseModel):
     description: str = Field(description="description of field")
     model_config = ConfigDict(populate_by_name = True)
-    number: Union[int,str] = Field(description="index of the column for this value")
+    index: Union[int,str] = Field(description="index of the column for this value")
     valueURL: Optional[str] = Field(default=None)	
 
 
@@ -75,7 +75,7 @@ class ArrayProperty(BaseProperty):
     maxItems: int = Field(description="max items in array, validation fails if length is greater than this value")
     minItems: Optional[int] = Field(description="min items in array, validation fails if lenght is shorter than this value")
     uniqueItems: Optional[bool] = Field()
-    number: str
+    index: str
     items: Items
 
 
@@ -88,7 +88,7 @@ class NumberProperty(BaseProperty):
     datatype: Literal['number'] = Field(alias="type")
     maximum: Optional[float] = Field(description="Inclusive Upper Limit for Values", default=None)
     minimum: Optional[float] = Field(description="Inclusive Lower Limit for Values", default=None)
-    number: int
+    index: int
 
     @model_validator(mode='after')
     def check_max_min(self) -> 'IntegerProperty':
@@ -108,7 +108,7 @@ class IntegerProperty(BaseProperty):
     datatype: Literal['integer'] = Field(alias="type")
     maximum: Optional[int] = Field(description="Inclusive Upper Limit for Values", default=None)
     minimum: Optional[int] = Field(description="Inclusive Lower Limit for Values", default=None)
-    number: int
+    index: int
 
     @model_validator(mode='after')
     def check_max_min(self) -> 'IntegerProperty':
@@ -144,7 +144,7 @@ class TabularValidationSchema(BaseModel):
     # Computed Field implementation for guid generation
     @computed_field(alias="@id")
     def guid(self) -> str:
-        return GenerateDatetimeGUID(prefix=f"schema-{self.name.strip()}")
+        return GenerateDatetimeGUID(prefix=f"schema-{self.name.lower().replace(' ', '-')}")
                 
 
 
@@ -168,7 +168,7 @@ class TabularValidationSchema(BaseModel):
 
         property_slice = {
                 property_name: {
-                        "number": property_data.get("number"),
+                        "index": property_data.get("index"),
                         "type": property_data.get("type")
                 }
                 for property_name, property_data in schema_definition.get("properties").items()
@@ -179,7 +179,7 @@ class TabularValidationSchema(BaseModel):
             json_output = {}
             for property_name, property_values in passed_property_slice.items():
 
-                index_slice = property_values.get("number")
+                index_slice = property_values.get("index")
                 datatype = property_values.get("type")
 
                 if isinstance(index_slice, int): 
@@ -317,7 +317,7 @@ def WriteSchema(tabular_schema: TabularValidationSchema, schema_file):
         output_file.write(schema_json)
 
 
-def InstantiateArrayModel(ctx, name, number, description, value_url, items_datatype, min_items, max_items, unique_items):
+def InstantiateArrayModel(ctx, name, index, description, value_url, items_datatype, min_items, max_items, unique_items):
     try:
         datatype_enum = DatatypeEnum(items_datatype)
     except Exception:
@@ -328,7 +328,7 @@ def InstantiateArrayModel(ctx, name, number, description, value_url, items_datat
     try:
         modelInstance = ArrayProperty(
             datatype = 'array',
-            number = number,
+            index = index,
             description = description,
             valueURL = value_url,
             maxItems = max_items,

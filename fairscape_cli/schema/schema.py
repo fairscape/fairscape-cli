@@ -90,17 +90,17 @@ def add_property():
 
 @add_property.command('string')
 @click.option('--name', type=str, required=True)
-@click.option('--number', type=int, required=True)
+@click.option('--index', type=int, required=True)
 @click.option('--description', type=str, required=True)
 @click.option('--value-url', type=str, required=False)
 @click.option('--pattern', type=str, required=False)
 @click.argument('schema_file', type=click.Path(exists=True))
 @click.pass_context
-def add_property_string(ctx, name, number, description, value_url, pattern, schema_file):
+def add_property_string(ctx, name, index, description, value_url, pattern, schema_file):
     # instantiate the StringProperty
     stringPropertyMetadata = {
             "name": name,
-            "number": number,
+            "index": index,
             "type": "string",
             "description": description,
             "valueURL": value_url,
@@ -113,16 +113,16 @@ def add_property_string(ctx, name, number, description, value_url, pattern, sche
 
 @add_property.command('number')
 @click.option('--name', type=str, required=True)
-@click.option('--number', type=int, required=True)
+@click.option('--index', type=int, required=True)
 @click.option('--description', type=str, required=True)
 @click.option('--value-url', type=str, required=False)
 @click.argument('schema_file', type=click.Path(exists=True))
 @click.pass_context
-def add_property_number(ctx, name, number, description, value_url, schema_file):
+def add_property_number(ctx, name, index, description, value_url, schema_file):
     # instantiate the NumberPropertyModel
     numberPropertyMetadata = {
         "name": name,
-        "number": number,
+        "index": index,
         "description": description,
         "valueURL": value_url
         }
@@ -133,15 +133,15 @@ def add_property_number(ctx, name, number, description, value_url, schema_file):
 
 @add_property.command('boolean')
 @click.option('--name', type=str, required=True)
-@click.option('--number', type=int, required=True)
+@click.option('--index', type=int, required=True)
 @click.option('--description', type=str, required=True)
 @click.option('--value-url', type=str, required=False)
 @click.argument('schema_file', type=click.Path(exists=True))
 @click.pass_context
-def add_property_boolean(ctx, name, number, description, value_url, schema_file):
+def add_property_boolean(ctx, name, index, description, value_url, schema_file):
     booleanPropertyMetadata = {
         "name": name,
-        "number": number,
+        "index": index,
         "description": description,
         "valueURL": value_url
         }
@@ -151,15 +151,15 @@ def add_property_boolean(ctx, name, number, description, value_url, schema_file)
 
 @add_property.command('integer')
 @click.option('--name', type=str, required=True)
-@click.option('--number', type=int, required=True)
+@click.option('--index', type=int, required=True)
 @click.option('--description', type=str, required=True)
 @click.option('--value-url', type=str, required=False)
 @click.argument('schema_file', type=click.Path(exists=True))
 @click.pass_context
-def add_property_integer(ctx, name, number, description, value_url, schema_file):
+def add_property_integer(ctx, name, index, description, value_url, schema_file):
     integerPropertyMetadata = {
         "name": name,
-        "number": number,
+        "index": index,
         "description": description,
         "valueURL": value_url
         }
@@ -169,7 +169,7 @@ def add_property_integer(ctx, name, number, description, value_url, schema_file)
 
 @add_property.command('array')
 @click.option('--name', type=str, required=True)
-@click.option('--number', type=str, required=True)
+@click.option('--index', type=str, required=True)
 @click.option('--description', type=str, required=True)
 @click.option('--value-url', type=str, required=False)
 @click.option('--items-datatype', type=str, required=True)
@@ -178,8 +178,8 @@ def add_property_integer(ctx, name, number, description, value_url, schema_file)
 @click.option('--unique-items', type=bool, required=False)
 @click.argument('schema_file', type=click.Path(exists=True))
 @click.pass_context
-def add_property_array(ctx, name, number, description, value_url, items_datatype, min_items, max_items, unique_items, schema_file):
-    arrayPropertyModel = InstantiateArrayModel(ctx, name, number, description, value_url, items_datatype, min_items, max_items, unique_items)
+def add_property_array(ctx, name, index, description, value_url, items_datatype, min_items, max_items, unique_items, schema_file):
+    arrayPropertyModel = InstantiateArrayModel(ctx, name, index, description, value_url, items_datatype, min_items, max_items, unique_items)
     ClickAppendProperty(ctx, schema_file, arrayPropertyModel, name)
     
 

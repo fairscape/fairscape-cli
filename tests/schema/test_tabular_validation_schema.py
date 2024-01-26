@@ -73,6 +73,8 @@ testNumberPropertyData = {
     "name": "Example Number Property",
     "number": 4,
     "description": "Testing Number Property",
+    "maximum": 350,
+    "minimum": 100,
     "valueURL": None
 }
 
@@ -315,15 +317,15 @@ class TestCLI():
             "add-property",
             "string",
             "--number",
-            testStringPropertyData['number'],
+            testStringPropertyData,get('number'),
             "--name",
-            testStringPropertyData['name'],
+            testStringPropertyData.get('name'),
             "--description",
-            testStringPropertyData['description'],
+            testStringPropertyData.get('description'),
             "--pattern",
-            testStringPropertyData['pattern'],
+            testStringPropertyData.get('pattern'),
             "--value-url",
-            testStringPropertyData['valueURL'],
+            testStringPropertyData.get('valueURL'),
             self.output_path
         ]
         string_result = runner.invoke(
@@ -341,25 +343,48 @@ class TestCLI():
             "add-property",
             "integer",
             "--number",
-            testIntegerPropertyData['number'],
+            testIntegerPropertyData.get('number'),
             "--name",
-            testIntegerPropertyData['name'],
+            testIntegerPropertyData.get('name'),
             "--description",
-            testIntegerPropertyData['description'],
+            testIntegerPropertyData.get('description'),
             "--minimum",
-            testIntegerPropertyData['minimum'],
+            testIntegerPropertyData,get('minimum'),
             "--maximum",
-            testIntegerPropertyData['maximum'],
+            testIntegerPropertyData,get('maximum'),
             self.output_path
         ]
         int_result = runner.invoke(
             fairscape_cli_app, 
             int_test_command
         )
-        assert int_result.exit_code == 0# }}}
+        assert int_result.exit_code == 0
+
+    def test_schema_cli_3_property_number(self):
+        number_test_command = [
+            "schema",
+            "add-property",
+            "number",
+            "--number",
+            testNumberPropertyData.get('number'),
+            "--name",
+            testIntegerPropertyData.get('name'),
+            "--description",
+            testIntegerPropertyData.get('description'),
+            "--minimum",
+            testIntegerPropertyData.get('minimum'),
+            "--maximum",
+            testIntegerPropertyData,get('maximum'),
+            self.output_path
+        ]
+        number_result = runner.invoke(
+            fairscape_cli_app, 
+            number_test_command
+        )
+        assert number_result.exit_code == 0
 
 
-    def test_schema_cli_3_property_bool(self):
+    def test_schema_cli_4_property_bool(self):
         # add a boolean property
         bool_test_command = [
             "schema",
@@ -380,7 +405,7 @@ class TestCLI():
         assert bool_result.exit_code == 0
 
 
-    def test_schema_cli_4_array(self):
+    def test_schema_cli_5_array(self):
         # add an array property
         array_test_command = [
             "schema",
@@ -407,7 +432,4 @@ class TestCLI():
             array_test_command
         )
         assert array_result.exit_code == 0
-
-
-def test_json_conversion():
 
