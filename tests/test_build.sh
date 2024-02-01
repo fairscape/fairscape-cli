@@ -1,5 +1,59 @@
 #!/bin/bash
 
+
+#####################################
+#       TEST TABULAR VALIDATION     #
+#####################################
+
+SCHEMA_PATH="./tests/test_generated/schema_apms_music_embedding.json"
+
+# clear the schema path
+rm $SCHEMA_PATH
+
+fairscape-cli schema create-tabular \
+    --name "APMS Embedding Schema" \
+    --description "Tabular format for APMS music embeddings from PPI networks from the music pipeline from the B2AI Cellmaps for AI project" \
+    --seperator "," \
+    --header False \
+    $SCHEMA_PATH
+
+fairscape-cli schema add-property string \
+    --name 'Experiment Identifier' \
+    --index 0 \
+    --description 'Identifier for the APMS experiment responsible for generating the raw PPI used to create this embedding vector' \
+    --pattern 'APMS_[0-9]*' \
+    $SCHEMA_PATH
+
+fairscape-cli schema add-property string \
+    --name 'Gene Symbol' \
+    --index 1 \
+    --description 'Gene Symbol for the APMS bait protien' \
+    --pattern '[A-Z0-9]*' \
+    --value-url 'http://edamontology.org/data_1026' \
+    $SCHEMA_PATH
+
+
+fairscape-cli schema add-property array \
+    --name 'MUSIC APMS Embedding' \
+    --index '2::' \
+    --description 'Embedding Vector values for genes determined by running node2vec on APMS PPI networks. Vector has 1024 values for each bait protien' \
+    --items-datatype 'number' \
+    --unique-items False \
+    --min-items 1024 \
+    --max-items 1024 \
+    $SCHEMA_PATH
+
+
+fairscape-cli schema validate \
+    --data ./tests/data/APMS_embedding_music.csv \
+    --schema $SCHEMA_PATH
+
+
+#################################################
+#            TEST RO-CRATE FUNCTIONALITY        #
+#################################################
+
+# clear previously generated tests
 rm -rf ./tests/test_generated/test_crates/*
 
 # variables for test
@@ -21,11 +75,7 @@ fairscape-cli rocrate create \
         --keywords "example" \
         $CRATE_PATH
 
-# Broken example from Chris
-#fairscape-cli rocrate add software --name 'some tool' --description 'A tool to do something' --author 'bob smith' --version 0.1.0 --file-format .py --url https://github.com/someuser/somerepo `pwd`
-
 # add a test dataset 
-
 DATASET_GUID="ARK:APMS_embedding.MuSIC.1/5b3793b6-2bd0-4c51-9f35-c5cd7ddd366c.csv"
 DATASET_NAME="AP-MS embeddings"
 DATASET_AUTHOR="Gygi lab (https://gygi.hms.harvard.edu/team.html)"
@@ -94,11 +144,11 @@ fairscape-cli rocrate register computation \
         --generated "https://github.com/idekerlab/MuSIC/blob/master/Examples/MuSIC_predicted_proximity.txt" \
         $CRATE_PATH
 
-
-# test rocrate init functionality
+############################################
+#                ROCRATE INIT              #
+############################################ 
 
 # add existing data to a new test path
-
 INIT_CRATE_PATH="./tests/data/test_generated/init_crate/"
 INIT_CRATE_DATASET_PATH="APMS_embedding_MUSIC.csv"
 
@@ -145,3 +195,6 @@ fairscape-cli rocrate register software \
         --file-format "$SOFTWARE_DATA_FORMAT" \
         --date-modified "$SOFTWARE_DATE_PUB" \
         .
+
+
+
