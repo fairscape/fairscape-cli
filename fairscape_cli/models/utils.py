@@ -11,15 +11,22 @@ from fairscape_cli.config import (
     NAAN
     )
 
+import sys
 
 squids = Sqids(min_length=6)
 
 
-def GenerateDatetimeSquid():
-    return squids.encode([int(datetime.datetime.now(datetime.UTC).timestamp())])
+def IntTimestampSquid():
+    if sys.version_info[1] > 12:
+        timestamp_int = int(datetime.datetime.now(datetime.UTC).timestamp())
+        return squids.encode([timestamp_int])
+    else: 
+        timestamp_int = int(datetime.datetime.utc_now().timestamp())
+        return squids.encode([timestamp_int])
+
 
 def GenerateDatetimeGUID(prefix: str)->str:
-    datetime_squid = GenerateDatetimeSquid()
+    datetime_squid = IntTimestampSquid()
     return f"ark:{NAAN}/{prefix}-{datetime_squid}"
 
 def GenerateGUID(data: List[int], prefix: str)-> str:
