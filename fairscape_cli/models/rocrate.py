@@ -41,7 +41,7 @@ class ROCrate(BaseModel):
 
 
     def createCrateFolder(self):
-        self.path.mkdir(exist_ok=False)
+        self.path.mkdir(parents=True, exist_ok=True)
         
 
     def initCrate(self):
@@ -67,7 +67,9 @@ class ROCrate(BaseModel):
         }
 
         if self.organizationName:
-            organization_guid = generateGUID(self.organizationName) 
+            organization_guid = GenerateDatetimeGUID( 
+                prefix=f"org-{self.organizationName.lower().replace(' ', '-')}"
+                )
             rocrate_metadata['isPartOf'].append(
                 {
                     "@id": organization_guid,
@@ -77,7 +79,9 @@ class ROCrate(BaseModel):
             )
 
         if self.projectName:
-            project_guid = generateGUID(self.projectName)
+            project_guid = GenerateDatetimeGUID( 
+                prefix=f"project-{self.projectName.lower().replace(' ', '-')}"
+                )
             rocrate_metadata['isPartOf'].append(
                 {
                     "@id": project_guid,

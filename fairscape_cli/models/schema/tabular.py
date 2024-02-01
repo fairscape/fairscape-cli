@@ -9,6 +9,7 @@ from pydantic import (
     computed_field,
     Field,
     ValidationError,
+    model_validator
 )
 from typing import (
     Dict, 
