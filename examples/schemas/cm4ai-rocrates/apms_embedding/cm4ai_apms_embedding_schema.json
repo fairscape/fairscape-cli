@@ -15,8 +15,7 @@
       "index": "1::",
       "valueURL": null,
       "type": "array",
-      "maxItems": 1024,
-      "minItems": 1024,
+      "minItems": 1,
       "uniqueItems": false,
       "items": {
         "type": "number"

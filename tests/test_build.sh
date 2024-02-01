@@ -1,11 +1,11 @@
 #!/bin/bash
 
-rm -rf tests/test_crates/*
+rm -rf ./tests/test_generated/test_crates/*
 
 # variables for test
 CRATE_NAME="BuildTestCrate"
 CRATE_GUID="ark:99999/BUILDTESTCRATE"
-CRATE_PATH="./tests/test_crates/build_test_rocrate"
+CRATE_PATH="./tests/test_generated/test_crates/build_test_rocrate"
 CRATE_ORG_NAME="UVA"
 CRATE_PROJ_NAME="B2AI"
 
@@ -98,13 +98,14 @@ fairscape-cli rocrate register computation \
 # test rocrate init functionality
 
 # add existing data to a new test path
-mkdir tests/test_crates/init_crate
-cp tests/data/APMS_embedding_MUSIC.csv tests/test_crates/init_crate/
 
-INIT_CRATE_PATH="tests/test_crates/init_crate/"
+INIT_CRATE_PATH="./tests/data/test_generated/init_crate/"
 INIT_CRATE_DATASET_PATH="APMS_embedding_MUSIC.csv"
 
-cd tests/test_crates/init_crate/
+mkdir $INIT_CRATE_PATH
+cp tests/data/APMS_embedding_MUSIC.csv $INIT_CRATE_PATH
+
+cd $INIT_CRATE_PATH
 
 # initialize a crate in the new directory
 fairscape-cli rocrate init \
