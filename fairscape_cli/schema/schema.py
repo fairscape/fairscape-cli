@@ -1,5 +1,8 @@
 import click
 import json
+from pydantic import (
+        ValidationError
+)
 
 from fairscape_cli.models.schema.image import (
     ImageSchema,
@@ -19,11 +22,10 @@ from fairscape_cli.models.schema.tabular import (
     ClickAppendProperty,
     PropertyNameException,
     ColumnIndexException,
+    DatatypeEnum,
+    Items
 )
 
-from fairscape_cli.models.utils import (
-    InstantiateModel
-)
 
 from fairscape_cli.config import (
     FAIRSCAPE_URI
@@ -48,16 +50,14 @@ def create():
 @click.option('--guid', required=False, type=str, default="", show_default=False)
 @click.option('--seperator', type=str, required=True)
 @click.option('--header', required=False, type=bool, default=False)
-@click.argument('schema_file', type=click.Path(exists=False))
-@click.pass_context
-def create_tabular(
+@click.argument('schema_file', type=str)
+def create_tabular_schema(
      name,
      description,
      guid,
      header,
      seperator,
-     schema_file,
-     ctx
+     schema_file
 ):
     # create the model
     try:
@@ -70,11 +70,12 @@ def create_tabular(
             "header" :header,
             "seperator": seperator
         })
+
     except ValidationError as metadataError:
         click.echo("ERROR Validating TabularValidationSchema")
         for validationFailure in metadataError.errors():
-            click.echo(f"loc: {validationFailure.loc}\tinput: {validationFailure.input}\tmsg: {validationFailure.msg}")
-        click.exit(code=1)
+            click.echo(f"property: {validationFailure.get('loc')} \tmsg: {validationFailure.get('msg')}")
+        raise click.Abort("")
 
     WriteSchema(schema_model, schema_file)
     click.echo(f"Wrote Schema: {str(schema_file)}") 
@@ -98,15 +99,21 @@ def add_property():
 @click.pass_context
 def add_property_string(ctx, name, index, description, value_url, pattern, schema_file):
     # instantiate the StringProperty
-    stringPropertyMetadata = {
+    try: 
+        stringPropertyModel = StringProperty.model_validate({
             "name": name,
             "index": index,
             "type": "string",
             "description": description,
             "valueURL": value_url,
             "pattern": pattern
-            }
-    stringPropertyModel = InstantiateModel(ctx, stringPropertyMetadata, StringProperty)
+            })
+    except ValidationError as metadataError:
+        click.echo("ERROR Validating StringProperty")
+        for validationFailure in metadataError.errors():
+            click.echo(f"property: {validationFailure.get('loc')} \tmsg: {validationFailure.get('msg')}")
+        raise click.Abort("")
+
     ClickAppendProperty(ctx, schema_file, stringPropertyModel, name)
 
 
@@ -120,13 +127,20 @@ def add_property_string(ctx, name, index, description, value_url, pattern, schem
 @click.pass_context
 def add_property_number(ctx, name, index, description, value_url, schema_file):
     # instantiate the NumberPropertyModel
-    numberPropertyMetadata = {
-        "name": name,
-        "index": index,
-        "description": description,
-        "valueURL": value_url
-        }
-    numberPropertyModel = InstantiateModel(ctx, numberPropertyMetadata, NumberProperty)
+    try:
+        numberPropertyModel = NumberProperty.model_validate({
+            "name": name,
+            "index": index,
+            "description": description,
+            "valueURL": value_url
+            })
+
+    except ValidationError as metadataError:
+        click.echo("ERROR Validating StringProperty")
+        for validationFailure in metadataError.errors():
+            click.echo(f"property: {validationFailure.get('loc')} \tmsg: {validationFailure.get('msg')}")
+        raise click.Abort("")
+
     ClickAppendProperty(ctx, schema_file, numberPropertyModel, name)
 
 
@@ -139,13 +153,20 @@ def add_property_number(ctx, name, index, description, value_url, schema_file):
 @click.argument('schema_file', type=click.Path(exists=True))
 @click.pass_context
 def add_property_boolean(ctx, name, index, description, value_url, schema_file):
-    booleanPropertyMetadata = {
-        "name": name,
-        "index": index,
-        "description": description,
-        "valueURL": value_url
-        }
-    booleanPropertyModel = InstantiateModel(ctx, booleanPropertyMetadata, BooleanProperty) 
+    try: 
+        booleanPropertyModel = BooleanProperty.model_validate({
+            "name": name,
+            "index": index,
+            "description": description,
+            "valueURL": value_url
+            })
+
+    except ValidationError as metadataError:
+        click.echo("ERROR Validating BooleanProperty")
+        for validationFailure in metadataError.errors():
+            click.echo(f"property: {validationFailure.get('loc')} \tmsg: {validationFailure.get('msg')}")
+        raise click.Abort("")
+
     ClickAppendProperty(ctx, schema_file, booleanPropertyModel, name)
 
 
@@ -157,13 +178,21 @@ def add_property_boolean(ctx, name, index, description, value_url, schema_file):
 @click.argument('schema_file', type=click.Path(exists=True))
 @click.pass_context
 def add_property_integer(ctx, name, index, description, value_url, schema_file):
-    integerPropertyMetadata = {
-        "name": name,
-        "index": index,
-        "description": description,
-        "valueURL": value_url
-        }
-    integerPropertyModel = InstantiateModel(ctx, integerPropertyMetadata, IntegerProperty)
+
+    try:
+        integerPropertyModel = IntegerProperty.model_validate({
+            "name": name,
+            "index": index,
+            "description": description,
+            "valueURL": value_url
+            })
+
+    except ValidationError as metadataError:
+        click.echo("ERROR Validating BooleanProperty")
+        for validationFailure in metadataError.errors():
+            click.echo(f"property: {validationFailure.get('loc')} \tmsg: {validationFailure.get('msg')}")
+        raise click.Abort("")
+
     ClickAppendProperty(ctx, schema_file, integerPropertyModel, name)
 
 
@@ -179,7 +208,32 @@ def add_property_integer(ctx, name, index, description, value_url, schema_file):
 @click.argument('schema_file', type=click.Path(exists=True))
 @click.pass_context
 def add_property_array(ctx, name, index, description, value_url, items_datatype, min_items, max_items, unique_items, schema_file):
-    arrayPropertyModel = InstantiateArrayModel(ctx, name, index, description, value_url, items_datatype, min_items, max_items, unique_items)
+    try:
+        datatype_enum = DatatypeEnum(items_datatype)
+    except Exception:
+        print(f"ITEMS Datatype {itemsDatatype} invalid\n" +
+            "ITEMS must be oneOf 'boolean'|'object'|'string'|'number'|'integer'" 
+        )
+        raise click.Abort("")
+
+    try:
+        arrayPropertyModel = ArrayProperty(
+            datatype = 'array',
+            index = index,
+            description = description,
+            valueURL = value_url,
+            maxItems = max_items,
+            minItems = min_items,
+            uniqueItems = unique_items,
+            items = Items(datatype=datatype_enum)
+            )
+
+    except ValidationError as metadataError:
+        print("ERROR: MetadataValidationError")
+        for validationFailure in metadataError.errors(): 
+            click.echo(f"property: {validationFailure.get('loc')} \tmsg: {validationFailure.get('msg')}")
+        raise click.Abort("")
+
     ClickAppendProperty(ctx, schema_file, arrayPropertyModel, name)
     
 

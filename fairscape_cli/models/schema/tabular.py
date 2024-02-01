@@ -61,6 +61,7 @@ class BaseProperty(BaseModel):
 
 class NullProperty(BaseProperty):
     datatype: Literal['null'] = Field(alias="type", default='null')
+    index: int
 
 
 class StringProperty(BaseProperty):
@@ -68,7 +69,7 @@ class StringProperty(BaseProperty):
     pattern: Optional[str] = Field(description="Regex pattern to execute against values", default=None)
     maxLength: Optional[int] = Field(description="Inclusive maximum length for string values", default=None)
     minLength: Optional[int] = Field(description="Inclusive minimum length for string values", default=None)
-    number: int
+    index: int
 
 
 class ArrayProperty(BaseProperty):
@@ -82,7 +83,7 @@ class ArrayProperty(BaseProperty):
 
 class BooleanProperty(BaseProperty):
     datatype: Literal['boolean'] = Field(alias="type")
-    number: int
+    index: int
 
 
 class NumberProperty(BaseProperty):
@@ -260,7 +261,7 @@ def AppendProperty(schemaFilepath: str, propertyInstance, propertyName: str) -> 
             raise PropertyNameException(propertyName)
 
         # does there exist a property with same column number
-        schema_indicies = [ val.number for val in schemaModel.properties.values()]
+        schema_indicies = [ val.index for val in schemaModel.properties.values()]
 
         # check overlap of indicies
         # CheckOverlap
@@ -318,30 +319,3 @@ def WriteSchema(tabular_schema: TabularValidationSchema, schema_file):
         output_file.write(schema_json)
 
 
-def InstantiateArrayModel(ctx, name, index, description, value_url, items_datatype, min_items, max_items, unique_items):
-    try:
-        datatype_enum = DatatypeEnum(items_datatype)
-    except Exception:
-        print(f"ITEMS Datatype {itemsDatatype} invalid\n" +
-            "ITEMS must be oneOf 'boolean'|'object'|'string'|'number'|'integer'" 
-        )
-        ctx.exit(code=1)
-    try:
-        modelInstance = ArrayProperty(
-            datatype = 'array',
-            index = index,
-            description = description,
-            valueURL = value_url,
-            maxItems = max_items,
-            minItems = min_items,
-            uniqueItems = unique_items,
-            items = Items(datatype=datatype_enum)
-            )
-        return modelInstance
-
-    except ValidationError as metadataError:
-        print("ERROR: MetadataValidationError")
-        print(metadataError)
-        for validationFailure in metadataError.errors():
-            print(f"loc: {validationFailure.loc}\tinput: {validationFailure.input}\tmsg: {validationFailure.msg}")
-        ctx.exit(code=1)
