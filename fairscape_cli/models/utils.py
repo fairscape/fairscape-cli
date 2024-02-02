@@ -21,7 +21,7 @@ def IntTimestampSquid():
         timestamp_int = int(datetime.datetime.now(datetime.UTC).timestamp())
         return squids.encode([timestamp_int])
     else: 
-        timestamp_int = int(datetime.datetime.utc_now().timestamp())
+        timestamp_int = int(datetime.datetime.utcnow().timestamp())
         return squids.encode([timestamp_int])
 
 
