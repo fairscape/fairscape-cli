@@ -1,10 +1,17 @@
-site_name: FAIRSACPE CLI - A Validation and Packaging Command Line Tool
+# Project Information
+site_name: FAIRSACPE CLI
+site_description: A Command Line Interface (CLI) for Validation and Packaging of Research Data
+site_url: https://fairscape.github.io/fairscape-cli/
+# Repository
+repo_name: fairscape/fairscape-cli
+repo_url: https://github.com/fairscape/fairscape-cli
 
 # Page tree
 nav:
   - Home: index.md
   - Setup: setup.md
   - Getting Started: getting-started.md
+  - Schema Metadata: schema-metadata.md
   - Notes: notes.md
     
 

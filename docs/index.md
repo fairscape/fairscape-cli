@@ -4,7 +4,7 @@ A data validation and packaging utility for the FAIRSCAPE ecosystem.
 
 ## Features
 
-The fairscape-cli provides a command line interface that allows the client side remote teams to create:
+fairscape-cli provides a Command Line Interface (CLI) that allows the client side remote teams to create:
 
 * [RO-Crate](https://www.researchobject.org/ro-crate/) - a light-weight approach to packaging research data with their metadata. The CLI allows users to:
     * Add digital objects to an RO-Crate

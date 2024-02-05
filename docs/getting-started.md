@@ -128,6 +128,9 @@ fairscape-cli rocrate add dataset \
   "/home/user/test_rocrate"
 ```
 
+`fairscape-cli` offers an option to annotate certain types of datasets with schema-level metadata. The page 
+[Schema Metadata](schema-metadata.md) demonstrates how the CLI can be used to generate the schema metadata for a dataset.
+
 #### Add software object
 
 The sub-command `software` is used to add a software. It uses eight required parameters `name`, `author`, `version`, `description`, `file-format`, `source-filepath`, `destination-filepath`, and `date-modified`. The additional five parameters are optional. Metadata about the software are added to the `ro-crate-metadata.json` and the software object is copied to the location `ROCRATE_PATH`. 
