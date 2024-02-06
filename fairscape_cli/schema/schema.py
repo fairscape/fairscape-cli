@@ -1,5 +1,6 @@
 import click
 import json
+from prettytable import PrettyTable
 from pydantic import (
         ValidationError
 )
@@ -32,9 +33,6 @@ from fairscape_cli.config import (
 )
 
 
-
-
-
 @click.group('schema')
 def schema():
     pass
@@ -48,7 +46,7 @@ def create():
 @click.option('--name', required=True, type=str)
 @click.option('--description', required=True, type=str)
 @click.option('--guid', required=False, type=str, default="", show_default=False)
-@click.option('--seperator', type=str, required=True)
+@click.option('--separator', type=str, required=True)
 @click.option('--header', required=False, type=bool, default=False)
 @click.argument('schema_file', type=str)
 def create_tabular_schema(
@@ -56,7 +54,7 @@ def create_tabular_schema(
      description,
      guid,
      header,
-     seperator,
+     separator,
      schema_file
 ):
     # create the model
@@ -68,7 +66,7 @@ def create_tabular_schema(
             "propeties":{},
             "required": [],
             "header" :header,
-            "seperator": seperator
+            "separator": separator
         })
 
     except ValidationError as metadataError:
@@ -264,9 +262,14 @@ def validate(ctx, schema, data, ro_crate):
 
         if len(validation_errors) !=0:
             # print out all errors
-            print('Errors Validating Data')
-            for key, value in validation_errors:
-                print(f'{key}: {value}')
+            print('\nErrors Validating Data')
+
+            # create a pretty table of validation errors
+            errorTable = PrettyTable()
+            errorTable.field_names = ['row', 'error_message', 'instance']
+            for key, value in validation_errors.items():
+                errorTable.add_row([key, value.message, value.instance])
+            print(errorTable)
             ctx.exit(1)
 
         else:

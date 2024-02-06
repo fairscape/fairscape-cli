@@ -139,7 +139,7 @@ class TabularValidationSchema(BaseModel):
     datatype: str = Field(default="object", alias="type")
     additionalProperties: bool = Field(default=True)
     required: List[str] = Field(description="list of required properties by name", default=[])
-    seperator: str = Field(description="Field seperator for the file")
+    separator: str = Field(description="Field seperator for the file")
     header: bool = Field(description="Do files of this schema have a header row", default=False)
     examples: Optional[List[Dict[str, str ]]] = Field(default=[])
 
@@ -159,7 +159,60 @@ class TabularValidationSchema(BaseModel):
 
         # pd.read_excel
         return pd.read_csv(dataPath, sep=self.seperator)
+
+    def validate_tabular_file(self, dataPath: str) -> List[Dict]:
+        """ Parse Tabular File as Raw Data
+        """
+
+        output_json_data = []
+
+        # open the data
+        with open(dataPath, "r") as data_file:
+            # if header exists skip line one
+
+            #data_file.read_line()
         
+        schema_definition = self.model_dump(
+                by_alias=True, 
+                exclude_unset=True,
+                exclude_none=True
+                )
+
+        property_slice = {
+                property_name: {
+                        "index": property_data.get("index"),
+                        "type": property_data.get("type")
+                }
+                for property_name, property_data in schema_definition.get("properties").items()
+        }
+
+
+        def json_row(row, passed_property_slice):
+            json_output = {}
+            for property_name, property_values in passed_property_slice.items():
+
+                index_slice = property_values.get("index")
+                datatype = property_values.get("type")
+
+                if isinstance(index_slice, int): 
+
+                    if datatype == "boolean":
+                        json_output[property_name] = bool(row.iloc[index_slice])
+                    else:
+                        json_output[property_name] = row.iloc[index_slice]
+
+                elif isinstance(index_slice, str):
+                    generated_slice = GenerateSlice(index_slice, len(row))
+
+                    # slice rows according to matched slice
+                    # if datatype is boolean coerce datatype
+                    if datatype=="boolean":
+                        json_output[property_name] = [ bool(item) for item in list(row.iloc[generated_slice])]
+                    else:
+                        json_output[property_name] = list(row.iloc[generated_slice])
+
+            return json_output
+
 
     def convert_data_to_json(self, data_frame):
         schema_definition = self.model_dump(

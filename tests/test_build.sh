@@ -45,7 +45,18 @@ fairscape-cli schema add-property array \
 
 
 fairscape-cli schema validate \
-    --data ./tests/data/APMS_embedding_music.csv \
+    --data ./tests/data/APMS_embedding_MUSIC.csv \
+    --schema $SCHEMA_PATH
+
+# test intentional failure of validation
+# - Row 1: break regex of the string
+# - Row 2: gene name is empty    
+# - Row 3: incorrect array length too short    
+# - Row 4: added a string value to the numeric array    
+# - Row 5: incorrect array lenght too long   
+# - Row 6: multiple errors, experiment identifier breaks regex, gene name has characters not allowed, embedding has incorrect types
+fairscape-cli schema validate \
+    --data ./tests/data/APMS_embedding_corrupted.csv \
     --schema $SCHEMA_PATH
 
 
