@@ -132,6 +132,7 @@ PropertyUnion = Union[StringProperty, ArrayProperty, BooleanProperty, NumberProp
 
 
 class TabularValidationSchema(BaseModel):
+    
     schema_version: str = Field(default="https://json-schema.org/draft/2020-12/schema", alias="schema")
     name: str
     description: str
