@@ -250,64 +250,45 @@ def create_schema_instance(values):
     return schema_model_instance
 
 
-def get_required_schema_field_key():
+def get_mandatory_schema_field_key():
     """
-    Enlist required schema-level metadata fields.
-    :return: List of required schema-level metadata fields.
+    Enlist schema-level metadata fields that are mandatory.
+    :return: List of manadatory schema-level metadata fields.
     """
-    required_schema_field_key = ['-SCHEMA_TITLE-', '-SCHEMA_DESC-', '-FIELD_SEPARATOR-']
-    return required_schema_field_key
+    mandatory_schema_field_key = ['-SCHEMA_TITLE-', '-SCHEMA_DESC-', '-FIELD_SEPARATOR-']
+    return mandatory_schema_field_key
 
 
-def get_required_property_field_key():
+def get_mandatory_property_field_key():
     """
-    Enlist required property-level metadata fields
-    :return: required property-level metadata fields.
+    Enlist property-level metadata fields that are mandatory.
+    :return: List of mandatory property-level metadata fields.
     """
-    required_property_field_key = []
+    mandatory_property_field_key = []
 
     for row in range(total_num_rows):
         if row not in deleted_row_index:
-            required_property_field_key.append(('-NAME_VALUE-', row))
-            required_property_field_key.append(('-DESCRIPTION_VALUE-', row))
-            required_property_field_key.append(('-NUMBER_VALUE-', row))
+            mandatory_property_field_key.append(('-NAME_VALUE-', row))
+            mandatory_property_field_key.append(('-DESCRIPTION_VALUE-', row))
+            mandatory_property_field_key.append(('-NUMBER_VALUE-', row))
 
-    return required_property_field_key
+    return mandatory_property_field_key
 
 
-def get_required_property_dropdown_key(values):
+
+def get_mandatory_array_datatype_field_key(values):
     """
-    Enlist required property-level metadata datatypes
-    :return:
-    """
-    required_property_dropdown_key = []
-
-    for row in range(total_num_rows):
-        if row not in deleted_row_index:
-            if values[('-DATATYPE_VALUE-', row)] not in eligible_datatypes:
-                sg.popup_error('Datatype must be one of ', eligible_datatypes)
-                break
-            elif values[('-DATATYPE_VALUE-', row)] == 'array':
-                if values[('-ITEM_VALUE-', row)] not in eligible_array_datatypes:
-                    sg.popup_error('Items must be one of ', eligible_array_datatypes)
-                    break
-                required_property_dropdown_key.append(('-MAX_ITEM_VALUE-', row))
-    return required_property_dropdown_key
-
-
-def get_required_array_item_field_key(values):
-    """
-    Enlist required metadata when array type datatype is selected
+    Enlist required metadata when array is selected from the datatype 
     :return:
     """
     # only Max is required when array datatype is selected
-    required_array_item_field_key = []
+    mandatory_array_datatype_field_key = []
 
     for row in range(total_num_rows):
         if row not in deleted_row_index:
             if values[('-DATATYPE_VALUE-', row)] == 'array':                
-                required_array_item_field_key.append(('-MAX_ITEM_VALUE-', row))
-    return required_array_item_field_key
+                mandatory_array_datatype_field_key.append(('-MAX_ITEM_VALUE-', row))
+    return mandatory_array_datatype_field_key
 
 
 def is_valid_required_field(values, window, required_element_key=None):
@@ -322,21 +303,52 @@ def is_valid_required_field(values, window, required_element_key=None):
     return is_valid
 
 
-def is_required_field_filled_in(values, window, element_keys=None):
-    
-    # assume fields are filled in with data
-    is_filled_in=True
+def is_mandatory_field_blank(values, window, element_keys=None):
+        
+    is_blank=False
 
     for element_key in element_keys:
         if not values[element_key] or values[element_key].isspace() :
-            is_filled_in=False
+            is_blank=True
             set_border_color(window[element_key], 'red', HIGHLIGHT_WIDTH)
         else:
             set_border_color(window[element_key], None, NO_HIGHLIGHT_WIDTH)
-    return is_filled_in
+    return is_blank
 
+
+def is_dropdown_item_selected(dropdown_key, values, window, eligible_types):
+    """Check if an item is selected from the dropdown menu.
+
+    Args:
+        dropdown_key (_type_): _description_
+        values (_type_): _description_
+        window (_type_): _description_
+        eligible_types (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
+    is_selected=True
+
+    for row in range(total_num_rows):
+        if row not in deleted_row_index:            
+            # check if the combobox is visible, especially for array datatype
+            if window[(dropdown_key, row)].visible == True: 
+                if values[(dropdown_key, row)] not in eligible_types:
+                    is_selected=False                
+                    break
+    return is_selected
 
 def is_datatype_selected(values, window):
+    """Check if the datatype for a property is selected from the dropdown menu.
+
+    Args:
+        values (_type_): _description_
+        window (_type_): _description_
+
+    Returns:
+        _type_: Status of the datatype selection.
+    """
     # assume datatype is selected
     is_eligible_datatype=True
 
@@ -349,65 +361,71 @@ def is_datatype_selected(values, window):
     return is_eligible_datatype
 
 
-def is_arraytype_selected(values, window):
-    # assume datatype is NOT selected
-    is_eligible_arraytype=True
 
-    required_property_dropdown_key = []
+def is_datatype_array(values, window):
+    """Check if the datatype selected from the dropdown menu is of type array.
+
+    Args:
+        values (_type_): _description_
+        window (_type_): _description_
+
+    Returns:
+        _type_: Return the confirmation on selecting an array.
+    """
+    # assume datatype is of type array
+    is_array=False
 
     for row in range(total_num_rows):
         if row not in deleted_row_index:
-            if values[('-DATATYPE_VALUE-', row)] == 'array':
-                if values[('-ITEM_VALUE-', row)] not in eligible_array_datatypes:
-                    is_eligible_arraytype=False
-                    #sg.popup_error('Items must be one of ', eligible_array_datatypes)
-                    break
-                required_property_dropdown_key.append(('-MAX_ITEM_VALUE-', row))
-    return is_eligible_arraytype
+            if values[('-DATATYPE_VALUE-', row)] == 'array': 
+                is_array=True       
+                break                
+    return is_array
+
 
 
 def check_form_validity(values, window):
+    """Perform shallow validity check for the submitted form data.
+
+    Args:
+        values (_type_): _description_
+        window (_type_): _description_
+
+    Returns:
+        _type_: status of the validity of the form.
+    """
+
     is_valid = True
 
-    required_schema_field_key = get_required_schema_field_key()
-    required_property_field_key = get_required_property_field_key()
+    mandatory_schema_field_key = get_mandatory_schema_field_key()
+    mandatory_property_field_key = get_mandatory_property_field_key()
 
-    if not is_required_field_filled_in(values, window, required_schema_field_key):            
+    if is_mandatory_field_blank(values, window, mandatory_schema_field_key):            
         is_valid=False
         sg.popup_error('Missing required field!', title='Invalid Form')
         return is_valid
-    if not is_required_field_filled_in(values, window, required_property_field_key):
+    if is_mandatory_field_blank(values, window, mandatory_property_field_key):
         is_valid=False
         sg.popup_error('Missing required field!', title='Invalid Form')
         return is_valid
-    if not is_datatype_selected(values, window):
+    #if not is_datatype_selected(values, window):
+    if not is_dropdown_item_selected('-DATATYPE_VALUE-', values, window, eligible_datatypes):
         is_valid=False
         sg.popup_error('Datatype must be one of ', eligible_datatypes, title='Invalid Form')
         return is_valid
-    else:
-        if not is_arraytype_selected(values, window):
+    if is_datatype_array(values, window):
+        if not is_dropdown_item_selected('-ITEM_VALUE-', values, window, eligible_array_datatypes):
             is_valid=False
             sg.popup_error('Item must be one of ', eligible_array_datatypes, title='Invalid Form')
             return is_valid
-        required_array_item_field_key = get_required_array_item_field_key(values)
-        if not is_required_field_filled_in(values, window, required_array_item_field_key):            
+        mandatory_array_datatype_field_key = get_mandatory_array_datatype_field_key(values)
+        if is_mandatory_field_blank(values, window, mandatory_array_datatype_field_key):            
             is_valid=False
             sg.popup_error('Missing required field!', title='Invalid Form', )
             return is_valid
         
-    
     return is_valid   
 
-
-def validate_required_input(values, window):
-    required_schema_field_key = get_required_schema_field_key()
-    required_property_field_key = get_required_property_field_key()
-    if is_valid_required_field(values, window, required_schema_field_key) and is_valid_required_field(values, window, required_property_field_key):
-        required_property_dropdown_key = get_required_property_dropdown_key(values)
-        if not is_valid_required_field(values, window, required_property_dropdown_key):
-            sg.popup_error('Missing required field!', title='Invalid Form')
-    else:
-        sg.popup_error('Missing required field!', title='Invalid Form')
 
 
 def set_border_color(element, color=None, width=HIGHLIGHT_WIDTH):
@@ -619,10 +637,7 @@ def initialize_gui(window):
                 instance_model = create_schema_instance(values)
                 #clear_display(window, '-DISPLAY_WINDOW-')
                 test = json.dumps(instance_model.model_dump(by_alias=True), indent=4)
-                window['-DISPLAY_WINDOW-'].update(test)
-            #else:
-            #    sg.popup_error('Invalid Form Data! Unable to generate metadata', title='Invalid Form')
-
+                window['-DISPLAY_WINDOW-'].update(test)            
 
         #if event == "-DISPLAY_SCHEMA_FILE-":
         #    if is_valid_path(values["-INPUT_SCHEMA_FILE-"]):
@@ -636,16 +651,11 @@ def initialize_gui(window):
                 except pd.errors.ParserError as e:
                     sg.popup_error_with_traceback(f'An error occurred:', e)
 
-        if event == '-VALIDATE_FORM-':
-            #validate_required_input(values, window)            
-            #TODO
-            if check_form_validity(values, window):
-                print('form is valid')
-            else:
-                print('invalid form')
+        if event == '-VALIDATE_FORM-':                        
+            check_form_validity(values, window)
+            
 
         if event == "Save Schema as File":
-
             schema_displayed = values['-DISPLAY_WINDOW-']
             if schema_displayed:
                 file_name = sg.PopupGetFile('Please enter filename to save',
