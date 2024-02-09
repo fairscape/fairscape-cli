@@ -11,7 +11,8 @@ from fairscape_cli.models.schema.tabular import (
     NumberProperty,
     ArrayProperty,
     Items,
-    TabularValidationSchema)
+    TabularValidationSchema,
+    ReadSchema)
 
 # Layout GUI title
 WINDOW_TITLE = 'Data Schema Entry Form'
@@ -557,7 +558,7 @@ layout = [
     ],
     [sg.Multiline(key='-DISPLAY_WINDOW-', size=(85, 20), background_color='#ffffff', do_not_clear=True)],
     [sg.HorizontalSeparator(pad=((0, 0), (10, 10)))],
-    [sg.T("Select Dataset for Schema:", s=30, justification="l"), sg.I(key="-INPUT_SCHEMA_FILE-"),
+    [sg.T("Select Dataset for Schema:", s=30, justification="l"), sg.I(key="-INPUT_DATASET_FILE-"),
      sg.FileBrowse(file_types=eligible_tabular_filetypes)],
     [#sg.B("Display Source File", s=16, key='-DISPLAY_SCHEMA_FILE-'),
      sg.B("Validate Dataset against Schema", s=28, key='-VALIDATE_SCHEMA_FILE-')],
@@ -658,20 +659,49 @@ def initialize_gui(window):
             if check_form_validity(values, window):
                 instance_model = create_schema_instance(values)
                 #clear_display(window, '-DISPLAY_WINDOW-')
-                test = json.dumps(instance_model.model_dump(by_alias=True), indent=4)
-                window['-DISPLAY_WINDOW-'].update(test)            
+                json_schema = json.dumps(instance_model.model_dump(by_alias=True), indent=4)
+                window['-DISPLAY_WINDOW-'].update(json_schema)            
 
         #if event == "-DISPLAY_SCHEMA_FILE-":
-        #    if is_valid_path(values["-INPUT_SCHEMA_FILE-"]):
-        #        display_tabular_file(values["-INPUT_SCHEMA_FILE-"])
+        #    if is_valid_path(values["-INPUT_DATASET_FILE-"]):
+        #        display_tabular_file(values["-INPUT_DATASET_FILE-"])
+
+        #if event == "-VALIDATE_SCHEMA_FILE-":
+        #    if is_valid_path(values["-INPUT_DATASET_FILE-"]):
+        #        try:
+        #            embed_data = pd.read_csv(values["-INPUT_DATASET_FILE-"], header=None)
+        #            if check_form_validity(values, window):
+        #                schema_json = create_schema_instance(values).execute_validation(embed_data)
+        #        except pd.errors.ParserError as e:
+        #            sg.popup_error_with_traceback(f'An error occurred:', e)
+
+
 
         if event == "-VALIDATE_SCHEMA_FILE-":
-            if is_valid_path(values["-INPUT_SCHEMA_FILE-"]):
-                try:
-                    embed_data = pd.read_csv(values["-INPUT_SCHEMA_FILE-"], header=None)
-                    schema_json = create_schema_instance().execute_validation(data_frame=embed_data)
-                except pd.errors.ParserError as e:
-                    sg.popup_error_with_traceback(f'An error occurred:', e)
+            schema='/home/sadnan/work/uva/projects/fairscape-cli/test.json'
+            if is_valid_path(values["-INPUT_DATASET_FILE-"]):
+                data=values["-INPUT_DATASET_FILE-"]
+            if schema and data:
+                tabular_schema = ReadSchema(schema)
+                validation_errors = tabular_schema.execute_validation(data)
+
+                if len(validation_errors) !=0:
+                    # print out all errors
+                    print('Errors Validating Data')
+                    for key, value in validation_errors:
+                        print(f'{key}: {value}')
+                    
+
+                else:
+                    print('\nValidation Success')
+                    
+
+
+
+
+
+
+
 
         if event == '-VALIDATE_FORM-':                        
             check_form_validity(values, window)
@@ -680,12 +710,15 @@ def initialize_gui(window):
         if event == "Save Schema as File":
             schema_displayed = values['-DISPLAY_WINDOW-']
             if schema_displayed:
-                file_name = sg.PopupGetFile('Please enter filename to save',
+                schema_file = sg.PopupGetFile('Please enter filename to save',
                                             save_as=True,
                                             file_types=(("JSON", "*.json"),)
                                             )
-                with open(file_name, 'w') as outfile:
-                    outfile.write(json.dumps(json.loads(schema_displayed), indent=4))
+                if schema_file:
+                    with open(schema_file, 'w') as outfile:
+                        outfile.write(json.dumps(json.loads(schema_displayed), indent=2))
+                else:
+                    sg.popup_error('No path given!', title='Error saving schema')    
             else:
                 sg.popup_error('Display Schema before saving', title='Error saving schema')
 
