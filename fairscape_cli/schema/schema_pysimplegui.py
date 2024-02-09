@@ -316,6 +316,24 @@ def is_mandatory_field_blank(values, window, element_keys=None):
     return is_blank
 
 
+def is_property_attribute_unique(values, window, element_key):
+    """
+    Enlist property-level metadata fields that are mandatory.
+    :return: List of mandatory property-level metadata fields.
+    """
+    is_unique=True
+    target_element_values = []
+
+    for row in range(total_num_rows):
+        if row not in deleted_row_index:
+            target_element_values.append(str(values[(element_key, row)]).strip())            
+
+    if len(target_element_values) != len(set(target_element_values)):
+        return False
+
+    return is_unique
+
+
 def is_dropdown_item_selected(dropdown_key, values, window, eligible_types):
     """Check if an item is selected from the dropdown menu.
 
@@ -407,6 +425,10 @@ def check_form_validity(values, window):
     if is_mandatory_field_blank(values, window, mandatory_property_field_key):
         is_valid=False
         sg.popup_error('Missing required field!', title='Invalid Form')
+        return is_valid
+    if not is_property_attribute_unique(values, window, '-NAME_VALUE-'):
+        is_valid=False
+        sg.popup_error('Property names must be unique!', title='Invalid Form')
         return is_valid
     #if not is_datatype_selected(values, window):
     if not is_dropdown_item_selected('-DATATYPE_VALUE-', values, window, eligible_datatypes):
