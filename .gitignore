@@ -1,3 +1,4 @@
+*.DS_STORE
 tests/data/
 tests/test_generated/
 tests/test_crates/
