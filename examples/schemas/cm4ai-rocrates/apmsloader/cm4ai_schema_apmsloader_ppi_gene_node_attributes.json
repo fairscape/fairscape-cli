@@ -1,5 +1,5 @@
 {
-  "@id": "ark:59852/schema-cm4ai-gene-node-attributes",
+  "@id": "ark:59852/schema-cm4ai-apmsloader-gene-node-attributes",
   "name": "CM4AI APMS Gene Node Attributes Schema",
   "description": "Schema for APMS embeddings, derived from running node2vec on protien-protien interaction networks obtained from APMS experiments",
   "properties": {

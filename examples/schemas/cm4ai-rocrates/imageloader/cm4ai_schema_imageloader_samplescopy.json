@@ -1,0 +1,74 @@
+{
+  "@id": "ark:59852/schema-cm4ai-imageloader-samplescopy",
+  "@context": {
+      "@vocab": "https://schema.org/",
+      "EVI": "https://w3,org/EVI#"
+    },
+  "@type": "EVI:Schema",
+  "name": "Imageloader Samples Copy Schema",
+  "description": "Schema for CM4AI imageloader input file samplescopy.csv",
+  "properties": {
+    "filename": {
+      "description": "Filename for images",
+      "index": 0,
+      "valueURL": null,
+      "type": "string",
+      "pattern": null
+    },
+    "if_plate_id": {
+      "description": "Identifies which IF plate the experiment took place on",
+      "index": 1,
+      "valueURL": null,
+      "type": "string",
+      "pattern": null
+    },
+    "position": {
+      "description": "The Position of the well for this image in a plate of IF exepriments",
+      "index": 2,
+      "valueURL": null,
+      "type": "string",
+      "pattern": "[A-Z][0-9]*"
+    },
+    "sample": {
+          "description": "Identifies the sample which was placed in this well",
+          "index": 3,
+          "valueURL": null,
+          "type": "string",
+          "pattern": "[A-Z][0-9]*"
+    },
+    "locations": {
+          "description": "Cellular Compartments in which the tagged protien was identified through the IF images",
+          "index": 4,
+          "type": "null"
+    },
+    "antibody": {
+        "description": "Antibody Identifier from Human Protien Atlas or negative control",
+        "index": 5,
+        "valueURL": "http://edamontology.org/data_2772",
+        "type": "string",
+        "pattern": "^CAB[0-9]{6}$|^HPA[0-9]{6}$|^NEGATIVE-CTRL$"
+    },
+    "ensembl_ids": {
+        "description": "Ensembl Gene ID for protien antibody targets, may have multiple matches",
+        "index": "6",
+        "valueURL": "http://edamontology.org/data_1033",
+        "type": "string",
+        "multiple": true,
+        "seperator": ";",
+        "pattern": "ENSG[0-9]{11}"
+    },
+    "gene_name": {
+      "description": "Gene Symbol for the tagged protien",
+      "index": 7,
+      "valueURL": "http://edamontology.org/data_1026",
+      "type": "string",
+      "pattern": "[A-Z0-9]*"
+    }
+  },
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["filename", "if_plate_id", "position", "sample", "antibody", "ensembl_ids"],
+  "seperator": ",",
+  "header": true,
+  "examples": []
+}

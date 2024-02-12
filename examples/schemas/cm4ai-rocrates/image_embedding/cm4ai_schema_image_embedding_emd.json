@@ -1,5 +1,5 @@
 {
-  "@id": "ark:59852/schema-if-image-embedding-cm4ai",
+  "@id": "ark:59852/schema-cm4ai-image-embedding-image-emd",
   "name": "CM4AI Schema IF Image Embeddings",
   "description": "Schema for Image Embeddings",
   "properties": {

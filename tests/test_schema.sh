@@ -6,7 +6,7 @@ rm $SCHEMA_PATH
 fairscape-cli schema create-tabular \
     --name "APMS Embedding Schema" \
     --description "Tabular format for APMS music embeddings from PPI networks from the music pipeline from the B2AI Cellmaps for AI project" \
-    --seperator "," \
+    --separator "," \
     --header False \
     $SCHEMA_PATH
 

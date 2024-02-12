@@ -1,5 +1,10 @@
 {
-  "@id": "ark:59852/schema-cm4ai-labels-prob",
+  "@id": "ark:59852/schema-cm4ai-image-embedding-labels-prob",
+  "@context": {
+      "@vocab": "https://schema.org/",
+      "EVI": "https://w3,org/EVI#"
+    },
+  "@type": "EVI:Schema",
   "name": "CM4AI Schema IF Image Labels Probability",
   "description": "Schema for probabilities of a tagged protien appearing in a cellular Component",
   "properties": {
