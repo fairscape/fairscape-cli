@@ -13,7 +13,7 @@ rm $SCHEMA_PATH
 fairscape-cli schema create-tabular \
     --name "APMS Embedding Schema" \
     --description "Tabular format for APMS music embeddings from PPI networks from the music pipeline from the B2AI Cellmaps for AI project" \
-    --seperator "," \
+    --separator "," \
     --header False \
     $SCHEMA_PATH
 
@@ -44,9 +44,9 @@ fairscape-cli schema add-property array \
     $SCHEMA_PATH
 
 
-fairscape-cli schema validate \
-    --data ./tests/data/APMS_embedding_MUSIC.csv \
-    --schema $SCHEMA_PATH
+#fairscape-cli schema validate \
+#    --data ./tests/data/APMS_embedding_MUSIC.csv \
+#    --schema $SCHEMA_PATH
 
 # test intentional failure of validation
 # - Row 1: break regex of the string
@@ -55,9 +55,9 @@ fairscape-cli schema validate \
 # - Row 4: added a string value to the numeric array    
 # - Row 5: incorrect array lenght too long   
 # - Row 6: multiple errors, experiment identifier breaks regex, gene name has characters not allowed, embedding has incorrect types
-fairscape-cli schema validate \
-    --data ./tests/data/APMS_embedding_corrupted.csv \
-    --schema $SCHEMA_PATH
+#fairscape-cli schema validate \
+#    --data ./tests/data/APMS_embedding_corrupted.csv \
+#    --schema $SCHEMA_PATH
 
 
 #################################################

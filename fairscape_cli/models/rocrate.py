@@ -39,7 +39,7 @@ class ROCrate(BaseModel):
     @computed_field
     def guid(self) -> str:
         return GenerateDatetimeGUID(
-                prefix=f"rocrate-{self.name.replace(" ", "-").lower()}"
+                prefix=f"rocrate-{self.name.replace(' ', '-').lower()}"
                 )
 
 
