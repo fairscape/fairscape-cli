@@ -43,7 +43,6 @@ import re
 class DatatypeEnum(str, Enum):
     NULL = "null"
     BOOLEAN = "boolean"
-    OBJECT = "object"
     STRING = "string"
     NUMBER = "number"
     INTEGER = "integer"
@@ -243,7 +242,7 @@ class TabularValidationSchema(BaseModel):
                     prop['access_function'] = lambda row, passed_slice: [ float(item) for item in row[passed_slice]]
 
                 if item_datatype == "string":
-                    prop['access_function'] = lambda row, passed_slice: [ float(item) for item in list(row[passed_slice])]
+                    prop['access_function'] = lambda row, passed_slice: [ str(item) for item in list(row[passed_slice])]
 
             if datatype == "boolean":
                 prop['access_function'] = lambda row, passed_slice: bool(row[passed_slice])
@@ -269,12 +268,15 @@ class TabularValidationSchema(BaseModel):
 
         for i, row in enumerate(data_rows):
             json_row = {}
+            row_error = False
+
             for json_attribute in updated_properties: 
                 attribute_name = json_attribute.get("name")
                 access_func = json_attribute.get("access_function")
                 attribute_slice = json_attribute.get("index_slice")
                 try:
                     json_row[attribute_name] = access_func(row, attribute_slice)
+
                 except ValueError as e:
                     parsing_failures.append({ 
                         "message": f"ValueError: Failed to Parse Attribute {attribute_name} for Row {i}", 
@@ -282,6 +284,8 @@ class TabularValidationSchema(BaseModel):
                         "row": i,
                         "exception": e
                         })
+                    row_error = True
+
                 except IndexError as e:
                     parsing_failures.append({ 
                         "message": f"IndexError: Failed to Parse Attribute {attribute_name} for Row {i}", 
@@ -289,18 +293,22 @@ class TabularValidationSchema(BaseModel):
                         "row": i,
                         "exception": e
                         })
-                except Exception as e:
+                    row_error = True
+
+                except Exception as e: 
                     parsing_failures.append({ 
                         "message": f"Error: Failed to Parse Attribute {attribute_name} for Row {i}", 
                         "type": "ParsingError",
                         "row": i,
                         "exception": e
                         })
+                    row_error = True
 
-
-            json_output.append(json_row)
-
-
+            # if there was an error parsing a row
+            if row_error:
+                pass
+            else:
+                json_output.append(json_row)
 
         return json_output, parsing_failures
 

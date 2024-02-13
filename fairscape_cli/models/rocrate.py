@@ -5,6 +5,9 @@ from fairscape_cli.models import (
     DatasetContainer
 )
 from fairscape_cli.models.utils import GenerateDatetimeGUID
+from fairscape_cli.config import (
+    DEFAULT_CONTEXT
+)
 
 import pathlib
 import shutil
@@ -36,7 +39,7 @@ class ROCrate(BaseModel):
     @computed_field
     def guid(self) -> str:
         return GenerateDatetimeGUID(
-                prefix=f"rocrate-{self.name.strip()}"
+                prefix=f"rocrate-{self.name.replace(" ", "-").lower()}"
                 )
 
 
@@ -54,11 +57,8 @@ class ROCrate(BaseModel):
 
         rocrate_metadata = {
             "@id": self.guid,
-            "@context": {
-                "EVI": "https://w3id.org/EVI#",
-                "@vocab": "https://schema.org/"
-            },
-            "@type": "Dataset",
+            "@context": DEFAULT_CONTEXT,
+            "@type": "EVI:Dataset",
             "name": self.name,
             "description": self.description,
             "keywords": self.keywords,

@@ -235,40 +235,41 @@ def add_property_array(ctx, name, index, description, value_url, items_datatype,
     ClickAppendProperty(ctx, schema_file, arrayPropertyModel, name)
     
 
-@create.command('image')
-def create_image():
-    pass
+#@create.command('image')
+#def create_image():
+#    pass
 
 @schema.command('validate')
 @click.option('--schema', type=str, required=True)
 @click.option('--data', type=str, required=True)
-@click.option('--ro-crate', type=str, required=False, default=None)
+#@click.option('--ro-crate', type=str, required=False, default=None)
 @click.pass_context
-def validate(ctx, schema, data, ro_crate):
+def validate(ctx, schema, data): 
 
     # if ro-crate was passed
-    if ro_crate:
-        print('Not Yet Implemented')
-        ctx.exit(0)
+    #if ro_crate:
+    #    print('Not Yet Implemented')
+    #    ctx.exit(0)
 
         # TODO find all schemas in RO-Crate
         # TODO find all data using schemas in RO-Crate
 
         # TODO execute validation on all RO-Crate schema
 
-    elif schema and data:
+    if schema and data:
         tabular_schema = ReadSchema(schema)
         validation_errors = tabular_schema.execute_validation(data)
 
         if len(validation_errors) !=0:
             # print out all errors
-            print('\nErrors Validating Data')
 
             # create a pretty table of validation errors
             errorTable = PrettyTable()
-            errorTable.field_names = ['row', 'error_message', 'instance']
-            for key, value in validation_errors.items():
-                errorTable.add_row([key, value.message, value.instance])
+            errorTable.field_names = ['row', 'error_type', 'failed_keyword',  'message']
+
+            for err in validation_errors:
+                errorTable.add_row([err.get("row"), err.get("type"), err.get("failed_keyword"), str(err.get('message'))])
+
             print(errorTable)
             ctx.exit(1)
 

@@ -49,7 +49,7 @@ fairscape-cli schema validate \
 # - Row 5: incorrect array lenght too long   
 # - Row 6: multiple errors, experiment identifier breaks regex, gene name has characters not allowed, embedding has incorrect types
 fairscape-cli schema validate \
-    --data ./tests/data/APMS_embedding_corrupted.csv \
-    --schema $SCHEMA_PATH
+    --data examples/schemas/MUSIC_embedding/APMS_embedding_corrupted.csv \
+    --schema examples/schemas/MUSIC_embedding/music_apms_embedding_schema.json 
 
 

@@ -12,3 +12,4 @@ DEFAULT_CONTEXT = {
         }
 
 DEFAULT_SCHEMA_TYPE = "EVI:Schema"
+DEFAULT_ROCRATE_TYPE = "EVI:ROCrate" # "Dataset"
