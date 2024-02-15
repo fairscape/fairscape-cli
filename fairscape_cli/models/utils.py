@@ -11,16 +11,14 @@ from fairscape_cli.config import (
     NAAN
     )
 
-import sys
-
 squids = Sqids(min_length=6)
 
 
 def IntTimestampSquid():
-    if sys.version_info[1] > 12:
+    try:
         timestamp_int = int(datetime.datetime.now(datetime.UTC).timestamp())
         return squids.encode([timestamp_int])
-    else: 
+    except: 
         timestamp_int = int(datetime.datetime.utcnow().timestamp())
         return squids.encode([timestamp_int])
 

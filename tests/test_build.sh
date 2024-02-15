@@ -13,7 +13,7 @@ rm $SCHEMA_PATH
 fairscape-cli schema create-tabular \
     --name "APMS Embedding Schema" \
     --description "Tabular format for APMS music embeddings from PPI networks from the music pipeline from the B2AI Cellmaps for AI project" \
-    --seperator "," \
+    --separator "," \
     --header False \
     $SCHEMA_PATH
 
@@ -45,9 +45,13 @@ fairscape-cli schema add-property array \
 
 
 fairscape-cli schema validate \
-    --data ./tests/data/APMS_embedding_music.csv \
+    --data examples/schemas/MUSIC_embedding/APMS_embedding_MUSIC.csv \
     --schema $SCHEMA_PATH
 
+# test intentional failure of validation
+fairscape-cli schema validate \
+    --data examples/schemas/MUSIC_embedding/APMS_embedding_corrupted.csv \
+    --schema examples/schemas/MUSIC_embedding/music_apms_embedding_schema.json 
 
 #################################################
 #            TEST RO-CRATE FUNCTIONALITY        #

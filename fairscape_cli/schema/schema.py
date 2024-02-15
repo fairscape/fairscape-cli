@@ -1,5 +1,6 @@
 import click
 import json
+from prettytable import PrettyTable
 from pydantic import (
         ValidationError
 )
@@ -34,9 +35,6 @@ from fairscape_cli.config import (
 )
 
 
-
-
-
 @click.group('schema')
 def schema():
     pass
@@ -50,7 +48,7 @@ def create():
 @click.option('--name', required=True, type=str)
 @click.option('--description', required=True, type=str)
 @click.option('--guid', required=False, type=str, default="", show_default=False)
-@click.option('--seperator', type=str, required=True)
+@click.option('--separator', type=str, required=True)
 @click.option('--header', required=False, type=bool, default=False)
 @click.argument('schema_file', type=str)
 def create_tabular_schema(
@@ -58,7 +56,7 @@ def create_tabular_schema(
      description,
      guid,
      header,
-     seperator,
+     separator,
      schema_file
 ):
     # create the model
@@ -70,7 +68,7 @@ def create_tabular_schema(
             "propeties":{},
             "required": [],
             "header" :header,
-            "seperator": seperator
+            "separator": separator
         })
 
     except ValidationError as metadataError:
@@ -239,36 +237,42 @@ def add_property_array(ctx, name, index, description, value_url, items_datatype,
     ClickAppendProperty(ctx, schema_file, arrayPropertyModel, name)
     
 
-@create.command('image')
-def create_image():
-    pass
+#@create.command('image')
+#def create_image():
+#    pass
 
 @schema.command('validate')
 @click.option('--schema', type=str, required=True)
 @click.option('--data', type=str, required=True)
-@click.option('--ro-crate', type=str, required=False, default=None)
+#@click.option('--ro-crate', type=str, required=False, default=None)
 @click.pass_context
-def validate(ctx, schema, data, ro_crate):
+def validate(ctx, schema, data): 
 
     # if ro-crate was passed
-    if ro_crate:
-        print('Not Yet Implemented')
-        ctx.exit(0)
+    #if ro_crate:
+    #    print('Not Yet Implemented')
+    #    ctx.exit(0)
 
         # TODO find all schemas in RO-Crate
         # TODO find all data using schemas in RO-Crate
 
         # TODO execute validation on all RO-Crate schema
 
-    elif schema and data:
+    if schema and data:
         tabular_schema = ReadSchema(schema)
         validation_errors = tabular_schema.execute_validation(data)
 
         if len(validation_errors) !=0:
             # print out all errors
-            print('Errors Validating Data')
-            for key, value in validation_errors:
-                print(f'{key}: {value}')
+
+            # create a pretty table of validation errors
+            errorTable = PrettyTable()
+            errorTable.field_names = ['row', 'error_type', 'failed_keyword',  'message']
+
+            for err in validation_errors:
+                errorTable.add_row([err.get("row"), err.get("type"), err.get("failed_keyword"), str(err.get('message'))])
+
+            print(errorTable)
             ctx.exit(1)
 
         else:

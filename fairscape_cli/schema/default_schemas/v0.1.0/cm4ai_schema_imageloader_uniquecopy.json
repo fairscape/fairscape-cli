@@ -1,0 +1,55 @@
+{
+  "@id": "ark:59852/schema-cm4ai-imageloader-uniquecopy",
+  "@context": {
+      "@vocab": "https://schema.org/",
+      "EVI": "https://w3id,org/EVI#"
+    },
+  "@type": "EVI:Schema",
+  "name": "Imageloader Uniquecopy Schema",
+  "description": "Schema for the cm4ai imageloader input file uniquecopy",
+  "properties": {
+    "antibody": {
+        "description": "Antibody Identifier from Human Protien Atlas or negative control",
+        "index": 0,
+        "valueURL": "http://edamontology.org/data_2772",
+        "type": "string",
+        "pattern": "^CAB[0-9]{6}$|^HPA[0-9]{6}$|^NEGATIVE-CTRL$"
+    },
+    "ensembl_ids": {
+        "description": "Ensembl Gene ID for protien antibody targets, may have multiple matches",
+        "index": "1",
+          "valueURL": "http://edamontology.org/data_1033",
+          "type": "string",
+          "multiple": true,
+          "seperator": ";",
+          "pattern": "^(?:ENSG[0-9]{11})(;?ENSG[0-9]{11})*$|^nan$"
+    },
+    "gene_names": {
+        "description": "Gene Names for the Protien",
+        "index": 2,
+        "type": "null"
+    },
+    "atlas_name": {
+        "description": "The Cell Line Name on which this IF antibody staining experiment took place",
+        "type": "string",
+        "index": 3,
+        "valueURL": "http://edamontology.org/data_2317"
+    },
+    "locations": {
+        "description": "Locations in the Cell in which the tagged protien was identified",
+        "index": 4,
+        "type": "null"
+    },
+    "n_location": {
+        "description": "Number of Locations in the cell where the taggedprotien was identified",
+        "index": 5,
+        "type": "integer"
+    }
+  },
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["antibody", "ensembl_ids", "atlas_name"],
+  "separator": ",",
+  "header": true,
+  "examples": []
+}
