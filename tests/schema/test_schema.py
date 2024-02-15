@@ -4,12 +4,8 @@ from fairscape_cli.models.schema.image import (
     ImageValidationException,
     ImagePathNotFoundException,
 )
-from fairscape_cli.models.csvw import (
-    DatatypeSchema,
-    ColumnSchema,
-    TabularDataSchema
-)
-from fairscape_cli.main import cli as fairscape_cli_app
+
+from fairscape_cli.__main__ import cli as fairscape_cli_app
 import pathlib
 from click.testing import CliRunner
 import pytest
@@ -174,134 +170,40 @@ class TestValidateImage():
 
 
 class TestValidateTabular():
+    def test_0_init(self):
+        pass
 
-    def _test_init(self):
-        """ Test for initilizing class models of schemas
-        """
-
-        gene_id_column = ColumnSchema(
-            name="GeneID",
-            description="Internal Gene ID for Gygi Lab Bait Gene",
-            datatype="integer",
-            number=1,
-            required=True,
-            valueURL="http://edamontology.org/data_2295",
-            titles=["GeneID"]
-        )
-
-        num_interactors_column = ColumnSchema(
-            name="# Interactors",
-            description="number of prey proteins attracted to the bait protien",
-            datatype=DatatypeSchema(base="integer", minimum=0),
-            number=2,
-            required=True,
-            valueURL=None,
-            titles=["# Interactors"]
-        )
-
-        gene_symbol_datatype = DatatypeSchema(
-            name="Gene Symbol",
-            description="Gene Symbol in String Form",
-            base="string",
-            format="[A-Z0-9]*",
-            minLength=3,
-            maxLength=20
-        )
-
-        gene_symbol_column = ColumnSchema(
-            name="Gene Symbol",
-            description="Gene Symbol for Prey Protien in Baitlist summary",
-            ordered=False,
-            required=True,
-            number=0,
-            datatype=gene_symbol_datatype,
-            valueURL="http://edamontology.org/data_1026",
-            titles=["Gene Symbol"]
-        )
-
-        tabular_data_test = TabularDataSchema(
-            guid="ark:99999/schema/baitlist_schema",
-            name="baitlist schema",
-            context={
-                "csvw": "http://www.w3.org/ns/csvw#",
-                "evi": "https://w3id.org/EVI",
-                "@vocab": "https://schema.org"
-            },
-            seperator=",",
-            description="Schema for Gygi Lab Baitlist files",
-            header=True,
-            columns=[
-                gene_symbol_column,
-                gene_id_column,
-                num_interactors_column
-            ]
-        )
-
-        # tabular_data_test.validate(path=pathlib.Path("./tests/data/baitlist.csv"))
-
-    def _test_APMS_embedding(self):
-
-        apms_datatype = DatatypeSchema(
-            name="APMS Experiment",
-            description="Identifier for APMS experiment corresponding to the given node2vec vector",
-            base="string",
-            format="APMS_[0-9]*"
-        )
-
-        apms_column = ColumnSchema(
-            name="APMS Experiment",
-            description="APMS_column",
-            ordered=False,
-            required=True,
-            number=0,
-            datatype=apms_datatype,
-            titles=["APMS Experiment"]
-        )
-
-        gene_symbol_datatype = DatatypeSchema(
-            name="Gene Symbol",
-            description="Gene Symbol in String Form",
-            base="string",
-            format="[A-Z0-9]*",
-            minLength=3,
-            maxLength=20
-        )
-
-        gene_symbol_column = ColumnSchema(
-            name="Gene Symbol",
-            description="gene symbol for apms embedding vector",
-            ordered=False,
-            required=True,
-            number=0,
-            datatype=gene_symbol_datatype,
-            valueURL="http://edamontology.org/data_1026",
-            titles=["Gene Symbol"]
-        )
-
-        embedding_column = ColumnSchema(
-            name="embedding values",
-            description="node2vec embedding vector values for genes",
-            number="2::",
-            titles=["node2vec embedding vector"]
-        )
-
-        embedding_schema = TabularDataSchema(
-            guid="ark:99999/schema/apms_embedding_schema",
-            name="apms embedding schema",
-            description="embedding vector values for genes determined by running node2vec on APMS networks",
-            seperator=",",
-            header=False,
-            columns=[
-                apms_column,
-                gene_column,
-                embedding_column
-            ]
-        )
-
-        # test reading the data with the specified schema
-        embedding_path = pathlib.Path("./tests/data/APMS_embedding_MUSIC.csv")
-        embedding_schema
 
 class TestSchemaCLI():
-    def _test_cli(self):
+
+    def test_0_create_schema(self):
         pass
+
+
+    def test_1_add_string_property(self):
+        pass
+
+
+    def test_2_add_int_property(self):
+        pass
+
+
+    def test_3_add_bool_property(self):
+        pass
+
+
+    def test_4_add_number_property(self):
+        pass
+
+    def test_5_add_array_property_string(self):
+        pass
+
+    def test_6_add_array_property_int(self):
+        pass
+
+    def test_7_add_array_property_number(self):
+        pass
+
+    def test_8_add_array_property_bool(self):
+        pass
+
