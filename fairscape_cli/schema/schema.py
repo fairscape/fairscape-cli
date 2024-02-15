@@ -26,7 +26,9 @@ from fairscape_cli.models.schema.tabular import (
     DatatypeEnum,
     Items
 )
-
+from fairscape_cli.schema.schema_pysimplegui import (
+    create_window,
+    initialize_gui)
 
 from fairscape_cli.config import (
     FAIRSCAPE_URI
@@ -306,3 +308,10 @@ def get(schema_guid, fairscape_uri):
 
     # TODO get schema spec from fairscape remote
     pass
+
+
+@schema.command('create-tabular-gui')
+def create_tabular_gui():
+    # invoke methods for gui
+    window = create_window()
+    initialize_gui(window)
