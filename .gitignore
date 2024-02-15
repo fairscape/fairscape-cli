@@ -1,4 +1,8 @@
+*.DS_STORE
+*,ipynb
+
 tests/data/
+tests/test_generated/
 tests/test_crates/
 tests/crate/
 cli_venv/

@@ -24,8 +24,10 @@ from typing import (
     Optional,
     Union
 )
- 
 
+
+
+# Click Commands
 # RO Crate 
 @click.group('rocrate')
 def rocrate():
@@ -129,14 +131,6 @@ def create(
 ##########################
 # RO Crate add subcommands
 ##########################
-
-def add_element_ro_crate(
-    element: Union[Dataset,Computation,Software], 
-    ro_crate: pathlib.Path
-    ):
-    pass
-
-
 @rocrate.group('register')
 def register():
     pass
@@ -243,6 +237,7 @@ def registerSoftware(
 @click.option('--filepath', required=True)
 @click.option('--used-by', required=False, multiple=True)
 @click.option('--derived-from', required=False, multiple=True)
+@click.option('--schema', required=False, type=str)
 @click.option('--associated-publication', required=False)
 @click.option('--additional-documentation', required=False)
 def registerDataset(
@@ -250,17 +245,18 @@ def registerDataset(
     guid: str,
     name: str,
     url: str,
-    author: str,
+    author: str, 
+    version: str,
+    date_published: str,
     description: str,
     keywords: List[str],
-    date_published: str,
-    version: str,
-    associated_publication: Optional[str],
-    additional_documentation: Optional[List[str]],
     data_format: str,
     filepath: str,
-    derived_from: Optional[List[str]],
     used_by: Optional[List[str]],
+    derived_from: Optional[List[str]],
+    schema: str,
+    associated_publication: Optional[str],
+    additional_documentation: Optional[List[str]],
 ):
     
     metadata_path = rocrate_path / "ro-crate-metadata.json"
@@ -276,6 +272,7 @@ def registerDataset(
         **{"path": metadata_path}
     ) 
 
+
     dataset_metadata = {
             "@id": guid,
             "@type": "https://w3id.org/EVI#Dataset",
@@ -289,7 +286,7 @@ def registerDataset(
             "associatedPublication": associated_publication,
             "additionalDocumentation": additional_documentation,
             "format": data_format,
-
+            "schema": schema,
             # sanitize input lists of newline breaks
             "derivedFrom": [
                 derived.strip("\n") for derived in derived_from
@@ -299,12 +296,13 @@ def registerDataset(
             ],
             }
 
+    # TODO set relative filepath to root of crate
     if filepath != "" and filepath is not None:
         dataset_metadata["contentUrl"] = f"file://{str(filepath)}" 
 
 
     try:
-        dataset_model = Dataset(**dataset_metadata)
+        dataset_model = Dataset.model_validate(dataset_metadata)
         crate.registerDataset(dataset_model)
 
     except ValidationError as e:
@@ -645,6 +643,7 @@ def software(
 @click.option('--destination-filepath', required=True)
 @click.option('--used-by', required=False, multiple=True)
 @click.option('--derived-from', required=False, multiple=True)
+@click.option('--schema', required=False, type=str)
 @click.option('--associated-publication', required=False)
 @click.option('--additional-documentation', required=False)
 def dataset(
@@ -653,17 +652,18 @@ def dataset(
     name: str,
     url: str,
     author: str,
+    version: str,
+    date_published: str,
     description: str,
     keywords: List[str],
-    date_published: str,
-    version: str,
-    associated_publication: Optional[str],
-    additional_documentation: Optional[List[str]],
     data_format: str,
     source_filepath: str,
     destination_filepath: str,
-    derived_from: Optional[List[str]],
     used_by: Optional[List[str]],
+    derived_from: Optional[List[str]],
+    schema: str,
+    associated_publication: Optional[str],
+    additional_documentation: Optional[List[str]],
 ):
 
 
@@ -688,8 +688,7 @@ def dataset(
     ) 
     
     try:
-        dataset_model = Dataset(   
-            **{
+        dataset_model = Dataset.model_validate({
             "@id": guid,
             "@type": "https://w3id.org/EVI#Dataset",
             "url": url,
@@ -702,15 +701,16 @@ def dataset(
             "associatedPublication": associated_publication,
             "additionalDocumentation": additional_documentation,
             "format": data_format,
+            "schema": schema,
             "derivedFrom": [
                 derived.strip("\n") for derived in derived_from
             ],
             "usedBy": [
                 used.strip("\n") for used in used_by 
             ],
+            "schema": schema,
             "contentUrl": "file://" + str(destination_path)
-            }
-        )
+            })
 
         crate.registerDataset(dataset_model)
         crate.copyObject(source_filepath, destination_filepath)
@@ -747,7 +747,7 @@ def package():
 #@click.option('--Bag-Group-Identifier', required=False, prompt="Bag-Group-Identifier")
 #@click.option('--Bag-Count', required=False, prompt="Bag-Count")
 #@click.option('--Internal-Sender-Identifier', required=False, prompt="Internal-Sender-Identifier")
-#@click.option('--Internal-Sender-Description', required=False, prompt="Internal-Sender-Description")
+@click.option('--Internal-Sender-Description', required=False, prompt="Internal-Sender-Description")
 def bagit(
     rocrate_path: pathlib.Path,
     bagit_path: pathlib.Path,
@@ -811,13 +811,3 @@ def bagit(
     # Create tagmanifest-md5.txt
     bagit.create_tag_manifest_md5()
     click.echo(click.style("Tag Manifest", fg="green") + f": {bagit_path}/tagmanifest-md5.txt")
-
-    
-    
-
-
-    
-
-
-
-

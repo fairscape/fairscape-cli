@@ -1,7 +1,7 @@
-VERSION ?= 0.1.8
+VERSION ?= 0.1.11
 
 build:
-	python -m build
+	python3 -m build
 
 push:
 	python3 -m twine upload --repository pypi dist/*	

@@ -2,6 +2,10 @@ from fairscape_cli.models.base import (
     FairscapeBaseModel,
     Identifier
 )
+from fairscape_cli.models.utils import GenerateGUID
+from fairscape_cli.models.schema.tabular import (
+    TabularValidationSchema
+)
 
 from typing import (
     Optional,
@@ -29,11 +33,12 @@ class Dataset(FairscapeBaseModel):
     associatedPublication: Optional[str] = None
     additionalDocumentation: Optional[str] = None
     fileFormat: str = Field(alias="format")
-    dataSchema: Optional[dict] = Field(alias="schema", default={})
+    dataSchema: Optional[Union[str, TabularValidationSchema]] = Field(alias="schema", default=None)
     generatedBy: Optional[List[str]] = Field(default=[])
     derivedFrom: Optional[List[str]] = Field(default=[])
     usedBy: Optional[List[str]] = Field(default=[])
     contentUrl: Optional[str] = None
+
 
 
 class DatasetContainer(FairscapeBaseModel): 
