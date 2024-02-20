@@ -1,6 +1,6 @@
 [project]
 name = "fairscape-cli"
-version = "0.1.14"
+version = "0.1.14a1"
 description = "CLI tool for B2AI metadata validation and ROCrate creation"
 readme = "README.md"
 authors = [
@@ -26,6 +26,17 @@ dependencies = [
         "PySimpleGUI>=3.39.0"
 ]
 requires-python = ">=3.8"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = [ '']
+
+
+[tool.setuptools.package-data]
+"*" = ["*.json"]
+
 
 [project.urls]
 Homepage = "https://github.com/fairscape/fairscape-cli"
