@@ -1,3 +1,4 @@
+from sqids import Sqids
 
 # remote URI for default fairscape requests
 FAIRSCAPE_URI = 'https://fairscape.pods.uvarc.io'
@@ -13,3 +14,5 @@ DEFAULT_CONTEXT = {
 
 DEFAULT_SCHEMA_TYPE = "EVI:Schema"
 DEFAULT_ROCRATE_TYPE = "EVI:ROCrate" # "Dataset"
+
+DEFAULT_SQUIDS = Sqids(min_length=6)

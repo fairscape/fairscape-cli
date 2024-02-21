@@ -1,5 +1,4 @@
 import jsonschema
-import pandas as pd
 import pathlib
 import json
 
@@ -31,10 +30,12 @@ from fairscape_cli.models.schema.utils import (
 
 from fairscape_cli.config import (
     DEFAULT_CONTEXT,
-    DEFAULT_SCHEMA_TYPE
+    DEFAULT_SCHEMA_TYPE,
+    NAAN,
+    DEFAULT_SQUIDS 
 )
 
-
+import datetime
 from enum import Enum
 import re
 
@@ -151,10 +152,24 @@ class TabularValidationSchema(BaseModel):
 
     # Computed Field implementation for guid generation
     @computed_field(alias="@id")
+    @property
     def guid(self) -> str:
         """ Generate an ARK for the Schema
         """
-        return GenerateDatetimeGUID(prefix=f"schema-{self.name.lower().replace(' ', '-')}")
+        # if guid is already set
+        if self.guid:
+            return self.guid
+        else:
+            prefix=f"rocrate-{self.name.lower().replace(' ', '-')}"
+
+            try:
+                timestamp_int = int(datetime.datetime.now(datetime.UTC).timestamp())
+                sq = DEFAULT_SQUIDS.encode([timestamp_int])
+            except: 
+                timestamp_int = int(datetime.datetime.utcnow().timestamp())
+                sq = DEFAULT_SQUIDS.encode([timestamp_int])
+
+            return f"ark:{NAAN}/{prefix}-{sq}"
 
 
     def load_data(self, dataPath: str) -> List[List[str]]:
@@ -368,7 +383,7 @@ class TabularValidationSchema(BaseModel):
 
         for i, json_elem in enumerate(json_objects):
             try: 
-                validate(
+                jsonschema.validate(
                         instance=json_elem,
                         schema= schema_definition 
                 )

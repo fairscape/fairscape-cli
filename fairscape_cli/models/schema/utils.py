@@ -3,6 +3,7 @@ from typing import (
     Union,
     List
 )
+from itertools import product
 
 
 class PropertyNameException(Exception):
@@ -112,26 +113,32 @@ def CheckOverlap(property_index: Union[str,int], schema_indicies: List[Union[str
         ]
     schema_int_indicies = list(filter(lambda index: isinstance(index, int), schema_indicies))
 
+    # check that int indicies dont overlap any other int indicies
+    int_overlap_count = [ schema_int_indicies.count(elem) != 1 for elem in schema_int_indicies]
+    
+    if any(int_overlap_count): 
+        # TODO find offending overlap
+        raise ColumnIndexException()
 
-    if isinstance(property_index, str):
-        # convert string to 
-        property_slice = GenerateSlice(propertyInstance.number)
+    # check that slice indicies don't overlap any int indicies
+    for slice_elem in schema_slice_indicies:
+        inside_slice = [
+            int_index > slice_elem.start and int_index < slice_elem.stop for 
+            int_index in schema_int_indicies
+            ]
+        inside_bound = [
+            int_index == slice_elem.start or int_index == slice_elem.stop for 
+            int_index in schema_int_indicies
+            ]
         
-        # check that no ranges overlap with properties range
-        for schema_slice in schema_slice_indicies:
-            # check that 
-            CheckSliceOverlap(property_slice, schema_slice)
+        if any(inside_slice):
+            # TODO find the offending overlap values
+            raise RangeOverlapException(slice_elem, None)
 
-        # check integer overlap
-        for schema_int_index in schema_int_indicies:
-            CheckIntSliceOverlap(schema_int_index, property_slice)
+        if any(inside_bound):
+            # TODO find the offending overlap values
+            raise RangeOverlapException(slice_elem, None)
 
-
-    elif isinstance(property_index, int):
-        if propertyInstance.number in schema_int_indicies:
-            raise ColumnIndexException(ColumnIndexException)
-        
-        for schema_slice in schema_slice_indicies:
-            CheckIntSliceOverlap(property_index, property_slice)
+    # TODO check that slice indicies don't overlap any other slice indicies
     
     return None
