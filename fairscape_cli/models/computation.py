@@ -1,5 +1,6 @@
 from fairscape_cli.models.base import FairscapeBaseModel
-from fairscape_cli.models.utils import GenerateGUID
+from fairscape_cli.models.utils import GenerateDatetimeSquid
+from fairscape_cli.config import NAAN
 
 from typing import (
     Optional,
@@ -27,6 +28,12 @@ class Computation(FairscapeBaseModel):
     usedDataset: Optional[Union[List[str], str]] = Field(default=[])
     generated: Optional[Union[str,List[str]]] = Field(default=[])
 
+    def generate_guid(self):
+        if self.guid is None:
+            sq = GenerateDatetimeSquid()
+            self.guid = f"ark:{NAAN}/computation-{self.name.lower().replace(' ', '-')}-{sq}"
+        return self.guid
+
 
 def GenerateComputation(
     name: str,
@@ -41,8 +48,8 @@ def GenerateComputation(
 ) -> Computation: 
     """ Generate a Computation model class from command line arguments
     """
-    computation_model = Computation(   
-        **{
+    computation_model = Computation.model_validate(   
+        {
         "@type": "https://w2id.org/EVI#Computation",
         "name": name,
         "description": description,
@@ -62,4 +69,7 @@ def GenerateComputation(
             output.strip("\n") for output in generated
         ],
     })
+
+    # generate computation guid
+    computation_model.generate_guid()
     return computation_model

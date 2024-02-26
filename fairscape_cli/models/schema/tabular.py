@@ -18,21 +18,20 @@ from typing import (
     Literal
 )
 
-from fairscape_cli.models.utils import (
-    GenerateDatetimeGUID
-)
-
 from fairscape_cli.models.schema.utils import (
     GenerateSlice,
     PropertyNameException,
     ColumnIndexException,
 )
 
+from fairscape_cli.models.utils import (
+    GenerateDatetimeSquid
+)
+
 from fairscape_cli.config import (
     DEFAULT_CONTEXT,
     DEFAULT_SCHEMA_TYPE,
     NAAN,
-    DEFAULT_SQUIDS 
 )
 
 import datetime
@@ -137,6 +136,7 @@ PropertyUnion = Union[StringProperty, ArrayProperty, BooleanProperty, NumberProp
 
 
 class TabularValidationSchema(BaseModel):
+    guid: Optional[str] = Field(alias="@id", default=None)
     context: Optional[Dict] = Field(default=DEFAULT_CONTEXT, alias="@context")
     metadataType: Optional[str] = Field(default=DEFAULT_SCHEMA_TYPE, alias="@type")
     schema_version: str = Field(default="https://json-schema.org/draft/2020-12/schema", alias="schema")
@@ -151,25 +151,15 @@ class TabularValidationSchema(BaseModel):
     examples: Optional[List[Dict[str, str ]]] = Field(default=[])
 
     # Computed Field implementation for guid generation
-    @computed_field(alias="@id")
-    @property
-    def guid(self) -> str:
+    def generate_guid(self) -> str:
         """ Generate an ARK for the Schema
         """
         # if guid is already set
-        if self.guid:
-            return self.guid
-        else:
-            prefix=f"rocrate-{self.name.lower().replace(' ', '-')}"
-
-            try:
-                timestamp_int = int(datetime.datetime.now(datetime.UTC).timestamp())
-                sq = DEFAULT_SQUIDS.encode([timestamp_int])
-            except: 
-                timestamp_int = int(datetime.datetime.utcnow().timestamp())
-                sq = DEFAULT_SQUIDS.encode([timestamp_int])
-
-            return f"ark:{NAAN}/{prefix}-{sq}"
+        if self.guid is None:
+            prefix=f"schema-{self.name.lower().replace(' ', '-')}"
+            sq = GenerateDatetimeSquid()
+            self.guid = f"ark:{NAAN}/{prefix}-{sq}"
+        return self.guid
 
 
     def load_data(self, dataPath: str) -> List[List[str]]:
@@ -198,9 +188,7 @@ class TabularValidationSchema(BaseModel):
         """ Given a path to a Tabular File, load in the data and generate a list of JSON equivalent data structures 
         """
 
-
         data_rows = self.load_data(dataPath)
-
 
         row_lengths = set([len(row) for row in data_rows])
         if len(row_lengths) == 1: 
@@ -364,38 +352,6 @@ class TabularValidationSchema(BaseModel):
 
 
 
-    def _execute_validation(self, data_path: str) -> Dict[int, ValidationError]:
-        """ Use the TabularValidationSchema to execute data validation on a given file
-        """
-
-        data_frame = self.load_data(data_path)
-        
-        schema_definition = self.model_dump(
-                by_alias=True, 
-                exclude_unset=True,
-                exclude_none=True
-                )
-
-
-        json_objects = self.convert_to_json(data_frame)
-        # run conversion on data frame 
-        validation_exceptions = {}
-
-        for i, json_elem in enumerate(json_objects):
-            try: 
-                jsonschema.validate(
-                        instance=json_elem,
-                        schema= schema_definition 
-                )
-                print(".", end="")
-            except Exception as e:
-                # TODO convert property errors into column index
-                print("x", end="")
-                validation_exceptions[i] = e
-
-        return validation_exceptions	
-
-
 
 def AppendProperty(schemaFilepath: str, propertyInstance, propertyName: str) -> None: 
     # check that schemaFile exists
@@ -408,10 +364,10 @@ def AppendProperty(schemaFilepath: str, propertyInstance, propertyName: str) -> 
         schemaFileContents = schemaFile.read()
         schemaJson =  json.loads(schemaFileContents) 
 
-        # load the model into a 
-        schemaModel = TabularValidationSchema(**schemaJson)
+        # load the model into a tabular validation schema
+        schemaModel = TabularValidationSchema.model_validate(schemaJson)
 
-        # check for inconsitencies
+        # TODO check for inconsitencies
 
         # does there exist a property with same name
         if propertyName in [key for key in schemaModel.properties.keys()]:
@@ -426,6 +382,9 @@ def AppendProperty(schemaFilepath: str, propertyInstance, propertyName: str) -> 
 
         # add new property to schema
         schemaModel.properties[propertyName] = propertyInstance
+
+        # add new property as required
+        schemaModel.required.append(propertyName)
 
         # serialize model to json
         schemaJson = json.dumps(schemaModel.model_dump(by_alias=True) , indent=2)

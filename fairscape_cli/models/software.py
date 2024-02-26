@@ -1,5 +1,7 @@
 from fairscape_cli.models.base import FairscapeBaseModel
-from fairscape_cli.models.utils import GenerateGUID
+from fairscape_cli.models.utils import GenerateDatetimeSquid
+from fairscape_cli.config import NAAN
+import pathlib
 
 from pydantic import (
     Field,
@@ -27,6 +29,12 @@ class Software(FairscapeBaseModel):
     fileFormat: str = Field(title="fileFormat", alias="format")
     usedByComputation: Optional[List[str]]
     contentUrl: Optional[str] = Field(default=None)
+
+    def generate_guid(self):
+        if self.guid is None:
+            sq = GenerateDatetimeSquid()
+            self.guid = f"ark:{NAAN}/software-{self.name.lower().replace(' ', '-')}-{sq}"
+        return self.guid
  
 
 def GenerateSoftware(    
@@ -41,7 +49,8 @@ def GenerateSoftware(
     filepath,
     used_by_computation,
     associated_publication,
-    additional_documentation
+    additional_documentation,
+    crate_path
 ) -> Software:
     """ Generate a Software Model Class
     """
@@ -65,14 +74,26 @@ def GenerateSoftware(
         }
 
     if filepath is not None:
-        if type(filepath) == str:
-            # TODO if URL just set
-            software_metadata["contentUrl"] = filepath 
-        if type(filepath) == pathlib.Path:
-            # TODO if pathlike object
-            pass
-    
-    software_model = Software(**software_metadata)
+        # if filepath is a url        
+        if 'http' in  filepath:
+            software_metadata['contentUrl'] = filepath
+
+        # if filepath is a path that exists
+        else:
+            software_path = pathlib.Path(filepath)
+            rocrate_path = pathlib.Path(crate_path)
+            if software_path.exists() and software_path.is_relative_to(rocrate_path):
+                # create a relative filepath to the ro-crate
+                software_metadata['contentUrl'] = f"file:///{str(software_path.relative_to(rocrate_path))}"
+            else:
+                raise Exception('Software File is not inside of RO-Crate')
+
+    # validate metadata
+    software_model = Software.model_validate(software_metadata)
+
+    # generate guid for software model
+    software_model.generate_guid()
+
     return software_model
 
 

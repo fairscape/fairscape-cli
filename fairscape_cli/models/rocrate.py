@@ -4,9 +4,10 @@ from fairscape_cli.models import (
     Computation,
     DatasetContainer
 )
-from fairscape_cli.models.utils import GenerateDatetimeGUID
+from fairscape_cli.models.utils import GenerateDatetimeSquid
 from fairscape_cli.config import (
-    DEFAULT_CONTEXT
+    DEFAULT_CONTEXT,
+    NAAN
 )
 
 import pathlib
@@ -26,6 +27,7 @@ from typing import (
 
 
 class ROCrate(BaseModel):
+    guid: Optional[str] = Field(default=None, alias="@id")
     metadataType: str = Field(default="https://schema.org/Dataset")
     name: str = Field(max_length=200)
     description: str = Field(min_length=10)
@@ -35,12 +37,12 @@ class ROCrate(BaseModel):
     path: pathlib.Path
     metadataGraph: Optional[List[Union[Dataset,Software, Computation]]]
 
-    # Computed Field implementation for guid generation
-    @computed_field
-    def guid(self) -> str:
-        return GenerateDatetimeGUID(
-                prefix=f"rocrate-{self.name.replace(' ', '-').lower()}"
-                )
+    def generate_guid(self) -> str:
+        if self.guid is None:
+            sq = GenerateDatetimeSquid()
+            self.guid = f"ark:{NAAN}/rocrate-{self.name.replace(' ', '-').lower()}-{sq}"
+        return self.guid
+
 
 
     def createCrateFolder(self):
@@ -55,6 +57,9 @@ class ROCrate(BaseModel):
         # create basic rocrate metadata
         ro_crate_metadata_path = self.path / 'ro-crate-metadata.json'
 
+        # create guid if none exists
+        self.generate_guid()
+
         rocrate_metadata = {
             "@id": self.guid,
             "@context": DEFAULT_CONTEXT,
@@ -67,9 +72,7 @@ class ROCrate(BaseModel):
         }
 
         if self.organizationName:
-            organization_guid = GenerateDatetimeGUID( 
-                prefix=f"org-{self.organizationName.lower().replace(' ', '-')}"
-                )
+            organization_guid = f"ark:{NAAN}/organization-{self.organizationName.lower().replace(' ', '-')}-{GenerateDatetimeSquid()}"
             rocrate_metadata['isPartOf'].append(
                 {
                     "@id": organization_guid,
@@ -79,9 +82,7 @@ class ROCrate(BaseModel):
             )
 
         if self.projectName:
-            project_guid = GenerateDatetimeGUID( 
-                prefix=f"project-{self.projectName.lower().replace(' ', '-')}"
-                )
+            project_guid = f"ark:{NAAN}/project-{self.projectName.lower().replace(' ', '-')}-{GenerateDatetimeSquid()}"
             rocrate_metadata['isPartOf'].append(
                 {
                     "@id": project_guid,
@@ -302,10 +303,10 @@ def ReadROCrateMetadata(
     """
 
     # if cratePath has metadata.json inside
-    if "metadata.json" in cratePath:
+    if "ro-crate-metadata.json" in cratePath:
         metadataCratePath = cratePath
     else:
-        metadataCratePath = cratePath + "/metadata.json"
+        metadataCratePath = cratePath + "/ro-crate-metadata.json"
 
     with open(cratePath, "r") as metadataFile:
         crateMetadata = json.load(metadataFile)
