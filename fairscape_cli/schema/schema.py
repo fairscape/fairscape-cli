@@ -248,36 +248,6 @@ def add_property_array(ctx, name, index, description, value_url, items_datatype,
 @click.pass_context
 def validate(ctx, schema, data): 
 
-    #default_schema = DEFAULT_SCHEMAS.get(schema)
-    #if default_schema:
-        # run using the specified default schema
-        #pass
-
-    #elif IsArk():
-        # request against fairscape
-        # ReadSchameFairscape()
-        #pass
-
-    #elif IsRawGithub(schema):
-        # if it is a raw github url
-        # ReadSchemaRawGithub()
-        #pass
-
-    #else:
-        # schema must be a path that exists
-        # ReadSchemaLocal()
-        #pass
-
-    # if ro-crate was passed
-    #if ro_crate:
-    #    print('Not Yet Implemented')
-    #    ctx.exit(0)
-
-        # TODO find all schemas in RO-Crate
-        # TODO find all data using schemas in RO-Crate
-
-        # TODO execute validation on all RO-Crate schema
-
     if schema and data:
         tabular_schema = ReadSchema(schema)
         validation_errors = tabular_schema.execute_validation(data)
@@ -300,7 +270,7 @@ def validate(ctx, schema, data):
             ctx.exit(0)
 
     else:
-        print('ERROR: must pass either schema & data or ro_crate path')
+        print('ERROR: must pass either schema & data path')
 
 
 @schema.command('register')

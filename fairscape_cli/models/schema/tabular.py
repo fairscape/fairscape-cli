@@ -410,17 +410,46 @@ def ClickAppendProperty(ctx, schemaFile, propertyModel, name):
         print(str(propertyException))
         ctx.exit(code=1)
 
+def readSchemaGithub(schemaURI: str) -> TabularValidationSchema:
+    pass
 
-def ReadSchema(schema_file: str) -> TabularValidationSchema:
+def readSchemaFairscape(schemaArk: str) -> TabularValidationSchema:
+    pass
+
+
+def readSchemaLocal(schemaFile: str) -> TabularValidationSchema:
     """ Helper function for reading the schema and marshaling into the pydantic model
     """
     # read the schema
-    with open(schema_file, "r") as input_schema:
-        input_schema_data = input_schema.read()
-        schema_json =  json.loads(input_schema_data) 
+    with open(schemaFile, "r") as inputSchema:
+        inputSchemaData = inputSchema.read()
+        schemaJson =  json.loads(inputSchemaData) 
 
-        # load the model into 
-        return TabularValidationSchema.model_validate(schema_json)
+    # load the model into 
+    tabularSchema = TabularValidationSchema.model_validate(schemaJson)
+    return tabularSchema
+
+def ReadSchema(schemaFile:str) -> TabularValidationSchema:
+    '''
+    '''
+    if 'raw.githubusercontent' in schemaFile:
+        schemaInstance = readSchemaGithub(schemaFile)
+        return schemaInstance
+
+    elif 'ark' in schemaFile:
+        defaultSchema = DEFAULT_SCHEMAS.get(schemaFile)
+        if defaultSchema is None:
+            # request against fairscape
+            schemaInstance = ReadSchemaFairscape(schemaFile)
+            return schemaInstance
+        else:
+            return defaultSchema
+    elif pathlib.Path(schemaFile).exists():
+        # schema must be a path that exists
+        schemaInstance = readSchemaLocal(schemaFile)
+        return schemaInstance
+    else:
+        raise Exception(f'Schema not found {schemaFile}')
 
 
 def WriteSchema(tabular_schema: TabularValidationSchema, schema_file):
