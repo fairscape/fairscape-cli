@@ -39,11 +39,11 @@ def GenerateComputation(
     name: str,
     run_by: str,
     command: Optional[Union[str, List[str]]],
-    date_created: str,
+    dateCreated: str,
     description: str,
     keywords: List[str],
-    used_software,
-    used_dataset,
+    usedSoftware,
+    usedDataset,
     generated
 ) -> Computation: 
     """ Generate a Computation model class from command line arguments
@@ -56,14 +56,14 @@ def GenerateComputation(
         "keywords": keywords,
         "runBy": run_by,
         "command": command,
-        "dateCreated": date_created,
+        "dateCreated": dateCreated,
         "description": description,
         # sanitize input lists of newline breaks
         "usedSoftware": [
-            software.strip("\n") for software in used_software
+            software.strip("\n") for software in usedSoftware
         ],
         "usedDataset": [
-            dataset.strip("\n") for dataset in used_dataset 
+            dataset.strip("\n") for dataset in usedDataset 
         ],
         "generated": [
             output.strip("\n") for output in generated

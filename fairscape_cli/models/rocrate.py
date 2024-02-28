@@ -269,36 +269,10 @@ class ROCrate(BaseModel):
         return rocrate_table
 
 
-def InitROCrate(
-    name: str,
-    description: str,
-    keywords: List[str],
-    cratePath: pathlib.Path,
-    organizationName=None,
-    projectName=None,
-    createFolder: bool = False
-):
-
-    passed_crate =ROCrate(
-        name=name,
-        organizationName = organizationName,
-        projectName = projectName,
-        description = description,
-        keywords = keywords,
-        path = cratePath, 
-        metadataGraph = []
-    )
-
-    if createFolder:
-        passed_crate.createCrateFolder()
-
-    # initilize crate folder 
-    passed_crate.initCrate()
-
 
 def ReadROCrateMetadata(
         cratePath: str
-):
+)-> ROCrate:
     """ Given a path read the rocrate metadata into a pydantic model
     """
 
@@ -308,9 +282,14 @@ def ReadROCrateMetadata(
     else:
         metadataCratePath = cratePath + "/ro-crate-metadata.json"
 
-    with open(cratePath, "r") as metadataFile:
+    if cratePath.exists() != True:
+        raise Exception(f'ro-crate-metadata.json not found at path {metadataCratePath}')
+
+    with open(metadataCratePath, "r") as metadataFile:
         crateMetadata = json.load(metadataFile)
-        return ROCrate(**crateMetadata)
+        readCrate = ROCrate.model_validate(crateMetadata)
+    
+    return readCrate
 
 
 def AppendCrate(

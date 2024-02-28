@@ -7,16 +7,14 @@ from datetime import datetime
 
 from fairscape_cli.models import (
     Dataset,
+    GenerateDataset,
     Software,
+    GenerateSoftware,
     Computation,
-    DatasetContainer,
+    GenerateComputation,
     ROCrate,
+    ReadROCrateMetadata,
     BagIt
-)
-
-from fairscape_cli.rocrate.utils import (
-    generate_id,
-    inside_crate 
 )
 
 from typing import (
@@ -63,8 +61,7 @@ def init(
     description,
     keywords
 ):
-
-    passed_crate =ROCrate(
+    passed_crate = ROCrate(
         guid=guid,
         name=name,
         organizationName = organization_name,
@@ -77,6 +74,7 @@ def init(
 
     try:
         passed_crate.initCrate()
+        click.echo(passed_crate.guid)
     except Exception as e:
         click.echo(f"ERROR: {str(e)}")
     
@@ -101,16 +99,8 @@ def create(
     '''Create an ROCrate in a new path specified by the rocrate-path argument
     '''
     
-    organization_guid = f"ark:5982/{organization_name.replace(' ', '_')}"
-    project_guid = organization_guid + f"/{project_name.replace(' ', '_')}"
-
-    if guid != "":
-        crate_guid = guid
-    else:
-        crate_guid = project_guid + f"/{name.replace(' ', '_')}"
-
     passed_crate = ROCrate(
-        guid=crate_guid,
+        guid=guid,
         name=name,
         organizationName = organization_name,
         projectName = project_name,
@@ -123,13 +113,13 @@ def create(
     passed_crate.createCrateFolder()
     passed_crate.initCrate()
 
-    click.echo(crate_guid)
+    click.echo(passed_crate.guid)
 
 
 
 
 ##########################
-# RO Crate add subcommands
+# RO Crate register subcommands
 ##########################
 @rocrate.group('register')
 def register():
@@ -176,51 +166,34 @@ def registerSoftware(
         click.echo(f"Cannot Find RO-Crate Metadata: {metadata_path}")
         click.Abort()
 
-    crate = ROCrate.model_construct(
-        _fields_set={"path"}, 
-        **{"path": metadata_path}
-    ) 
-
-
-    software_metadata = {
-            "@id": guid,
-            "@type": "https://w3id.org/EVI#Software",
-            "url": url,
-            "name": name,
-            "author": author,
-            "dateModified": date_modified,
-            "description": description,
-            "keywords": keywords,
-            "version": version,
-            "associatedPublication": associated_publication,
-            "additionalDocumentation": additional_documentation,
-            "format": file_format,
-            # sanitize new line characters for multiple inputs
-            "usedByComputation": [
-                computation.strip("\n") for computation in used_by_computation
-            ],
-        }
-
-    if filepath is not None:
-        if type(filepath) == str:
-            # TODO if URL just set
-            software_metadata["contentUrl"] = filepath 
-        if type(filepath) == pathlib.Path:
-            # TODO if pathlike object
-            pass
+    rocrate_instance = ReadROCrateMetadata(metadata_path)
 
     try:
-        software_model = Software(**software_metadata)
-        crate.registerSoftware(software_model)
+        software_instance = GenerateSoftware(
+                guid=guid,
+                url= url,
+                name=name,
+                version=version,
+                keywords=keywords,
+                file_format=file_format,
+                description=description,
+                author= author,
+                associated_publication=associated_publication,
+                additional_documentation=additional_documentation,
+                date_modified=date_modified,
+                used_by_computation=used_by_computation,
+                filepath=filepath,
+                crate_path = metadata_path
+        )
+    
+        rocrate_instance.registerSoftware(software_instance)
+        click.echo(guid)
 
     except ValidationError as e:
         click.echo("Software Validation Error")
         click.echo(e)
         click.Abort()
         
- 
-    click.echo(guid)
-
 
 
 @register.command('dataset')
@@ -259,59 +232,42 @@ def registerDataset(
     additional_documentation: Optional[List[str]],
 ):
     
-    metadata_path = rocrate_path / "ro-crate-metadata.json"
-
-    # check if you are in the rocrate path
-    # ro-crate-metadata.json should be a local file
-    if metadata_path.exists() != True:
-        click.echo(f"Cannot Find RO-Crate Metadata: {metadata_path}")
-        click.Abort()
-
-    crate = ROCrate.model_construct(
-        _fields_set={"path"}, 
-        **{"path": metadata_path}
-    ) 
-
-
-    dataset_metadata = {
-            "@id": guid,
-            "@type": "https://w3id.org/EVI#Dataset",
-            "url": url,
-            "author": author,
-            "name": name,
-            "description": description,
-            "keywords": keywords,
-            "datePublished": date_published,
-            "version": version,
-            "associatedPublication": associated_publication,
-            "additionalDocumentation": additional_documentation,
-            "format": data_format,
-            "schema": schema,
-            # sanitize input lists of newline breaks
-            "derivedFrom": [
-                derived.strip("\n") for derived in derived_from
-            ],
-            "usedBy": [
-                used.strip("\n") for used in used_by 
-            ],
-            }
-
-    # TODO set relative filepath to root of crate
-    if filepath != "" and filepath is not None:
-        dataset_metadata["contentUrl"] = f"file://{str(filepath)}" 
-
-
     try:
-        dataset_model = Dataset.model_validate(dataset_metadata)
-        crate.registerDataset(dataset_model)
+        crate_instance = ReadROCrateMetadata(rocrate_path)
+    except Exception as exc:
+        click.echo(f"ERROR: {str(exc)}")
+        click.Abort()
+    
+    try:
+        dataset_instance = GenerateDataset(
+            guid=guid,
+            url=url,
+            author=author,
+            name=name,
+            description=description,
+            keywords=keywords,
+            datePublished=date_published,
+            version=version,
+            associatedPublication=associated_publication,
+            additionalDocumentation=additional_documentation,
+            format=data_format,
+            schema=schema,
+            derivedFrom=derived_from,
+            usedBy=used_by,
+            cratePath=rocrate_path
+        )
 
     except ValidationError as e:
         click.echo("Dataset Validation Error")
         click.echo(e)
         click.Abort()
+    except Exception as exc:
+        click.echo(f"ERROR: {str(exc)}")
+        click.Abort()
     
+    crate_instance.registerDataset(dataset_instance)
  
-    click.echo(guid)
+    click.echo(dataset_instance.guid)
 
 
 @register.command('computation')

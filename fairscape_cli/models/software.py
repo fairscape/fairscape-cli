@@ -43,57 +43,61 @@ def GenerateSoftware(
     version,
     description, 
     keywords,
-    file_format,
+    fileFormat,
     url,
-    date_modified,
+    dateModified,
     filepath,
-    used_by_computation,
-    associated_publication,
-    additional_documentation,
-    crate_path
+    usedByComputation,
+    associatedPublication,
+    additionalDocumentation,
+    cratePath
 ) -> Software:
     """ Generate a Software Model Class
     """
 
-    software_metadata = {
+    softwareMetadata = {
             "@type": "https://w2id.org/EVI#Software",
             "url": url,
             "name": name,
             "author": author,
-            "dateModified": date_modified,
+            "dateModified": dateModified,
             "description": description,
             "keywords": keywords,
             "version": version,
-            "associatedPublication": associated_publication,
-            "additionalDocumentation": additional_documentation,
-            "format": file_format,
+            "associatedPublication": associatedPublication,
+            "additionalDocumentation": additionalDocumentation,
+            "format": fileFormat,
             # sanitize new line characters for multiple inputs
             "usedByComputation": [
-                computation.strip("\n") for computation in used_by_computation
+                computation.strip("\n") for computation in usedByComputation
             ],
         }
 
     if filepath is not None:
+
         # if filepath is a url        
         if 'http' in  filepath:
-            software_metadata['contentUrl'] = filepath
+            softwareMetadata['contentUrl'] = filepath
 
         # if filepath is a path that exists
         else:
-            software_path = pathlib.Path(filepath)
-            rocrate_path = pathlib.Path(crate_path)
-            if software_path.exists() and software_path.is_relative_to(rocrate_path):
+            if 'ro-crate-metadata.json' in cratePath:
+                rocratePath = pathlib.Path(cratePath).parent
+            else:
+                rocratePath = pathlib.Path(cratePath)
+            softwarePath = pathlib.Path(filepath)
+            if softwarePath.exists() and softwarePath.is_relative_to(rocratePath):
                 # create a relative filepath to the ro-crate
-                software_metadata['contentUrl'] = f"file:///{str(software_path.relative_to(rocrate_path))}"
+                softwareMetadata['contentUrl'] = f"file:///{str(softwarePath.relative_to(rocratePath))}"
             else:
                 raise Exception('Software File is not inside of RO-Crate')
 
     # validate metadata
-    software_model = Software.model_validate(software_metadata)
+    softwareModel = Software.model_validate(softwareMetadata)
 
     # generate guid for software model
-    software_model.generate_guid()
+    softwareModel.generate_guid()
 
-    return software_model
+    return softwareModel
 
 
