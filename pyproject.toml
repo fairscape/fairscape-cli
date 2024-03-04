@@ -1,5 +1,5 @@
 [project]
-name = "fairscape-cli"
+name = "fairscape_cli"
 version = "0.1.14a1"
 description = "CLI tool for B2AI metadata validation and ROCrate creation"
 readme = "README.md"
@@ -31,7 +31,7 @@ requires-python = ">=3.8"
 include-package-data = true
 
 [tool.setuptools.packages.find]
-where = [ '']
+where = ['fairscape_cli']
 
 
 [tool.setuptools.package-data]
