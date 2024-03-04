@@ -29,7 +29,7 @@ from datetime import datetime
 
 class Dataset(FairscapeBaseModel):
     guid: Optional[str] = Field(alias="@id", default=None)
-    metadataType: Optional[str] = Field(default="https://w3id.org/EVI#Dataset")
+    metadataType: Optional[str] = Field(alias="@type", default="https://w3id.org/EVI#Dataset")
     author: str = Field(max_length=64)
     datePublished: str = Field(...)
     version: str
@@ -48,6 +48,9 @@ class Dataset(FairscapeBaseModel):
         if self.guid is None:
             sq = GenerateDatetimeSquid()
             self.guid = f"ark:{NAAN}/dataset-{self.name.lower().replace(' ', '-')}-{sq}"
+        else:
+            # TODO ensure ark is formatted correctly
+            pass
         return self.guid
 
 def GenerateDataset(

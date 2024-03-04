@@ -14,6 +14,7 @@ from fairscape_cli.models.schema.image import (
 from fairscape_cli.models.schema.tabular import (
     TabularValidationSchema,
     ReadSchema,
+    ImportDefaultSchemas,
     WriteSchema,
     StringProperty,
     NumberProperty,
@@ -28,7 +29,8 @@ from fairscape_cli.models.schema.tabular import (
 )
 from fairscape_cli.schema.schema_pysimplegui import (
     create_window,
-    initialize_gui)
+    initialize_gui
+)
 
 from fairscape_cli.config import (
     FAIRSCAPE_URI
@@ -211,7 +213,7 @@ def add_property_array(ctx, name, index, description, value_url, items_datatype,
     try:
         datatype_enum = DatatypeEnum(items_datatype)
     except Exception:
-        print(f"ITEMS Datatype {itemsDatatype} invalid\n" +
+        print(f"ITEMS Datatype {items_datatype} invalid\n" +
             "ITEMS must be oneOf 'boolean'|'object'|'string'|'number'|'integer'" 
         )
         raise click.Abort("")
@@ -237,9 +239,6 @@ def add_property_array(ctx, name, index, description, value_url, items_datatype,
     ClickAppendProperty(ctx, schema_file, arrayPropertyModel, name)
     
 
-#@create.command('image')
-#def create_image():
-#    pass
 
 @schema.command('validate')
 @click.option('--schema', type=str, required=True)
@@ -284,18 +283,31 @@ def register(schema):
 
 
 @schema.command('list')
-@click.option('--fairscape-uri', type=str, required=False, default=FAIRSCAPE_URI)
+@click.option('--fairscape-uri', type=str, required=False, default=None)
 def list(fairscape_uri):
 
-    # TODO list all schemas from fairscape remote
-    pass
+    # List local schemas
+    if fairscape_uri is not None:
+        pass
+
+    else:
+        defaultSchemaList = ImportDefaultSchemas()
+
+        # create a table of the schema details
+        defaultSchemaTable = PrettyTable()
+        defaultSchemaTable.field_names = ['name', 'guid', 'description']
+
+        for schema in defaultSchemaList:
+            defaultSchemaTable.add_row([schema.name, schema.guid, schema.description])
+
+        print(defaultSchemaTable)
+
 
 
 @schema.command('get')
 @click.option('--schema-guid', type=str, required=True)
 @click.option('--fairscape-uri', type=str, required=False, default=FAIRSCAPE_URI)
 def get(schema_guid, fairscape_uri):
-
     # TODO get schema spec from fairscape remote
     pass
 

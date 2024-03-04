@@ -1,5 +1,7 @@
 import jsonschema
 import pathlib
+from functools import lru_cache
+import os
 import json
 
 from pydantic import (
@@ -410,18 +412,23 @@ def ClickAppendProperty(ctx, schemaFile, propertyModel, name):
         print(str(propertyException))
         ctx.exit(code=1)
 
-def readSchemaGithub(schemaURI: str) -> TabularValidationSchema:
+
+def ReadSchemaGithub(schemaURI: str) -> TabularValidationSchema:
     pass
 
-def readSchemaFairscape(schemaArk: str) -> TabularValidationSchema:
+def ReadSchemaFairscape(schemaArk: str) -> TabularValidationSchema:
     pass
 
 
-def readSchemaLocal(schemaFile: str) -> TabularValidationSchema:
+def ReadSchemaLocal(schemaFile: pathlib.Path) -> TabularValidationSchema:
     """ Helper function for reading the schema and marshaling into the pydantic model
     """
+
+    if not schemaFile.exists():
+        raise Exception(f'Schema at path {schemaFile} not found')
+
     # read the schema
-    with open(schemaFile, "r") as inputSchema:
+    with schemaFile.open("r") as inputSchema:
         inputSchemaData = inputSchema.read()
         schemaJson =  json.loads(inputSchemaData) 
 
@@ -429,24 +436,33 @@ def readSchemaLocal(schemaFile: str) -> TabularValidationSchema:
     tabularSchema = TabularValidationSchema.model_validate(schemaJson)
     return tabularSchema
 
+
 def ReadSchema(schemaFile:str) -> TabularValidationSchema:
-    '''
+    ''' Read a schema specified by the argument schemaFile
+
+    The schemaFile parameter can be a url to a rawgithub link, or an ark identifier.
+    If the ark identifier is in the supplied, default schemas provided in the fairscape cli pacakges will be searched.
+    If there is no match then 
     '''
     if 'raw.githubusercontent' in schemaFile:
-        schemaInstance = readSchemaGithub(schemaFile)
+        schemaInstance = ReadSchemaGithub(schemaFile)
         return schemaInstance
 
+
     elif 'ark' in schemaFile:
-        defaultSchema = DEFAULT_SCHEMAS.get(schemaFile)
-        if defaultSchema is None:
+        defaultSchemas = ImportDefaultSchemas()
+        matchingSchemas = list(filter(lambda schema: schema.guid == schemaFile, defaultSchemas))
+
+        if len(matchingSchemas) == 0:
             # request against fairscape
             schemaInstance = ReadSchemaFairscape(schemaFile)
             return schemaInstance
         else:
+            defaultSchema = matchingSchemas[0]
             return defaultSchema
     elif pathlib.Path(schemaFile).exists():
         # schema must be a path that exists
-        schemaInstance = readSchemaLocal(schemaFile)
+        schemaInstance = ReadSchemaLocal(schemaFile)
         return schemaInstance
     else:
         raise Exception(f'Schema not found {schemaFile}')
@@ -464,3 +480,24 @@ def WriteSchema(tabular_schema: TabularValidationSchema, schema_file):
         output_file.write(schema_json)
 
 
+
+@lru_cache
+def ImportDefaultSchemas()-> List[TabularValidationSchema]:
+	defaultSchemaLocation = pathlib.Path(os.path.dirname(os.path.realpath(__file__))) / 'default_schemas'
+	schemaPaths = list(defaultSchemaLocation.rglob("*/*.json"))
+
+	defaultSchemaList = []
+	for schemaPathElem in schemaPaths:
+
+		with schemaPathElem.open("r") as inputSchema:
+			inputSchemaData = inputSchema.read()
+			schemaJson =  json.loads(inputSchemaData) 
+
+		try:		
+			schemaElem = TabularValidationSchema.model_validate(schemaJson)
+			defaultSchemaList.append(schemaElem)
+		except:
+			# TODO handle validation failures from default schemas
+			pass
+	
+	return defaultSchemaList

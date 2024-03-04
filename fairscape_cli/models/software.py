@@ -19,7 +19,8 @@ from typing import (
 
 
 class Software(FairscapeBaseModel): 
-    metadataType: str = "https://w3id.org/EVI#Software"
+    guid: Optional[str] = Field( alias='@id', default=None,)
+    metadataType: Optional[str] = Field(alias="@id", default="https://w3id.org/EVI#Software")
     author: str = Field(min_length=4, max_length=64)
     dateModified: str
     version: str

@@ -27,8 +27,8 @@ from typing import (
 
 
 class ROCrate(BaseModel):
-    guid: Optional[str] = Field(default=None, alias="@id")
-    metadataType: str = Field(default="https://schema.org/Dataset")
+    guid: Optional[str] = Field(alias="@id", default=None)
+    metadataType: str = Field(alias="@type", default="https://schema.org/Dataset")
     name: str = Field(max_length=200)
     description: str = Field(min_length=10)
     keywords: List[str] = Field(...)
@@ -131,6 +131,8 @@ class ROCrate(BaseModel):
         '''
 
         metadata_path = pathlib.Path(self.path)
+
+        # TODO assure no duplicative content
 
         with metadata_path.open("r+") as rocrate_metadata_file:
             rocrate_metadata = json.load(rocrate_metadata_file)

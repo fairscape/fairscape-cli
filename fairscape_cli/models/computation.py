@@ -17,6 +17,7 @@ from datetime import datetime
 
 
 class Computation(FairscapeBaseModel):
+    guid: Optional[str] = Field(default=None, alias="@id")
     metadataType: str = Field(default="https://w3id.org/EVI#Computation")
     runBy: str
     dateCreated: str 

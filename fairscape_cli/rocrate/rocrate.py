@@ -157,17 +157,12 @@ def registerSoftware(
     additional_documentation
     ):
     
-    metadata_path = rocrate_path / "ro-crate-metadata.json"
-    #click.echo(f"METADATA PATH: {str(metadata_path)}")
-
-    # check if you are in the rocrate path
-    # ro-crate-metadata.json should be a local file
-    if metadata_path.exists() != True:
-        click.echo(f"Cannot Find RO-Crate Metadata: {metadata_path}")
+    try:
+        crateInstance = ReadROCrateMetadata(rocrate_path)
+    except Exception as exc:
+        click.echo(f"ERROR: {str(exc)}")
         click.Abort()
-
-    rocrate_instance = ReadROCrateMetadata(metadata_path)
-
+    
     try:
         software_instance = GenerateSoftware(
                 guid=guid,
@@ -183,10 +178,10 @@ def registerSoftware(
                 date_modified=date_modified,
                 used_by_computation=used_by_computation,
                 filepath=filepath,
-                crate_path = metadata_path
+                crate_path =rocrate_path 
         )
     
-        rocrate_instance.registerSoftware(software_instance)
+        crateInstance.registerSoftware(software_instance)
         click.echo(guid)
 
     except ValidationError as e:
@@ -296,191 +291,34 @@ def computation(
     generated
 ):
 
-    
-    # check if you are in the rocrate path
-    # ro-crate-metadata.json should be a local file
-    metadata_path = rocrate_path / "ro-crate-metadata.json"
-    if metadata_path.exists() != True:
-        click.echo(f"Cannot Find RO-Crate Metadata: {metadata_path}")
+    try:
+        crateInstance = ReadROCrateMetadata(rocrate_path)
+    except Exception as exc:
+        click.echo(f"ERROR: {str(exc)}")
         click.Abort()
 
-    crate = ROCrate.model_construct(
-        _fields_set={"path"}, 
-        **{"path": metadata_path}
-    ) 
 
-    if guid == "":
-        guid = generate_id(metadata_path, name, "Computation")
-
-    # initilize the model with the required properties
     try:
-
-        computation_model = Computation(   
-            **{
-            "@id": guid,
-            "@type": "https://w3id.org/EVI#Computation",
-            "name": name,
-            "description": description,
-            "keywords": keywords,
-            "runBy": run_by,
-            "command": command,
-            "dateCreated": date_created,
-            "description": description,
-            # sanitize input lists of newline breaks
-            "usedSoftware": [
-                software.strip("\n") for software in used_software
-            ],
-            "usedDataset": [
-                dataset.strip("\n") for dataset in used_dataset 
-            ],
-            "generated": [
-                output.strip("\n") for output in generated
-            ],
-            }
+        computationModel = GenerateComputation(
+            name=name,
+            run_by=run_by,
+            command= command,
+            dateCreated= date_created,
+            description= description,
+            keywords= keywords,
+            usedSoftware= used_software,
+            usedDataset= used_dataset,
+            generated= generated
         )
-        crate.registerComputation(computation_model)
+
+        crateInstance.registerComputation(computationModel)
+        click.echo(computationModel.guid)
 
     except ValidationError as e:
         click.echo("Computation Validation Error")
         click.echo(e)
         click.Abort()
 
-    
-    click.echo(guid)
-        #click.echo("Added Computation")
-        #click.echo(
-        #    json.dumps(computation_model.dict(by_alias=True), indent=2)
-        #)
-
-
-
-@register.command('dataset-container')
-@click.argument('rocrate-path', type=click.Path(exists=True, path_type=pathlib.Path))
-@click.option('--guid', required=False, default="", type=str, show_default=False)
-@click.option('--name', required=True) #, prompt="DatasetContainer Name")
-@click.option('--description', required=True)
-@click.option('--keywords', required=True, multiple=True)
-@click.option('--has-part', required=False, multiple=True)
-@click.option('--is-part-of', required=False, multiple=True)
-def registerDatasetContainer(
-    rocrate_path, 
-    guid, 
-    name, 
-    description, 
-    keywords,
-    has_part, 
-    is_part_of
-):
-    '''Add a DatasetContainer to the ROCrate.
-
-    A Dataset Container is used for grouping sets of datasets. Only Datasets may be added to the dataset container hasPart property.
-    '''
-   
-    # check that crate exists 
-    metadata_path = rocrate_path / "ro-crate-metadata.json"
-    if metadata_path.exists() != True:
-        click.echo(f"Cannot Find RO-Crate Metadata: {metadata_path}")
-        click.Abort()
-
-    crate = ROCrate.model_construct(
-        _fields_set={"path"}, 
-        **{"path": metadata_path}
-    ) 
-
-    if guid == "":
-        guid = generate_id(metadata_path, name, "Dataset")
-
-    # validate the provided metadata
-    try: 
-        dscontainer = DatasetContainer(**{
-            "guid": guid,
-            "name": name,
-            "description": description,
-            "keywords": keywords,
-            "hasPart": has_part,
-            "isPartOf": is_part_of
-        })
-
-        crate.registerObject(dscontainer) 
-        click.echo(guid)
-
-    except ValidationError as e:
-        click.echo("DatasetContainer Validation Error")
-        click.echo(e)
-        click.Abort()
-
-    
-
-
-###############################################################################
-#                             Dataset Container Commands                      #
-###############################################################################
-
-@rocrate.group('dataset-container')
-def datasetContainer():
-    pass
-
-@datasetContainer.command('pop')
-@click.argument('rocrate-path', type=click.Path(exists=True, path_type=pathlib.Path))
-@click.option('--dataset-container', required=True)
-@click.option('--dataset-guid', required=True, multiple=True)
-def popDatasetContainer(rocrate_path, dataset_container, dataset_guid):
-    """ Add dataset elements to the specified dataset container
-    """
-    # check that crate exists 
-    metadata_path = rocrate_path / "ro-crate-metadata.json"
-    if metadata_path.exists() != True:
-        click.echo(f"Cannot Find RO-Crate Metadata: {metadata_path}")
-        click.Abort()
-
-    crate = ROCrate.model_construct(
-        _fields_set={"path"}, 
-        **{"path": metadata_path}
-    ) 
-
-    # TODO check that dataset container is guid
-
-    # TODO check that dataset guid is guid
-
-    try:
-        crate.popDatasetContainer(dataset_container, dataset_guid)
-
-    except Exception as e:
-        click.echo("Error poping element from DatasetContainer")
-        click.Abort()
-
-
-@datasetContainer.command('push')
-@click.argument('rocrate-path', type=click.Path(exists=True, path_type=pathlib.Path))
-@click.option('--dataset-container', required=True)
-@click.option('--dataset-guid', required=True, multiple=True)
-def pushDatasetContainer(rocrate_path, dataset_container, dataset_guid):
-    """ Add dataset elements to the specified dataset container
-    """
-
-    # check that crate exists 
-    metadata_path = rocrate_path / "ro-crate-metadata.json"
-    if metadata_path.exists() != True:
-        click.echo(f"Cannot Find RO-Crate Metadata: {metadata_path}")
-        click.Abort()
-
-    crate = ROCrate.model_construct(
-        _fields_set={"path"}, 
-        **{"path": metadata_path}
-    ) 
-
-    # TODO check that dataset container is guid
-
-    # TODO check that dataset guid is guid
-
-    try:
-        crate.pushDatasetContainer(dataset_container, dataset_guid)
-
-    except Exception as e:
-        click.echo("Error pushing element to DatasetContainer")
-        click.Abort()
-
-    
 
 
 # RO Crate add subcommands
@@ -523,23 +361,13 @@ def software(
     additional_documentation
 ):
  
-    metadata_path = rocrate_path / "ro-crate-metadata.json"
-
-    # check if you are in the rocrate path
-    # ro-crate-metadata.json should be a local file
-    if metadata_path.exists() != True:
-        click.echo(f"Cannot Find RO-Crate Metadata: {metadata_path}")
+    try:
+        crateInstance = ReadROCrateMetadata(rocrate_path)
+    except Exception as exc:
+        click.echo(f"ERROR: {str(exc)}")
         click.Abort()
 
-    if guid == "":
-        guid = generate_id(metadata_path, name, "Software")
-
     
-    crate = ROCrate.model_construct(
-        _fields_set={"path"}, 
-        **{"path": metadata_path}
-    ) 
-
 
     try:
         software_model = Software(   
@@ -563,7 +391,7 @@ def software(
             "contentUrl": "file://" + str(pathlib.Path(destination_filepath))
             }
         )
-        crate.registerSoftware(software_model)
+        crateInstance.registerSoftware(software_model)
 
     except ValidationError as e:
         click.echo("Software Validation Error")
@@ -572,14 +400,14 @@ def software(
 
 
     try:
-        crate.copyObject(source_filepath, destination_filepath)
+        crateInstance.copyObject(source_filepath, destination_filepath)
 
     except Exception as e:
         click.echo("Failed to Copy Software")
         click.echo(e)
         click.Abort()
 
-    click.echo(guid)
+    click.echo(software_model.guid)
 
     # TODO add to cache
 
@@ -622,26 +450,12 @@ def dataset(
     additional_documentation: Optional[List[str]],
 ):
 
-
-    metadata_path = rocrate_path / "ro-crate-metadata.json"
-    # check if you are in the rocrate path
-    # ro-crate-metadata.json should be a local file
-
-    source_path = pathlib.Path(source_filepath)
-    destination_path = pathlib.Path(destination_filepath)
-
-    if metadata_path.exists() != True:
-        click.echo(f"Cannot Find RO-Crate Metadata: {metadata_path}")
+    try:
+        crateInstance = ReadROCrateMetadata(rocrate_path)
+    except Exception as exc:
+        click.echo(f"ERROR: {str(exc)}")
         click.Abort()
 
-    if guid == "":
-        guid = generate_id(metadata_path, name, "Dataset")
-
-
-    crate = ROCrate.model_construct(
-        _fields_set={"path"}, 
-        **{"path": metadata_path}
-    ) 
     
     try:
         dataset_model = Dataset.model_validate({
@@ -665,11 +479,11 @@ def dataset(
                 used.strip("\n") for used in used_by 
             ],
             "schema": schema,
-            "contentUrl": "file://" + str(destination_path)
+            "contentUrl": "file://" + str(destination_filepath)
             })
 
-        crate.registerDataset(dataset_model)
-        crate.copyObject(source_filepath, destination_filepath)
+        crateInstance.registerDataset(dataset_model)
+        crateInstance.copyObject(source_filepath, destination_filepath)
 
     except ValidationError as e:
         click.echo("Software Validation Error")
