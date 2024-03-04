@@ -420,15 +420,16 @@ def ReadSchemaFairscape(schemaArk: str) -> TabularValidationSchema:
     pass
 
 
-def ReadSchemaLocal(schemaFile: pathlib.Path) -> TabularValidationSchema:
+def ReadSchemaLocal(schemaFile: str) -> TabularValidationSchema:
     """ Helper function for reading the schema and marshaling into the pydantic model
     """
+    schemaPath = pathlib.Path(schemaFile)
 
-    if not schemaFile.exists():
+    if not schemaPath.exists():
         raise Exception(f'Schema at path {schemaFile} not found')
 
     # read the schema
-    with schemaFile.open("r") as inputSchema:
+    with schemaPath.open("r") as inputSchema:
         inputSchemaData = inputSchema.read()
         schemaJson =  json.loads(inputSchemaData) 
 
@@ -444,6 +445,7 @@ def ReadSchema(schemaFile:str) -> TabularValidationSchema:
     If the ark identifier is in the supplied, default schemas provided in the fairscape cli pacakges will be searched.
     If there is no match then 
     '''
+
     if 'raw.githubusercontent' in schemaFile:
         schemaInstance = ReadSchemaGithub(schemaFile)
         return schemaInstance
@@ -451,7 +453,7 @@ def ReadSchema(schemaFile:str) -> TabularValidationSchema:
 
     elif 'ark' in schemaFile:
         defaultSchemas = ImportDefaultSchemas()
-        matchingSchemas = list(filter(lambda schema: schema.guid == schemaFile, defaultSchemas))
+        matchingSchemas = list(filter(lambda schema: schema.guid == str(schemaFile), defaultSchemas))
 
         if len(matchingSchemas) == 0:
             # request against fairscape
@@ -460,12 +462,12 @@ def ReadSchema(schemaFile:str) -> TabularValidationSchema:
         else:
             defaultSchema = matchingSchemas[0]
             return defaultSchema
-    elif pathlib.Path(schemaFile).exists():
+
+    else: 
         # schema must be a path that exists
         schemaInstance = ReadSchemaLocal(schemaFile)
         return schemaInstance
-    else:
-        raise Exception(f'Schema not found {schemaFile}')
+
 
 
 def WriteSchema(tabular_schema: TabularValidationSchema, schema_file):
