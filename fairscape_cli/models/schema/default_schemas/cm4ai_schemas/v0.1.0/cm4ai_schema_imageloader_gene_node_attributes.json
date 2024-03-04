@@ -1,0 +1,56 @@
+{
+  "@id": "ark:59852/schema-cm4ai-imageloader-gene-node-attributes",
+  "@context": {
+      "@vocab": "https://schema.org/",
+      "EVI": "https://w3id.org/EVI#"
+    },
+  "@type": "EVI:Schema",
+  "name": "Imageloader Gene Node Attributes",
+  "description": "Schema for CM4AI imageloader file image_gene_node_attributes.tsv",
+  "properties": {
+    "name": {
+      "description": "Gene Symbol for the tagged protien",
+      "index": 0,
+      "valueURL": "http://edamontology.org/data_1026",
+      "type": "string",
+      "pattern": null
+    },
+    "represents": {
+      "description": "Ensembl Gene ID for protien antibody targets, may have multiple matches",
+      "index": 1,
+      "valueURL": "http://edamontology.org/data_1033",
+      "type": "string",
+      "pattern": "^(?:ENSG[0-9]{11})(;?ENSG[0-9]{11})*$|^nan$"
+    },
+		"ambiguous": {
+			"index": 2,
+			"type": "null",
+			"description": "Indicator variable for whether the protien is identified ambiguously"
+		},
+    "antibody": {
+        "description": "Antibody Identifier from Human Protien Atlas or negative control",
+        "index": 3,
+        "valueURL": "http://edamontology.org/data_2772",
+        "type": "string",
+        "pattern": "^CAB[0-9]{6}$|^HPA[0-9]{6}$|^NEGATIVE-CTRL$"
+    },
+    "filename": {
+        "description": "The filename of the specified IF image",
+        "index": 4,
+        "type": "string",
+        "pattern": "^B2AI_[0-9]*_.*$"
+    },
+    "imageurl": {
+			"description": "URL for specified uniquely specified IF image",
+      "index": 5,
+      "type": "string",
+      "pattern": null 
+    }
+  },
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["name", "represents", "ambiguous", "antibody", "filename", "imageurl"],
+  "separator": "\t",
+  "header": true,
+  "examples": []
+}
