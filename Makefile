@@ -1,4 +1,4 @@
-VERSION ?= 0.1.11
+VERSION ?= 0.1.14a2
 
 build:
 	python3 -m build
