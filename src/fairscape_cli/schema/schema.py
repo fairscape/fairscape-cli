@@ -120,15 +120,19 @@ def add_property_string(ctx, name, index, description, value_url, pattern, schem
 @click.option('--name', type=str, required=True)
 @click.option('--index', type=int, required=True)
 @click.option('--description', type=str, required=True)
+@click.option('--maximum', type=float, required=False)
+@click.option('--minimum', type=float, required=False)
 @click.option('--value-url', type=str, required=False)
 @click.argument('schema_file', type=click.Path(exists=True))
 @click.pass_context
-def add_property_number(ctx, name, index, description, value_url, schema_file):
+def add_property_number(ctx, name, index, description, maximum, minimum, value_url, schema_file):
     # instantiate the NumberPropertyModel
     try:
         numberPropertyModel = NumberProperty.model_validate({
             "name": name,
             "index": index,
+            'maximum': maximum,
+            'minimum': minimum,
             "description": description,
             "valueURL": value_url
             })
@@ -172,16 +176,20 @@ def add_property_boolean(ctx, name, index, description, value_url, schema_file):
 @click.option('--name', type=str, required=True)
 @click.option('--index', type=int, required=True)
 @click.option('--description', type=str, required=True)
+@click.option('--maximum', type=int, required=False)
+@click.option('--minimum', type=int, required=False)
 @click.option('--value-url', type=str, required=False)
 @click.argument('schema_file', type=click.Path(exists=True))
 @click.pass_context
-def add_property_integer(ctx, name, index, description, value_url, schema_file):
+def add_property_integer(ctx, name, index, description, maximum, minimum, value_url, schema_file):
 
     try:
         integerPropertyModel = IntegerProperty.model_validate({
             "name": name,
             "index": index,
             "description": description,
+            "maximum": maximum,
+            "minimum": minimum,
             "valueURL": value_url
             })
 
@@ -267,42 +275,3 @@ def validate(ctx, schema, data):
     else:
         print('ERROR: must pass either schema & data path')
 
-
-@schema.command('register')
-@click.option('--schema', type=str, required=True)
-def register(schema):
-
-    # TODO read the schema
-
-    # TODO upload to remote fairscape
-    pass
-
-
-@schema.command('list')
-@click.option('--fairscape-uri', type=str, required=False, default=None)
-def list(fairscape_uri):
-
-    # List local schemas
-    if fairscape_uri is not None:
-        pass
-
-    else:
-        defaultSchemaList = ImportDefaultSchemas()
-
-        # create a table of the schema details
-        defaultSchemaTable = PrettyTable()
-        defaultSchemaTable.field_names = ['name', 'guid', 'description']
-
-        for schema in defaultSchemaList:
-            defaultSchemaTable.add_row([schema.name, schema.guid, schema.description])
-
-        print(defaultSchemaTable)
-
-
-
-@schema.command('get')
-@click.option('--schema-guid', type=str, required=True)
-@click.option('--fairscape-uri', type=str, required=False, default=FAIRSCAPE_URI)
-def get(schema_guid, fairscape_uri):
-    # TODO get schema spec from fairscape remote
-    pass
