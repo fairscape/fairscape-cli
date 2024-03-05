@@ -8,6 +8,8 @@ setup(
 	author = 'Max Levinson, Sadnan Al Manir, Tim Clark',
 	author_email='mal8ch@virginia.edu, sadnanalmanir@gmail.com, twc8q@virginia.edu',
 	license = "LICENSE",
+	# project urls
+	url= "https://github.com/fairscape/fairscape-cli",
 	classifiers = [
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python",
@@ -24,7 +26,7 @@ setup(
 		"sqids>=0.4.1",	
 	],
 	packages=find_packages(),
-	package_dir= {"": "fairscape_cli"},
+	package_dir= {"": "src"},
 	include_package_data=True,
 	entry_points={
 		'console_points': [
