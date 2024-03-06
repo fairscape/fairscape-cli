@@ -29,20 +29,8 @@ from typing import (
 # RO Crate 
 @click.group('rocrate')
 def rocrate():
-    pass
-
-# RO Crate Subcommands
-
-@rocrate.command('hash')
-def hash():
-    pass
-
-@rocrate.command('validate')
-def validate():
-    pass
-
-@rocrate.command('zip')
-def zip():
+    """Invoke operations on Research Object Crate (RO-CRate).
+    """
     pass
 
 
@@ -61,6 +49,8 @@ def init(
     description,
     keywords
 ):
+    """ Initalize a rocrate in the current working directory by instantiating a ro-crate-metadata.json file.
+    """
     passed_crate = ROCrate(
         guid=guid,
         name=name,
@@ -123,6 +113,8 @@ def create(
 ##########################
 @rocrate.group('register')
 def register():
+    """ Add a metadata record to the RO-Crate for a Dataset, Software, or Computation
+    """
     pass
 
 @register.command('software')
@@ -156,7 +148,8 @@ def registerSoftware(
     associated_publication,
     additional_documentation
     ):
-    
+    """Register a Software metadata record to the specified ROCrate
+    """    
     try:
         crateInstance = ReadROCrateMetadata(rocrate_path)
     except Exception as exc:
@@ -226,7 +219,8 @@ def registerDataset(
     associated_publication: Optional[str],
     additional_documentation: Optional[List[str]],
 ):
-    
+    """Register Dataset object metadata with the specified RO-Crate 
+    """    
     try:
         crate_instance = ReadROCrateMetadata(rocrate_path)
     except Exception as exc:
@@ -290,7 +284,8 @@ def computation(
     used_dataset,
     generated
 ):
-
+    """Register a Computation with the specified RO-Crate
+    """
     try:
         crateInstance = ReadROCrateMetadata(rocrate_path)
     except Exception as exc:
@@ -324,6 +319,8 @@ def computation(
 # RO Crate add subcommands
 @rocrate.group('add')
 def add():
+    """ Copy a file over to the RO-Crate and register it's corresponding metadata.
+    """
     pass
 
 
@@ -360,7 +357,8 @@ def software(
     associated_publication,
     additional_documentation
 ):
- 
+    """Add a Software and its corresponding metadata.
+    """
     try:
         crateInstance = ReadROCrateMetadata(rocrate_path)
     except Exception as exc:
@@ -449,6 +447,8 @@ def dataset(
     associated_publication: Optional[str],
     additional_documentation: Optional[List[str]],
 ):
+    """Add a Dataset file and its metadata to the RO-Crate.
+    """
 
     try:
         crateInstance = ReadROCrateMetadata(rocrate_path)
@@ -493,91 +493,4 @@ def dataset(
 
     click.echo(guid) 
 
-    # TODO add to cache
-    
-
-
-
-@rocrate.group('package')
-def package():
-    pass
-
-@package.command('bagit')
-@click.argument('rocrate-path', type=click.Path(exists=True, path_type=pathlib.Path))
-@click.argument('bagit-path', type=click.Path(exists=False, path_type=pathlib.Path))
-@click.option('--Source-Organization', required=True) #, prompt="Source-Organization")
-@click.option('--Organization-Address', required=True) #, prompt="Organization-Address")
-@click.option('--Contact-Name', required=True) #, prompt="Contact-Name")
-@click.option('--Contact-Phone', required=True) #, prompt="Contact-Phone")
-@click.option('--Contact-Email', required=True) #, prompt="Contact-Email")
-@click.option('--External-Description', required=True) #, prompt="External-Description")
-#@click.option('--Bagging-Date', required=False)
-#@click.option('--External-Identifier', required=False, prompt="External-Identifier")
-#@click.option('--Payload-Oxum', required=False, prompt="Payload-Oxum")
-#@click.option('--Bag-Group-Identifier', required=False, prompt="Bag-Group-Identifier")
-#@click.option('--Bag-Count', required=False, prompt="Bag-Count")
-#@click.option('--Internal-Sender-Identifier', required=False, prompt="Internal-Sender-Identifier")
-@click.option('--Internal-Sender-Description', required=False, prompt="Internal-Sender-Description")
-def bagit(
-    rocrate_path: pathlib.Path,
-    bagit_path: pathlib.Path,
-    source_organization: str,
-    organization_address: str,
-    contact_name: str,
-    contact_phone: str,
-    contact_email: str,
-    external_description: str
-):
-    bagit = BagIt(
-        **{    
-            "rocrate_path": rocrate_path,
-            "bagit_path": bagit_path,
-            "source_organization": source_organization,
-            "organization_address": organization_address,
-            "contact_name": contact_name,
-            "contact_phone": contact_phone,
-            "contact_email": contact_email,
-            "external_description": external_description,
-            "bagging_date": datetime.now().strftime("%m/%d/%Y")
-        }
-    )
-    
-    
-    
-    click.echo(click.style("BagIt path", fg="green") + f": {bagit_path}")
-
-    bagit.create_bagit_directory()
-    
-    # Create bag.txt
-    bagit.create_bagit_declaration()
-    click.echo(click.style("Bag Declaration", fg="green") + f": {bagit_path}/bag.txt")
-    
-    # Populate /data/ directory 
-    bagit.create_payload_directory()
-    click.echo(click.style("Payload Directory", fg="green") + f": {bagit_path}/data/")
-
-
-    # Create bag-info.txt
-    bagit.create_bagit_metadata()
-    click.echo(click.style("Bag Metadata", fg="green") + f": {bagit_path}/bag-info.txt")
-    
-    # Create manifest-sha256.txt
-    bagit.create_payload_manifest_sha256()
-    click.echo(click.style("Payload Manifest", fg="green") + f": {bagit_path}/manifest-sha256.txt")
-    # Create tagmanifest-sha256.txt
-    bagit.create_tag_manifest_sha256()
-    click.echo(click.style("Tag Manifest", fg="green") + f": {bagit_path}/tagmanifest-sha256.txt")
-    
-    # Create manifest-sha512.txt
-    bagit.create_payload_manifest_sha512()
-    click.echo(click.style("Payload Manifest", fg="green") + f": {bagit_path}/manifest-sha512.txt")
-    # Create tagmanifest-sha512.txt
-    bagit.create_tag_manifest_sha512()
-    click.echo(click.style("Tag Manifest", fg="green") + f": {bagit_path}/tagmanifest-sha512.txt")
-    
-    # Create manifest-md5.txt
-    bagit.create_payload_manifest_md5()
-    click.echo(click.style("Payload Manifest", fg="green") + f": {bagit_path}/manifest-md5.txt")
-    # Create tagmanifest-md5.txt
-    bagit.create_tag_manifest_md5()
-    click.echo(click.style("Tag Manifest", fg="green") + f": {bagit_path}/tagmanifest-md5.txt")
+    # TODO add to cache 
