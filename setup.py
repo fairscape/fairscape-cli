@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
 	name="fairscape_cli",
-	version='0.1.14a2',
+	version='0.1.14a3',
 	description = "CLI tool for B2AI metadata validation and ROCrate creation",
 	author = 'Max Levinson, Sadnan Al Manir, Tim Clark',
 	author_email='mal8ch@virginia.edu, sadnanalmanir@gmail.com, twc8q@virginia.edu',
@@ -15,12 +15,10 @@ setup(
     "Programming Language :: Python :: 3"],
 	keywords = ["fairscape", "reproducibility", "fair", "b2ai"],
 	install_requires=[
-		"click>=8.1.7",
-		"pydantic>=2.5.1",
-		"prettytable>=3.9.0",
-		"imageio>=2.33.0",
-		"jsonschema>=4.20.0",
-		"pandas>=2.0.3",
+		"click",
+		"pydantic",
+		"prettytable",
+		"jsonschema",
 		"pytest",
 		"sqids>=0.4.1",	
 	],
