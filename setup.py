@@ -2,9 +2,8 @@ from setuptools import setup, find_packages
 
 setup(
 	name="fairscape_cli",
-	version='0.1.14a1',
+	version='0.1.14a2',
 	description = "CLI tool for B2AI metadata validation and ROCrate creation",
-	readme = "README.md",
 	author = 'Max Levinson, Sadnan Al Manir, Tim Clark',
 	author_email='mal8ch@virginia.edu, sadnanalmanir@gmail.com, twc8q@virginia.edu',
 	license = "LICENSE",
@@ -22,10 +21,10 @@ setup(
 		"imageio>=2.33.0",
 		"jsonschema>=4.20.0",
 		"pandas>=2.0.3",
-		"pytest>=7.4.3",
+		"pytest",
 		"sqids>=0.4.1",	
 	],
-	packages=find_packages(),
+	packages=find_packages(where="src"),
 	package_dir= {"": "src"},
 	include_package_data=True,
 	entry_points={
