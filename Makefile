@@ -1,7 +1,7 @@
 VERSION ?= 0.1.14a2
 
 buildpackage:
-	python setup.py bdist_wheel
+	python3 -m build
 
 push:
 	python3 -m twine upload --repository pypi dist/*	

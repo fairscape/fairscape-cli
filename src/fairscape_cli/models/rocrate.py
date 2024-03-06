@@ -1,8 +1,7 @@
 from fairscape_cli.models import (
     Software,
     Dataset,
-    Computation,
-    DatasetContainer
+    Computation
 )
 from fairscape_cli.models.utils import GenerateDatetimeSquid
 from fairscape_cli.config import (
@@ -124,7 +123,7 @@ class ROCrate(BaseModel):
 
 
 
-    def registerObject(self, model: Union[Dataset, Software, Computation, DatasetContainer]):
+    def registerObject(self, model: Union[Dataset, Software, Computation]):
         ''' Add a specified peice of metadata to the graph of an ROCrate
             Marshals a given model into JSON-LD, opens the ro-crate-metadata.json,
             appends the new metadata to the @graph, and overwrites the ro-crate-metadata.json
