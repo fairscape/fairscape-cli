@@ -319,8 +319,7 @@ def computation(
 # RO Crate add subcommands
 @rocrate.group('add')
 def add():
-    """ Copy a file over to the RO-Crate and register it's corresponding metadata.
-    """
+    """Add (transfer) object to RO-Crate and register object metadata.""" 
     pass
 
 
