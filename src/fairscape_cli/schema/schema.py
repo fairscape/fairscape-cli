@@ -35,10 +35,8 @@ from fairscape_cli.config import (
 
 @click.group('schema')
 def schema():
-    pass
-
-@schema.group('create')
-def create():
+    """Invoke operations on a schema definition for a dataset format.
+    """
     pass
 
 
@@ -57,6 +55,8 @@ def create_tabular_schema(
      separator,
      schema_file
 ):
+    """Initalize a Tabular Schema.
+    """
     # create the model
     try:
         schema_model = TabularValidationSchema.model_validate({
@@ -82,7 +82,7 @@ def create_tabular_schema(
 
 @schema.group('add-property')
 def add_property():
-    """ Add a Property to an existing schema
+    """Add a Property to an existing schema.
     """
     pass
 
@@ -96,6 +96,8 @@ def add_property():
 @click.argument('schema_file', type=click.Path(exists=True))
 @click.pass_context
 def add_property_string(ctx, name, index, description, value_url, pattern, schema_file):
+    """Add a String Property to an existing Schema.
+    """
     # instantiate the StringProperty
     try: 
         stringPropertyModel = StringProperty.model_validate({
@@ -126,6 +128,8 @@ def add_property_string(ctx, name, index, description, value_url, pattern, schem
 @click.argument('schema_file', type=click.Path(exists=True))
 @click.pass_context
 def add_property_number(ctx, name, index, description, maximum, minimum, value_url, schema_file):
+    """Add a Numberic property to an existing Schema.
+    """
     # instantiate the NumberPropertyModel
     try:
         numberPropertyModel = NumberProperty.model_validate({
@@ -155,6 +159,8 @@ def add_property_number(ctx, name, index, description, maximum, minimum, value_u
 @click.argument('schema_file', type=click.Path(exists=True))
 @click.pass_context
 def add_property_boolean(ctx, name, index, description, value_url, schema_file):
+    """Add a Boolean property to an existing Schema.
+    """
     try: 
         booleanPropertyModel = BooleanProperty.model_validate({
             "name": name,
@@ -182,6 +188,8 @@ def add_property_boolean(ctx, name, index, description, value_url, schema_file):
 @click.argument('schema_file', type=click.Path(exists=True))
 @click.pass_context
 def add_property_integer(ctx, name, index, description, maximum, minimum, value_url, schema_file):
+    """Add an Integer property to an existing Schema.
+    """
 
     try:
         integerPropertyModel = IntegerProperty.model_validate({
@@ -214,6 +222,8 @@ def add_property_integer(ctx, name, index, description, maximum, minimum, value_
 @click.argument('schema_file', type=click.Path(exists=True))
 @click.pass_context
 def add_property_array(ctx, name, index, description, value_url, items_datatype, min_items, max_items, unique_items, schema_file):
+    """Add an Array property to an existing Schema.
+    """
     try:
         datatype_enum = DatatypeEnum(items_datatype)
     except Exception:
@@ -250,6 +260,8 @@ def add_property_array(ctx, name, index, description, value_url, items_datatype,
 #@click.option('--ro-crate', type=str, required=False, default=None)
 @click.pass_context
 def validate(ctx, schema, data): 
+    """Execute validation of a Schema against the provided data.
+    """
 
     if schema and data:
         tabular_schema = ReadSchema(schema)
