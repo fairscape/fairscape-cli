@@ -132,10 +132,10 @@ class ROCrate(BaseModel):
 
         metadata_path = pathlib.Path(self.path)
 
-        # TODO assure no duplicative content
-
         with metadata_path.open("r+") as rocrate_metadata_file:
             rocrate_metadata = json.load(rocrate_metadata_file)
+            
+             # TODO assure no duplicative content
             
             # add to the @graph
             rocrate_metadata['@graph'].append(model.model_dump(by_alias=True))
@@ -157,101 +157,6 @@ class ROCrate(BaseModel):
         # TODO check for entailment
         self.registerObject(model=Computation)
 
-
-    def pushDatasetContainer(
-        self, 
-        datasetContainerGUID: str, 
-        guids: List[str]
-    ):
-        """ Add Elements from a DatasetContainer and persist in the ro-crate-metadata.json
-        """
-        
-        metadata_path = self.path
-
-        with metadata_path.open("r+") as rocrate_metadata_file:
-            rocrate_metadata = json.load(rocrate_metadata_file)
-            
-             
-            # find the dataset container
-
-            metadata_graph = rocrate_metadata['@graph'] 
-            container_element = list(
-                filter(
-                    lambda meta: meta[1]['@id'] == datasetContainerGUID, 
-                    enumerate(metadata_graph)
-                )
-            )
-
-            # TODO raise more detailed exception
-            if len(container_element) == 0:
-                raise Exception
-
-            dscontainer_index = container_element[0][0]
-
-            # TODO if identifier isn't a dataset container
-
-            # TODO if guids aren't inside the crate
-
-            # TODO if guids aren't datasets
-
-            dscontainer_index = container_element[0][0]
-
-            # modfiy the dataset container
-            metadata_graph[dscontainer_index]["hasPart"].append(guids)
-
-            # set the updated the metadata graph
-            rocrate_metadata['@graph'] = metadata_graph
-
-            # persist to disk
-            rocrate_metadata_file.seek(0)
-            json.dump(rocrate_metadata, rocrate_metadata_file, indent=2)
-
-
-    def popDatasetContainer(
-        self, 
-        datasetContainerGUID: str, 
-        guids: List[str]
-    ):
-        """ Remove Elements from a DatasetContainer and persist in the ro-crate-metadata.json
-        """
-        metadata_path = self.path
-
-        with metadata_path.open("r+") as rocrate_metadata_file:
-            rocrate_metadata = json.load(rocrate_metadata_file)
-            
-             
-            # find the dataset container
-
-            metadata_graph = rocrate_metadata['@graph'] 
-            container_element = list(
-                filter(
-                    lambda meta: meta[1]['@id'] == datasetContainerGUID, 
-                    enumerate(metadata_graph)
-                )
-            )
-
-            # TODO raise more detailed exception
-            if len(container_element) == 0:
-                raise Exception
-
-            dscontainer_index = container_element[0][0]
-
-            # modfiy the dataset container
-
-            for guid in guids: 
-
-                try:
-                    metadata_graph[dscontainer_index]["hasPart"].remove(guid)
-                except ValueError:
-                    # TODO implement warning logger
-                    print(f"WARNING: GUID {guid} not found in datasetContainer {datasetContainerGUID}")
-
-            # set the updated the metadata graph
-            rocrate_metadata['@graph'] = metadata_graph
-
-            # persist to disk
-            rocrate_metadata_file.seek(0)
-            json.dump(rocrate_metadata, rocrate_metadata_file, indent=2)
 
 
     def listContents(self):
