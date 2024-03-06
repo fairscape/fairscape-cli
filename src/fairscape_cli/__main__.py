@@ -7,6 +7,9 @@ from fairscape_cli.schema import schema
 
 @click.group()
 def cli():
+    """FAIRSCAPE CLI
+    A utility for packaging objects and validating metadata for FAIRSCAPE
+    """
     pass
 
 # Validation Subcommands
