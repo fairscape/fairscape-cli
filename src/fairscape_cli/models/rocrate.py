@@ -4,9 +4,10 @@ from fairscape_cli.models import (
     Computation,
     DatasetContainer
 )
-from fairscape_cli.models.utils import GenerateDatetimeGUID
+from fairscape_cli.models.utils import GenerateDatetimeSquid
 from fairscape_cli.config import (
-    DEFAULT_CONTEXT
+    DEFAULT_CONTEXT,
+    NAAN
 )
 
 import pathlib
@@ -26,7 +27,8 @@ from typing import (
 
 
 class ROCrate(BaseModel):
-    metadataType: str = Field(default="https://schema.org/Dataset")
+    guid: Optional[str] = Field(alias="@id", default=None)
+    metadataType: str = Field(alias="@type", default="https://schema.org/Dataset")
     name: str = Field(max_length=200)
     description: str = Field(min_length=10)
     keywords: List[str] = Field(...)
@@ -35,12 +37,12 @@ class ROCrate(BaseModel):
     path: pathlib.Path
     metadataGraph: Optional[List[Union[Dataset,Software, Computation]]]
 
-    # Computed Field implementation for guid generation
-    @computed_field
-    def guid(self) -> str:
-        return GenerateDatetimeGUID(
-                prefix=f"rocrate-{self.name.replace(' ', '-').lower()}"
-                )
+    def generate_guid(self) -> str:
+        if self.guid is None:
+            sq = GenerateDatetimeSquid()
+            self.guid = f"ark:{NAAN}/rocrate-{self.name.replace(' ', '-').lower()}-{sq}"
+        return self.guid
+
 
 
     def createCrateFolder(self):
@@ -55,6 +57,9 @@ class ROCrate(BaseModel):
         # create basic rocrate metadata
         ro_crate_metadata_path = self.path / 'ro-crate-metadata.json'
 
+        # create guid if none exists
+        self.generate_guid()
+
         rocrate_metadata = {
             "@id": self.guid,
             "@context": DEFAULT_CONTEXT,
@@ -67,9 +72,7 @@ class ROCrate(BaseModel):
         }
 
         if self.organizationName:
-            organization_guid = GenerateDatetimeGUID( 
-                prefix=f"org-{self.organizationName.lower().replace(' ', '-')}"
-                )
+            organization_guid = f"ark:{NAAN}/organization-{self.organizationName.lower().replace(' ', '-')}-{GenerateDatetimeSquid()}"
             rocrate_metadata['isPartOf'].append(
                 {
                     "@id": organization_guid,
@@ -79,9 +82,7 @@ class ROCrate(BaseModel):
             )
 
         if self.projectName:
-            project_guid = GenerateDatetimeGUID( 
-                prefix=f"project-{self.projectName.lower().replace(' ', '-')}"
-                )
+            project_guid = f"ark:{NAAN}/project-{self.projectName.lower().replace(' ', '-')}-{GenerateDatetimeSquid()}"
             rocrate_metadata['isPartOf'].append(
                 {
                     "@id": project_guid,
@@ -134,6 +135,8 @@ class ROCrate(BaseModel):
         with metadata_path.open("r+") as rocrate_metadata_file:
             rocrate_metadata = json.load(rocrate_metadata_file)
             
+             # TODO assure no duplicative content
+            
             # add to the @graph
             rocrate_metadata['@graph'].append(model.model_dump(by_alias=True))
             rocrate_metadata_file.seek(0)
@@ -155,101 +158,6 @@ class ROCrate(BaseModel):
         self.registerObject(model=Computation)
 
 
-    def pushDatasetContainer(
-        self, 
-        datasetContainerGUID: str, 
-        guids: List[str]
-    ):
-        """ Add Elements from a DatasetContainer and persist in the ro-crate-metadata.json
-        """
-        
-        metadata_path = self.path
-
-        with metadata_path.open("r+") as rocrate_metadata_file:
-            rocrate_metadata = json.load(rocrate_metadata_file)
-            
-             
-            # find the dataset container
-
-            metadata_graph = rocrate_metadata['@graph'] 
-            container_element = list(
-                filter(
-                    lambda meta: meta[1]['@id'] == datasetContainerGUID, 
-                    enumerate(metadata_graph)
-                )
-            )
-
-            # TODO raise more detailed exception
-            if len(container_element) == 0:
-                raise Exception
-
-            dscontainer_index = container_element[0][0]
-
-            # TODO if identifier isn't a dataset container
-
-            # TODO if guids aren't inside the crate
-
-            # TODO if guids aren't datasets
-
-            dscontainer_index = container_element[0][0]
-
-            # modfiy the dataset container
-            metadata_graph[dscontainer_index]["hasPart"].append(guids)
-
-            # set the updated the metadata graph
-            rocrate_metadata['@graph'] = metadata_graph
-
-            # persist to disk
-            rocrate_metadata_file.seek(0)
-            json.dump(rocrate_metadata, rocrate_metadata_file, indent=2)
-
-
-    def popDatasetContainer(
-        self, 
-        datasetContainerGUID: str, 
-        guids: List[str]
-    ):
-        """ Remove Elements from a DatasetContainer and persist in the ro-crate-metadata.json
-        """
-        metadata_path = self.path
-
-        with metadata_path.open("r+") as rocrate_metadata_file:
-            rocrate_metadata = json.load(rocrate_metadata_file)
-            
-             
-            # find the dataset container
-
-            metadata_graph = rocrate_metadata['@graph'] 
-            container_element = list(
-                filter(
-                    lambda meta: meta[1]['@id'] == datasetContainerGUID, 
-                    enumerate(metadata_graph)
-                )
-            )
-
-            # TODO raise more detailed exception
-            if len(container_element) == 0:
-                raise Exception
-
-            dscontainer_index = container_element[0][0]
-
-            # modfiy the dataset container
-
-            for guid in guids: 
-
-                try:
-                    metadata_graph[dscontainer_index]["hasPart"].remove(guid)
-                except ValueError:
-                    # TODO implement warning logger
-                    print(f"WARNING: GUID {guid} not found in datasetContainer {datasetContainerGUID}")
-
-            # set the updated the metadata graph
-            rocrate_metadata['@graph'] = metadata_graph
-
-            # persist to disk
-            rocrate_metadata_file.seek(0)
-            json.dump(rocrate_metadata, rocrate_metadata_file, indent=2)
-
 
     def listContents(self):
         rocrate_table = PrettyTable()
@@ -268,48 +176,27 @@ class ROCrate(BaseModel):
         return rocrate_table
 
 
-def InitROCrate(
-    name: str,
-    description: str,
-    keywords: List[str],
-    cratePath: pathlib.Path,
-    organizationName=None,
-    projectName=None,
-    createFolder: bool = False
-):
-
-    passed_crate =ROCrate(
-        name=name,
-        organizationName = organizationName,
-        projectName = projectName,
-        description = description,
-        keywords = keywords,
-        path = cratePath, 
-        metadataGraph = []
-    )
-
-    if createFolder:
-        passed_crate.createCrateFolder()
-
-    # initilize crate folder 
-    passed_crate.initCrate()
-
 
 def ReadROCrateMetadata(
         cratePath: str
-):
+)-> ROCrate:
     """ Given a path read the rocrate metadata into a pydantic model
     """
 
     # if cratePath has metadata.json inside
-    if "metadata.json" in cratePath:
+    if "ro-crate-metadata.json" in cratePath:
         metadataCratePath = cratePath
     else:
-        metadataCratePath = cratePath + "/metadata.json"
+        metadataCratePath = cratePath + "/ro-crate-metadata.json"
 
-    with open(cratePath, "r") as metadataFile:
+    if cratePath.exists() != True:
+        raise Exception(f'ro-crate-metadata.json not found at path {metadataCratePath}')
+
+    with open(metadataCratePath, "r") as metadataFile:
         crateMetadata = json.load(metadataFile)
-        return ROCrate(**crateMetadata)
+        readCrate = ROCrate.model_validate(crateMetadata)
+    
+    return readCrate
 
 
 def AppendCrate(

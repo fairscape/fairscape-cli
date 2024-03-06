@@ -13,19 +13,26 @@ from fairscape_cli.config import (
 
 squids = Sqids(min_length=6)
 
-
-def IntTimestampSquid():
+def GenerateDatetimeSquid():
     try:
         timestamp_int = int(datetime.datetime.now(datetime.UTC).timestamp())
-        return squids.encode([timestamp_int])
+        sq = squids.encode([timestamp_int])
     except: 
         timestamp_int = int(datetime.datetime.utcnow().timestamp())
-        return squids.encode([timestamp_int])
+        sq = squids.encode([timestamp_int])
+
+    return sq
 
 
 def GenerateDatetimeGUID(prefix: str)->str:
-    datetime_squid = IntTimestampSquid()
-    return f"ark:{NAAN}/{prefix}-{datetime_squid}"
+    try:
+        timestamp_int = int(datetime.datetime.now(datetime.UTC).timestamp())
+        sq = squids.encode([timestamp_int])
+    except: 
+        timestamp_int = int(datetime.datetime.utcnow().timestamp())
+        sq = squids.encode([timestamp_int])
+
+    return f"ark:{NAAN}/{prefix}-{sq}"
 
 def GenerateGUID(data: List[int], prefix: str)-> str:
     squid_encoded = squids.encode(data)

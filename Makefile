@@ -1,11 +1,13 @@
-VERSION ?= 0.1.11
+VERSION ?= 0.1.14a2
 
-build:
-	python3 -m build
+buildpackage:
+	python setup.py bdist_wheel
 
 push:
 	python3 -m twine upload --repository pypi dist/*	
 
+push-test:
+	python3 -m twine upload --repository testpypi dist/*	
 
 docker-build:
 	docker build -t fairscape-cli:$(VERSION)-python3.11 .

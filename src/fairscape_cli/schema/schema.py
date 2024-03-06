@@ -14,6 +14,7 @@ from fairscape_cli.models.schema.image import (
 from fairscape_cli.models.schema.tabular import (
     TabularValidationSchema,
     ReadSchema,
+    ImportDefaultSchemas,
     WriteSchema,
     StringProperty,
     NumberProperty,
@@ -26,9 +27,6 @@ from fairscape_cli.models.schema.tabular import (
     DatatypeEnum,
     Items
 )
-from fairscape_cli.schema.schema_pysimplegui import (
-    create_window,
-    initialize_gui)
 
 from fairscape_cli.config import (
     FAIRSCAPE_URI
@@ -37,10 +35,8 @@ from fairscape_cli.config import (
 
 @click.group('schema')
 def schema():
-    pass
-
-@schema.group('create')
-def create():
+    """Invoke operations on a schema definition for a dataset format.
+    """
     pass
 
 
@@ -59,6 +55,8 @@ def create_tabular_schema(
      separator,
      schema_file
 ):
+    """Initalize a Tabular Schema.
+    """
     # create the model
     try:
         schema_model = TabularValidationSchema.model_validate({
@@ -84,7 +82,7 @@ def create_tabular_schema(
 
 @schema.group('add-property')
 def add_property():
-    """ Add a Property to an existing schema
+    """Add a Property to an existing schema.
     """
     pass
 
@@ -98,6 +96,8 @@ def add_property():
 @click.argument('schema_file', type=click.Path(exists=True))
 @click.pass_context
 def add_property_string(ctx, name, index, description, value_url, pattern, schema_file):
+    """Add a String Property to an existing Schema.
+    """
     # instantiate the StringProperty
     try: 
         stringPropertyModel = StringProperty.model_validate({
@@ -122,15 +122,21 @@ def add_property_string(ctx, name, index, description, value_url, pattern, schem
 @click.option('--name', type=str, required=True)
 @click.option('--index', type=int, required=True)
 @click.option('--description', type=str, required=True)
+@click.option('--maximum', type=float, required=False)
+@click.option('--minimum', type=float, required=False)
 @click.option('--value-url', type=str, required=False)
 @click.argument('schema_file', type=click.Path(exists=True))
 @click.pass_context
-def add_property_number(ctx, name, index, description, value_url, schema_file):
+def add_property_number(ctx, name, index, description, maximum, minimum, value_url, schema_file):
+    """Add a Numberic property to an existing Schema.
+    """
     # instantiate the NumberPropertyModel
     try:
         numberPropertyModel = NumberProperty.model_validate({
             "name": name,
             "index": index,
+            'maximum': maximum,
+            'minimum': minimum,
             "description": description,
             "valueURL": value_url
             })
@@ -153,6 +159,8 @@ def add_property_number(ctx, name, index, description, value_url, schema_file):
 @click.argument('schema_file', type=click.Path(exists=True))
 @click.pass_context
 def add_property_boolean(ctx, name, index, description, value_url, schema_file):
+    """Add a Boolean property to an existing Schema.
+    """
     try: 
         booleanPropertyModel = BooleanProperty.model_validate({
             "name": name,
@@ -174,16 +182,22 @@ def add_property_boolean(ctx, name, index, description, value_url, schema_file):
 @click.option('--name', type=str, required=True)
 @click.option('--index', type=int, required=True)
 @click.option('--description', type=str, required=True)
+@click.option('--maximum', type=int, required=False)
+@click.option('--minimum', type=int, required=False)
 @click.option('--value-url', type=str, required=False)
 @click.argument('schema_file', type=click.Path(exists=True))
 @click.pass_context
-def add_property_integer(ctx, name, index, description, value_url, schema_file):
+def add_property_integer(ctx, name, index, description, maximum, minimum, value_url, schema_file):
+    """Add an Integer property to an existing Schema.
+    """
 
     try:
         integerPropertyModel = IntegerProperty.model_validate({
             "name": name,
             "index": index,
             "description": description,
+            "maximum": maximum,
+            "minimum": minimum,
             "valueURL": value_url
             })
 
@@ -208,10 +222,12 @@ def add_property_integer(ctx, name, index, description, value_url, schema_file):
 @click.argument('schema_file', type=click.Path(exists=True))
 @click.pass_context
 def add_property_array(ctx, name, index, description, value_url, items_datatype, min_items, max_items, unique_items, schema_file):
+    """Add an Array property to an existing Schema.
+    """
     try:
         datatype_enum = DatatypeEnum(items_datatype)
     except Exception:
-        print(f"ITEMS Datatype {itemsDatatype} invalid\n" +
+        print(f"ITEMS Datatype {items_datatype} invalid\n" +
             "ITEMS must be oneOf 'boolean'|'object'|'string'|'number'|'integer'" 
         )
         raise click.Abort("")
@@ -237,9 +253,6 @@ def add_property_array(ctx, name, index, description, value_url, items_datatype,
     ClickAppendProperty(ctx, schema_file, arrayPropertyModel, name)
     
 
-#@create.command('image')
-#def create_image():
-#    pass
 
 @schema.command('validate')
 @click.option('--schema', type=str, required=True)
@@ -247,16 +260,8 @@ def add_property_array(ctx, name, index, description, value_url, items_datatype,
 #@click.option('--ro-crate', type=str, required=False, default=None)
 @click.pass_context
 def validate(ctx, schema, data): 
-
-    # if ro-crate was passed
-    #if ro_crate:
-    #    print('Not Yet Implemented')
-    #    ctx.exit(0)
-
-        # TODO find all schemas in RO-Crate
-        # TODO find all data using schemas in RO-Crate
-
-        # TODO execute validation on all RO-Crate schema
+    """Execute validation of a Schema against the provided data.
+    """
 
     if schema and data:
         tabular_schema = ReadSchema(schema)
@@ -280,38 +285,5 @@ def validate(ctx, schema, data):
             ctx.exit(0)
 
     else:
-        print('ERROR: must pass either schema & data or ro_crate path')
+        print('ERROR: must pass either schema & data path')
 
-
-@schema.command('register')
-@click.option('--schema', type=str, required=True)
-def register(schema):
-
-    # TODO read the schema
-
-    # TODO upload to remote fairscape
-    pass
-
-
-@schema.command('list')
-@click.option('--fairscape-uri', type=str, required=False, default=FAIRSCAPE_URI)
-def list(fairscape_uri):
-
-    # TODO list all schemas from fairscape remote
-    pass
-
-
-@schema.command('get')
-@click.option('--schema-guid', type=str, required=True)
-@click.option('--fairscape-uri', type=str, required=False, default=FAIRSCAPE_URI)
-def get(schema_guid, fairscape_uri):
-
-    # TODO get schema spec from fairscape remote
-    pass
-
-
-@schema.command('create-tabular-gui')
-def create_tabular_gui():
-    # invoke methods for gui
-    window = create_window()
-    initialize_gui(window)

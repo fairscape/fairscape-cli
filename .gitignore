@@ -1,11 +1,11 @@
 *.DS_STORE
-*,ipynb
+*.ipynb
 
+# ignore test data
 tests/data/
 tests/test_generated/
 tests/test_crates/
 tests/crate/
-cli_venv/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

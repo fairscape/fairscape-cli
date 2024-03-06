@@ -1,6 +1,7 @@
 import jsonschema
-import pandas as pd
 import pathlib
+from functools import lru_cache
+import os
 import json
 
 from pydantic import (
@@ -19,22 +20,23 @@ from typing import (
     Literal
 )
 
-from fairscape_cli.models.utils import (
-    GenerateDatetimeGUID
-)
-
 from fairscape_cli.models.schema.utils import (
     GenerateSlice,
     PropertyNameException,
     ColumnIndexException,
 )
 
-from fairscape_cli.config import (
-    DEFAULT_CONTEXT,
-    DEFAULT_SCHEMA_TYPE
+from fairscape_cli.models.utils import (
+    GenerateDatetimeSquid
 )
 
+from fairscape_cli.config import (
+    DEFAULT_CONTEXT,
+    DEFAULT_SCHEMA_TYPE,
+    NAAN,
+)
 
+import datetime
 from enum import Enum
 import re
 
@@ -136,6 +138,7 @@ PropertyUnion = Union[StringProperty, ArrayProperty, BooleanProperty, NumberProp
 
 
 class TabularValidationSchema(BaseModel):
+    guid: Optional[str] = Field(alias="@id", default=None)
     context: Optional[Dict] = Field(default=DEFAULT_CONTEXT, alias="@context")
     metadataType: Optional[str] = Field(default=DEFAULT_SCHEMA_TYPE, alias="@type")
     schema_version: str = Field(default="https://json-schema.org/draft/2020-12/schema", alias="schema")
@@ -150,11 +153,15 @@ class TabularValidationSchema(BaseModel):
     examples: Optional[List[Dict[str, str ]]] = Field(default=[])
 
     # Computed Field implementation for guid generation
-    @computed_field(alias="@id")
-    def guid(self) -> str:
+    def generate_guid(self) -> str:
         """ Generate an ARK for the Schema
         """
-        return GenerateDatetimeGUID(prefix=f"schema-{self.name.lower().replace(' ', '-')}")
+        # if guid is already set
+        if self.guid is None:
+            prefix=f"schema-{self.name.lower().replace(' ', '-')}"
+            sq = GenerateDatetimeSquid()
+            self.guid = f"ark:{NAAN}/{prefix}-{sq}"
+        return self.guid
 
 
     def load_data(self, dataPath: str) -> List[List[str]]:
@@ -183,9 +190,7 @@ class TabularValidationSchema(BaseModel):
         """ Given a path to a Tabular File, load in the data and generate a list of JSON equivalent data structures 
         """
 
-
         data_rows = self.load_data(dataPath)
-
 
         row_lengths = set([len(row) for row in data_rows])
         if len(row_lengths) == 1: 
@@ -349,38 +354,6 @@ class TabularValidationSchema(BaseModel):
 
 
 
-    def _execute_validation(self, data_path: str) -> Dict[int, ValidationError]:
-        """ Use the TabularValidationSchema to execute data validation on a given file
-        """
-
-        data_frame = self.load_data(data_path)
-        
-        schema_definition = self.model_dump(
-                by_alias=True, 
-                exclude_unset=True,
-                exclude_none=True
-                )
-
-
-        json_objects = self.convert_to_json(data_frame)
-        # run conversion on data frame 
-        validation_exceptions = {}
-
-        for i, json_elem in enumerate(json_objects):
-            try: 
-                validate(
-                        instance=json_elem,
-                        schema= schema_definition 
-                )
-                print(".", end="")
-            except Exception as e:
-                # TODO convert property errors into column index
-                print("x", end="")
-                validation_exceptions[i] = e
-
-        return validation_exceptions	
-
-
 
 def AppendProperty(schemaFilepath: str, propertyInstance, propertyName: str) -> None: 
     # check that schemaFile exists
@@ -393,10 +366,10 @@ def AppendProperty(schemaFilepath: str, propertyInstance, propertyName: str) -> 
         schemaFileContents = schemaFile.read()
         schemaJson =  json.loads(schemaFileContents) 
 
-        # load the model into a 
-        schemaModel = TabularValidationSchema(**schemaJson)
+        # load the model into a tabular validation schema
+        schemaModel = TabularValidationSchema.model_validate(schemaJson)
 
-        # check for inconsitencies
+        # TODO check for inconsitencies
 
         # does there exist a property with same name
         if propertyName in [key for key in schemaModel.properties.keys()]:
@@ -411,6 +384,9 @@ def AppendProperty(schemaFilepath: str, propertyInstance, propertyName: str) -> 
 
         # add new property to schema
         schemaModel.properties[propertyName] = propertyInstance
+
+        # add new property as required
+        schemaModel.required.append(propertyName)
 
         # serialize model to json
         schemaJson = json.dumps(schemaModel.model_dump(by_alias=True) , indent=2)
@@ -437,16 +413,61 @@ def ClickAppendProperty(ctx, schemaFile, propertyModel, name):
         ctx.exit(code=1)
 
 
-def ReadSchema(schema_file: str) -> TabularValidationSchema:
+def ReadSchemaGithub(schemaURI: str) -> TabularValidationSchema:
+    pass
+
+def ReadSchemaFairscape(schemaArk: str) -> TabularValidationSchema:
+    pass
+
+
+def ReadSchemaLocal(schemaFile: str) -> TabularValidationSchema:
     """ Helper function for reading the schema and marshaling into the pydantic model
     """
-    # read the schema
-    with open(schema_file, "r") as input_schema:
-        input_schema_data = input_schema.read()
-        schema_json =  json.loads(input_schema_data) 
+    schemaPath = pathlib.Path(schemaFile)
 
-        # load the model into 
-        return TabularValidationSchema.model_validate(schema_json)
+    if not schemaPath.exists():
+        raise Exception(f'Schema at path {schemaFile} not found')
+
+    # read the schema
+    with schemaPath.open("r") as inputSchema:
+        inputSchemaData = inputSchema.read()
+        schemaJson =  json.loads(inputSchemaData) 
+
+    # load the model into 
+    tabularSchema = TabularValidationSchema.model_validate(schemaJson)
+    return tabularSchema
+
+
+def ReadSchema(schemaFile:str) -> TabularValidationSchema:
+    ''' Read a schema specified by the argument schemaFile
+
+    The schemaFile parameter can be a url to a rawgithub link, or an ark identifier.
+    If the ark identifier is in the supplied, default schemas provided in the fairscape cli pacakges will be searched.
+    If there is no match then 
+    '''
+
+    if 'raw.githubusercontent' in schemaFile:
+        schemaInstance = ReadSchemaGithub(schemaFile)
+        return schemaInstance
+
+
+    elif 'ark' in schemaFile:
+        defaultSchemas = ImportDefaultSchemas()
+        matchingSchemas = list(filter(lambda schema: schema.guid == str(schemaFile), defaultSchemas))
+
+        if len(matchingSchemas) == 0:
+            # request against fairscape
+            schemaInstance = ReadSchemaFairscape(schemaFile)
+            return schemaInstance
+        else:
+            defaultSchema = matchingSchemas[0]
+            return defaultSchema
+
+    else: 
+        # schema must be a path that exists
+        schemaInstance = ReadSchemaLocal(schemaFile)
+        return schemaInstance
+
 
 
 def WriteSchema(tabular_schema: TabularValidationSchema, schema_file):
@@ -461,3 +482,24 @@ def WriteSchema(tabular_schema: TabularValidationSchema, schema_file):
         output_file.write(schema_json)
 
 
+
+@lru_cache
+def ImportDefaultSchemas()-> List[TabularValidationSchema]:
+	defaultSchemaLocation = pathlib.Path(os.path.dirname(os.path.realpath(__file__))) / 'default_schemas'
+	schemaPaths = list(defaultSchemaLocation.rglob("*/*.json"))
+
+	defaultSchemaList = []
+	for schemaPathElem in schemaPaths:
+
+		with schemaPathElem.open("r") as inputSchema:
+			inputSchemaData = inputSchema.read()
+			schemaJson =  json.loads(inputSchemaData) 
+
+		try:		
+			schemaElem = TabularValidationSchema.model_validate(schemaJson)
+			defaultSchemaList.append(schemaElem)
+		except:
+			# TODO handle validation failures from default schemas
+			pass
+	
+	return defaultSchemaList

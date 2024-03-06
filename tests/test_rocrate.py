@@ -338,11 +338,67 @@ class TestROCrateSuccess():
         assert result.exit_code == 0
 
 
-def _test_validate_rocrate():
-    pass
+class TestGenerateModels():
+    cratePath = pathlib.Path('tests/data/automated_test_rocrate/generate_crate/')
 
-def _test_hash_rocrate():
-    pass
+    def test_0_generate_rocrate(self):
+        passed_crate = ROCrate(
+                name='null',
+                organizationName = 'org',
+                projectName = 'proj',
+                description = 'a null ro crate',
+                keywords = ['test', 'keywords'],
+                path = self.cratePath, 
+                metadataGraph = []
+        )
 
-def _test_package_rocrate():
-    pass
+        passed_crate.initCrate()
+
+        # assert that the crate was created
+        # by asserting that ro-crate-metadata.json exists at the specified path
+        metadata_path = self.cratePath / 'ro-crate-metadata.json'
+        assert metadata_path.exists()
+
+        # check that the identifiers are proper
+        passed_crate.
+
+    def test_1_generate_dataset(self):
+        local_path = pathlib.Path('tests/data/crates/1.cm4ai_chromatin_mda-mb-468_untreated_apmsloader_initialrun0.1alpha/ppi_edgelist')
+        remote_path = 'https://g-9b3b6e.9ad93.a567.data.globus.org/Data/cm4ai_0.1alpha/cm4ai_chromatin_mda-mb-468_paclitaxel_crispr_1channel_0.1_alpha.tar.gz'
+        remote_dataset = GenerateDataset(
+            guid=None, 
+            url='https://cm4ai.org',
+            author='null',
+            description='test',
+            name='example',
+            keywords=['cm4ai', 'b2ai', 'download'],
+            datePublished='02-29-2024',
+            version='1',
+            associatedPublication=None,
+            additionalDocumentation=None,
+            dataFormat='tsv',
+            schema=None,
+            derivedFrom=None,
+            usedBy=None,
+            filepath=remote_path,
+            cratePath=self.cratePath
+        )
+
+    def test_2_generate_software(self):
+        remote_software = GenerateSoftware(
+            guid=None, 
+            url='https://github.com/idekerlab/cellmaps_imagedownloader',
+            author='Chris Churas',
+            description='Software Tool to download IF images from HPA for the Cellmaps for AI project',
+            name='Cellmaps Imagedownloader',
+            keywords=['cm4ai', 'b2ai', 'download'],
+        )
+        pass
+
+    def test_3_generate_computation(self):
+        pass
+
+    def test_4_generate_schema(self):
+        pass
+
+

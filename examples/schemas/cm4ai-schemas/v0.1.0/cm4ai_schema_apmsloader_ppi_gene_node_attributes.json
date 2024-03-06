@@ -20,7 +20,7 @@
       "index": 1,
       "valueURL": "http://edamontology.org/data_1033",
       "type": "string",
-      "pattern": "ensembl:ENSG[0-9]{11}"
+      "pattern": "^[A-Z0-9orf/-]*$|^ensembl:(?:ENSG[0-9]{11})(;?ENSG[0-9]{11})*$"
     },
     "bait": {
         "description": "Boolean value indicating if this protien was a bait protien in APMS experiments",
