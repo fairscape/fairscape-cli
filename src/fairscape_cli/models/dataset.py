@@ -121,22 +121,3 @@ def GenerateDataset(
     datasetInstance.generate_guid()
 
     return datasetInstance
-
-
-class DatasetContainer(FairscapeBaseModel): 
-    guid: Optional[str] = Field(alias="@id", default=None)
-    metadataType: Optional[str] = Field(default="https://w3id.org/EVI#Dataset", alias="@type")
-    name: str
-    description: str = Field(min_length=10)
-    keywords: List[str] = Field(...)
-    generatedBy: Optional[List[str]] = Field(default=[])
-    derivedFrom: Optional[List[str]] = Field(default=[])
-    usedBy: Optional[List[str]] = Field(default = [])
-    hasPart: Optional[List[str]] = Field(default=[])
-    isPartOf: Optional[List[str]] = Field(default=[])
-
-    def generate_guid(self)-> str:
-        if self.guid is None:
-            sq = GenerateDatetimeSquid()
-            self.guid = f"ark:{NAAN}/datasetcontainer-{self.name.lower().replace(' ', '-')}-{sq}"
-        return self.guid
