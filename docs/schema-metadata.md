@@ -1,14 +1,9 @@
-# Schema
+The Command Line Interface (CLI) offers users more than just the ability to transfer and register dataset objects. It also enables the addition of metadata to describe schemas and perform basic validation of objects. As of this release, the CLI solely supports tabular datasets.
 
 
-`fairscape-cli` allows for the creation of Schema objects which can be used to validate that data formats.
-We support validation for tabular data frames and images.
+## Tabular Dataset
+To illustrate, let's consider the tabular data frame named `APMS_embedding_MUSIC.csv`. This particular dataset comprises 1026 columns. The first column, `Internal Experiment Identifier`, identifies the experiment that generated the source data, while the second column, `Gene Symbol`, contains the Gene name for the bait protien. The remaining columns, from `Embedding0` to `Embedding1023`, are a 1024 length embedding vector. The original data frame has no headers, but after consulting with a domain expert, headers are added for clarity, and based on these headers, the schema will be described.  
 
-## Tabular Data
-
-Consider the example tabular data frame `APMS_embedding_MUSIC.csv`.
-This data has 1026 Columns. The first column identifies the experiment responsible for generating the source data.
-The second contains the Gene Name for the bait protien. The remainder of the columns constitute a 1024 length embedding vector.
 
 |Internal Experiment Identifier|Gene Symbol|Embedding0|Embedding1|Embedding2| ... |Embedding1023|
 |------------------------------|-----------|----------|----------|----------|-----|-------------|
@@ -23,13 +18,25 @@ The second contains the Gene Name for the bait protien. The remainder of the col
 |APMS_9                        |TRIM28	   |-0.17398  |0.209120  |0.021203  |...  |-0.092368    |
 |APMS_10                       |LAMP3	   |0.048065  |0.087677  |0.000867  |...  |0.047628     |
 
-### Create a Schema 
 
-To begin we initilize a schema with the following command.
-To create a schema we must provide a name, desciption, whether our file has a header, and the seperator character.
-Our file has no header so we specify False.
-The format is csv so the seperator character is a comma.
-With this we have the following command.
+Throughout the rest of the document, we will use this tabular dataset as a guide to walk through the step-by-step process of creating, populating and validating the schema.   
+
+### Create schema 
+To create a schema for a tabular dataset, the `create-tabular` command must be invoked, requiring a `name`, a brief `description`, a `separator` character, and an optional boolean value for `header` to specify the presence of column headers. Once created, the schema will be located in the destination specified by the `SCHEMA_FILE`.
+
+```bash
+fairscape-cli schema create-tabular [OPTIONS] SCHEMA_FILE
+
+Options:
+  --name TEXT         [required]
+  --description TEXT  [required]
+  --guid TEXT
+  --separator TEXT    [required]
+  --header BOOLEAN
+  --help              Show this message and exit.
+```
+
+In the schema creation example below, the symbol `,` (comma) is used as the `separator` and the `header` is set to `False`. The CLI will autogenerate a value for the `guid`. 
 
 ```bash
 fairscape-cli schema create-tabular \
@@ -37,10 +44,47 @@ fairscape-cli schema create-tabular \
     --description 'Tabular format for APMS music embeddings from PPI networks from the music pipeline from the B2AI Cellmaps for AI project' \
     --seperator ',' \
     --header False \
-    ./schema_apms_music_embedding.json
+    /path/to/schema_apms_music_embedding.json
 ```
 
-### Add Individual Properties to our Schemas
+### Populate schema
+To populate the schema for a tabular dataset, we describe its syntactic and semantic properties through a series of unique properties, each representing a single column or an array of similar columns. To add a property, we use the `fairscape-cli schema add-property` command.
+
+The first step in adding a property is to choose the datatype it represents in the column or array of columns. For example, if a column represents a `string` datatype, we create a string property by using the `fairscape-cli schema add-property string` command. We can use a similar command for other datatypes as well. The CLI supports five datatypes for a tabular dataset, which are listed in the table below.
+
+| Datatype       | Description      |
+| -------------- | -----------------|
+| `string`       | Strings of text  |
+| `number`       | Any numeric type |
+| `integer`      | Integral numbers |
+| `array`        | Ordered elements |
+| `boolean`      | True and False   |
+
+After choosing the datatype, we must fill in additional information about the column or array of columns it represents. The table headers below display all available options for each datatype. For a `string` property, this includes a unique `name`, an integer value for the `index` (where 0 represents the first column, 1 represents the second, and so on), a human-readable `description`, a standard vocabulary term for the `value-url`, and a regular expression for the data `pattern` in that column. While the first three options are required, the rest are optional.
+
+| Datatype |   name   |   index  | description | value-url |  pattern | items-datatype | min-items | max-items | unique-items |
+|----------|:--------:|:--------:|:-----------:|:---------:|:--------:|:--------------:|:---------:|:---------:|:------------:|
+| `string` | required | required |   required  |  optional | optional |                |           |           |              |
+| `number` | required | required |   required  |  optional |          |                |           |           |              |
+| `integer`| required | required |   required  |  optional |          |                |           |           |              |
+| `array`  | required | required |   required  |  optional |          |    required    |  optional |  optional |   optional   |
+| `boolean`| required | required |   required  |  optional |          |                |           |           |              |
+
+To view all available options and arguments, including those for the string datatype, we can use the command `fairscape-cli schema add-property string --help`, which will display a complete list of options.
+
+```bash
+fairscape-cli schema add-property string [OPTIONS] SCHEMA_FILE
+
+Options:
+  --name TEXT         [required]
+  --index INTEGER     [required]
+  --description TEXT  [required]
+  --value-url TEXT
+  --pattern TEXT
+  --help              Show this message and exit.
+```
+
+#### Add a String Property
 
 Columns index 0 and 1 have string values. 
 Both can be constrained with an optional regex pattern.
@@ -100,7 +144,7 @@ fairscape-cli schema add-property array \
     ./schema_apms_music_embedding.json
 ```
 
-#### Schema JSON
+### Generated schema
 
 Looking at our schema we should have a json document equivalent to the following
 ```json
@@ -150,7 +194,7 @@ Looking at our schema we should have a json document equivalent to the following
 }
 ```
 
-#### Validate Data with the Schema
+### Validate schema
 
 Now to use our schema to validate our data with
 
