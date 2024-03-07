@@ -1,6 +1,6 @@
 [project]
 name = "fairscape-cli"
-version = "0.1.14a5"
+version = "0.1.15"
 description = "CLI tool for B2AI metadata validation and ROCrate creation"
 readme = "README.md"
 authors = [
