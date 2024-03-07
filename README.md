@@ -1,5 +1,5 @@
 # fairscape-cli
-Data Validation and Packaging utility for sending evidence graphs to FAIRSCAPE
+A utility for packaging objects and validating metadata for FAIRSCAPE.
 
 Documentation: [https://fairscape.github.io/fairscape-cli/](https://fairscape.github.io/fairscape-cli/)
 

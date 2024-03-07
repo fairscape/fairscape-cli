@@ -10,6 +10,7 @@ authors:
   - family-names: Timothy
     given-names: Clark
     orcid: https://orcid.org/0000-0003-4060-7360
-title: fairscape/fairscape-cli: fairscape-cli v0.1.5a3
-version: v0.1.5a3
-date-released: 2023-06-13
+title: "fairscape-cli: A utility for packaging objects and validating metadata for FAIRSCAPE."
+version: 0.1.16
+date-released: 2024-03-08
+url: "https://github.com/fairscape/fairscape-cli"

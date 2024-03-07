@@ -1,9 +1,0 @@
-[submodule "fairscape_cli/models/schema/cm4ai-schemas"]
-	path = fairscape_cli/models/schema/cm4ai-schemas
-	url = git@github.com:fairscape/cm4ai-schemas.git
-[submodule "fairscape_cli/schema/default_schemas/cm4ai-schemas"]
-	path = fairscape_cli/schema/default_schemas/cm4ai-schemas
-	url = git@github.com:fairscape/cm4ai-schemas.git
-[submodule "examples/schemas/cm4ai-rocrates/cm4ai-schemas"]
-	path = examples/schemas/cm4ai-rocrates/cm4ai-schemas
-	url = git@github.com:fairscape/cm4ai-schemas.git
