@@ -1,10 +1,10 @@
 # Project Information
 site_name: FAIRSACPE CLI
 site_description: A Command Line Interface (CLI) for Validation and Packaging of Research Data
-site_url: https://fairscape.github.io/fairscape-cli/
+site_url: https://sadnanalmanir.github.io/release-example/
 # Repository
 repo_name: fairscape/fairscape-cli
-repo_url: https://github.com/fairscape/fairscape-cli
+repo_url: https://github.com/sadnanalmanir/release-example
 
 # Page tree
 nav:
@@ -12,7 +12,6 @@ nav:
   - Setup: setup.md
   - Getting Started: getting-started.md
   - Schema Metadata: schema-metadata.md
-  - Notes: notes.md
     
 
 theme: 
@@ -98,7 +97,6 @@ extra:
 
   social:
     - icon: fontawesome/brands/github-alt
-      link: https://github.com/fairscape/fairscape-cli
+      link: https://github.com/sadnanalmanir/release-example
 
 copyright: Copyright &copy; 2023 BioDEL, UVa
-

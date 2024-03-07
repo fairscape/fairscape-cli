@@ -1,10 +1,14 @@
+
+---
 ## RO-Crate
+---
 
-The interface uses the `fairscape-cli` root command to invoke all sub-commands.
+The interface uses the `fairscape-cli` root command to invoke all sub-commands. All RO-Crate operations are invoked using the `rocrate` sub-command.
 
-### Create a new RO-Crate
+---
 
-All RO-Crate operations are invoked using the `rocrate` sub-command. Creation of an RO-Crate is performed by the `create` sub-command. It uses one optional parameter `guid`, three required parameters `name`, `organization-name`, `project-name`, and a location on the disk `ROCRATE_PATH`  
+### Create RO-Crate
+An RO-Crate can be created either by the `create` or `init` sub-command. While `create` allows users to choose the destination directory using the `ROCRATE_PATH` argument, `init` creates the RO-Crate in the present working directory. Both commands use one optional parameter `guid`, five required parameters `name`, `description`, `keywords`, `organization-name`, and `project-name`.
 
 ``` bash
 fairscape-cli rocrate create [OPTIONS] ROCRATE_PATH
@@ -18,7 +22,7 @@ Options:
   --project-name TEXT       [required]
 ```
 
-The following command will create a new RO-Crate instance with a minimal set of metadata. A file `ro-crate-metadata.json` is created in the `ROCRATE_PATH` that contains the metadata. A unique identifier is generated automatically to represent the RO-Crate. 
+The following command will create an RO-Crate with a minimal set of metadata. A file `ro-crate-metadata.json` containing the metadata is created in the path specified as the value of the argument `ROCRATE_PATH`. A unique identifier is generated automatically to represent the RO-Crate. 
 
 ``` bash 
 fairscape-cli rocrate create \
@@ -29,14 +33,14 @@ fairscape-cli rocrate create \
   --keywords "U2OS" \
   --organization-name "UVA" \
   --project-name "B2AI"  \
-  "/home/user/test_rocrate"
+  "/path/to/test_rocrate"
 ```
 
-For a given identifier, the option `guid` is used. 
+For a given identifier, the option `guid` is used as follows: 
 
 ``` bash
 fairscape-cli rocrate create \
-  --guid "ark:5982/UVA/B2AI/test_rocrate" \
+  --guid "ark:59852/UVA/B2AI/test_rocrate" \
   --name "test rocrate" \
   --description "Example RO Crate for Tests" \
   --keywords "b2ai" \
@@ -44,26 +48,45 @@ fairscape-cli rocrate create \
   --keywords "U2OS" \
   --organization-name "UVA" \
   --project-name "B2AI"  \
-  "/home/user/test_rocrate"
+  "/path/to/test_rocrate"
 ```
 
-### Add objects to RO-Crate
-
-The FAIRSCAPE ecosystem treats datasets and software as objects. Adding objects to an RO-Crate is performed by the `add` sub-command. Whenever the `add` command is used, the object is fetched and added to the crate.
+As as alternative, `fairscape-cli rocrate init` command below creates the same RO-Crate in the present working directory. 
 
 ``` bash
-fairscape-cli rocrate add [OPTIONS] COMMAND [ARGS]...
+fairscape-cli rocrate init \
+  --guid "ark:59852/UVA/B2AI/test_rocrate" \
+  --name "test rocrate" \
+  --description "Example RO Crate for Tests" \
+  --keywords "b2ai" \
+  --keywords "cm4ai" \
+  --keywords "U2OS" \
+  --organization-name "UVA" \
+  --project-name "B2AI"
+```
+
+---
+
+### Add object
+The FAIRSCAPE ecosystem treats datasets and software as objects. Adding objects to an RO-Crate is performed by the `add` sub-command. Whenever the `add` command is used, the object is fetched and transferred to the crate.
+
+``` bash
+Usage: fairscape-cli rocrate add [OPTIONS] COMMAND [ARGS]...
+
+  Add (transfer) object to RO-Crate and register object metadata.
 
 Options:
   --help  Show this message and exit.
 
 Commands:
-  dataset
-  software
+  dataset   Add Dataset object and metadata.
+  software  Add Software object and metadata.
 ```
-#### Add dataset object
 
-The sub-command `dataset` is used to add a dataset. It uses eight required parameters `name`, `author`, `version`, `date-published`, `description`, `data-format`, `source-filepath`, and `destination-filepath`. The additional six parameters are optional. Metadata about the dataset are added to the `ro-crate-metadata.json` and the dataset object is copied to the location `ROCRATE_PATH`. 
+---
+
+#### Dataset object
+The sub-command `dataset` is used to add a dataset. It uses eight required parameters `name`, `author`, `version`, `date-published`, `description`, `data-format`, `source-filepath`, and `destination-filepath`. The additional six parameters are optional. Metadata about the dataset are added to the `ro-crate-metadata.json` and the dataset object is transferred to the location specified by `ROCRATE_PATH`. 
 
 ``` bash
 fairscape-cli rocrate add dataset [OPTIONS] ROCRATE_PATH
@@ -100,8 +123,8 @@ fairscape-cli rocrate add dataset \
   --keywords "U2OS" \
   --data-format "CSV" \
   --source-filepath "./tests/data/APMS_embedding_MUSIC.csv" \
-  --destination-filepath "/home/user/test_rocrate" \
-  "/home/user/test_rocrate"
+  --destination-filepath "/path/to/test_rocrate" \
+  "/path/to/test_rocrate"
 ```
 
 The following command performs the same operation using both required and optional parameters:
@@ -120,20 +143,21 @@ fairscape-cli rocrate add dataset \
   --keywords "U2OS" \
   --data-format "CSV" \
   --source-filepath "./tests/data/APMS_embedding_MUSIC.csv" \
-  --destination-filepath "/home/user/test_rocrate" \
+  --destination-filepath "/path/to/test_rocrate" \
   --used-by "create labeled training & test sets  random_forest_samples.py" \
   --derived-from "node2vec predict" \
   --associated-publication "Qin, Y. et al. A multi-scale map of cell structure fusing protein images and interactions" \
   --additional-documentation "https://idekerlab.ucsd.edu/music/" \
-  "/home/user/test_rocrate"
+  "/path/to/test_rocrate"
 ```
 
-`fairscape-cli` offers an option to annotate certain types of datasets with schema-level metadata. The page 
-[Schema Metadata](schema-metadata.md) demonstrates how the CLI can be used to generate the schema metadata for a dataset.
+`fairscape-cli` offers a feature to annotate certain types of dataset objects with schema-level metadata. The examples in  
+[Schema Metadata](schema-metadata.md) illustrate how to describe schema of a dataset object as metadata. A mechanism to validate the metadata against the object is a part of this feature.
 
-#### Add software object
+---
 
-The sub-command `software` is used to add a software. It uses eight required parameters `name`, `author`, `version`, `description`, `file-format`, `source-filepath`, `destination-filepath`, and `date-modified`. The additional five parameters are optional. Metadata about the software are added to the `ro-crate-metadata.json` and the software object is copied to the location `ROCRATE_PATH`. 
+#### Software object
+The sub-command `software` is used to add a software object. It uses eight required parameters `name`, `author`, `version`, `description`, `file-format`, `source-filepath`, `destination-filepath`, and `date-modified`. The additional five parameters are optional. Metadata about the software are added to the `ro-crate-metadata.json` and the software object is transferred to the location specified by `ROCRATE_PATH`. 
 
 ``` bash
 fairscape-cli rocrate add software [OPTIONS] ROCRATE_PATH
@@ -168,9 +192,9 @@ fairscape-cli rocrate add software \
   --keywords "U2OS" \
   --file-format "py" \
   --source-filepath "./tests/data/calibrate_pairwise_distance.py" \
-  --destination-filepath "/home/user/test_rocrate" \
+  --destination-filepath "/path/to/test_rocrate" \
   --date-modified "2021-04-23" \
-  "/home/user/test_rocrate"
+  "/path/to/test_rocrate"
 ```
 
 The following command performs the same operation using both required and optional parameters:
@@ -187,16 +211,18 @@ fairscape-cli rocrate add software \
   --file-format "py" \
   --url "https://github.com/idekerlab/MuSIC/blob/master/calibrate_pairwise_distance.py" \
   --source-filepath "./tests/data/calibrate_pairwise_distance.py" \
-  --destination-filepath "/home/user/test_rocrate" \
+  --destination-filepath "/path/to/test_rocrate" \
   --date-modified "2021-06-20" \
   --used-by-computation "ARK:compute_standard_proximities.1/f9aa5f3f-665a-4ab9-8879-8d0d52f05265" \
   --associated-publication "Qin, Y. et al. A multi-scale map of cell structure fusing protein images and interactions. Nature 600, 536–542 2021" \
   --additional-documentation "https://idekerlab.ucsd.edu/music/" \
-  "/home/user/test_rocrate"
+  "/path/to/test_rocrate"
 ```
 
-### Register metadata to RO-Crate
-The sub-command `register` is used to add metadata of the components of an RO-Crate to `ro-crate-metadata.json`. Registration can be performed on instances of four components: `computation`, `dataset`, `dataset-container`, and `software`. 
+---
+
+### Register object metadata
+The sub-command `register` is used to add metadata of the components of an RO-Crate to `ro-crate-metadata.json`. Registration can be performed on instances of: `computation`, `dataset`, and `software`. 
 
 The sub-commands `add dataset` and `add software` described above issue implicit calls to methods that register metadata about the dataset and software, respectively.
 
@@ -215,12 +241,12 @@ Commands:
   softwares
 ```
 
-#### Register computation metadata
-The FAIRSCAPE ecosystem treats computation as an activity. Unlike datasets and software which are objects, computations need not be added to the crate. Computations, however, are required to be registered within the RO-Crate metadata. 
+---
 
-Registration of computation is performed by the `register computation` sub-command. It uses four required parameters `name`, `run-by`, `date-created`, and `description`. The additional five parameters are optional. Whenever this command is used metadata about the computation is added to `ro-crate-metadata.json` located in `ROCRATE_PATH`.
+#### Computation metadata
+The FAIRSCAPE ecosystem considers computation as an activity, unlike datasets and software that are treated as objects. To register a computation, it must be added to the RO-Crate metadata using the `register computation` sub-command. This command requires five mandatory parameters: `name`, `run-by`, `date-created`, `description`, and `keywords`. There are also five optional parameters that can be included. 
 
-The following command shows all options and arguments for registering metadata about the computation.
+Once the command is executed, metadata about the computation is added to the `ro-crate-metadata.json` file located in `ROCRATE_PATH`. To view all available options and arguments for registering metadata about the computation, execute the following command.
 
 ``` bash
 fairscape-cli rocrate register computation [OPTIONS] ROCRATE_PATH
@@ -238,7 +264,7 @@ Options:
   --generated TEXT
 ```
 
-The `register computation` sub-command below uses only the required options to populate the metadata of a computation within the metadata file `ro-crate-metadata.json`. A unique identifier is generated automatically to represent the computation. 
+The following `register computation` sub-command is designed to populate the metadata of a computation within the `ro-crate-metadata.json` file using only the necessary options. Additionally, a unique identifier is generated automatically to represent the computation. 
 
 ``` bash
 fairscape-cli rocrate register computation \
@@ -249,10 +275,10 @@ fairscape-cli rocrate register computation \
   --keywords "b2ai" \
   --keywords "cm4ai" \
   --keywords "U2OS" \
-  "/home/user/test_rocrate"
+  "/path/to/test_rocrate"
 ```
 
-The following command performs the same operation using both required and optional parameters:
+Execute the following command to use all available options and argument for registering a computation: 
 
 ``` bash
 fairscape-cli rocrate register computation \
@@ -276,14 +302,15 @@ fairscape-cli rocrate register computation \
   --used-dataset """Fold 1 proximities: IF_emd_1_APMS_emd_1.RF_maxDep_30_nEst_1000.fold_5.pkl""" \
   --used-dataset "IF_emd_2_APMS_emd_1.RF_maxDep_30_nEst_1000.fold_5.pkl" \
   --generated "averages of predicted protein proximities (https://github.com/idekerlab/MuSIC/blob/master/Examples/MuSIC_predicted_proximity.txt)" \
-  "/home/user/test_rocrate"
+  "/path/to/test_rocrate"
 ```
 
-#### Register dataset metadata
+---
 
-Registration of dataset is performed by the `register dataset` sub-command. Instead of the `source-filepath` and `destination-filepath` options in the `add dataset` command above, it uses the required option `filepath` that referring to the `source-filepath`. The command is used to add metadata about the dataset to `ro-crate-metadata.json` located in `ROCRATE_PATH`.
+#### Dataset metadata
+To register a dataset, you can use the `register dataset` sub-command, which requires the `filepath` option to specify the source file path. This command adds metadata about the dataset to the `ro-crate-metadata.json` file in the `ROCRATE_PATH` directory.
 
-The following command shows all options and arguments for registering metadata about the dataset.
+To view all available options and arguments for registering metadata about the computation, execute the following command.
 
 ``` bash hl_lines="12"
 fairscape-cli rocrate register dataset [OPTIONS] ROCRATE_PATH
@@ -305,7 +332,7 @@ Options:
   --additional-documentation TEXT
 ```
 
-The following command adds metadata with required and optional parameters:
+Execute the following command to use all available options and argument for registering a dataset:
 
 ``` bash
 fairscape-cli rocrate register dataset \
@@ -325,14 +352,15 @@ fairscape-cli rocrate register dataset \
   --derived-from "node2vec predict" \
   --associated-publication "Qin, Y. et al. A multi-scale map of cell structure fusing protein images and interactions" \
   --additional-documentation "https://idekerlab.ucsd.edu/music/" \
-  "/home/user/test_rocrate"
+  "/path/to/test_rocrate"
 ```
 
-#### Register software metadata
+---
 
-Registration of software is performed by the `register software` sub-command. Instead of the `source-filepath` and `destination-filepath` options in the `add software` command above, it uses the required option `filepath` that referring to the `source-filepath`. The command is used to add metadata about the dataset to `ro-crate-metadata.json` located in `ROCRATE_PATH`.
+#### Software metadata
+Similarly, to register software, you can use the `register software` sub-command, which also requires the `filepath` option to specify the source file path. This command adds metadata about the software to the same `ro-crate-metadata.json` file in the `ROCRATE_PATH` directory. 
 
-The following command shows all options and arguments for registering metadata about the dataset.
+To view all available options and arguments for registering metadata about the computation, execute the following command.
 
 ``` bash hl_lines="12"
 fairscape-cli rocrate register software [OPTIONS] ROCRATE_PATH
@@ -353,7 +381,7 @@ Options:
   --additional-documentation TEXT
 ```
 
-The following command adds metadata with required and optional parameters:
+Execute the following command to use all available options and argument for registering a software:
 
 ``` bash
 fairscape-cli rocrate register software \
@@ -369,14 +397,16 @@ fairscape-cli rocrate register software \
   --used-by-computation "ARK:compute_standard_proximities.1/f9aa5f3f-665a-4ab9-8879-8d0d52f05265" \
   --associated-publication "Qin, Y. et al. A multi-scale map of cell structure fusing protein images and interactions. Nature 600, 536–542 2021" \
   --additional-documentation "https://idekerlab.ucsd.edu/music/" \
-  "/home/user/test_rocrate"
+  "/path/to/test_rocrate"
 ```
 
-## BagIt
+---
 
+## BagIt
+---
 The CLI supports creating BagIt from an existing RO-Crate. Integration of BagIt with repositories such as [Dataverse](https://guides.dataverse.org/en/5.13/user/dataset-management.html) and [Library of Congress](https://blogs.loc.gov/thesignal/2019/04/bagit-at-the-library-of-congress/) indicates its increasing use as a mechanism for transferring and storing digital content. The structure of a BagIt is simple to understand and the integrity of its contents can be easily validated. There is a clear separation of contents, metadata and checksum values.  
 
-### Structure of a BagIt
+### Structure
 A BagIt created by the CLI has the following structure that are described in detail in the [specification](https://datatracker.ietf.org/doc/html/rfc8493). By default, a BagIt created by the CLI contains `bag-info.txt` for metadata, `bag.txt` specifying the version and encoding, three files titled `manifest-[algorithm].txt` for validating digital contents, and three `tagmanifest-[algorithm].txt` files for validating the rest of the files in a `Bag` other than the contents. Each `algorithm` is an instance of the [MD5](https://en.wikipedia.org/wiki/MD5), SHA-256 and SHA-512 [hash algorithms](https://en.wikipedia.org/wiki/SHA-2) for generating checksum.
 
 ```
@@ -403,7 +433,7 @@ A BagIt created by the CLI has the following structure that are described in det
    |     +-- [payload files]
 ```
 
-### Options and arguments for BagIt creation
+### Create BagIt
 Creating a BagIt requires a user to submit information about the metadata, an exising RO-Crate location as `ROCRATE_PATH`, and the target location of the BagIt as `BAGIT_PATH`. The options below list all the six metadata keyword required to create a BagIt.  
 
 
@@ -419,14 +449,14 @@ Options:
   --External-Description TEXT  [required]
 ```
 
-### Sample command to create a BagIt from a RO-Crate
-The following command creates a BagIt in `/home/user/test_bagit` form an existing RO-Crate in `/home/user/test_rocrate`.
+### Example
+The following command creates a BagIt in `/path/to/test_bagit` form an existing RO-Crate in `/path/to/test_rocrate`.
 
 
 ``` bash
 fairscape-cli rocrate package bagit \
-   "/home/user/test_rocrate" \
-   "/home/user/test_bagit" \
+   "/path/to/test_rocrate" \
+   "/path/to/test_bagit" \
    --Source-Organization "FOO University" \
    --Organization-Address "1 Main St., Cupertino, California, 11111" \
    --Contact-Name "Jane Doe" \
