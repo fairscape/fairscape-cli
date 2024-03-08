@@ -35,7 +35,7 @@ from fairscape_cli.config import (
 
 @click.group('schema')
 def schema():
-    """Invoke operations on a schema definition for a dataset format.
+    """Invoke operations on dataset schema.
     """
     pass
 

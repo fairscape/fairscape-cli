@@ -10,4 +10,4 @@ fairscape-cli provides a Command Line Interface (CLI) that allows the client sid
     * Create Research Object Crates (RO-Crates)
     * Add (transfer) digital objects to the RO-Crate
     * Register metadata of the objects
-    * Describe schema of dataset objects (CSV, TSV) as metadata and perform shallow validation.
+    * Describe the schema of tabular dataset objects as metadata and perform validation.
