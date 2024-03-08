@@ -147,11 +147,11 @@ def registerSoftware(
     used_by_computation,
     associated_publication,
     additional_documentation
-    ):
+):
     """Register a Software metadata record to the specified ROCrate
     """    
     try:
-        crateInstance = ReadROCrateMetadata(rocrate_path)
+        crateInstance = ReadROCrateMetadata(str(rocrate_path))
     except Exception as exc:
         click.echo(f"ERROR: {str(exc)}")
         click.Abort()
@@ -222,7 +222,7 @@ def registerDataset(
     """Register Dataset object metadata with the specified RO-Crate 
     """    
     try:
-        crate_instance = ReadROCrateMetadata(rocrate_path)
+        crate_instance = ReadROCrateMetadata(str(rocrate_path))
     except Exception as exc:
         click.echo(f"ERROR: {str(exc)}")
         click.Abort()
@@ -359,7 +359,7 @@ def software(
     """Add a Software and its corresponding metadata.
     """
     try:
-        crateInstance = ReadROCrateMetadata(rocrate_path)
+        crateInstance = ReadROCrateMetadata(str(rocrate_path))
     except Exception as exc:
         click.echo(f"ERROR: {str(exc)}")
         click.Abort()
@@ -450,7 +450,7 @@ def dataset(
     """
 
     try:
-        crateInstance = ReadROCrateMetadata(rocrate_path)
+        crateInstance = ReadROCrateMetadata(str(rocrate_path))
     except Exception as exc:
         click.echo(f"ERROR: {str(exc)}")
         click.Abort()

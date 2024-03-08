@@ -188,9 +188,6 @@ def ReadROCrateMetadata(
     else:
         metadataCratePath = cratePath + "/ro-crate-metadata.json"
 
-    if pathlib.Path(cratePath).exists() != True:
-        raise Exception(f'ro-crate-metadata.json not found at path {metadataCratePath}')
-
     with open(metadataCratePath, "r") as metadataFile:
         crateMetadata = json.load(metadataFile)
         readCrate = ROCrate.model_validate(crateMetadata)
