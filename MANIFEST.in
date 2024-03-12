@@ -1,0 +1,1 @@
+include src/fairscape_cli/models/schema/default_schemas/cm4ai_schemas/v0.1.0/*.json
