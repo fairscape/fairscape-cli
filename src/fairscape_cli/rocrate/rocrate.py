@@ -174,8 +174,8 @@ def registerSoftware(
                 crate_path =rocrate_path 
         )
     
-        crateInstance.registerSoftware(software_instance)
-        click.echo(guid)
+        AppendCrate(cratePath = rocrate_path, elements=[software_instance])
+        click.echo(software_instance.guid)
 
     except ValidationError as e:
         click.echo("Software Validation Error")
@@ -243,8 +243,11 @@ def registerDataset(
             schema=schema,
             derivedFrom=derived_from,
             usedBy=used_by,
+            filepath=filepath,
             cratePath=rocrate_path
         )
+        AppendCrate(cratePath = rocrate_path, elements=[dataset_instance])
+        click.echo(dataset_instance.guid)
 
     except ValidationError as e:
         click.echo("Dataset Validation Error")
@@ -254,9 +257,7 @@ def registerDataset(
         click.echo(f"ERROR: {str(exc)}")
         click.Abort()
     
-    crate_instance.registerDataset(dataset_instance)
  
-    click.echo(dataset_instance.guid)
 
 
 @register.command('computation')
@@ -294,7 +295,7 @@ def computation(
 
 
     try:
-        computationModel = GenerateComputation(
+        computationInstance = GenerateComputation(
             name=name,
             run_by=run_by,
             command= command,
@@ -306,7 +307,7 @@ def computation(
             generated= generated
         )
 
-        crateInstance.registerComputation(computationModel)
+        AppendCrate(cratePath=rocrate_path, elements=[computationInstance])
         click.echo(computationModel.guid)
 
     except ValidationError as e:
@@ -362,49 +363,44 @@ def software(
         crateInstance = ReadROCrateMetadata(str(rocrate_path))
     except Exception as exc:
         click.echo(f"ERROR: {str(exc)}")
-        click.Abort()
+        click.Abort() 
 
     
-
     try:
-        software_model = Software(   
-            **{
-            "@id": guid,
-            "@type": "https://w3id.org/EVI#Software",
-            "url": url,
-            "name": name,
-            "author": author,
-            "dateModified": date_modified,
-            "description": description,
-            "keywords": keywords,
-            "version": version,
-            "associatedPublication": associated_publication,
-            "additionalDocumentation": additional_documentation,
-            "format": file_format,
-            # sanitize multiple inputs
-            "usedByComputation": [
-                computation.strip("\n") for computation in used_by_computation
-            ],
-            "contentUrl": "file://" + str(pathlib.Path(destination_filepath))
-            }
+        software_instance = GenerateSoftware(
+                guid=guid,
+                url= url,
+                name=name,
+                version=version,
+                keywords=keywords,
+                file_format=file_format,
+                description=description,
+                author= author,
+                associated_publication=associated_publication,
+                additional_documentation=additional_documentation,
+                date_modified=date_modified,
+                used_by_computation=used_by_computation,
+                filepath=filepath,
+                crate_path =rocrate_path 
         )
-        crateInstance.registerSoftware(software_model)
+    
+        AppendCrate(cratePath = rocrate_path, elements=[software_instance])
+        # copy file to rocrate
+        CopyToROCrate(source_filepath, destination_filepath)
+        click.echo(software_instance.guid)
 
     except ValidationError as e:
         click.echo("Software Validation Error")
         click.echo(e)
         click.Abort()
+        
 
+        
 
-    try:
-        crateInstance.copyObject(source_filepath, destination_filepath)
-
-    except Exception as e:
-        click.echo("Failed to Copy Software")
+    except ValidationError as e:
+        click.echo("Software Validation Error")
         click.echo(e)
         click.Abort()
-
-    click.echo(software_model.guid)
 
     # TODO add to cache
 
@@ -455,41 +451,35 @@ def dataset(
         click.echo(f"ERROR: {str(exc)}")
         click.Abort()
 
-    
     try:
-        dataset_model = Dataset.model_validate({
-            "@id": guid,
-            "@type": "https://w3id.org/EVI#Dataset",
-            "url": url,
-            "author": author,
-            "name": name,
-            "description": description,
-            "keywords": keywords,
-            "datePublished": date_published,
-            "version": version,
-            "associatedPublication": associated_publication,
-            "additionalDocumentation": additional_documentation,
-            "format": data_format,
-            "schema": schema,
-            "derivedFrom": [
-                derived.strip("\n") for derived in derived_from
-            ],
-            "usedBy": [
-                used.strip("\n") for used in used_by 
-            ],
-            "schema": schema,
-            "contentUrl": "file://" + str(destination_filepath)
-            })
-
-        crateInstance.registerDataset(dataset_model)
-        crateInstance.copyObject(source_filepath, destination_filepath)
+        dataset_instance = GenerateDataset(
+            guid=guid,
+            url=url,
+            author=author,
+            name=name,
+            description=description,
+            keywords=keywords,
+            datePublished=date_published,
+            version=version,
+            associatedPublication=associated_publication,
+            additionalDocumentation=additional_documentation,
+            format=data_format,
+            schema=schema,
+            derivedFrom=derived_from,
+            usedBy=used_by,
+            filepath=destination_filepath,
+            cratePath=rocrate_path
+        )
+        AppendCrate(cratePath = rocrate_path, elements=[dataset_instance])
+        CopyToROCrate(source_filepath, destination_filepath)
+        click.echo(dataset_instance.guid)
 
     except ValidationError as e:
-        click.echo("Software Validation Error")
+        click.echo("Dataset Validation Error")
         click.echo(e)
         click.Abort()
-
-
-    click.echo(guid) 
-
+    except Exception as exc:
+        click.echo(f"ERROR: {str(exc)}")
+        click.Abort()
+    
     # TODO add to cache 

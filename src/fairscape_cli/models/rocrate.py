@@ -21,8 +21,19 @@ from pydantic import (
 from typing import (
     Optional,
     Union,
-    List
+    List,
+    Dict
 )
+
+class ROCrateMetadata(BaseModel):
+    guid: Optional[str] = Field(alias="@id", default=None)
+    metadataType: str = Field(alias="@type", default="https://schema.org/Dataset")
+    name: str = Field(max_length=200)
+    description: str = Field(min_length=10)
+    keywords: List[str] = Field(default=[])
+    isPartOf: Optional[List[Dict]]
+    metadataGraph: Optional[List[Union[Dataset,Software, Computation]]] = Field(alias="@graph", default=[])
+
 
 
 class ROCrate(BaseModel):
@@ -34,14 +45,13 @@ class ROCrate(BaseModel):
     projectName: Optional[str] = Field(default=None)
     organizationName: Optional[str] = Field(default=None)
     path: pathlib.Path
-    metadataGraph: Optional[List[Union[Dataset,Software, Computation]]]
+    metadataGraph: Optional[List[Union[Dataset,Software, Computation]]] = Field(alias="@graph", default=[])
 
     def generate_guid(self) -> str:
         if self.guid is None:
             sq = GenerateDatetimeSquid()
             self.guid = f"ark:{NAAN}/rocrate-{self.name.replace(' ', '-').lower()}-{sq}"
         return self.guid
-
 
 
     def createCrateFolder(self):
@@ -54,7 +64,8 @@ class ROCrate(BaseModel):
         """
 
         # create basic rocrate metadata
-        ro_crate_metadata_path = self.path / 'ro-crate-metadata.json'
+        if self.path.is_dir():
+            ro_crate_metadata_path = self.path / 'ro-crate-metadata.json'
 
         # create guid if none exists
         self.generate_guid()
@@ -178,7 +189,7 @@ class ROCrate(BaseModel):
 
 def ReadROCrateMetadata(
         cratePath: str
-)-> ROCrate:
+)-> ROCrateMetadata:
     """ Given a path read the rocrate metadata into a pydantic model
     """
 
@@ -190,7 +201,7 @@ def ReadROCrateMetadata(
 
     with open(metadataCratePath, "r") as metadataFile:
         crateMetadata = json.load(metadataFile)
-        readCrate = ROCrate.model_validate(crateMetadata)
+        readCrate = ROCrateMetadata.model_validate(crateMetadata)
     
     return readCrate
 
@@ -216,3 +227,26 @@ def AppendCrate(
         
         rocrate_metadata_file.seek(0)
         json.dump(rocrate_metadata, rocrate_metadata_file, indent=2)
+
+
+def CopyToROCrate(source_filepath: str, destination_filepath: str):
+    if source_filepath == "":
+        raise Exception(message="source path is None")
+
+    if destination_filepath == "":
+        raise Exception(message="destination path is None") 
+
+    # check if the source file exists 
+    source_path = pathlib.Path(source_filepath)
+    destination_path = pathlib.Path(destination_filepath)
+
+    if source_path.exists() != True:
+        raise Exception(
+            message =f"sourcePath: {source_path} Doesn't Exist"
+        )
+
+    # TODO check that destination path is in the rocrate
+
+    # copy the file into the destinationPath
+    shutil.copy(source_path, destination_path)
+
