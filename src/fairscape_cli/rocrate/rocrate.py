@@ -163,15 +163,15 @@ def registerSoftware(
                 name=name,
                 version=version,
                 keywords=keywords,
-                file_format=file_format,
+                fileFormat=file_format,
                 description=description,
                 author= author,
-                associated_publication=associated_publication,
-                additional_documentation=additional_documentation,
-                date_modified=date_modified,
-                used_by_computation=used_by_computation,
+                associatedPublication=associated_publication,
+                additionalDocumentation=additional_documentation,
+                dateModified=date_modified,
+                usedByComputation=used_by_computation,
                 filepath=filepath,
-                crate_path =rocrate_path 
+                cratePath =rocrate_path 
         )
     
         AppendCrate(cratePath = rocrate_path, elements=[software_instance])
@@ -239,7 +239,7 @@ def registerDataset(
             version=version,
             associatedPublication=associated_publication,
             additionalDocumentation=additional_documentation,
-            format=data_format,
+            dataFormat=data_format,
             schema=schema,
             derivedFrom=derived_from,
             usedBy=used_by,
@@ -373,15 +373,15 @@ def software(
                 name=name,
                 version=version,
                 keywords=keywords,
-                file_format=file_format,
+                fileFormat=file_format,
                 description=description,
                 author= author,
-                associated_publication=associated_publication,
-                additional_documentation=additional_documentation,
-                date_modified=date_modified,
-                used_by_computation=used_by_computation,
-                filepath=filepath,
-                crate_path =rocrate_path 
+                associatedPublication=associated_publication,
+                additionalDocumentation=additional_documentation,
+                dateModified=date_modified,
+                usedByComputation=used_by_computation,
+                filepath=destination_filepath,
+                cratePath =rocrate_path 
         )
     
         AppendCrate(cratePath = rocrate_path, elements=[software_instance])
@@ -392,10 +392,7 @@ def software(
     except ValidationError as e:
         click.echo("Software Validation Error")
         click.echo(e)
-        click.Abort()
-        
-
-        
+        click.Abort() 
 
     except ValidationError as e:
         click.echo("Software Validation Error")
@@ -463,7 +460,23 @@ def dataset(
             version=version,
             associatedPublication=associated_publication,
             additionalDocumentation=additional_documentation,
-            format=data_format,
+        software_instance = GenerateSoftware(
+                guid=guid,
+                url= url,
+                name=name,
+                version=version,
+                keywords=keywords,
+                file_format=file_format,
+                description=description,
+                author= author,
+                associated_publication=associated_publication,
+                additional_documentation=additional_documentation,
+                date_modified=date_modified,
+                used_by_computation=used_by_computation,
+                filepath=filepath,
+                crate_path =rocrate_path 
+        )
+            dataFormat=data_format,
             schema=schema,
             derivedFrom=derived_from,
             usedBy=used_by,
