@@ -7,7 +7,7 @@ push:
 	python3 -m twine upload --repository pypi dist/*	
 
 push-test:
-	python3 -m twine upload --repository testpypi dist/*	
+	python3 -m twine upload --repository test-fairscape-cli dist/*	
 
 docker-build:
 	docker build -t fairscape-cli:$(VERSION)-python3.11 .
