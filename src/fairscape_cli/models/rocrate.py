@@ -194,7 +194,7 @@ def ReadROCrateMetadata(
     """
 
     # if cratePath has metadata.json inside
-    if "ro-crate-metadata.json" in cratePath:
+    if "ro-crate-metadata.json" in str(cratePath):
         metadataCratePath = cratePath
     else:
         metadataCratePath = cratePath + "/ro-crate-metadata.json"

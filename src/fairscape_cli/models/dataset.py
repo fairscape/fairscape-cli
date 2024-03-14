@@ -35,8 +35,8 @@ class Dataset(FairscapeBaseModel):
     version: str
     description: str = Field(min_length=10)
     keywords: List[str] = Field(...)
-    associatedPublication: Optional[str] = None
-    additionalDocumentation: Optional[str] = None
+    associatedPublication: Optional[str] = Field(default=None)
+    additionalDocumentation: Optional[str] = Field(default=None)
     fileFormat: str = Field(alias="format")
     dataSchema: Optional[Union[str, TabularValidationSchema]] = Field(alias="schema", default=None)
     generatedBy: Optional[List[str]] = Field(default=[])

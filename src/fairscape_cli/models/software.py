@@ -19,14 +19,14 @@ from typing import (
 
 
 class Software(FairscapeBaseModel): 
-    guid: Optional[str] = Field( alias='@id', default=None,)
-    metadataType: Optional[str] = Field(alias="@id", default="https://w3id.org/EVI#Software")
+    guid: Optional[str] = Field( alias='@id', default=None)
+    metadataType: Optional[str] = Field(alias="@type", default="https://w3id.org/EVI#Software")
     author: str = Field(min_length=4, max_length=64)
     dateModified: str
     version: str
     description: str =  Field(min_length=10)
-    associatedPublication: Optional[str]
-    additionalDocumentation: Optional[str]
+    associatedPublication: Optional[str] = Field(default=None)
+    additionalDocumentation: Optional[str] = Field(default=None)
     fileFormat: str = Field(title="fileFormat", alias="format")
     usedByComputation: Optional[List[str]]
     contentUrl: Optional[str] = Field(default=None)

@@ -302,7 +302,7 @@ def computation(
     """Register a Computation with the specified RO-Crate
     """
     try:
-        crateInstance = ReadROCrateMetadata(rocrate_path)
+        crateInstance = ReadROCrateMetadata(str(rocrate_path))
     except Exception as exc:
         click.echo(f"ERROR: {str(exc)}")
         click.Abort()

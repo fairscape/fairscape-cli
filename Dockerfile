@@ -23,5 +23,6 @@ RUN pip install --upgrade pip
 # copy built version
 COPY dist/fairscape_cli-0.1.16a4-py3-none-any.whl dist/
 COPY tests/ tests/
+COPY examples/ examples/
 
 RUN pip install dist/fairscape_cli-0.1.16a4-py3-none-any.whl
