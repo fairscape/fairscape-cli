@@ -1,9 +1,11 @@
 import click
 import json
 from prettytable import PrettyTable
+import pathlib
 from pydantic import (
         ValidationError
 )
+
 
 from fairscape_cli.models.schema.image import (
     ImageSchema,
@@ -263,27 +265,43 @@ def validate(ctx, schema, data):
     """Execute validation of a Schema against the provided data.
     """
 
-    if schema and data:
-        tabular_schema = ReadSchema(schema)
-        validation_errors = tabular_schema.execute_validation(data)
 
-        if len(validation_errors) !=0:
-            # print out all errors
-
-            # create a pretty table of validation errors
-            errorTable = PrettyTable()
-            errorTable.field_names = ['row', 'error_type', 'failed_keyword',  'message']
-
-            for err in validation_errors:
-                errorTable.add_row([err.get("row"), err.get("type"), err.get("failed_keyword"), str(err.get('message'))])
-
-            print(errorTable)
+    # if not a default schema
+    if 'ark' not in schema:
+        schemaPath = pathlib.Path(schema)
+        if not schemaPath.exists():
+            click.echo(f"Schema file at path {schema} does not exist")
             ctx.exit(1)
+    
+    dataPath = pathlib.Path(data)
+    if not dataPath.exists():
+        click.echo(f"Data file at path {data} does not exist")
+        ctx.exit(1)
 
-        else:
-            print('\nValidation Success')
-            ctx.exit(0)
+    try:
+        tabular_schema = ReadSchema(schema)
+    except ValdationError as e:
+        click.echo("Error with schema definition")
+        click.echo(e.errors())
+        ctx.exit(1)
+
+    validation_errors = tabular_schema.execute_validation(data)
+
+    if len(validation_errors) !=0:
+        # print out all errors
+
+        # create a pretty table of validation errors
+        errorTable = PrettyTable()
+        errorTable.field_names = ['row', 'error_type', 'failed_keyword',  'message']
+
+        for err in validation_errors:
+            errorTable.add_row([err.get("row"), err.get("type"), err.get("failed_keyword"), str(err.get('message'))])
+
+        print(errorTable)
+        ctx.exit(1)
 
     else:
-        print('ERROR: must pass either schema & data path')
+        print('Validation Success')
+        ctx.exit(0)
+
 

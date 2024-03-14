@@ -5,6 +5,10 @@ import json
 from pydantic import ValidationError
 from datetime import datetime
 
+
+from fairscape_cli.models.utils import (
+    FileNotInCrateException
+)
 from fairscape_cli.models import (
     Dataset,
     GenerateDataset,
@@ -14,6 +18,8 @@ from fairscape_cli.models import (
     GenerateComputation,
     ROCrate,
     ReadROCrateMetadata,
+    AppendCrate,
+    CopyToROCrate,
     BagIt
 )
 
@@ -177,6 +183,10 @@ def registerSoftware(
         AppendCrate(cratePath = rocrate_path, elements=[software_instance])
         click.echo(software_instance.guid)
 
+    except FileNotInCrateException as e:
+        click.echo(str(e))
+        click.Abort()
+
     except ValidationError as e:
         click.echo("Software Validation Error")
         click.echo(e)
@@ -248,6 +258,10 @@ def registerDataset(
         )
         AppendCrate(cratePath = rocrate_path, elements=[dataset_instance])
         click.echo(dataset_instance.guid)
+    
+    except FileNotInCrateException as e:
+        click.echo(str(e))
+        click.Abort()
 
     except ValidationError as e:
         click.echo("Dataset Validation Error")
@@ -296,6 +310,7 @@ def computation(
 
     try:
         computationInstance = GenerateComputation(
+            guid=guid,
             name=name,
             run_by=run_by,
             command= command,
@@ -308,7 +323,7 @@ def computation(
         )
 
         AppendCrate(cratePath=rocrate_path, elements=[computationInstance])
-        click.echo(computationModel.guid)
+        click.echo(computationInstance.guid)
 
     except ValidationError as e:
         click.echo("Computation Validation Error")
@@ -367,6 +382,8 @@ def software(
 
     
     try:
+        CopyToROCrate(source_filepath, destination_filepath)
+
         software_instance = GenerateSoftware(
                 guid=guid,
                 url= url,
@@ -386,7 +403,6 @@ def software(
     
         AppendCrate(cratePath = rocrate_path, elements=[software_instance])
         # copy file to rocrate
-        CopyToROCrate(source_filepath, destination_filepath)
         click.echo(software_instance.guid)
 
     except ValidationError as e:
@@ -449,6 +465,7 @@ def dataset(
         click.Abort()
 
     try:
+        CopyToROCrate(source_filepath, destination_filepath)
         dataset_instance = GenerateDataset(
             guid=guid,
             url=url,
@@ -460,22 +477,6 @@ def dataset(
             version=version,
             associatedPublication=associated_publication,
             additionalDocumentation=additional_documentation,
-        software_instance = GenerateSoftware(
-                guid=guid,
-                url= url,
-                name=name,
-                version=version,
-                keywords=keywords,
-                file_format=file_format,
-                description=description,
-                author= author,
-                associated_publication=associated_publication,
-                additional_documentation=additional_documentation,
-                date_modified=date_modified,
-                used_by_computation=used_by_computation,
-                filepath=filepath,
-                crate_path =rocrate_path 
-        )
             dataFormat=data_format,
             schema=schema,
             derivedFrom=derived_from,
@@ -484,7 +485,6 @@ def dataset(
             cratePath=rocrate_path
         )
         AppendCrate(cratePath = rocrate_path, elements=[dataset_instance])
-        CopyToROCrate(source_filepath, destination_filepath)
         click.echo(dataset_instance.guid)
 
     except ValidationError as e:

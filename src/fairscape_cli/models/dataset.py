@@ -5,7 +5,7 @@ from fairscape_cli.models.base import (
 from fairscape_cli.config import (
     NAAN
 )
-from fairscape_cli.models.utils import GenerateDatetimeSquid
+from fairscape_cli.models.utils import GenerateDatetimeSquid, FileNotInCrateException
 from fairscape_cli.models.schema.tabular import (
     TabularValidationSchema
 )
@@ -103,7 +103,7 @@ def GenerateDataset(
 
         # if filepath is a path that exists
         else:
-            if 'ro-crate-metadata.json' in cratePath:
+            if 'ro-crate-metadata.json' in str(cratePath):
                 rocratePath = pathlib.Path(cratePath).parent
             else:
                 rocratePath = pathlib.Path(cratePath)
@@ -113,7 +113,7 @@ def GenerateDataset(
                 # create a relative filepath to the ro-crate
                 datasetMetadata['contentUrl'] = f"file:///{str(datasetPath.relative_to(rocratePath))}"
             else:
-                raise Exception('Software File Not Found in RO-Crate')
+                raise FileNotInCrateException(cratePath=cratePath, filePath=datasetPath)
 
     datasetInstance = Dataset.model_validate(datasetMetadata)
 

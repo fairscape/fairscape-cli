@@ -420,13 +420,11 @@ def ReadSchemaFairscape(schemaArk: str) -> TabularValidationSchema:
     pass
 
 
+
 def ReadSchemaLocal(schemaFile: str) -> TabularValidationSchema:
     """ Helper function for reading the schema and marshaling into the pydantic model
     """
     schemaPath = pathlib.Path(schemaFile)
-
-    if not schemaPath.exists():
-        raise Exception(f'Schema at path {schemaFile} not found')
 
     # read the schema
     with schemaPath.open("r") as inputSchema:

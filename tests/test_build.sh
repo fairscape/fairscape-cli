@@ -10,6 +10,7 @@ SCHEMA_PATH="./tests/test_generated/schema_apms_music_embedding.json"
 # clear the schema path
 rm $SCHEMA_PATH
 
+echo "CREATE SCHEMA"
 fairscape-cli schema create-tabular \
     --name "APMS Embedding Schema" \
     --description "Tabular format for APMS music embeddings from PPI networks from the music pipeline from the B2AI Cellmaps for AI project" \
@@ -17,6 +18,7 @@ fairscape-cli schema create-tabular \
     --header False \
     $SCHEMA_PATH
 
+echo "ADD PROPERTY STRING"
 fairscape-cli schema add-property string \
     --name 'Experiment Identifier' \
     --index 0 \
@@ -33,6 +35,7 @@ fairscape-cli schema add-property string \
     $SCHEMA_PATH
 
 
+echo "ADD PROPERTY ARRAY"
 fairscape-cli schema add-property array \
     --name 'MUSIC APMS Embedding' \
     --index '2::' \
@@ -44,6 +47,7 @@ fairscape-cli schema add-property array \
     $SCHEMA_PATH
 
 
+echo "VALIDATE SCHEMA"
 fairscape-cli schema validate \
     --data examples/schemas/MUSIC_embedding/APMS_embedding_MUSIC.csv \
     --schema $SCHEMA_PATH
@@ -67,6 +71,7 @@ CRATE_PATH="./tests/test_generated/test_crates/build_test_rocrate"
 CRATE_ORG_NAME="UVA"
 CRATE_PROJ_NAME="B2AI"
 
+echo "CREATE ROCRATE"
 
 # create a test ROCrate
 fairscape-cli rocrate create \
@@ -89,6 +94,8 @@ DATASET_ASSOC_PUB="Qin, Y. et al. A multi-scale map of cell structure fusing pro
 DATASET_ADD_DOC="https://idekerlab.ucsd.edu/music/"
 DATASET_SOURCE_PATH="./tests/data/APMS_embedding_MUSIC.csv"
 DATASET_DEST_PATH="$CRATE_PATH/APMS_embedding_MUSIC.csv"
+
+echo "ADD DATASET"
 
 fairscape-cli rocrate add dataset \
         --name "$DATASET_NAME" \
@@ -117,6 +124,7 @@ SOFTWARE_DATE_PUB="2021-06-20"
 SOFTWARE_SOURCE_FILEPATH="./tests/data/calibrate_pairwise_distance.py"
 SOFTWARE_DEST_FILEPATH="$CRATE_PATH/calibrate_pairwise_distance.py"
 
+echo "ADD SOFTWARE"
 
 fairscape-cli rocrate add software \
         --guid "$SOFTWARE_GUID" \
@@ -134,6 +142,8 @@ fairscape-cli rocrate add software \
         
 # add a test computation 
 
+echo "REGISTER COMPUTATION"
+
 fairscape-cli rocrate register computation \
         --guid "ark:59853/UVA/B2AI/rocrate_test/music_test_run" \
         --name "test_computation_name" \
@@ -148,6 +158,7 @@ fairscape-cli rocrate register computation \
         --generated "https://github.com/idekerlab/MuSIC/blob/master/Examples/MuSIC_predicted_proximity.txt" \
         $CRATE_PATH
 
+
 ############################################
 #                ROCRATE INIT              #
 ############################################ 
@@ -161,6 +172,8 @@ cp tests/data/APMS_embedding_MUSIC.csv $INIT_CRATE_PATH
 
 cd $INIT_CRATE_PATH
 
+echo "INIT ROCRATE"
+
 # initialize a crate in the new directory
 fairscape-cli rocrate init \
         --guid $CRATE_GUID \
@@ -171,6 +184,8 @@ fairscape-cli rocrate init \
         --keywords "test" \
         --keywords "example" 
 
+
+echo "REGISTER DATASET"
 
 fairscape-cli rocrate register dataset \
         --name "$DATASET_NAME" \
@@ -187,6 +202,7 @@ fairscape-cli rocrate register dataset \
         --filepath "$INIT_CRATE_DATASET_PATH" \
         .
 
+echo "REGISTER SOFTWARE"
 
 fairscape-cli rocrate register software \
         --guid "$SOFTWARE_GUID" \

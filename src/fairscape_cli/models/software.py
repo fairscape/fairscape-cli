@@ -1,5 +1,5 @@
 from fairscape_cli.models.base import FairscapeBaseModel
-from fairscape_cli.models.utils import GenerateDatetimeSquid
+from fairscape_cli.models.utils import GenerateDatetimeSquid, FileNotInCrateException
 from fairscape_cli.config import NAAN
 import pathlib
 
@@ -39,6 +39,7 @@ class Software(FairscapeBaseModel):
  
 
 def GenerateSoftware(    
+    guid,
     name,
     author,
     version,
@@ -57,6 +58,7 @@ def GenerateSoftware(
     """
 
     softwareMetadata = {
+            "@id": guid,
             "@type": "https://w2id.org/EVI#Software",
             "url": url,
             "name": name,
@@ -82,7 +84,7 @@ def GenerateSoftware(
 
         # if filepath is a path that exists
         else:
-            if 'ro-crate-metadata.json' in cratePath:
+            if 'ro-crate-metadata.json' in str(cratePath):
                 rocratePath = pathlib.Path(cratePath).parent
             else:
                 rocratePath = pathlib.Path(cratePath)
@@ -91,7 +93,7 @@ def GenerateSoftware(
                 # create a relative filepath to the ro-crate
                 softwareMetadata['contentUrl'] = f"file:///{str(softwarePath.relative_to(rocratePath))}"
             else:
-                raise Exception('Software File is not inside of RO-Crate')
+                raise FileNotInCrateException(cratePath=cratePath, filePath=softwarePath)
 
     # validate metadata
     softwareModel = Software.model_validate(softwareMetadata)

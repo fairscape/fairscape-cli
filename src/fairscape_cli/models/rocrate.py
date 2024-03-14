@@ -210,6 +210,8 @@ def AppendCrate(
     cratePath: pathlib.Path,
     elements: List[Union[Dataset, Software, Computation]]
 ):
+    if cratePath.is_dir():
+        cratePath = cratePath / 'ro-crate-metadata.json'
 
     if len(elements) == 0:
         return None

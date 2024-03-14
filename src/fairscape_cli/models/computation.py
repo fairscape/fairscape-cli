@@ -37,6 +37,7 @@ class Computation(FairscapeBaseModel):
 
 
 def GenerateComputation(
+    guid: str,
     name: str,
     run_by: str,
     command: Optional[Union[str, List[str]]],
@@ -51,6 +52,7 @@ def GenerateComputation(
     """
     computation_model = Computation.model_validate(   
         {
+        "@id": guid,
         "@type": "https://w2id.org/EVI#Computation",
         "name": name,
         "description": description,
