@@ -1,0 +1,27 @@
+ARG VERSION=3.11.6-slim
+#ARG CLIVERSION=0.1.16a4
+
+# For more information, please refer to https://aka.ms/vscode-docker-python
+FROM python:${VERSION}
+
+# Keeps Python from generating .pyc files in the container
+ENV PYTHONDONTWRITEBYTECODE=1
+
+# Turns off buffering for easier container logging
+ENV PYTHONUNBUFFERED=1
+
+WORKDIR /fairscape_cli
+
+# add user to container
+#RUN adduser -u 5678 --disabled-password --gecos "" cliuser && \
+#	chown -R cliuser /fairscape_cli
+#USER cliuser
+
+# build local code 
+RUN pip install --upgrade pip
+
+# copy built version
+COPY dist/fairscape_cli-0.1.16a4-py3-none-any.whl dist/
+COPY tests/ tests/
+
+RUN pip install dist/fairscape_cli-0.1.16a4-py3-none-any.whl
