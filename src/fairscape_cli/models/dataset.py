@@ -72,6 +72,10 @@ def GenerateDataset(
         cratePath
         ):
     
+    if guid is None:
+        sq = GenerateDatetimeSquid()
+        guid = f"ark:{NAAN}/dataset-{self.name.lower().replace(' ', '-')}-{sq}"
+    
     datasetMetadata = {
             "@id": guid,
             "@type": "https://w3id.org/EVI#Dataset",
@@ -107,17 +111,18 @@ def GenerateDataset(
                 rocratePath = pathlib.Path(cratePath).parent
             else:
                 rocratePath = pathlib.Path(cratePath)
-
+            
             datasetPath = pathlib.Path(filepath)
-            if datasetPath.exists() and datasetPath.is_relative_to(rocratePath):
-                # create a relative filepath to the ro-crate
-                datasetMetadata['contentUrl'] = f"file:///{str(datasetPath.relative_to(rocratePath))}"
+            if datasetPath.exists():
+                try:
+                    relativePath = datasetPath.relative_to(rocratePath)
+                    datasetMetadata['contentUrl'] = f"file:///{str(relativePath)}"
+                except:
+                    raise FileNotInCrateException(cratePath=cratePath, filePath=datasetPath)
+
             else:
                 raise FileNotInCrateException(cratePath=cratePath, filePath=datasetPath)
 
     datasetInstance = Dataset.model_validate(datasetMetadata)
-
-    # generate guid
-    datasetInstance.generate_guid()
 
     return datasetInstance

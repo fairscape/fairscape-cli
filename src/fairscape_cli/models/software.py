@@ -57,6 +57,10 @@ def GenerateSoftware(
     """ Generate a Software Model Class
     """
 
+    if guid is None:
+        sq = GenerateDatetimeSquid()
+        guid = f"ark:{NAAN}/software-{self.name.lower().replace(' ', '-')}-{sq}"
+
     softwareMetadata = {
             "@id": guid,
             "@type": "https://w2id.org/EVI#Software",
@@ -88,18 +92,22 @@ def GenerateSoftware(
                 rocratePath = pathlib.Path(cratePath).parent
             else:
                 rocratePath = pathlib.Path(cratePath)
+
             softwarePath = pathlib.Path(filepath)
-            if softwarePath.exists() and softwarePath.is_relative_to(rocratePath):
-                # create a relative filepath to the ro-crate
-                softwareMetadata['contentUrl'] = f"file:///{str(softwarePath.relative_to(rocratePath))}"
+
+            if softwarePath.exists():
+                try:
+                    relativePath = softwarePath.relative_to(rocratePath)
+                    softwareMetadata['contentUrl'] = f"file:///{str(relativePath)}"
+                except:
+                    raise FileNotInCrateException(cratePath=cratePath, filePath=softwarePath)
             else:
                 raise FileNotInCrateException(cratePath=cratePath, filePath=softwarePath)
+
 
     # validate metadata
     softwareModel = Software.model_validate(softwareMetadata)
 
-    # generate guid for software model
-    softwareModel.generate_guid()
 
     return softwareModel
 

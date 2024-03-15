@@ -50,6 +50,11 @@ def GenerateComputation(
 ) -> Computation: 
     """ Generate a Computation model class from command line arguments
     """
+
+    if guid is None:
+        sq = GenerateDatetimeSquid()
+        guid = f"ark:{NAAN}/computation-{self.name.lower().replace(' ', '-')}-{sq}"
+
     computation_model = Computation.model_validate(   
         {
         "@id": guid,
@@ -73,6 +78,4 @@ def GenerateComputation(
         ],
     })
 
-    # generate computation guid
-    computation_model.generate_guid()
     return computation_model
