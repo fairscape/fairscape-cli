@@ -27,18 +27,77 @@ from typing import (
 
 class ROCrateMetadata(BaseModel):
     guid: Optional[str] = Field(alias="@id", default=None)
-    metadataType: str = Field(alias="@type", default="https://schema.org/Dataset")
+    metadataType: Literal["https://w3id.org/EVI#ROCrate"] = Field(alias="@type")
+    context: Dict[str, str] = Field(default=DEFAULT_CONTEXT)
     name: str = Field(max_length=200)
     description: str = Field(min_length=10)
     keywords: List[str] = Field(default=[])
     isPartOf: Optional[List[Dict]]
     metadataGraph: Optional[List[Union[Dataset,Software, Computation]]] = Field(alias="@graph", default=[])
 
+def GenerateROCrate(
+        path: pathlib.Path,
+        guid: str,
+        name: str,
+        description: str,
+        keywords: List[str],
+        organizationName: str = None,
+        projectName: str = None,
+    ):
+
+    if guid=="" or guid is None:
+        sq = GenerateDatetimeSquid()
+        guid = f"ark:{NAAN}/computation-{self.name.lower().replace(' ', '-')}-{sq}"
+
+    roCrateInstanceMetadata = {
+        "@id": guid,
+        "@type": "https://w3id.org/EVI#ROCrate",
+        "name": name,
+        "isPartOf": [],
+        "keywords": keywords,
+        "description": description,
+        "metadataGraph": []
+        }
+
+    if organizationName:
+        organizationGuid = f"ark:{NAAN}/organization-{organizationName.lower().replace(' ', '-')}-{GenerateDatetimeSquid()}"
+        roCrateInstanceMetadata['isPartOf'].append(
+            {
+                "@id": organizationGuid,
+                "@type": "Organization",
+                "name": organizationName
+            }
+        )
+
+    if projectName:
+        projectGuid = f"ark:{NAAN}/project-{projectName.lower().replace(' ', '-')}-{GenerateDatetimeSquid()}"
+        roCrateInstanceMetadata['isPartOf'].append(
+            {
+                "@id": projectGuid,
+                "@type": "Project",
+                "name": projectName
+            }
+        )
+
+
+    rocrateInstance = ROCrateMetadata.model_validate(roCrateInstanceMetadata)
+        
+    if self.path.is_dir():
+        roCrateMetadataPath = path / 'ro-crate-metadata.json'
+    else:
+        roCrateMetadataPath = path
+
+    with roCrateMetadataPath.open(mode="w") as metadataFile:
+        serializedMetadata = rocrateInstance.model_dump_json(indent=2, by_alias=True)
+        metadataFile.write(serializedMetadata)
+
+    return rocrateInstance
+
 
 
 class ROCrate(BaseModel):
     guid: Optional[str] = Field(alias="@id", default=None)
-    metadataType: str = Field(alias="@type", default="https://schema.org/Dataset")
+    metadataType: str = Field(alias="@type", default="https://w3id.org/EVI#ROCrate")
     name: str = Field(max_length=200)
     description: str = Field(min_length=10)
     keywords: List[str] = Field(...)

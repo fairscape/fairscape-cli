@@ -57,7 +57,8 @@ def init(
 ):
     """ Initalize a rocrate in the current working directory by instantiating a ro-crate-metadata.json file.
     """
-    passed_crate = ROCrate(
+    
+    passed_crate = GenerateROCrate(
         guid=guid,
         name=name,
         organizationName = organization_name,
@@ -65,18 +66,12 @@ def init(
         description = description,
         keywords = keywords,
         path = pathlib.Path.cwd(), 
-        metadataGraph = []
     )
 
-    try:
-        passed_crate.initCrate()
-        click.echo(passed_crate.guid)
-    except Exception as e:
-        click.echo(f"ERROR: {str(e)}")
+    click.echo(passed_crate.guid)
     
 
 @rocrate.command('create')
-@click.option('--guid', required=False, type=str, default="", show_default=False)
 @click.option('--name', required=True, type=str)
 @click.option('--organization-name', required=True, type=str) 
 @click.option('--project-name', required=True, type=str) 
@@ -94,21 +89,20 @@ def create(
 ): 
     '''Create an ROCrate in a new path specified by the rocrate-path argument
     '''
-    
-    passed_crate = ROCrate(
+
+    if rocrate_path.is_dir():
+        rocrate_path.mkdir(parents=True, exist_ok=True)
+
+    passed_crate = GenerateROCrate(
         guid=guid,
         name=name,
         organizationName = organization_name,
         projectName = project_name,
         description = description,
         keywords = keywords,
-        path = rocrate_path, 
-        metadataGraph = []
+        path = rocrate_path
     )
     
-    passed_crate.createCrateFolder()
-    passed_crate.initCrate()
-
     click.echo(passed_crate.guid)
 
 
@@ -125,7 +119,7 @@ def register():
 
 @register.command('software')
 @click.argument('rocrate-path', type=click.Path(exists=True, path_type=pathlib.Path))
-@click.option('--guid', required=False, type=str, default="", show_default=False)
+@click.option('--guid', type=str, required=False, default=None)
 @click.option('--name',    required=True) 
 @click.option('--author',  required=True) 
 @click.option('--version', required=True) 
@@ -164,7 +158,7 @@ def registerSoftware(
     
     try:
         software_instance = GenerateSoftware(
-                guid=guid,
+                guid= guid,
                 url= url,
                 name=name,
                 version=version,
@@ -196,15 +190,15 @@ def registerSoftware(
 
 @register.command('dataset')
 @click.argument('rocrate-path', type=click.Path(exists=True, path_type=pathlib.Path))
-@click.option('--guid', required=False, default="", type=str)
-@click.option('--name', required=True) #, prompt="Dataset Name")
+@click.option('--guid', type=str, required=False, default=None)
+@click.option('--name', required=True)
 @click.option('--url', required=False)
-@click.option('--author', required=True) #, prompt="Dataset Author")
-@click.option('--version', required=True) #, prompt="Dataset Version")
-@click.option('--date-published', required=True) #, prompt="Date Published")
-@click.option('--description', required=True) #, prompt="Dataset Description")
+@click.option('--author', required=True) 
+@click.option('--version', required=True) 
+@click.option('--date-published', required=True)
+@click.option('--description', required=True)
 @click.option('--keywords', required=True, multiple=True)
-@click.option('--data-format', required=True) # , prompt="Data Format i.e. (csv, tsv)")
+@click.option('--data-format', required=True) 
 @click.option('--filepath', required=True)
 @click.option('--used-by', required=False, multiple=True)
 @click.option('--derived-from', required=False, multiple=True)
@@ -276,7 +270,7 @@ def registerDataset(
 
 @register.command('computation')
 @click.argument('rocrate-path', type=click.Path(exists=True, path_type=pathlib.Path))
-@click.option('--guid', required=False, default="", type=str, show_default=False)
+@click.option('--guid', type=str, required=False, default=None)
 @click.option('--name', required=True) 
 @click.option('--run-by', required=True) 
 @click.option('--command', required=False) 
@@ -341,7 +335,7 @@ def add():
 
 @add.command('software')
 @click.argument('rocrate-path', type=click.Path(exists=True, path_type=pathlib.Path))
-@click.option('--guid', required=False, type=str, default="", show_default=False)
+@click.option('--guid', type=str, required=False, default=None)
 @click.option('--name',    required=True) 
 @click.option('--author',  required=True) 
 @click.option('--version', required=True) 
@@ -410,17 +404,12 @@ def software(
         click.echo(e)
         click.Abort() 
 
-    except ValidationError as e:
-        click.echo("Software Validation Error")
-        click.echo(e)
-        click.Abort()
-
     # TODO add to cache
 
 
 @add.command('dataset')
 @click.argument('rocrate-path', type=click.Path(exists=True, path_type=pathlib.Path))
-@click.option('--guid', required=False, default="", type=str)
+@click.option('--guid', type=str, required=False, default=None)
 @click.option('--name', required=True) 
 @click.option('--url', required=False)
 @click.option('--author', required=True)

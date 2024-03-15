@@ -30,12 +30,6 @@ class Software(FairscapeBaseModel):
     fileFormat: str = Field(title="fileFormat", alias="format")
     usedByComputation: Optional[List[str]]
     contentUrl: Optional[str] = Field(default=None)
-
-    def generate_guid(self):
-        if self.guid is None:
-            sq = GenerateDatetimeSquid()
-            self.guid = f"ark:{NAAN}/software-{self.name.lower().replace(' ', '-')}-{sq}"
-        return self.guid
  
 
 def GenerateSoftware(    
@@ -57,9 +51,9 @@ def GenerateSoftware(
     """ Generate a Software Model Class
     """
 
-    if guid is None:
+    if guid is None or guid=="":
         sq = GenerateDatetimeSquid()
-        guid = f"ark:{NAAN}/software-{self.name.lower().replace(' ', '-')}-{sq}"
+        guid = f"ark:{NAAN}/dataset-{self.name.lower().replace(' ', '-')}-{sq}"
 
     softwareMetadata = {
             "@id": guid,

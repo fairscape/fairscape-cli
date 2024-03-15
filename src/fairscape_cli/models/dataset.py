@@ -44,17 +44,9 @@ class Dataset(FairscapeBaseModel):
     usedBy: Optional[List[str]] = Field(default=[])
     contentUrl: Optional[str] = None
 
-    def generate_guid(self) -> str:
-        if self.guid is None:
-            sq = GenerateDatetimeSquid()
-            self.guid = f"ark:{NAAN}/dataset-{self.name.lower().replace(' ', '-')}-{sq}"
-        else:
-            # TODO ensure ark is formatted correctly
-            pass
-        return self.guid
 
 def GenerateDataset(
-        guid, 
+        guid,
         url,
         author,
         description,
@@ -71,8 +63,8 @@ def GenerateDataset(
         filepath,
         cratePath
         ):
-    
-    if guid is None:
+   
+    if guid is None or guid=="":
         sq = GenerateDatetimeSquid()
         guid = f"ark:{NAAN}/dataset-{self.name.lower().replace(' ', '-')}-{sq}"
     

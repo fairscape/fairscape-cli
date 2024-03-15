@@ -29,12 +29,6 @@ class Computation(FairscapeBaseModel):
     usedDataset: Optional[Union[List[str], str]] = Field(default=[])
     generated: Optional[Union[str,List[str]]] = Field(default=[])
 
-    def generate_guid(self):
-        if self.guid is None:
-            sq = GenerateDatetimeSquid()
-            self.guid = f"ark:{NAAN}/computation-{self.name.lower().replace(' ', '-')}-{sq}"
-        return self.guid
-
 
 def GenerateComputation(
     guid: str,
@@ -50,10 +44,11 @@ def GenerateComputation(
 ) -> Computation: 
     """ Generate a Computation model class from command line arguments
     """
-
-    if guid is None:
+    
+    if guid is None or guid=="":
         sq = GenerateDatetimeSquid()
-        guid = f"ark:{NAAN}/computation-{self.name.lower().replace(' ', '-')}-{sq}"
+        guid = f"ark:{NAAN}/dataset-{self.name.lower().replace(' ', '-')}-{sq}"
+
 
     computation_model = Computation.model_validate(   
         {
@@ -77,5 +72,6 @@ def GenerateComputation(
             output.strip("\n") for output in generated
         ],
     })
+    
 
     return computation_model
