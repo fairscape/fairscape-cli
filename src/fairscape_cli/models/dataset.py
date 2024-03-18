@@ -66,7 +66,7 @@ def GenerateDataset(
    
     if guid is None or guid=="":
         sq = GenerateDatetimeSquid()
-        guid = f"ark:{NAAN}/dataset-{self.name.lower().replace(' ', '-')}-{sq}"
+        guid = f"ark:{NAAN}/dataset-{name.lower().replace(' ', '-')}-{sq}"
     
     datasetMetadata = {
             "@id": guid,
@@ -107,13 +107,15 @@ def GenerateDataset(
             datasetPath = pathlib.Path(filepath)
             if datasetPath.exists():
                 try:
+                    # TODO get absolute filepaths to make sure the file is inside the crate
+
                     relativePath = datasetPath.relative_to(rocratePath)
                     datasetMetadata['contentUrl'] = f"file:///{str(relativePath)}"
                 except:
                     raise FileNotInCrateException(cratePath=cratePath, filePath=datasetPath)
 
             else:
-                raise FileNotInCrateException(cratePath=cratePath, filePath=datasetPath)
+                raise Exception(f"Dataset File Does Not Exist: {str(datasetPath)}")
 
     datasetInstance = Dataset.model_validate(datasetMetadata)
 

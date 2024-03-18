@@ -53,7 +53,7 @@ def GenerateSoftware(
 
     if guid is None or guid=="":
         sq = GenerateDatetimeSquid()
-        guid = f"ark:{NAAN}/dataset-{self.name.lower().replace(' ', '-')}-{sq}"
+        guid = f"ark:{NAAN}/dataset-{name.lower().replace(' ', '-')}-{sq}"
 
     softwareMetadata = {
             "@id": guid,
@@ -96,7 +96,7 @@ def GenerateSoftware(
                 except:
                     raise FileNotInCrateException(cratePath=cratePath, filePath=softwarePath)
             else:
-                raise FileNotInCrateException(cratePath=cratePath, filePath=softwarePath)
+                raise Exception(f"Dataset File Does Not Exist: {str(datasetPath)}")
 
 
     # validate metadata

@@ -45,10 +45,11 @@ def GenerateROCrate(
         organizationName: str = None,
         projectName: str = None,
     ):
+        
 
     if guid=="" or guid is None:
         sq = GenerateDatetimeSquid()
-        guid = f"ark:{NAAN}/computation-{self.name.lower().replace(' ', '-')}-{sq}"
+        guid = f"ark:{NAAN}/computation-{name.lower().replace(' ', '-')}-{sq}"
 
     roCrateInstanceMetadata = {
         "@id": guid,
@@ -82,11 +83,19 @@ def GenerateROCrate(
 
 
     rocrateInstance = ROCrateMetadata.model_validate(roCrateInstanceMetadata)
-        
-    if path.is_dir():
-        roCrateMetadataPath = path / 'ro-crate-metadata.json'
-    else:
+     
+    if 'ro-crate-metadata.json' in str(path):
         roCrateMetadataPath = path
+       
+       # if the parent folder doesn't exist, create the parent folder
+        if not path.parent.exists():
+            path.parent.mkdir(parents=True, exist_ok=True)
+    else:
+        roCrateMetadataPath = path / 'ro-crate-metadata.json'
+
+       # if the parent folder doesn't exist, create the parent folder
+        if not path.exists():
+            path.mkdir(parents=True, exist_ok=True)
 
     with roCrateMetadataPath.open(mode="w") as metadataFile:
         serializedMetadata = rocrateInstance.model_dump_json(indent=2, by_alias=True)
@@ -254,14 +263,12 @@ def ReadROCrateMetadata(
     """
 
     # if cratePath has metadata.json inside
-    if cratePath.is_dir():
-        metadataCratePath = cratePath / "ro-crate-metadata.json"
-    elif cratePath.name == "ro-crate-metadata.json":
+    if "ro-crate-metadata.json" in str(cratePath) :
         metadataCratePath = cratePath
     else:
-        raise Exception('must read ro-crate-metadata.json')
+        metadataCratePath = cratePath / "ro-crate-metadata.json"
 
-    with open(metadataCratePath, "r") as metadataFile:
+    with metadataCratePath.open("r") as metadataFile:
         crateMetadata = json.load(metadataFile)
         readCrate = ROCrateMetadata.model_validate(crateMetadata)
     

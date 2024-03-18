@@ -47,7 +47,7 @@ def GenerateComputation(
     
     if guid is None or guid=="":
         sq = GenerateDatetimeSquid()
-        guid = f"ark:{NAAN}/dataset-{self.name.lower().replace(' ', '-')}-{sq}"
+        guid = f"ark:{NAAN}/dataset-{name.lower().replace(' ', '-')}-{sq}"
 
 
     computation_model = Computation.model_validate(   

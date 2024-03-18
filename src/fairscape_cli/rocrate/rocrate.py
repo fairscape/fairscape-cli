@@ -92,8 +92,6 @@ def create(
     '''Create an ROCrate in a new path specified by the rocrate-path argument
     '''
 
-    if rocrate_path.is_dir():
-        rocrate_path.mkdir(parents=True, exist_ok=True)
 
     passed_crate = GenerateROCrate(
         guid=guid,
@@ -300,8 +298,8 @@ def computation(
     try:
         crateInstance = ReadROCrateMetadata(rocrate_path)
     except Exception as exc:
-        click.echo(f"ERROR: {str(exc)}")
-        click.Abort()
+        click.echo(f"ERROR Reading ROCrate Metadata: {str(exc)}")
+        raise click.Abort
 
 
     try:
@@ -352,7 +350,7 @@ def add():
 @click.option('--associated-publication', required=False)
 @click.option('--additional-documentation', required=False)
 def software(
-    rocrate_path,
+    rocrate_path: pathlib.Path,
     guid,
     name,
     author,
@@ -373,8 +371,8 @@ def software(
     try:
         crateInstance = ReadROCrateMetadata(rocrate_path)
     except Exception as exc:
-        click.echo(f"ERROR: {str(exc)}")
-        click.Abort() 
+        click.echo(f"ERROR Reading ROCrate: {str(exc)}")
+        raise click.Abort
 
     
     try:
@@ -452,8 +450,8 @@ def dataset(
     try:
         crateInstance = ReadROCrateMetadata(rocrate_path)
     except Exception as exc:
-        click.echo(f"ERROR: {str(exc)}")
-        click.Abort()
+        click.echo(f"ERROR Reading ROCrate: {str(exc)}")
+        raise click.Abort()
 
     try:
         CopyToROCrate(source_filepath, destination_filepath)
