@@ -6,6 +6,7 @@ from fairscape_cli.models.software import Software, GenerateSoftware
 from fairscape_cli.models.computation import Computation, GenerateComputation
 from fairscape_cli.models.rocrate import (
         ROCrate, 
+        GenerateROCrate,
         ReadROCrateMetadata, 
         AppendCrate, 
         CopyToROCrate
@@ -20,6 +21,7 @@ __all__ = [
     'Computation',
     'GenerateComputation',
     'ROCrate',
+    'GenerateROCrate',
     'ReadROCrateMetadata',
     'AppendCrate',
     'CopyToROCrate',

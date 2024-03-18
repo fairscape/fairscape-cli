@@ -22,12 +22,13 @@ from typing import (
     Optional,
     Union,
     List,
+    Literal,
     Dict
 )
 
 class ROCrateMetadata(BaseModel):
     guid: Optional[str] = Field(alias="@id", default=None)
-    metadataType: Literal["https://w3id.org/EVI#ROCrate"] = Field(alias="@type")
+    metadataType: Optional[str] = Field(alias="@type", default= "https://w3id.org/EVI#ROCrate")
     context: Dict[str, str] = Field(default=DEFAULT_CONTEXT)
     name: str = Field(max_length=200)
     description: str = Field(min_length=10)
@@ -82,7 +83,7 @@ def GenerateROCrate(
 
     rocrateInstance = ROCrateMetadata.model_validate(roCrateInstanceMetadata)
         
-    if self.path.is_dir():
+    if path.is_dir():
         roCrateMetadataPath = path / 'ro-crate-metadata.json'
     else:
         roCrateMetadataPath = path
@@ -247,16 +248,18 @@ class ROCrate(BaseModel):
 
 
 def ReadROCrateMetadata(
-        cratePath: str
+        cratePath
 )-> ROCrateMetadata:
     """ Given a path read the rocrate metadata into a pydantic model
     """
 
     # if cratePath has metadata.json inside
-    if "ro-crate-metadata.json" in str(cratePath):
+    if cratePath.is_dir():
+        metadataCratePath = cratePath / "ro-crate-metadata.json"
+    elif cratePath.name == "ro-crate-metadata.json":
         metadataCratePath = cratePath
     else:
-        metadataCratePath = cratePath + "/ro-crate-metadata.json"
+        raise Exception('must read ro-crate-metadata.json')
 
     with open(metadataCratePath, "r") as metadataFile:
         crateMetadata = json.load(metadataFile)

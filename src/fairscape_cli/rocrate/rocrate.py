@@ -16,6 +16,7 @@ from fairscape_cli.models import (
     GenerateSoftware,
     Computation,
     GenerateComputation,
+    GenerateROCrate,
     ROCrate,
     ReadROCrateMetadata,
     AppendCrate,
@@ -72,6 +73,7 @@ def init(
     
 
 @rocrate.command('create')
+@click.option('--guid', required=False, type=str, default="", show_default=False)
 @click.option('--name', required=True, type=str)
 @click.option('--organization-name', required=True, type=str) 
 @click.option('--project-name', required=True, type=str) 
@@ -151,7 +153,7 @@ def registerSoftware(
     """Register a Software metadata record to the specified ROCrate
     """    
     try:
-        crateInstance = ReadROCrateMetadata(str(rocrate_path))
+        crateInstance = ReadROCrateMetadata(rocrate_path)
     except Exception as exc:
         click.echo(f"ERROR: {str(exc)}")
         click.Abort()
@@ -226,7 +228,7 @@ def registerDataset(
     """Register Dataset object metadata with the specified RO-Crate 
     """    
     try:
-        crate_instance = ReadROCrateMetadata(str(rocrate_path))
+        crate_instance = ReadROCrateMetadata(rocrate_path)
     except Exception as exc:
         click.echo(f"ERROR: {str(exc)}")
         click.Abort()
@@ -296,7 +298,7 @@ def computation(
     """Register a Computation with the specified RO-Crate
     """
     try:
-        crateInstance = ReadROCrateMetadata(str(rocrate_path))
+        crateInstance = ReadROCrateMetadata(rocrate_path)
     except Exception as exc:
         click.echo(f"ERROR: {str(exc)}")
         click.Abort()
@@ -369,7 +371,7 @@ def software(
     """Add a Software and its corresponding metadata.
     """
     try:
-        crateInstance = ReadROCrateMetadata(str(rocrate_path))
+        crateInstance = ReadROCrateMetadata(rocrate_path)
     except Exception as exc:
         click.echo(f"ERROR: {str(exc)}")
         click.Abort() 
@@ -448,7 +450,7 @@ def dataset(
     """
 
     try:
-        crateInstance = ReadROCrateMetadata(str(rocrate_path))
+        crateInstance = ReadROCrateMetadata(rocrate_path)
     except Exception as exc:
         click.echo(f"ERROR: {str(exc)}")
         click.Abort()

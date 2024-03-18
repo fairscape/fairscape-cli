@@ -20,9 +20,14 @@ WORKDIR /fairscape_cli
 # build local code 
 RUN pip install --upgrade pip
 
-# copy built version
-COPY dist/fairscape_cli-0.1.16a6-py3-none-any.whl dist/
+COPY pyproject.toml pyproject.toml
+COPY dist/ dist/
 COPY tests/ tests/
+COPY tests/data tests/data
 COPY examples/ examples/
 
-RUN pip install dist/fairscape_cli-0.1.16a6-py3-none-any.whl
+COPY src/ src/
+RUN pip install -e .
+# copy built version
+
+#RUN pip install dist/fairscape_cli-0.1.16a10-py3-none-any.whl
