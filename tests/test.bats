@@ -114,6 +114,31 @@ setup() {
     assert_success
 }
 
+@test "rocrate add" {
+    # create a new test crate for failures
+    #
+    CRATE_NAME="fail crate"
+    CRATE_GUID="ark:99999/failcrate"
+    CRATE_PATH="./tests/test_generated/test_crates/failure_test"
+    CRATE_ORG_NAME="UVA"
+    CRATE_PROJ_NAME="B2AI"
+    
+    run fairscape-cli rocrate create \
+        --guid $CRATE_GUID \
+        --name $CRATE_NAME \
+        --organization-name $CRATE_ORG_NAME \
+        --project-name $CRATE_PROJ_NAME \
+        --description "example RO crate for testing" \
+        --keywords "test" \
+        --keywords "example" \
+        $CRATE_PATH 
+
+    assert_success
+
+    # adding file that doesn't exist
+
+}
+
 @test "schema success" {
 
     # setup for schema
