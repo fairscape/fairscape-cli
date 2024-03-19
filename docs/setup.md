@@ -36,7 +36,7 @@ Go to the repository
 Install using `pip`
 
   ```bash
-  python3 -m pip install .
+  pip install .
   ```
 
 ---
@@ -51,7 +51,7 @@ Show all commands, arguments, and options
   or if you cloned the repository
 
   ```bash
-  python3 fairscape_cli/__main__.py --help
+  python3 src/fairscape_cli/__main__.py --help
   ```
 
 ---

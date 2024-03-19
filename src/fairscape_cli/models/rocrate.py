@@ -21,27 +21,106 @@ from pydantic import (
 from typing import (
     Optional,
     Union,
-    List
+    List,
+    Literal,
+    Dict
 )
+
+class ROCrateMetadata(BaseModel):
+    guid: Optional[str] = Field(alias="@id", default=None)
+    metadataType: Optional[str] = Field(alias="@type", default= "https://w3id.org/EVI#ROCrate")
+    context: Dict[str, str] = Field(default=DEFAULT_CONTEXT)
+    name: str = Field(max_length=200)
+    description: str = Field(min_length=10)
+    keywords: List[str] = Field(default=[])
+    isPartOf: Optional[List[Dict]]
+    metadataGraph: Optional[List[Union[Dataset,Software, Computation]]] = Field(alias="@graph", default=[])
+
+def GenerateROCrate(
+        path: pathlib.Path,
+        guid: str,
+        name: str,
+        description: str,
+        keywords: List[str],
+        organizationName: str = None,
+        projectName: str = None,
+    ):
+        
+
+    if guid=="" or guid is None:
+        sq = GenerateDatetimeSquid()
+        guid = f"ark:{NAAN}/rocrate-{name.lower().replace(' ', '-')}-{sq}"
+
+    roCrateInstanceMetadata = {
+        "@id": guid,
+        "@type": "https://w3id.org/EVI#ROCrate",
+        "name": name,
+        "isPartOf": [],
+        "keywords": keywords,
+        "description": description,
+        "metadataGraph": []
+        }
+
+    if organizationName:
+        organizationGuid = f"ark:{NAAN}/organization-{organizationName.lower().replace(' ', '-')}-{GenerateDatetimeSquid()}"
+        roCrateInstanceMetadata['isPartOf'].append(
+            {
+                "@id": organizationGuid,
+                "@type": "Organization",
+                "name": organizationName
+            }
+        )
+
+    if projectName:
+        projectGuid = f"ark:{NAAN}/project-{projectName.lower().replace(' ', '-')}-{GenerateDatetimeSquid()}"
+        roCrateInstanceMetadata['isPartOf'].append(
+            {
+                "@id": projectGuid,
+                "@type": "Project",
+                "name": projectName
+            }
+        )
+
+
+    rocrateInstance = ROCrateMetadata.model_validate(roCrateInstanceMetadata)
+     
+    if 'ro-crate-metadata.json' in str(path):
+        roCrateMetadataPath = path
+       
+       # if the parent folder doesn't exist, create the parent folder
+        if not path.parent.exists():
+            path.parent.mkdir(parents=True, exist_ok=True)
+    else:
+        roCrateMetadataPath = path / 'ro-crate-metadata.json'
+
+       # if the parent folder doesn't exist, create the parent folder
+        if not path.exists():
+            path.mkdir(parents=True, exist_ok=True)
+
+    with roCrateMetadataPath.open(mode="w") as metadataFile:
+        serializedMetadata = rocrateInstance.model_dump_json(indent=2, by_alias=True)
+        metadataFile.write(serializedMetadata)
+
+    return rocrateInstance
+
 
 
 class ROCrate(BaseModel):
     guid: Optional[str] = Field(alias="@id", default=None)
-    metadataType: str = Field(alias="@type", default="https://schema.org/Dataset")
+    metadataType: str = Field(alias="@type", default="https://w3id.org/EVI#ROCrate")
     name: str = Field(max_length=200)
     description: str = Field(min_length=10)
     keywords: List[str] = Field(...)
     projectName: Optional[str] = Field(default=None)
     organizationName: Optional[str] = Field(default=None)
     path: pathlib.Path
-    metadataGraph: Optional[List[Union[Dataset,Software, Computation]]]
+    metadataGraph: Optional[List[Union[Dataset,Software, Computation]]] = Field(alias="@graph", default=[])
 
     def generate_guid(self) -> str:
         if self.guid is None:
             sq = GenerateDatetimeSquid()
             self.guid = f"ark:{NAAN}/rocrate-{self.name.replace(' ', '-').lower()}-{sq}"
         return self.guid
-
 
 
     def createCrateFolder(self):
@@ -54,7 +133,8 @@ class ROCrate(BaseModel):
         """
 
         # create basic rocrate metadata
-        ro_crate_metadata_path = self.path / 'ro-crate-metadata.json'
+        if self.path.is_dir():
+            ro_crate_metadata_path = self.path / 'ro-crate-metadata.json'
 
         # create guid if none exists
         self.generate_guid()
@@ -177,23 +257,20 @@ class ROCrate(BaseModel):
 
 
 def ReadROCrateMetadata(
-        cratePath: str
-)-> ROCrate:
+        cratePath
+)-> ROCrateMetadata:
     """ Given a path read the rocrate metadata into a pydantic model
     """
 
     # if cratePath has metadata.json inside
-    if "ro-crate-metadata.json" in cratePath:
+    if "ro-crate-metadata.json" in str(cratePath) :
         metadataCratePath = cratePath
     else:
-        metadataCratePath = cratePath + "/ro-crate-metadata.json"
+        metadataCratePath = cratePath / "ro-crate-metadata.json"
 
-    if cratePath.exists() != True:
-        raise Exception(f'ro-crate-metadata.json not found at path {metadataCratePath}')
-
-    with open(metadataCratePath, "r") as metadataFile:
+    with metadataCratePath.open("r") as metadataFile:
         crateMetadata = json.load(metadataFile)
-        readCrate = ROCrate.model_validate(crateMetadata)
+        readCrate = ROCrateMetadata.model_validate(crateMetadata)
     
     return readCrate
 
@@ -202,6 +279,8 @@ def AppendCrate(
     cratePath: pathlib.Path,
     elements: List[Union[Dataset, Software, Computation]]
 ):
+    if cratePath.is_dir():
+        cratePath = cratePath / 'ro-crate-metadata.json'
 
     if len(elements) == 0:
         return None
@@ -219,3 +298,26 @@ def AppendCrate(
         
         rocrate_metadata_file.seek(0)
         json.dump(rocrate_metadata, rocrate_metadata_file, indent=2)
+
+
+def CopyToROCrate(source_filepath: str, destination_filepath: str):
+    if source_filepath == "":
+        raise Exception(message="source path is None")
+
+    if destination_filepath == "":
+        raise Exception(message="destination path is None") 
+
+    # check if the source file exists 
+    source_path = pathlib.Path(source_filepath)
+    destination_path = pathlib.Path(destination_filepath)
+
+    if source_path.exists() != True:
+        raise Exception(
+            message =f"sourcePath: {source_path} Doesn't Exist"
+        )
+
+    # TODO check that destination path is in the rocrate
+
+    # copy the file into the destinationPath
+    shutil.copy(source_path, destination_path)
+

@@ -1,5 +1,5 @@
 from fairscape_cli.models.base import FairscapeBaseModel
-from fairscape_cli.models.utils import GenerateDatetimeSquid
+from fairscape_cli.models.utils import GenerateDatetimeSquid, FileNotInCrateException
 from fairscape_cli.config import NAAN
 import pathlib
 
@@ -19,26 +19,21 @@ from typing import (
 
 
 class Software(FairscapeBaseModel): 
-    guid: Optional[str] = Field( alias='@id', default=None,)
-    metadataType: Optional[str] = Field(alias="@id", default="https://w3id.org/EVI#Software")
+    guid: Optional[str] = Field( alias='@id', default=None)
+    metadataType: Optional[str] = Field(alias="@type", default="https://w3id.org/EVI#Software")
     author: str = Field(min_length=4, max_length=64)
     dateModified: str
     version: str
     description: str =  Field(min_length=10)
-    associatedPublication: Optional[str]
-    additionalDocumentation: Optional[str]
+    associatedPublication: Optional[str] = Field(default=None)
+    additionalDocumentation: Optional[str] = Field(default=None)
     fileFormat: str = Field(title="fileFormat", alias="format")
     usedByComputation: Optional[List[str]]
     contentUrl: Optional[str] = Field(default=None)
-
-    def generate_guid(self):
-        if self.guid is None:
-            sq = GenerateDatetimeSquid()
-            self.guid = f"ark:{NAAN}/software-{self.name.lower().replace(' ', '-')}-{sq}"
-        return self.guid
  
 
 def GenerateSoftware(    
+    guid,
     name,
     author,
     version,
@@ -56,7 +51,12 @@ def GenerateSoftware(
     """ Generate a Software Model Class
     """
 
+    if guid is None or guid=="":
+        sq = GenerateDatetimeSquid()
+        guid = f"ark:{NAAN}/software-{name.lower().replace(' ', '-')}-{sq}"
+
     softwareMetadata = {
+            "@id": guid,
             "@type": "https://w2id.org/EVI#Software",
             "url": url,
             "name": name,
@@ -82,22 +82,26 @@ def GenerateSoftware(
 
         # if filepath is a path that exists
         else:
-            if 'ro-crate-metadata.json' in cratePath:
-                rocratePath = pathlib.Path(cratePath).parent
+            if 'ro-crate-metadata.json' in str(cratePath):
+                rocratePath = pathlib.Path(cratePath).parent.absolute()
             else:
-                rocratePath = pathlib.Path(cratePath)
-            softwarePath = pathlib.Path(filepath)
-            if softwarePath.exists() and softwarePath.is_relative_to(rocratePath):
-                # create a relative filepath to the ro-crate
-                softwareMetadata['contentUrl'] = f"file:///{str(softwarePath.relative_to(rocratePath))}"
+                rocratePath = pathlib.Path(cratePath).absolute()
+
+            softwarePath = pathlib.Path(filepath).absolute()
+
+            if softwarePath.exists():
+                try:
+                    relativePath = softwarePath.relative_to(rocratePath)
+                    softwareMetadata['contentUrl'] = f"file:///{str(relativePath)}"
+                except:
+                    raise FileNotInCrateException(cratePath=cratePath, filePath=softwarePath)
             else:
-                raise Exception('Software File is not inside of RO-Crate')
+                raise Exception(f"Software File Does Not Exist: {str(softwarePath)}")
+
 
     # validate metadata
     softwareModel = Software.model_validate(softwareMetadata)
 
-    # generate guid for software model
-    softwareModel.generate_guid()
 
     return softwareModel
 

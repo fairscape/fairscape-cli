@@ -5,7 +5,7 @@ from fairscape_cli.models.base import (
 from fairscape_cli.config import (
     NAAN
 )
-from fairscape_cli.models.utils import GenerateDatetimeSquid
+from fairscape_cli.models.utils import GenerateDatetimeSquid, FileNotInCrateException
 from fairscape_cli.models.schema.tabular import (
     TabularValidationSchema
 )
@@ -35,8 +35,8 @@ class Dataset(FairscapeBaseModel):
     version: str
     description: str = Field(min_length=10)
     keywords: List[str] = Field(...)
-    associatedPublication: Optional[str] = None
-    additionalDocumentation: Optional[str] = None
+    associatedPublication: Optional[str] = Field(default=None)
+    additionalDocumentation: Optional[str] = Field(default=None)
     fileFormat: str = Field(alias="format")
     dataSchema: Optional[Union[str, TabularValidationSchema]] = Field(alias="schema", default=None)
     generatedBy: Optional[List[str]] = Field(default=[])
@@ -44,17 +44,9 @@ class Dataset(FairscapeBaseModel):
     usedBy: Optional[List[str]] = Field(default=[])
     contentUrl: Optional[str] = None
 
-    def generate_guid(self) -> str:
-        if self.guid is None:
-            sq = GenerateDatetimeSquid()
-            self.guid = f"ark:{NAAN}/dataset-{self.name.lower().replace(' ', '-')}-{sq}"
-        else:
-            # TODO ensure ark is formatted correctly
-            pass
-        return self.guid
 
 def GenerateDataset(
-        guid, 
+        guid,
         url,
         author,
         description,
@@ -71,6 +63,10 @@ def GenerateDataset(
         filepath,
         cratePath
         ):
+   
+    if guid is None or guid=="":
+        sq = GenerateDatetimeSquid()
+        guid = f"ark:{NAAN}/dataset-{name.lower().replace(' ', '-')}-{sq}"
     
     datasetMetadata = {
             "@id": guid,
@@ -103,21 +99,22 @@ def GenerateDataset(
 
         # if filepath is a path that exists
         else:
-            if 'ro-crate-metadata.json' in cratePath:
-                rocratePath = pathlib.Path(cratePath).parent
+            if 'ro-crate-metadata.json' in str(cratePath):
+                rocratePath = pathlib.Path(cratePath).parent.absolute()
             else:
-                rocratePath = pathlib.Path(cratePath)
+                rocratePath = pathlib.Path(cratePath).absolute()
+            
+            datasetPath = pathlib.Path(filepath).absolute()
+            if datasetPath.exists():
+                try:
+                    relativePath = datasetPath.relative_to(rocratePath)
+                    datasetMetadata['contentUrl'] = f"file:///{str(relativePath)}"
+                except:
+                    raise FileNotInCrateException(cratePath=cratePath, filePath=datasetPath)
 
-            datasetPath = pathlib.Path(filepath)
-            if datasetPath.exists() and datasetPath.is_relative_to(rocratePath):
-                # create a relative filepath to the ro-crate
-                datasetMetadata['contentUrl'] = f"file:///{str(datasetPath.relative_to(rocratePath))}"
             else:
-                raise Exception('Software File Not Found in RO-Crate')
+                raise Exception(f"Dataset File Does Not Exist: {str(datasetPath)}")
 
     datasetInstance = Dataset.model_validate(datasetMetadata)
-
-    # generate guid
-    datasetInstance.generate_guid()
 
     return datasetInstance

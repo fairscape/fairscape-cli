@@ -1,10 +1,14 @@
 # Project Information
 site_name: FAIRSACPE CLI
-site_description: A Command Line Interface (CLI) for Validation and Packaging of Research Data
-site_url: https://sadnanalmanir.github.io/release-example/
+site_description: A utility for packaging objects and validating metadata for FAIRSCAPE.
+site_url: https://github.com/fairscape/fairscape-cli
+
 # Repository
 repo_name: fairscape/fairscape-cli
-repo_url: https://github.com/sadnanalmanir/release-example
+repo_url: https://github.com/fairscape/fairscape-cli
+
+# Copyright
+copyright: Copyright &copy; 2023 THE RECTOR AND VISITORS OF THE UNIVERSITY OF VIRGINIA
 
 # Page tree
 nav:
@@ -97,6 +101,6 @@ extra:
 
   social:
     - icon: fontawesome/brands/github-alt
-      link: https://github.com/sadnanalmanir/release-example
+      link: https://github.com/fairscape/fairscape-cli
 
-copyright: Copyright &copy; 2023 BioDEL, UVa
+

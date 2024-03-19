@@ -4,7 +4,13 @@ from fairscape_cli.models.dataset import (
 )
 from fairscape_cli.models.software import Software, GenerateSoftware
 from fairscape_cli.models.computation import Computation, GenerateComputation
-from fairscape_cli.models.rocrate import ROCrate, ReadROCrateMetadata
+from fairscape_cli.models.rocrate import (
+        ROCrate, 
+        GenerateROCrate,
+        ReadROCrateMetadata, 
+        AppendCrate, 
+        CopyToROCrate
+)
 from fairscape_cli.models.bagit import BagIt
 
 __all__ = [
@@ -15,6 +21,9 @@ __all__ = [
     'Computation',
     'GenerateComputation',
     'ROCrate',
+    'GenerateROCrate',
     'ReadROCrateMetadata',
+    'AppendCrate',
+    'CopyToROCrate',
     'BagIt'
 ]

@@ -17,8 +17,8 @@ from datetime import datetime
 
 
 class Computation(FairscapeBaseModel):
-    guid: Optional[str] = Field(default=None, alias="@id")
-    metadataType: str = Field(default="https://w3id.org/EVI#Computation")
+    guid: Optional[str] = Field(default=None, alias="@id", validation_alias="@id")
+    metadataType: str = Field(default="https://w3id.org/EVI#Computation", alias="@type", validation_alias="@type")
     runBy: str
     dateCreated: str 
     description: str = Field(min_length=10, max_length=2056)
@@ -29,14 +29,9 @@ class Computation(FairscapeBaseModel):
     usedDataset: Optional[Union[List[str], str]] = Field(default=[])
     generated: Optional[Union[str,List[str]]] = Field(default=[])
 
-    def generate_guid(self):
-        if self.guid is None:
-            sq = GenerateDatetimeSquid()
-            self.guid = f"ark:{NAAN}/computation-{self.name.lower().replace(' ', '-')}-{sq}"
-        return self.guid
-
 
 def GenerateComputation(
+    guid: str,
     name: str,
     run_by: str,
     command: Optional[Union[str, List[str]]],
@@ -49,8 +44,15 @@ def GenerateComputation(
 ) -> Computation: 
     """ Generate a Computation model class from command line arguments
     """
+    
+    if guid is None or guid=="":
+        sq = GenerateDatetimeSquid()
+        guid = f"ark:{NAAN}/computation-{name.lower().replace(' ', '-')}-{sq}"
+
+
     computation_model = Computation.model_validate(   
         {
+        "@id": guid,
         "@type": "https://w2id.org/EVI#Computation",
         "name": name,
         "description": description,
@@ -70,7 +72,6 @@ def GenerateComputation(
             output.strip("\n") for output in generated
         ],
     })
+    
 
-    # generate computation guid
-    computation_model.generate_guid()
     return computation_model

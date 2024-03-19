@@ -61,3 +61,9 @@ def ValidateGUID(ctx, param, value):
 
     # validate url
     pass
+
+
+class FileNotInCrateException(Exception):
+    def __init__(self, cratePath, filePath):
+        self.message = f"Error: FileNotFound inside ro crate\ncratePath: {str(cratePath)}\tfilePath{str(filePath)}"
+        super().__init__(self.message)

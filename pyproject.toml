@@ -1,28 +1,47 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "fairscape-cli"
-version = "0.1.15"
-description = "CLI tool for B2AI metadata validation and ROCrate creation"
+version = "0.1.16a14"
+description = "A utility for packaging objects and validating metadata for FAIRSCAPE"
 readme = "README.md"
+requires-python = ">=3.8"
 authors = [
         { name = "Max Levinson",    email = "mal8ch@virginia.edu"},
         { name = "Sadnan Al Manir", email = "sadnanalmanir@gmail.com"},
         { name = "Tim Clark",       email = "twc8q@virginia.edu"}
 ]
 license = {file= "LICENSE"}
+# For a list of valid classifiers, see https://pypi.org/classifiers/
 classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Topic :: Software Development :: Build Tools",
+    "Environment :: Console",
+    "Framework :: Pydantic :: 2",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python",
-    "Programming Language :: Python :: 3"]
-keywords = ["fairscape", "reproducibility", "fair", "b2ai"]
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",  
+    "Operating System :: OS Independent",
+    "Topic :: File Formats :: JSON",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "Topic :: Software Development :: Libraries :: Python Modules"      
+]
+keywords = ["fairscape", "reproducibility", "FAIR", "B2AI"]
 dependencies = [
         "click>=8.1.7",
         "pydantic>=2.5.1",
         "prettytable>=3.9.0",
         "imageio>=2.33.0",
         "jsonschema>=4.20.0",
-        "sqids>=0.4.1",
+        "sqids>=0.4.1"
 ]
-requires-python = ">=3.8"
 
 [tool.setuptools]
 include-package-data = true
@@ -30,12 +49,13 @@ include-package-data = true
 [tool.setuptools.packages.find]
 where = ["src"]
 
-[build-system]
-requires = ["setuptools >= 61.0"]
-build-backend = "setuptools.build_meta"
-
 [project.urls]
 Homepage = "https://github.com/fairscape/fairscape-cli"
+Documentation = "https://fairscape.github.io/fairscape-cli/"
+Repository = "https://github.com/fairscape/fairscape-cli.git"
+Issues = "https://github.com/fairscape/fairscape-cli/issues"
+Changelog = "https://github.com/fairscape/fairscape-cli/blob/main/CHANGELOG.md"
+Citation = "https://github.com/fairscape/fairscape-cli/blob/main/CITATION.cff"
 
 [project.scripts]
 fairscape-cli = "fairscape_cli.__main__:cli"
