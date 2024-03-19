@@ -116,9 +116,11 @@ setup() {
 
 @test "schema success" {
 
+    # setup for schema
     SCHEMA_PATH="./tests/test_generated/schema_apms_music_embedding.json"
     rm $SCHEMA_PATH
 
+    # create a tabular schema
     run fairscape-cli schema create-tabular \
         --name "APMS Embedding Schema" \
         --description "Tabular format for APMS music embeddings from PPI networks from the music pipeline from the B2AI Cellmaps for AI project" \

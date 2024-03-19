@@ -16,7 +16,7 @@ test-script:
 test:
 	#python3 -m build
 	docker build -t fairscape-cli:$(VERSION) .
-	docker run -it fairscape-cli:$(VERSION) bash ./tests/test_build.sh
+	docker run -it fairscape-cli:$(VERSION) bash ./tests/bats/bin/bats tests/test.bats
 
 
 docker-build:
@@ -26,7 +26,7 @@ docker-build:
 	#docker build -t fairscape-cli:$(VERSION)-python3.8 --build-arg VERSION=3.8-slim .
 
 docker-run:
-	docker run -it fairscape-cli:$(VERSION)-python3.11 bash
+	docker run -it fairscape-cli:$(VERSION) bash
 
 docker-test: 
 	docker run fairscape-cli:$(VERSION)-python3.11 ./tests/test_build.sh
