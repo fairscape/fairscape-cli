@@ -83,11 +83,11 @@ def GenerateSoftware(
         # if filepath is a path that exists
         else:
             if 'ro-crate-metadata.json' in str(cratePath):
-                rocratePath = pathlib.Path(cratePath).parent
+                rocratePath = pathlib.Path(cratePath).parent.absolute()
             else:
-                rocratePath = pathlib.Path(cratePath)
+                rocratePath = pathlib.Path(cratePath).absolute()
 
-            softwarePath = pathlib.Path(filepath)
+            softwarePath = pathlib.Path(filepath).absolute()
 
             if softwarePath.exists():
                 try:

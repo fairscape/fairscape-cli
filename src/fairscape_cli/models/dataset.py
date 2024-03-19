@@ -100,15 +100,13 @@ def GenerateDataset(
         # if filepath is a path that exists
         else:
             if 'ro-crate-metadata.json' in str(cratePath):
-                rocratePath = pathlib.Path(cratePath).parent
+                rocratePath = pathlib.Path(cratePath).parent.absolute()
             else:
-                rocratePath = pathlib.Path(cratePath)
+                rocratePath = pathlib.Path(cratePath).absolute()
             
-            datasetPath = pathlib.Path(filepath)
+            datasetPath = pathlib.Path(filepath).absolute()
             if datasetPath.exists():
                 try:
-                    # TODO get absolute filepaths to make sure the file is inside the crate
-
                     relativePath = datasetPath.relative_to(rocratePath)
                     datasetMetadata['contentUrl'] = f"file:///{str(relativePath)}"
                 except:
