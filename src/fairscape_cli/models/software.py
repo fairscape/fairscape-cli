@@ -96,7 +96,7 @@ def GenerateSoftware(
                 except:
                     raise FileNotInCrateException(cratePath=cratePath, filePath=softwarePath)
             else:
-                raise Exception(f"Dataset File Does Not Exist: {str(datasetPath)}")
+                raise Exception(f"Dataset File Does Not Exist: {str(softwarePath)}")
 
 
     # validate metadata
