@@ -1,6 +1,7 @@
-VERSION ?= 0.1.16a4
+VERSION ?= 0.1.16a11
 
-buildpackage:
+build:
+	rm dist/*
 	python3 -m build
 
 push:
@@ -9,14 +10,17 @@ push:
 push-test:
 	python3 -m twine upload --repository test-fairscape-cli dist/*	
 
+test-script:
+	./tests/bats/bin/bats tests/test.bats
+
 test:
 	#python3 -m build
-	docker build -t fairscape-cli:$(VERSION)-python3.11 .
-	docker run -it fairscape-cli:$(VERSION)-python3.11 bash ./tests/test_build.sh
+	docker build -t fairscape-cli:$(VERSION) .
+	docker run -it fairscape-cli:$(VERSION) bash ./tests/test_build.sh
 
 
 docker-build:
-	docker build -t fairscape-cli:$(VERSION)-python3.11 --build-arg="CLIVERSION=0.1.16a4" .
+	docker build -t fairscape-cli:$(VERSION) --build-arg="CLIVERSION=$(VERSION)" .
 	#docker build -t fairscape-cli:$(VERSION)-python3.10 --build-arg VERSION=3.10-slim .
 	#docker build -t fairscape-cli:$(VERSION)-python3.9 --build-arg VERSION=3.9-slim .
 	#docker build -t fairscape-cli:$(VERSION)-python3.8 --build-arg VERSION=3.8-slim .

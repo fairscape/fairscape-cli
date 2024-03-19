@@ -1,4 +1,5 @@
-ARG VERSION=3.11.6-slim
+ARG VERSION=3.8-slim
+#ARG VERSION=3.11.6-slim
 #ARG CLIVERSION=0.1.16a4
 
 # For more information, please refer to https://aka.ms/vscode-docker-python
