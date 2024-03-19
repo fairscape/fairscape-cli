@@ -80,7 +80,9 @@ def init(
 @click.option('--description', required=True, type=str)
 @click.option('--keywords', required=True, multiple=True, type=str)
 @click.argument('rocrate-path', type=click.Path(exists=False, path_type=pathlib.Path))
+@click.pass_context
 def create(
+    ctx,
     guid,
     name,
     organization_name,
@@ -132,6 +134,7 @@ def register():
 @click.option('--used-by-computation', required=False, multiple=True)
 @click.option('--associated-publication', required=False)
 @click.option('--additional-documentation', required=False)
+@click.pass_context
 def registerSoftware(
     rocrate_path: pathlib.Path,
     guid,
@@ -208,7 +211,9 @@ def registerSoftware(
 @click.option('--schema', required=False, type=str)
 @click.option('--associated-publication', required=False)
 @click.option('--additional-documentation', required=False)
+@click.pass_context
 def registerDataset(
+    ctx,
     rocrate_path: pathlib.Path,
     guid: str,
     name: str,
@@ -284,7 +289,9 @@ def registerDataset(
 @click.option('--used-software', required=False, multiple=True)
 @click.option('--used-dataset', required=False, multiple=True)
 @click.option('--generated', required=False, multiple=True)
+@click.pass_context
 def computation(
+    ctx,
     rocrate_path: pathlib.Path,
     guid: str,
     name: str,
@@ -353,7 +360,9 @@ def add():
 @click.option('--used-by-computation', required=False, multiple=True)
 @click.option('--associated-publication', required=False)
 @click.option('--additional-documentation', required=False)
+@click.pass_context
 def software(
+    ctx,
     rocrate_path: pathlib.Path,
     guid,
     name,
@@ -429,7 +438,9 @@ def software(
 @click.option('--schema', required=False, type=str)
 @click.option('--associated-publication', required=False)
 @click.option('--additional-documentation', required=False)
+@click.pass_context
 def dataset(
+    ctx,
     rocrate_path: pathlib.Path,
     guid: str,
     name: str,

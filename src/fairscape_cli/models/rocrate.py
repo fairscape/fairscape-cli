@@ -49,7 +49,7 @@ def GenerateROCrate(
 
     if guid=="" or guid is None:
         sq = GenerateDatetimeSquid()
-        guid = f"ark:{NAAN}/computation-{name.lower().replace(' ', '-')}-{sq}"
+        guid = f"ark:{NAAN}/rocrate-{name.lower().replace(' ', '-')}-{sq}"
 
     roCrateInstanceMetadata = {
         "@id": guid,
