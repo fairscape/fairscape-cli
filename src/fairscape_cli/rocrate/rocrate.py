@@ -153,8 +153,8 @@ def registerSoftware(
     try:
         crateInstance = ReadROCrateMetadata(rocrate_path)
     except Exception as exc:
-        click.echo(f"ERROR: {str(exc)}")
-        click.Abort()
+        click.echo(f"ERROR Reading ROCrate: {str(exc)}")
+        raise click.Abort()
     
     try:
         software_instance = GenerateSoftware(
@@ -178,14 +178,17 @@ def registerSoftware(
         click.echo(software_instance.guid)
 
     except FileNotInCrateException as e:
-        click.echo(str(e))
-        click.Abort()
+        click.echo(f"ERROR: {str(e)}")
+        raise click.Abort()
 
     except ValidationError as e:
-        click.echo("Software Validation Error")
+        click.echo("ERROR: Software Validation Failure")
         click.echo(e)
-        click.Abort()
+        raise click.Abort()
         
+    except Exception as exc:
+        click.echo(f"ERROR: {str(exc)}")
+        raise click.Abort()
 
 
 @register.command('dataset')
@@ -228,8 +231,8 @@ def registerDataset(
     try:
         crate_instance = ReadROCrateMetadata(rocrate_path)
     except Exception as exc:
-        click.echo(f"ERROR: {str(exc)}")
-        click.Abort()
+        click.echo(f"ERROR Reading ROCrate: {str(exc)}")
+        raise click.Abort()
     
     try:
         dataset_instance = GenerateDataset(
@@ -254,16 +257,17 @@ def registerDataset(
         click.echo(dataset_instance.guid)
     
     except FileNotInCrateException as e:
-        click.echo(str(e))
-        click.Abort()
+        click.echo(f"ERROR: {str(e)}")
+        raise click.Abort()
 
     except ValidationError as e:
         click.echo("Dataset Validation Error")
         click.echo(e)
-        click.Abort()
+        raise click.Abort()
+
     except Exception as exc:
         click.echo(f"ERROR: {str(exc)}")
-        click.Abort()
+        raise click.Abort()
     
  
 
@@ -298,8 +302,8 @@ def computation(
     try:
         crateInstance = ReadROCrateMetadata(rocrate_path)
     except Exception as exc:
-        click.echo(f"ERROR Reading ROCrate Metadata: {str(exc)}")
-        raise click.Abort
+        click.echo(f"ERROR Reading ROCrate: {str(exc)}")
+        raise click.Abort()
 
 
     try:
@@ -322,7 +326,7 @@ def computation(
     except ValidationError as e:
         click.echo("Computation Validation Error")
         click.echo(e)
-        click.Abort()
+        raise click.Abort()
 
 
 
@@ -372,7 +376,7 @@ def software(
         crateInstance = ReadROCrateMetadata(rocrate_path)
     except Exception as exc:
         click.echo(f"ERROR Reading ROCrate: {str(exc)}")
-        raise click.Abort
+        raise click.Abort()
 
     
     try:
@@ -402,7 +406,7 @@ def software(
     except ValidationError as e:
         click.echo("Software Validation Error")
         click.echo(e)
-        click.Abort() 
+        raise click.Abort()
 
     # TODO add to cache
 
@@ -479,9 +483,10 @@ def dataset(
     except ValidationError as e:
         click.echo("Dataset Validation Error")
         click.echo(e)
-        click.Abort()
+        raise click.Abort()
+
     except Exception as exc:
         click.echo(f"ERROR: {str(exc)}")
-        click.Abort()
+        raise click.Abort()
     
     # TODO add to cache 
