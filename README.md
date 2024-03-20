@@ -90,7 +90,12 @@ $ fairscape-cli rocrate register computation \
   "/path/to/test_rocrate"
   ```
 
-  
+
+## Contribution
+
+If you'd like to request a feature or report a bug, please create a [GitHub Issue](https://github.com/fairscape/fairscape-cli/issues) using one of the templates provided.
+
+
 ## License
 
 This project is licensed under the terms of the MIT license.
