@@ -49,13 +49,15 @@ def schema():
 @click.option('--separator', type=str, required=True)
 @click.option('--header', required=False, type=bool, default=False)
 @click.argument('schema_file', type=str)
+@click.pass_context
 def create_tabular_schema(
-     name,
-     description,
-     guid,
-     header,
-     separator,
-     schema_file
+    ctx,
+    name,
+    description,
+    guid,
+    header,
+    separator,
+    schema_file
 ):
     """Initalize a Tabular Schema.
     """
@@ -75,7 +77,7 @@ def create_tabular_schema(
         click.echo("ERROR Validating TabularValidationSchema")
         for validationFailure in metadataError.errors():
             click.echo(f"property: {validationFailure.get('loc')} \tmsg: {validationFailure.get('msg')}")
-        raise click.Abort("")
+        ctx.exit(code=1)
 
     WriteSchema(schema_model, schema_file)
     click.echo(f"Wrote Schema: {str(schema_file)}") 
@@ -114,7 +116,7 @@ def add_property_string(ctx, name, index, description, value_url, pattern, schem
         click.echo("ERROR Validating StringProperty")
         for validationFailure in metadataError.errors():
             click.echo(f"property: {validationFailure.get('loc')} \tmsg: {validationFailure.get('msg')}")
-        raise click.Abort("")
+        ctx.exit(code=1)
 
     ClickAppendProperty(ctx, schema_file, stringPropertyModel, name)
 
@@ -147,7 +149,7 @@ def add_property_number(ctx, name, index, description, maximum, minimum, value_u
         click.echo("ERROR Validating StringProperty")
         for validationFailure in metadataError.errors():
             click.echo(f"property: {validationFailure.get('loc')} \tmsg: {validationFailure.get('msg')}")
-        raise click.Abort("")
+        ctx.exit(code=1)
 
     ClickAppendProperty(ctx, schema_file, numberPropertyModel, name)
 
@@ -175,7 +177,7 @@ def add_property_boolean(ctx, name, index, description, value_url, schema_file):
         click.echo("ERROR Validating BooleanProperty")
         for validationFailure in metadataError.errors():
             click.echo(f"property: {validationFailure.get('loc')} \tmsg: {validationFailure.get('msg')}")
-        raise click.Abort("")
+        ctx.exit(code=1)
 
     ClickAppendProperty(ctx, schema_file, booleanPropertyModel, name)
 
@@ -207,7 +209,7 @@ def add_property_integer(ctx, name, index, description, maximum, minimum, value_
         click.echo("ERROR Validating BooleanProperty")
         for validationFailure in metadataError.errors():
             click.echo(f"property: {validationFailure.get('loc')} \tmsg: {validationFailure.get('msg')}")
-        raise click.Abort("")
+        ctx.exit(code=1)
 
     ClickAppendProperty(ctx, schema_file, integerPropertyModel, name)
 
@@ -232,7 +234,7 @@ def add_property_array(ctx, name, index, description, value_url, items_datatype,
         print(f"ITEMS Datatype {items_datatype} invalid\n" +
             "ITEMS must be oneOf 'boolean'|'object'|'string'|'number'|'integer'" 
         )
-        raise click.Abort("")
+        ctx.exit(code=1)
 
     try:
         arrayPropertyModel = ArrayProperty(
@@ -250,7 +252,7 @@ def add_property_array(ctx, name, index, description, value_url, items_datatype,
         print("ERROR: MetadataValidationError")
         for validationFailure in metadataError.errors(): 
             click.echo(f"property: {validationFailure.get('loc')} \tmsg: {validationFailure.get('msg')}")
-        raise click.Abort("")
+        ctx.exit(code=1)
 
     ClickAppendProperty(ctx, schema_file, arrayPropertyModel, name)
     
@@ -270,19 +272,20 @@ def validate(ctx, schema, data):
     if 'ark' not in schema:
         schemaPath = pathlib.Path(schema)
         if not schemaPath.exists():
-            click.echo(f"Schema file at path {schema} does not exist")
+            click.echo(f"ERROR: Schema file at path {schema} does not exist")
             ctx.exit(1)
     
     dataPath = pathlib.Path(data)
     if not dataPath.exists():
-        click.echo(f"Data file at path {data} does not exist")
+        click.echo(f"ERROR: Data file at path {data} does not exist")
         ctx.exit(1)
 
     try:
         tabular_schema = ReadSchema(schema)
-    except ValdationError as e:
+    except ValdationError as metadataError:
         click.echo("Error with schema definition")
-        click.echo(e.errors())
+        for validationFailure in metadataError.errors(): 
+            click.echo(f"property: {validationFailure.get('loc')} \tmsg: {validationFailure.get('msg')}")
         ctx.exit(1)
 
     validation_errors = tabular_schema.execute_validation(data)
