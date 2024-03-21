@@ -83,7 +83,7 @@ def GenerateROCrate(
 
 
     rocrateInstance = ROCrateMetadata.model_validate(roCrateInstanceMetadata)
-     
+    
     if 'ro-crate-metadata.json' in str(path):
         roCrateMetadataPath = path
        
@@ -97,9 +97,10 @@ def GenerateROCrate(
         if not path.exists():
             path.mkdir(parents=True, exist_ok=True)
 
+
     with roCrateMetadataPath.open(mode="w") as metadataFile:
-        serializedMetadata = rocrateInstance.model_dump_json(indent=2, by_alias=True)
-        metadataFile.write(serializedMetadata)
+        serializedMetadata = rocrateInstance.model_dump(by_alias=True)
+        json.dump(serializedMetadata, metadataFile, indent=2)
 
     return rocrateInstance
 

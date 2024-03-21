@@ -196,10 +196,44 @@ Looking at our schema we should have a json document equivalent to the following
 
 ### Validate schema
 
-Now to use our schema to validate our data with
+With our schema we can execute the validation rules against some example data, and explore how errors are reported.
+In the github repo, example data is provided to evaluate the same schema we have just created.
+When validating against data where every row conforms to the schema, a simple success message is displayed.
+
 
 ```bash
 fairscape-cli schema validate \
-    --data tests/data/APMS_embedding_MUSIC.csv \
-    --schema ./schema_apms_music_embedding.json
+    --data ./examples/schemas/MUSIC_embedding/APMS_embedding_MUSIC.csv  \
+    --schema ./examples/schemas/MUSIC_embedding/music_apms_embedding_schema.json
+
+Validation Success
 ```
+
+However when validating against data that contains issues, a table of errors is printed out.
+For this purpose we provide some intentionally corrupted data to demonstrate how these errors are reported.
+
+```bash
+fairscape-cli schema validate \
+    --data examples/schemas/MUSIC_embedding/APMS_embedding_corrupted.csv \
+    --schema examples/schemas/MUSIC_embedding/music_apms_embedding_schema.json 
+
++-----+-----------------+----------------+-------------------------------------------------------+
+| row |    error_type   | failed_keyword |                        message                        |
++-----+-----------------+----------------+-------------------------------------------------------+
+|  3  |   ParsingError  |      None      | ValueError: Failed to Parse Attribute embed for Row 3 |
+|  4  |   ParsingError  |      None      | ValueError: Failed to Parse Attribute embed for Row 4 |
+|  0  | ValidationError |    pattern     |        'APMS_A' does not match '^APMS_[0-9]*$'        |
+|  1  | ValidationError |    pattern     |          ' -8- ' does not match '^[A-Z0-9]*$'         |
+|  2  | ValidationError |    pattern     |           '-`~' does not match '^[A-Z0-9]*$'          |
++-----+-----------------+----------------+-------------------------------------------------------+
+```
+
+When errors are found there are two sources of these errors.
+Parsing errors which occur when attempting convert a row of tabular data into the specified json structure.
+This can happen when either the number of specified rows is incorrect, or the data for a specific column cannot be coerced to the datatype specified of the schema.
+When this occurs the row is marked as a failure and reported as a ParsingError. Rows that report a ParsingError are not validated against the jsonschema. 
+
+Validation Errors occur when a data element violates the contraints specified by the schema.
+In our example we show multiple examples of strings that defy the regex specified by the pattern attribute.
+Other constraints include min and max for numeric and integer properties, length for string.
+In future work we will expand to cover the entire json schema specification.
