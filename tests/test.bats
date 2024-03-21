@@ -5,8 +5,6 @@ setup() {
     load 'test_helper/bats-support/load'
     load 'test_helper/bats-assert/load'
 
-    # clear previously generated tests
-    rm -rf ./tests/test_generated/test_crates/*
     
 }
 
@@ -14,13 +12,15 @@ setup() {
 
 @test "rocrate success" {
     # tests that should succeed for generating ROCrates
+    # clear previously generated tests
+    rm -rf ./tests/test_generated/test_crates/*
     
     # variables for test
     CRATE_NAME="BuildTestCrate"
     CRATE_GUID="ark:99999/BUILDTESTCRATE"
-    CRATE_PATH="./tests/test_generated/test_crates/build_test_rocrate/ro-crate-metadata.json"
+    #CRATE_PATH="./tests/test_generated/test_crates/build_test_rocrate/ro-crate-metadata.json"
+    #CRATE_PATH="./tests/test_generated/test_crates/build_test_rocrate"
     CRATE_PATH="./tests/test_generated/test_crates/build_test_rocrate"
-    CRATE_PATH="tests/test_generated/test_crates/build_test_rocrate"
     CRATE_ORG_NAME="UVA"
     CRATE_PROJ_NAME="B2AI"
 
@@ -123,17 +123,18 @@ setup() {
     CRATE_ORG_NAME="UVA"
     CRATE_PROJ_NAME="B2AI"
     
+
     run fairscape-cli rocrate create \
-        --guid $CRATE_GUID \
-        --name $CRATE_NAME \
-        --organization-name $CRATE_ORG_NAME \
-        --project-name $CRATE_PROJ_NAME \
+        --guid "$CRATE_GUID" \
+        --name "$CRATE_NAME" \
+        --organization-name "$CRATE_ORG_NAME" \
+        --project-name "$CRATE_PROJ_NAME" \
         --description "example RO crate for testing" \
         --keywords "test" \
         --keywords "example" \
         $CRATE_PATH 
 
-    assert_success
+    assert_output "ark:99999/failcrate"
 
     # adding file that doesn't exist
 
@@ -143,7 +144,7 @@ setup() {
 
     # setup for schema
     SCHEMA_PATH="./tests/test_generated/schema_apms_music_embedding.json"
-    rm $SCHEMA_PATH
+    rm -f $SCHEMA_PATH
 
     # create a tabular schema
     run fairscape-cli schema create-tabular \

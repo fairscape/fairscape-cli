@@ -80,20 +80,17 @@ def init(
 @click.option('--description', required=True, type=str)
 @click.option('--keywords', required=True, multiple=True, type=str)
 @click.argument('rocrate-path', type=click.Path(exists=False, path_type=pathlib.Path))
-@click.pass_context
 def create(
-    ctx,
+    rocrate_path, 
     guid,
     name,
     organization_name,
     project_name,
     description,
-    keywords,
-    rocrate_path, 
+    keywords
 ): 
     '''Create an ROCrate in a new path specified by the rocrate-path argument
     '''
-
 
     passed_crate = GenerateROCrate(
         guid=guid,
@@ -261,7 +258,6 @@ def registerDataset(
         )
         AppendCrate(cratePath = rocrate_path, elements=[dataset_instance])
         click.echo(dataset_instance.guid)
-        ctx.exit(code=0)
     
     except FileNotInCrateException as e:
         click.echo(f"ERROR: {str(e)}")
@@ -331,7 +327,6 @@ def computation(
 
         AppendCrate(cratePath=rocrate_path, elements=[computationInstance])
         click.echo(computationInstance.guid)
-        ctx.exit(code=0)
 
     except ValidationError as e:
         click.echo("Computation Validation Error")
@@ -414,7 +409,6 @@ def software(
         AppendCrate(cratePath = rocrate_path, elements=[software_instance])
         # copy file to rocrate
         click.echo(software_instance.guid)
-        ctx.exit(code=0)
 
     except ValidationError as e:
         click.echo("Software Validation Error")
@@ -446,22 +440,22 @@ def software(
 def dataset(
     ctx,
     rocrate_path: pathlib.Path,
-    guid: str,
-    name: str,
-    url: str,
-    author: str,
-    version: str,
-    date_published: str,
-    description: str,
-    keywords: List[str],
-    data_format: str,
-    source_filepath: str,
-    destination_filepath: str,
-    used_by: Optional[List[str]],
-    derived_from: Optional[List[str]],
-    schema: str,
-    associated_publication: Optional[str],
-    additional_documentation: Optional[List[str]],
+    guid,
+    name,
+    url,
+    author,
+    version,
+    date_published,
+    description,
+    keywords,
+    data_format,
+    source_filepath,
+    destination_filepath,
+    used_by,
+    derived_from,
+    schema,
+    associated_publication,
+    additional_documentation,
 ):
     """Add a Dataset file and its metadata to the RO-Crate.
     """
@@ -494,7 +488,6 @@ def dataset(
         )
         AppendCrate(cratePath = rocrate_path, elements=[dataset_instance])
         click.echo(dataset_instance.guid)
-        ctx.exit(code=0)
 
     except ValidationError as e:
         click.echo("Dataset Validation Error")
