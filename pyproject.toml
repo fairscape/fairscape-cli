@@ -38,7 +38,6 @@ dependencies = [
         "click>=8.1.7",
         "pydantic>=2.5.1",
         "prettytable>=3.9.0",
-        "imageio>=2.33.0",
         "jsonschema>=4.20.0",
         "sqids>=0.4.1"
 ]
