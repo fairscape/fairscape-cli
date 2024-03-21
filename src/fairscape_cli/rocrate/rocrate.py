@@ -136,6 +136,7 @@ def register():
 @click.option('--additional-documentation', required=False)
 @click.pass_context
 def registerSoftware(
+    ctx,
     rocrate_path: pathlib.Path,
     guid,
     name,
@@ -157,7 +158,7 @@ def registerSoftware(
         crateInstance = ReadROCrateMetadata(rocrate_path)
     except Exception as exc:
         click.echo(f"ERROR Reading ROCrate: {str(exc)}")
-        raise click.Abort()
+        ctx.exit(code=1)
     
     try:
         software_instance = GenerateSoftware(
@@ -182,16 +183,16 @@ def registerSoftware(
 
     except FileNotInCrateException as e:
         click.echo(f"ERROR: {str(e)}")
-        raise click.Abort()
+        ctx.exit(code=1)
 
     except ValidationError as e:
         click.echo("ERROR: Software Validation Failure")
         click.echo(e)
-        raise click.Abort()
+        ctx.exit(code=1)
         
     except Exception as exc:
         click.echo(f"ERROR: {str(exc)}")
-        raise click.Abort()
+        ctx.exit(code=1)
 
 
 @register.command('dataset')
@@ -237,7 +238,7 @@ def registerDataset(
         crate_instance = ReadROCrateMetadata(rocrate_path)
     except Exception as exc:
         click.echo(f"ERROR Reading ROCrate: {str(exc)}")
-        raise click.Abort()
+        ctx.exit(code=1)
     
     try:
         dataset_instance = GenerateDataset(
@@ -260,20 +261,21 @@ def registerDataset(
         )
         AppendCrate(cratePath = rocrate_path, elements=[dataset_instance])
         click.echo(dataset_instance.guid)
+        ctx.exit(code=0)
     
     except FileNotInCrateException as e:
         click.echo(f"ERROR: {str(e)}")
-        raise click.Abort()
+        ctx.exit(code=1)
 
     except ValidationError as e:
         click.echo("Dataset Validation Error")
         click.echo(e)
-        raise click.Abort()
+        ctx.exit(code=1)
 
     except Exception as exc:
         click.echo(f"ERROR: {str(exc)}")
-        raise click.Abort()
-    
+        ctx.exit(code=1)
+ 
  
 
 
@@ -310,7 +312,7 @@ def computation(
         crateInstance = ReadROCrateMetadata(rocrate_path)
     except Exception as exc:
         click.echo(f"ERROR Reading ROCrate: {str(exc)}")
-        raise click.Abort()
+        ctx.exit(code=1)
 
 
     try:
@@ -329,11 +331,12 @@ def computation(
 
         AppendCrate(cratePath=rocrate_path, elements=[computationInstance])
         click.echo(computationInstance.guid)
+        ctx.exit(code=0)
 
     except ValidationError as e:
         click.echo("Computation Validation Error")
         click.echo(e)
-        raise click.Abort()
+        ctx.exit(code=1)
 
 
 
@@ -385,7 +388,7 @@ def software(
         crateInstance = ReadROCrateMetadata(rocrate_path)
     except Exception as exc:
         click.echo(f"ERROR Reading ROCrate: {str(exc)}")
-        raise click.Abort()
+        ctx.exit(code=1)
 
     
     try:
@@ -411,11 +414,12 @@ def software(
         AppendCrate(cratePath = rocrate_path, elements=[software_instance])
         # copy file to rocrate
         click.echo(software_instance.guid)
+        ctx.exit(code=0)
 
     except ValidationError as e:
         click.echo("Software Validation Error")
         click.echo(e)
-        raise click.Abort()
+        ctx.exit(code=1)
 
     # TODO add to cache
 
@@ -466,7 +470,7 @@ def dataset(
         crateInstance = ReadROCrateMetadata(rocrate_path)
     except Exception as exc:
         click.echo(f"ERROR Reading ROCrate: {str(exc)}")
-        raise click.Abort()
+        ctx.exit(code=1)
 
     try:
         CopyToROCrate(source_filepath, destination_filepath)
@@ -490,14 +494,15 @@ def dataset(
         )
         AppendCrate(cratePath = rocrate_path, elements=[dataset_instance])
         click.echo(dataset_instance.guid)
+        ctx.exit(code=0)
 
     except ValidationError as e:
         click.echo("Dataset Validation Error")
         click.echo(e)
-        raise click.Abort()
+        ctx.exit(code=1)
 
     except Exception as exc:
         click.echo(f"ERROR: {str(exc)}")
-        raise click.Abort()
+        ctx.exit(code=1)
     
     # TODO add to cache 
