@@ -2,9 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
-## 0.1.16 (2024-03-08)
+## 0.2.0 (2024-03-25)
 
-[GitHub release](https://github.com/fairscape/fairscape-cli/releases/tag/0.1.16)
+[GitHub release](https://github.com/fairscape/fairscape-cli/releases/tag/0.2.0)
 
 
 ### What's Changed
