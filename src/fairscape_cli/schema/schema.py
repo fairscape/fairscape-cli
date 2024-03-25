@@ -7,12 +7,6 @@ from pydantic import (
 )
 
 
-from fairscape_cli.models.schema.image import (
-    ImageSchema,
-    ImageValidation,
-    ImageValidationException,
-    ImagePathNotFoundException,
-)
 from fairscape_cli.models.schema.tabular import (
     TabularValidationSchema,
     ReadSchema,
