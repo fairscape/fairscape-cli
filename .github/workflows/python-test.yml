@@ -15,6 +15,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
@@ -25,4 +27,4 @@ jobs:
       - name: Install Local Code
         run: pip install .
       - name: Run local Tests
-        run: cd /home/runner/work/fairscape-cli/fairscape-cli && chmod +x ./tests/test.bats && ./tests/bats/bin/bats tests/test.bats
+        run: cd /home/runner/work/fairscape-cli/fairscape-cli && ./tests/bats/bin/bats tests/test.bats
