@@ -54,7 +54,15 @@ setup() {
 
 @test "schema default imageloader" {
 
-    #SCHEMA="ark:59852/schema-cm4ai-imageloader-gene-node-attributes"
+    SCHEMA="ark:59852/schema-cm4ai-imageloader-gene-node-attributes"
+    DATA="examples/schemas/cm4ai-rocrates/imageloader/image_gene_node_attributes.tsv"
+    
+    run fairscape-cli schema validate \
+        --data $DATA \
+        --schema $SCHEMA
+
+    assert_success
+    
 
     SCHEMA="ark:59852/schema-cm4ai-imageloader-samplescopy"
     DATA="examples/schemas/cm4ai-rocrates/imageloader/samplescopy.csv"

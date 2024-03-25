@@ -237,3 +237,50 @@ Validation Errors occur when a data element violates the contraints specified by
 In our example we show multiple examples of strings that defy the regex specified by the pattern attribute.
 Other constraints include min and max for numeric and integer properties, length for string.
 In future work we will expand to cover the entire json schema specification.
+
+#### Using default schemas
+
+For conveineince a collection of default schemas are provided for the [Cell Maps for AI pipeline](https://github.com/idekerlab/cellmaps_pipeline).
+These schemas have their own [repo](https://github.com/fairscape/cm4ai-schemas), and will track the progress of the pipeline as new data modalities are added.
+These default schemas are packaged and provided as part of the fairscape-cli, and can be implemented using the respective identifier for the schema.
+Examples for all of the existing default schemas are provided below.
+
+```bash
+   
+    # validate imageloader files
+    fairscape-cli schema validate \
+        --data "examples/schemas/cm4ai-rocrates/imageloader/samplescopy.csv" \
+        --schema "ark:59852/schema-cm4ai-imageloader-samplescopy" 
+    
+    fairscape-cli schema validate \
+        --data "examples/schemas/cm4ai-rocrates/imageloader/uniquecopy.csv" \
+        --schema "ark:59852/schema-cm4ai-imageloader-uniquecopy"
+       
+    # validate image embedding outputs
+    fairscape-cli schema validate \
+        --data "examples/schemas/cm4ai-rocrates/image_embedding/image_emd.tsv" \
+        --schema "ark:59852/schema-cm4ai-image-embedding-image-emd"
+     
+    fairscape-cli schema validate \
+        --data "examples/schemas/cm4ai-rocrates/image_embedding/labels_prob.tsv" \
+        --schema "ark:59852/schema-cm4ai-image-embedding-labels-prob"
+
+    # validate apsm loader input
+    fairscape-cli schema validate \
+        --data "examples/schemas/cm4ai-rocrates/apmsloader/ppi_gene_node_attributes.tsv" \
+        --schema "ark:59852/schema-cm4ai-apmsloader-gene-node-attributes"
+
+    fairscape-cli schema validate \
+        --data "examples/schemas/cm4ai-rocrates/apmsloader/ppi_edgelist.tsv" \
+        --schema "ark:59852/schema-cm4ai-apmsloader-ppi-edgelist"
+
+    # validate apms embedding 
+    fairscape-cli schema validate \
+        --data "examples/schemas/cm4ai-rocrates/apms_embedding/ppi_emd.tsv" \
+        --schema "ark:59852/schema-cm4ai-apms-embedding"    
+
+    # validate coembedding 
+    fairscape-cli schema validate \
+        --data "examples/schemas/cm4ai-rocrates/coembedding/coembedding_emd.tsv" \
+        --schema "ark:59852/schema-cm4ai-coembedding"
+```
