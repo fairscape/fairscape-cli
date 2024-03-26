@@ -33,7 +33,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Bio-Informatics",
     "Topic :: Software Development :: Libraries :: Python Modules"      
 ]
-keywords = ["fairscape", "reproducibility", "FAIR", "B2AI", "CLI", "RO-Crate]
+keywords = ["fairscape", "reproducibility", "FAIR", "B2AI", "CLI", "RO-Crate"]
 dependencies = [
         "click>=8.1.7",
         "pydantic>=2.5.1",

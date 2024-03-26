@@ -133,6 +133,7 @@ def add_property_number(ctx, name, index, description, maximum, minimum, value_u
         numberPropertyModel = NumberProperty.model_validate({
             "name": name,
             "index": index,
+            "type": "number",
             'maximum': maximum,
             'minimum': minimum,
             "description": description,
@@ -140,7 +141,7 @@ def add_property_number(ctx, name, index, description, maximum, minimum, value_u
             })
 
     except ValidationError as metadataError:
-        click.echo("ERROR Validating StringProperty")
+        click.echo("ERROR Validating NumberProperty")
         for validationFailure in metadataError.errors():
             click.echo(f"property: {validationFailure.get('loc')} \tmsg: {validationFailure.get('msg')}")
         ctx.exit(code=1)
@@ -163,6 +164,7 @@ def add_property_boolean(ctx, name, index, description, value_url, schema_file):
         booleanPropertyModel = BooleanProperty.model_validate({
             "name": name,
             "index": index,
+            "type": "boolean",
             "description": description,
             "valueURL": value_url
             })
@@ -193,6 +195,7 @@ def add_property_integer(ctx, name, index, description, maximum, minimum, value_
         integerPropertyModel = IntegerProperty.model_validate({
             "name": name,
             "index": index,
+            "type": "integer",
             "description": description,
             "maximum": maximum,
             "minimum": minimum,
@@ -200,7 +203,7 @@ def add_property_integer(ctx, name, index, description, maximum, minimum, value_
             })
 
     except ValidationError as metadataError:
-        click.echo("ERROR Validating BooleanProperty")
+        click.echo("ERROR Validating IntegerProperty")
         for validationFailure in metadataError.errors():
             click.echo(f"property: {validationFailure.get('loc')} \tmsg: {validationFailure.get('msg')}")
         ctx.exit(code=1)
