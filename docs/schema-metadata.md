@@ -44,7 +44,7 @@ fairscape-cli schema create-tabular \
     --description 'Tabular format for APMS music embeddings from PPI networks from the music pipeline from the B2AI Cellmaps for AI project' \
     --seperator ',' \
     --header False \
-    /path/to/schema_apms_music_embedding.json
+    ./schema_apms_music_embedding.json
 ```
 
 ### Populate schema
@@ -95,7 +95,7 @@ fairscape-cli schema add-property string \
     --name 'Experiment Identifier' \
     --index 0 \
     --description 'Identifier for the APMS experiment responsible for generating the raw PPI used to create this embedding vector' \
-    --pattern 'APMS_[0-9]*' \
+    --pattern '^APMS_[0-9]*$' \
     ./schema_apms_music_embedding.json
 ```
 
@@ -111,7 +111,7 @@ fairscape-cli schema add-property string \
     --name 'Gene Symbol' \
     --index 1 \
     --description 'Gene Symbol for the APMS bait protien' \
-    --pattern '[A-Z0-9]*' \
+    --pattern '^[A-Za-z0-9\-]*$' \
     --value-url 'http://edamontology.org/data_1026' \
     ./schema_apms_music_embedding.json
 ```
@@ -163,14 +163,14 @@ Looking at our schema we should have a json document equivalent to the following
         "index": 0,                                 
         "valueURL": null,    
         "type": "string",    
-        "pattern": "APMS_[0-9]*" 
+        "pattern": "^APMS_[0-9]*$" 
     },                                 
     "Gene Symbol": {                                             
         "description": "Gene Symbol for the APMS bait protien",    
         "index": 1,    
         "valueURL": "http://edamontology.org/data_1026",    
         "type": "string",          
-        "pattern": "[A-Z0-9]*"    
+        "pattern": "^[A-Za-z0-9\-]*$"    
     },                                                                          
     "MUSIC APMS Embedding": {                                                                
         "description": "Embedding Vector values for genes determined by running node2vec on APMS PPI networks. Vector has 1024 values for each bait protien",    
@@ -235,7 +235,7 @@ When this occurs the row is marked as a failure and reported as a ParsingError. 
 
 Validation Errors occur when a data element violates the contraints specified by the schema.
 In our example we show multiple examples of strings that defy the regex specified by the pattern attribute.
-Other constraints include min and max for numeric and integer properties, length for string.
+Other constraints include min and max for numeric and integer properties, length for string, etc.
 In future work we will expand to cover the entire json schema specification.
 
 #### Using default schemas
@@ -245,8 +245,7 @@ These schemas have their own [repo](https://github.com/fairscape/cm4ai-schemas),
 These default schemas are packaged and provided as part of the fairscape-cli, and can be implemented using the respective identifier for the schema.
 Examples for all of the existing default schemas are provided below.
 
-```bash
-   
+```bash 
     # validate imageloader files
     fairscape-cli schema validate \
         --data "examples/schemas/cm4ai-rocrates/imageloader/samplescopy.csv" \

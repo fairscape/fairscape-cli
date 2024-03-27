@@ -31,13 +31,13 @@ To create an RO-Crate with minimal metadata, use the following command. This wil
 ``` bash 
 fairscape-cli rocrate create \
   --name "test rocrate" \
-  --description "Example RO Crate for Tests" \  
+  --description "Example RO Crate for Tests" \
   --organization-name "UVA" \
   --project-name "B2AI"  \
   --keywords "b2ai" \
   --keywords "cm4ai" \
   --keywords "U2OS" \
-  "/path/to/test_rocrate"
+  "./test_rocrate"
 ```
 
 Alternatively, use the `fairscape-cli rocrate init` command to create the same RO-Crate in the current working directory.
@@ -104,8 +104,8 @@ fairscape-cli rocrate add dataset \
   --keywords "U2OS" \
   --data-format "CSV" \
   --source-filepath "./tests/data/APMS_embedding_MUSIC.csv" \
-  --destination-filepath "/path/to/test_rocrate" \
-  "/path/to/test_rocrate"
+  --destination-filepath "./test_rocrate/APMS_embedding_MUSIC.csv" \
+  "./test_rocrate"
 ```
 
 The example below performs the same operation utilizing both required and optional parameters:
@@ -124,12 +124,12 @@ fairscape-cli rocrate add dataset \
   --keywords "U2OS" \
   --data-format "CSV" \
   --source-filepath "./tests/data/APMS_embedding_MUSIC.csv" \
-  --destination-filepath "/path/to/test_rocrate" \
+  --destination-filepath "./test_rocrate/APMS_embedding_MUSIC.csv" \
   --used-by "create labeled training & test sets  random_forest_samples.py" \
   --derived-from "node2vec predict" \
   --associated-publication "Qin, Y. et al. A multi-scale map of cell structure fusing protein images and interactions" \
   --additional-documentation "https://idekerlab.ucsd.edu/music/" \
-  "/path/to/test_rocrate"
+  "./test_rocrate"
 ```
 
 One of the features offered by `fairscape-cli` is the ability to annotate certain types of dataset objects with schema-level metadata. The examples in [Schema Metadata](schema-metadata.md) demonstrate how to describe the schema of a dataset object as metadata. This feature includes a mechanism to validate the metadata against the object.
@@ -175,9 +175,9 @@ fairscape-cli rocrate add software \
   --keywords "U2OS" \
   --file-format "py" \
   --source-filepath "./tests/data/calibrate_pairwise_distance.py" \
-  --destination-filepath "/path/to/test_rocrate" \
+  --destination-filepath "./test_rocrate/calibrate_pairwise_distance.py" \
   --date-modified "2021-04-23" \
-  "/path/to/test_rocrate"
+  "./test_rocrate"
 ```
 
 The same operation can be performed using both required and optional parameters with the following command. 
@@ -194,12 +194,12 @@ fairscape-cli rocrate add software \
   --file-format "py" \
   --url "https://github.com/idekerlab/MuSIC/blob/master/calibrate_pairwise_distance.py" \
   --source-filepath "./tests/data/calibrate_pairwise_distance.py" \
-  --destination-filepath "/path/to/test_rocrate" \
+  --destination-filepath "./test_rocrate/calibrate_pairwise_distance.py" \
   --date-modified "2021-06-20" \
   --used-by-computation "ARK:compute_standard_proximities.1/f9aa5f3f-665a-4ab9-8879-8d0d52f05265" \
   --associated-publication "Qin, Y. et al. A multi-scale map of cell structure fusing protein images and interactions. Nature 600, 536–542 2021" \
   --additional-documentation "https://idekerlab.ucsd.edu/music/" \
-  "/path/to/test_rocrate"
+  "./test_rocrate"
 ```
 
 ---
@@ -260,7 +260,7 @@ fairscape-cli rocrate register computation \
   --keywords "b2ai" \
   --keywords "cm4ai" \
   --keywords "U2OS" \
-  "/path/to/test_rocrate"
+  "./test_rocrate"
 ```
 
 The same operation can be performed using both required and optional parameters with the following command. 
@@ -287,7 +287,7 @@ fairscape-cli rocrate register computation \
   --used-dataset """Fold 1 proximities: IF_emd_1_APMS_emd_1.RF_maxDep_30_nEst_1000.fold_5.pkl""" \
   --used-dataset "IF_emd_2_APMS_emd_1.RF_maxDep_30_nEst_1000.fold_5.pkl" \
   --generated "averages of predicted protein proximities (https://github.com/idekerlab/MuSIC/blob/master/Examples/MuSIC_predicted_proximity.txt)" \
-  "/path/to/test_rocrate"
+  "./test_rocrate"
 ```
 
 ---
@@ -341,7 +341,7 @@ fairscape-cli rocrate register dataset \
   --derived-from "node2vec predict" \
   --associated-publication "Qin, Y. et al. A multi-scale map of cell structure fusing protein images and interactions" \
   --additional-documentation "https://idekerlab.ucsd.edu/music/" \
-  "/path/to/test_rocrate"
+  "./test_rocrate"
 ```
 
 ---
@@ -389,5 +389,5 @@ fairscape-cli rocrate register software \
   --used-by-computation "ARK:compute_standard_proximities.1/f9aa5f3f-665a-4ab9-8879-8d0d52f05265" \
   --associated-publication "Qin, Y. et al. A multi-scale map of cell structure fusing protein images and interactions. Nature 600, 536–542 2021" \
   --additional-documentation "https://idekerlab.ucsd.edu/music/" \
-  "/path/to/test_rocrate"
+  "./test_rocrate"
 ```
