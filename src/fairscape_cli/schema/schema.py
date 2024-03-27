@@ -279,7 +279,7 @@ def validate(ctx, schema, data):
 
     try:
         tabular_schema = ReadSchema(schema)
-    except ValdationError as metadataError:
+    except ValidationError as metadataError:
         click.echo("Error with schema definition")
         for validationFailure in metadataError.errors(): 
             click.echo(f"property: {validationFailure.get('loc')} \tmsg: {validationFailure.get('msg')}")
