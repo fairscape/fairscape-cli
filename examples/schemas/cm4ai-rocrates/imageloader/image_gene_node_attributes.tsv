@@ -1,5 +1,5 @@
-name        represents      ambiguous       antibody        filename        imageurl
-UHRF2       ensembl:ENSG00000147854         HPA026633       B2AI_1_untreated_D2_R5_ no image url found
-TET3        ensembl:ENSG00000187605         HPA050845       B2AI_1_untreated_E5_R5_ no image url found
-HDAC6       ensembl:ENSG00000094631         HPA003714       B2AI_1_untreated_G3_R5_ no image url found
-HDAC3       ensembl:ENSG00000171720         HPA052052       B2AI_1_untreated_D3_R7_ no image url found
+name	represents	ambiguous	antibody	filename	imageurl
+UHRF2	ensembl:ENSG00000147854		HPA026633	B2AI_1_untreated_D2_R5_	no image url found
+TET3	ensembl:ENSG00000187605		HPA050845	B2AI_1_untreated_E5_R5_	no image url found
+HDAC6	ensembl:ENSG00000094631		HPA003714	B2AI_1_untreated_G3_R5_	no image url found
+HDAC3	ensembl:ENSG00000171720		HPA052052	B2AI_1_untreated_D3_R7_	no image url found
