@@ -27,14 +27,14 @@
       "index": 2,
       "valueURL": null,
       "type": "string",
-      "pattern": "[A-Z][0-9]*"
+      "pattern": "^[A-Z][0-9]*$"
     },
     "sample": {
           "description": "Identifies the sample which was placed in this well",
           "index": 3,
           "valueURL": null,
           "type": "string",
-          "pattern": "[A-Z][0-9]*"
+          "pattern": "^[A-Z][0-9]*$"
     },
     "locations": {
           "description": "Cellular Compartments in which the tagged protien was identified through the IF images",

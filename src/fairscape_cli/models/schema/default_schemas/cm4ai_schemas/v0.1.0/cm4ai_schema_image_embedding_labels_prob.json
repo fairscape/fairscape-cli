@@ -13,7 +13,7 @@
       "index": 0,
       "valueURL": "http://edamontology.org/data_1026",
       "type": "string",
-      "pattern": "[A-Z0-9]*"
+      "pattern": "^[A-Za-z0-9\-]*$"
     },
 
     "Nucleoplasm": {

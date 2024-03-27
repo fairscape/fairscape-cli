@@ -1,0 +1,19 @@
+
+{
+  "@id": "ark:59852/schema-cm4ai-hierarchy-cx",
+  "@context": {
+      "@vocab": "https://schema.org/",
+      "EVI": "https://w3id.org/EVI#"
+    },
+  "@type": "EVI:Schema",
+  "name": "CM4AI CX network file schema",
+  "description": "Schema for the CX heirarchy network output",
+  "properties": {
+  },
+  "type": "object",
+  "additionalProperties": false,
+  "required": [],
+  "separator": "",
+  "header": false,
+  "examples": []
+}

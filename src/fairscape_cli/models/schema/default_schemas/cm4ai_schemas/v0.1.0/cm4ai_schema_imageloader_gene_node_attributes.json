@@ -13,14 +13,14 @@
       "index": 0,
       "valueURL": "http://edamontology.org/data_1026",
       "type": "string",
-      "pattern": null
+      "pattern": "^[A-Za-z0-9\-]*$"
     },
     "represents": {
       "description": "Ensembl Gene ID for protien antibody targets, may have multiple matches",
       "index": 1,
       "valueURL": "http://edamontology.org/data_1033",
       "type": "string",
-      "pattern": "^(?:ENSG[0-9]{11})(;?ENSG[0-9]{11})*$|^nan$"
+      "pattern": "^(?:ensembl:ENSG[0-9]{11})(;?ensembl:ENSG[0-9]{11})*$|^nan$"
     },
 		"ambiguous": {
 			"index": 2,
