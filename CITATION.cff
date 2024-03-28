@@ -12,5 +12,5 @@ authors:
     orcid: https://orcid.org/0000-0003-4060-7360
 title: "fairscape-cli: A utility for packaging objects and validating metadata for FAIRSCAPE."
 version: 0.2.0
-date-released: 2024-03-25
+date-released: 2024-03-28
 url: "https://github.com/fairscape/fairscape-cli"
