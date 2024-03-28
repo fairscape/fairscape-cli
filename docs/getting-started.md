@@ -216,9 +216,7 @@ fairscape-cli rocrate add software \
 ---
 
 ### Register metadata
-To add metadata of the components of an RO-Crate to `ro-crate-metadata.json`, you can use the `register` sub-command. This command can be used for instances of `computation`, `dataset`, and `software`. Whereas `add dataset` and `add software` automatically register metadata about the dataset and software objects that are transferred, the sub-commands `register dataset` and `register software` require the objects to be present inside the directory and only register their metadata.
-
-Registering metadata essentially adds metadata of a 
+Registering metadata essentially adds metadata of an object (dataset, object) or an activity (computation) to the to `ro-crate-metadata.json`. Before the execution of the `register` sub-command, objects are required to be present in the path specified by the `--filepath` option, hence no transfer of objects take place during the execution. There is no similar requirement to specify a path for registering a computation as an activity. 
 
 
 Enter `fairscape-cli rocrate register --help` to show its use:
