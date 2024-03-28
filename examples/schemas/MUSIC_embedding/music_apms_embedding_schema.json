@@ -21,7 +21,7 @@
       "index": 1,
       "valueURL": "http://edamontology.org/data_1026",
       "type": "string",
-      "pattern": "^[A-Z0-9]*$"
+      "pattern": "^[A-Za-z0-9\-]*$"
     },
     "embed": {
       "description": "embedding vector values for genes determined by running node2vec on APMS networks",
