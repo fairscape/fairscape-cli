@@ -55,7 +55,7 @@ fairscape-cli rocrate init \
 
 ---
 
-### Add object
+### Add object and metadata
 In the FAIRSCAPE ecosystem, datasets and software are treated as objects that can be added to an RO-Crate using the `add` sub-command. This command fetches the object and transfers it to the crate. Enter the command `fairscape-cli rocrate add --help` to display the list of objects to add.
 
 ``` bash
@@ -215,8 +215,13 @@ fairscape-cli rocrate add software \
 
 ---
 
-### Register object metadata
-To add metadata of the components of an RO-Crate to `ro-crate-metadata.json`, you can use the `register` sub-command. This command can be used for instances of `computation`, `dataset`, and `software`. The `add dataset` and `add software` sub-commands automatically register metadata about the dataset and software, respectively. Enter `fairscape-cli rocrate register --help` to show its use:
+### Register metadata
+To add metadata of the components of an RO-Crate to `ro-crate-metadata.json`, you can use the `register` sub-command. This command can be used for instances of `computation`, `dataset`, and `software`. Whereas `add dataset` and `add software` automatically register metadata about the dataset and software objects that are transferred, the sub-commands `register dataset` and `register software` require the objects to be present inside the directory and only register their metadata.
+
+Registering metadata essentially adds metadata of a 
+
+
+Enter `fairscape-cli rocrate register --help` to show its use:
 
 
 ``` bash 
