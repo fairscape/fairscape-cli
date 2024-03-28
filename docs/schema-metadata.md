@@ -42,7 +42,7 @@ In the schema creation example below, the symbol `,` (comma) is used as the `sep
 fairscape-cli schema create-tabular \
     --name 'APMS Embedding Schema' \
     --description 'Tabular format for APMS music embeddings from PPI networks from the music pipeline from the B2AI Cellmaps for AI project' \
-    --seperator ',' \
+    --separator ',' \
     --header False \
     ./schema_apms_music_embedding.json
 ```
