@@ -3,6 +3,7 @@ import pathlib
 from functools import lru_cache
 import os
 import json
+import pyarrow.parquet as pq
 
 from pydantic import (
     BaseModel,
@@ -24,6 +25,7 @@ from fairscape_cli.models.schema.utils import (
     GenerateSlice,
     PropertyNameException,
     ColumnIndexException,
+    map_arrow_type_to_json_schema
 )
 
 from fairscape_cli.models.utils import (
@@ -351,6 +353,62 @@ class TabularValidationSchema(BaseModel):
                     })
 
         return output_exceptions
+    
+    @classmethod
+    def infer_from_parquet(cls, name: str, description: str, guid: Optional[str], parquet_file: str) -> 'TabularValidationSchema':
+        try:
+            table = pq.read_table(parquet_file)
+            schema = table.schema
+
+            properties = {}
+            for i, field in enumerate(schema):
+                field_name = field.name
+                field_type = map_arrow_type_to_json_schema(field.type)
+                
+                if field_type == 'string':
+                    properties[field_name] = StringProperty(
+                        datatype='string',
+                        description=f"Column {field_name}",
+                        index=i
+                    )
+                elif field_type == 'integer':
+                    properties[field_name] = IntegerProperty(
+                        datatype='integer',
+                        description=f"Column {field_name}",
+                        index=i
+                    )
+                elif field_type == 'number':
+                    properties[field_name] = NumberProperty(
+                        datatype='number',
+                        description=f"Column {field_name}",
+                        index=i
+                    )
+                elif field_type == 'boolean':
+                    properties[field_name] = BooleanProperty(
+                        datatype='boolean',
+                        description=f"Column {field_name}",
+                        index=i
+                    )
+                elif field_type == 'array':
+                    item_type = map_arrow_type_to_json_schema(field.type.value_type)
+                    properties[field_name] = ArrayProperty(
+                        datatype='array',
+                        description=f"Column {field_name}",
+                        index=str(i),
+                        items=Items(datatype=DatatypeEnum(item_type))
+                    )
+
+            return cls(
+                name=name,
+                description=description,
+                guid=guid,
+                properties=properties,
+                required=list(properties.keys()),
+                separator=",",  
+                header=True  
+            )
+        except Exception as e:
+            raise ValueError(f"Error inferring schema: {str(e)}")
 
 
 

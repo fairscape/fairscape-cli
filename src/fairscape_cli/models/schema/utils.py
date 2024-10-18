@@ -4,6 +4,7 @@ from typing import (
     List
 )
 from itertools import product
+import pyarrow as pa
 
 
 class PropertyNameException(Exception):
@@ -142,3 +143,18 @@ def CheckOverlap(property_index: Union[str,int], schema_indicies: List[Union[str
     # TODO check that slice indicies don't overlap any other slice indicies
     
     return None
+
+def map_arrow_type_to_json_schema(arrow_type):
+    """Converts pyarrow types to their matching type in json schema"""
+    if arrow_type.equals(pa.string()):
+        return 'string'
+    elif arrow_type.equals(pa.int64()) or arrow_type.equals(pa.int32()):
+        return 'integer'
+    elif arrow_type.equals(pa.float64()) or arrow_type.equals(pa.float32()):
+        return 'number'
+    elif arrow_type.equals(pa.bool_()):
+        return 'boolean'
+    elif isinstance(arrow_type, pa.ListType):
+        return 'array'
+    else:
+        return 'string'  # Default to string for unsupported types

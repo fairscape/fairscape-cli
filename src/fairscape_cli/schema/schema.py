@@ -6,7 +6,6 @@ from pydantic import (
         ValidationError
 )
 
-
 from fairscape_cli.models.schema.tabular import (
     TabularValidationSchema,
     ReadSchema,
@@ -303,5 +302,22 @@ def validate(ctx, schema, data):
     else:
         print('Validation Success')
         ctx.exit(0)
+
+@schema.command('infer')
+@click.option('--name', required=True, type=str)
+@click.option('--description', required=True, type=str)
+@click.option('--guid', required=False, type=str, default="", show_default=False)
+@click.argument('parquet_file', type=click.Path(exists=True))
+@click.argument('schema_file', type=str)
+@click.pass_context
+def infer_schema(ctx, name, description, guid, parquet_file, schema_file):
+    """Infer a Tabular Schema from a Parquet file."""
+    try:
+        schema_model = TabularValidationSchema.infer_from_parquet(name, description, guid, parquet_file)
+        WriteSchema(schema_model, schema_file)
+        click.echo(f"Inferred Schema: {str(schema_file)}")
+    except Exception as e:
+        click.echo(f"Error inferring schema: {str(e)}")
+        ctx.exit(code=1)
 
 
