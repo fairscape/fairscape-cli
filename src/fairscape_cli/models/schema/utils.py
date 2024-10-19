@@ -157,4 +157,4 @@ def map_arrow_type_to_json_schema(arrow_type):
     elif isinstance(arrow_type, pa.ListType):
         return 'array'
     else:
-        return 'string'  # Default to string for unsupported types
+        return 'string'

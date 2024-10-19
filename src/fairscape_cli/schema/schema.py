@@ -307,13 +307,14 @@ def validate(ctx, schema, data):
 @click.option('--name', required=True, type=str)
 @click.option('--description', required=True, type=str)
 @click.option('--guid', required=False, type=str, default="", show_default=False)
+@click.option('--include-min-max', is_flag=True, help="Include min and max values for numeric and integer fields")
 @click.argument('parquet_file', type=click.Path(exists=True))
 @click.argument('schema_file', type=str)
 @click.pass_context
-def infer_schema(ctx, name, description, guid, parquet_file, schema_file):
+def infer_schema(ctx, name, description, guid, include_min_max, parquet_file, schema_file):
     """Infer a Tabular Schema from a Parquet file."""
     try:
-        schema_model = TabularValidationSchema.infer_from_parquet(name, description, guid, parquet_file)
+        schema_model = TabularValidationSchema.infer_from_parquet(name, description, guid, parquet_file, include_min_max)
         WriteSchema(schema_model, schema_file)
         click.echo(f"Inferred Schema: {str(schema_file)}")
     except Exception as e:

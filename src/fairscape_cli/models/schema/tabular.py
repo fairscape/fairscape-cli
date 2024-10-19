@@ -4,6 +4,7 @@ from functools import lru_cache
 import os
 import json
 import pyarrow.parquet as pq
+import pyarrow.compute as pc
 
 from pydantic import (
     BaseModel,
@@ -355,7 +356,7 @@ class TabularValidationSchema(BaseModel):
         return output_exceptions
     
     @classmethod
-    def infer_from_parquet(cls, name: str, description: str, guid: Optional[str], parquet_file: str) -> 'TabularValidationSchema':
+    def infer_from_parquet(cls, name: str, description: str, guid: Optional[str], parquet_file: str, include_min_max: bool = False) -> 'TabularValidationSchema':
         try:
             table = pq.read_table(parquet_file)
             schema = table.schema
@@ -371,18 +372,42 @@ class TabularValidationSchema(BaseModel):
                         description=f"Column {field_name}",
                         index=i
                     )
-                elif field_type == 'integer':
-                    properties[field_name] = IntegerProperty(
-                        datatype='integer',
-                        description=f"Column {field_name}",
-                        index=i
-                    )
-                elif field_type == 'number':
-                    properties[field_name] = NumberProperty(
-                        datatype='number',
-                        description=f"Column {field_name}",
-                        index=i
-                    )
+                elif field_type in ['integer', 'number']:
+                    if include_min_max:
+                        column = table.column(field_name)
+                        min_max = pc.min_max(column)
+                        min_value = min_max['min'].as_py()
+                        max_value = min_max['max'].as_py()
+                        
+                        if field_type == 'integer':
+                            properties[field_name] = IntegerProperty(
+                                datatype='integer',
+                                description=f"Column {field_name}",
+                                index=i,
+                                minimum=min_value,
+                                maximum=max_value
+                            )
+                        else:
+                            properties[field_name] = NumberProperty(
+                                datatype='number',
+                                description=f"Column {field_name}",
+                                index=i,
+                                minimum=min_value,
+                                maximum=max_value
+                            )
+                    else:
+                        if field_type == 'integer':
+                            properties[field_name] = IntegerProperty(
+                                datatype='integer',
+                                description=f"Column {field_name}",
+                                index=i
+                            )
+                        else:
+                            properties[field_name] = NumberProperty(
+                                datatype='number',
+                                description=f"Column {field_name}",
+                                index=i
+                            )
                 elif field_type == 'boolean':
                     properties[field_name] = BooleanProperty(
                         datatype='boolean',
@@ -409,8 +434,6 @@ class TabularValidationSchema(BaseModel):
             )
         except Exception as e:
             raise ValueError(f"Error inferring schema: {str(e)}")
-
-
 
 
 def AppendProperty(schemaFilepath: str, propertyInstance, propertyName: str) -> None: 
