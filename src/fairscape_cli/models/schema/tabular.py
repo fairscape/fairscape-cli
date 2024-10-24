@@ -3,9 +3,11 @@ import pathlib
 from functools import lru_cache
 import os
 import json
+import pandas as pd
 import pyarrow.parquet as pq
 import pyarrow.compute as pc
-
+import h5py
+from enum import Enum
 from pydantic import (
     BaseModel,
     ConfigDict,
@@ -19,7 +21,8 @@ from typing import (
     List, 
     Optional,
     Union,
-    Literal
+    Literal,
+    Type
 )
 
 from fairscape_cli.models.schema.utils import (
@@ -39,12 +42,26 @@ from fairscape_cli.config import (
     NAAN,
 )
 
-import datetime
-from enum import Enum
-import re
+class FileType(str, Enum):
+    CSV = "csv"
+    TSV = "tsv"
+    PARQUET = "parquet"
+    HDF5 = "h5"
+    
+    @classmethod
+    def from_extension(cls, filepath: str) -> 'FileType':
+        ext = pathlib.Path(filepath).suffix.lower()[1:]  # Remove the dot
+        if ext == 'h5' or ext == 'hdf5':
+            return cls.HDF5
+        elif ext == 'parquet':
+            return cls.PARQUET
+        elif ext == 'tsv':
+            return cls.TSV
+        elif ext == 'csv':
+            return cls.CSV
+        else:
+            raise ValueError(f"Unsupported file extension: {ext}")
 
-
-# datatype enum
 class DatatypeEnum(str, Enum):
     NULL = "null"
     BOOLEAN = "boolean"
@@ -60,18 +77,15 @@ class Items(BaseModel):
     )
     datatype: DatatypeEnum = Field(alias="type")
 
-
 class BaseProperty(BaseModel):
     description: str = Field(description="description of field")
     model_config = ConfigDict(populate_by_name = True)
     index: Union[int,str] = Field(description="index of the column for this value")
-    valueURL: Optional[str] = Field(default=None)	
-
+    valueURL: Optional[str] = Field(default=None)
 
 class NullProperty(BaseProperty):
     datatype: Literal['null'] = Field(alias="type", default='null')
     index: int
-
 
 class StringProperty(BaseProperty):
     datatype: Literal['string'] = Field(alias="type")
@@ -79,7 +93,6 @@ class StringProperty(BaseProperty):
     maxLength: Optional[int] = Field(description="Inclusive maximum length for string values", default=None)
     minLength: Optional[int] = Field(description="Inclusive minimum length for string values", default=None)
     index: int
-
 
 class ArrayProperty(BaseProperty):
     datatype: Literal['array'] = Field(alias="type")
@@ -89,11 +102,9 @@ class ArrayProperty(BaseProperty):
     index: str
     items: Items
 
-
 class BooleanProperty(BaseProperty):
     datatype: Literal['boolean'] = Field(alias="type")
     index: int
-
 
 class NumberProperty(BaseProperty):
     datatype: Literal['number'] = Field(alias="type")
@@ -102,18 +113,16 @@ class NumberProperty(BaseProperty):
     index: int
 
     @model_validator(mode='after')
-    def check_max_min(self) -> 'IntegerProperty':
+    def check_max_min(self) -> 'NumberProperty':
         minimum = self.minimum
         maximum = self.maximum
 
         if maximum is not None and minimum is not None:
-
             if maximum == minimum:
-                raise ValueError('IntegerProperty attribute minimum != maximum')
+                raise ValueError('NumberProperty attribute minimum != maximum')
             elif maximum < minimum:
-                raise ValueError('IntegerProperty attribute maximum !< minimum')
+                raise ValueError('NumberProperty attribute maximum !< minimum')
         return self
-
 
 class IntegerProperty(BaseProperty):
     datatype: Literal['integer'] = Field(alias="type")
@@ -127,315 +136,321 @@ class IntegerProperty(BaseProperty):
         maximum = self.maximum
 
         if maximum is not None and minimum is not None:
-
             if maximum == minimum:
                 raise ValueError('IntegerProperty attribute minimum != maximum')
             elif maximum < minimum:
                 raise ValueError('IntegerProperty attribute maximum !< minimum')
         return self
 
-
-
 PropertyUnion = Union[StringProperty, ArrayProperty, BooleanProperty, NumberProperty, IntegerProperty, NullProperty]
 
-
-
-class TabularValidationSchema(BaseModel):
+class BaseSchema(BaseModel):
     guid: Optional[str] = Field(alias="@id", default=None)
     context: Optional[Dict] = Field(default=DEFAULT_CONTEXT, alias="@context")
     metadataType: Optional[str] = Field(default=DEFAULT_SCHEMA_TYPE, alias="@type")
     schema_version: str = Field(default="https://json-schema.org/draft/2020-12/schema", alias="schema")
     name: str
     description: str
-    properties: Dict[str, PropertyUnion] = Field(default={})
     datatype: str = Field(default="object", alias="type")
     additionalProperties: bool = Field(default=True)
     required: List[str] = Field(description="list of required properties by name", default=[])
-    separator: str = Field(description="Field seperator for the file")
-    header: bool = Field(description="Do files of this schema have a header row", default=False)
-    examples: Optional[List[Dict[str, str ]]] = Field(default=[])
+    examples: Optional[List[Dict[str, str]]] = Field(default=[])
 
-    # Computed Field implementation for guid generation
     def generate_guid(self) -> str:
-        """ Generate an ARK for the Schema
-        """
-        # if guid is already set
         if self.guid is None:
-            prefix=f"schema-{self.name.lower().replace(' ', '-')}"
+            prefix = f"schema-{self.name.lower().replace(' ', '-')}"
             sq = GenerateDatetimeSquid()
             self.guid = f"ark:{NAAN}/{prefix}-{sq}"
         return self.guid
-
-
-    def load_data(self, dataPath: str) -> List[List[str]]:
-        """ Load data from a given path and return a list of rows split by the seperator character
-        """
-        # wrong data for example
-        rows = []
-        sep = self.separator
-        with open(dataPath, "r") as data_file:
-            data_row = data_file.readline()
-
-            # if the file has a header move on to the next row
-            if self.header:
-                data_row = data_file.readline()
-
-            # iterate through the file slicing each row into 
-            while data_row != "": 
-                data_line = data_row.replace(",,", ", ,").replace("\n", "").split(sep)
-                rows.append(data_line)
-                data_row = data_file.readline()
-
-        return rows
-
-
-    def convert_json(self, dataPath: str):
-        """ Given a path to a Tabular File, load in the data and generate a list of JSON equivalent data structures 
-        """
-
-        data_rows = self.load_data(dataPath)
-
-        row_lengths = set([len(row) for row in data_rows])
-        if len(row_lengths) == 1: 
-            default_row_length = list(row_lengths)[0]
-        else:
-            # TODO set to most common row_length
-            default_row_length = list(row_lengths)[0]
-            #raise Exception
-
-
-        schema_definition = self.model_dump(
-                by_alias=True, 
-                exclude_unset=True,
-                exclude_none=True
-                )
-
-        # reorganize property data for forming json
-        properties_simplified = [
-                { 
-                    "name": property_name, 
-                    "index": property_data.get("index"),                                                                                                                   
-                    "type": property_data.get("type"),
-                    "items": property_data.get("items", {}).get("type"),
-                    "index_slice": None,
-                    "access_function": None
-                }                                                                                  
-                for property_name, property_data in schema_definition.get("properties").items()
-        ] 
-
-
-        # index slice is going to change on each iteration, as a local variable this causes
-        # problems for all of the 
-        updated_properties = []
-        for prop in properties_simplified:
-            
-            index_slice = prop.get("index")
-            datatype = prop.get("type")
-            item_datatype = prop.get('items')
- 
-            prop['index_slice'] = index_slice
-
-
-            if datatype == 'array':
-                generated_slice = GenerateSlice(index_slice, default_row_length)
-                prop['index_slice'] = generated_slice
-                
-                if item_datatype ==" boolean":
-                    prop['access_function'] = lambda row, passed_slice: [ bool(item) for item in list(row[passed_slice])]
-
-                if item_datatype == "integer":
-                    prop['access_function'] = lambda row, passed_slice: [ int(item) for item in list(row[passed_slice])]
-                    
-                if item_datatype == "number":
-                    prop['access_function'] = lambda row, passed_slice: [ float(item) for item in row[passed_slice]]
-
-                if item_datatype == "string":
-                    prop['access_function'] = lambda row, passed_slice: [ str(item) for item in list(row[passed_slice])]
-
-            if datatype == "boolean":
-                prop['access_function'] = lambda row, passed_slice: bool(row[passed_slice])
-                
-            if datatype == "integer":
-                prop['access_function'] =  lambda row, passed_slice: int(row[passed_slice])
-                    
-            if datatype == "number":
-                prop['access_function'] = lambda row, passed_slice: float(row[passed_slice])
-                
-            if datatype == "string":
-                prop['access_function'] = lambda row, passed_slice: str(row[passed_slice])
-
-            if datatype == "null":
-                prop['access_function'] = lambda row, passed_slice: None
-
-            updated_properties.append(prop)
-
-            
-        # coerce types and generate lists 
-        json_output = []
-        parsing_failures = []
-
-        for i, row in enumerate(data_rows):
-            json_row = {}
-            row_error = False
-
-            for json_attribute in updated_properties: 
-                attribute_name = json_attribute.get("name")
-                access_func = json_attribute.get("access_function")
-                attribute_slice = json_attribute.get("index_slice")
-                try:
-                    json_row[attribute_name] = access_func(row, attribute_slice)
-
-                except ValueError as e:
-                    parsing_failures.append({ 
-                        "message": f"ValueError: Failed to Parse Attribute {attribute_name} for Row {i}", 
-                        "type": "ParsingError",
-                        "row": i,
-                        "exception": e
-                        })
-                    row_error = True
-
-                except IndexError as e:
-                    parsing_failures.append({ 
-                        "message": f"IndexError: Failed to Parse Attribute {attribute_name} for Row {i}", 
-                        "type": "ParsingError",
-                        "row": i,
-                        "exception": e
-                        })
-                    row_error = True
-
-                except Exception as e: 
-                    parsing_failures.append({ 
-                        "message": f"Error: Failed to Parse Attribute {attribute_name} for Row {i}", 
-                        "type": "ParsingError",
-                        "row": i,
-                        "exception": e
-                        })
-                    row_error = True
-
-            # if there was an error parsing a row
-            if row_error:
-                pass
-            else:
-                json_output.append(json_row)
-
-        return json_output, parsing_failures
-
-
-    def execute_validation(self, dataPath):
-        ''' Given a path to a tabular data file, execute the schema against the 
-        '''
-
-        schema_definition = self.model_dump(
-                by_alias=True, 
-                exclude_unset=True,
-                exclude_none=True
-                )
-
-        json_objects, parsing_failures = self.convert_json(dataPath)
-
-
-        output_exceptions = parsing_failures
-        
-        validator = jsonschema.Draft202012Validator(schema_definition)
-        for i, json_elem in enumerate(json_objects):
-            errors = sorted(validator.iter_errors(json_elem), key=lambda e: e.path)
-
-            if len(errors) == 0:
-                pass
-            else:
-                for err in errors: 
-                    output_exceptions.append({
-                        "message": err.message, 
-                        "row": i,
-                        "type": "ValidationError",
-                        #"exception": e ,
-                        "failed_keyword": err.validator,
-                        "schema_path": err.schema_path
-                    })
-
-        return output_exceptions
     
+    @model_validator(mode='after')
+    def generate_all_guids(self) -> 'BaseSchema':
+        """Generate GUIDs for this schema and any nested schemas"""
+        self.generate_guid()
+        
+        # Generate GUIDs for any nested schemas in properties
+        if hasattr(self, 'properties'):
+            for prop in self.properties.values():
+                if isinstance(prop, BaseSchema):
+                    prop.generate_guid()
+        
+        return self
+    
+    def to_json_schema(self) -> dict:
+        """Convert the HDF5Schema to JSON Schema format"""
+        schema = self.model_dump(
+            by_alias=True,
+            exclude_unset=True,
+            exclude_none=True
+        )
+        return schema
+
+class TabularValidationSchema(BaseSchema):
+    properties: Dict[str, PropertyUnion] = Field(default={})
+    separator: str = Field(description="Field separator for the file")
+    header: bool = Field(description="Do files of this schema have a header row", default=False)
+
     @classmethod
-    def infer_from_parquet(cls, name: str, description: str, guid: Optional[str], parquet_file: str, include_min_max: bool = False) -> 'TabularValidationSchema':
-        try:
-            table = pq.read_table(parquet_file)
-            schema = table.schema
-
-            properties = {}
-            for i, field in enumerate(schema):
-                field_name = field.name
-                field_type = map_arrow_type_to_json_schema(field.type)
+    def infer_from_file(cls, filepath: str, name: str, description: str, include_min_max: bool = False) -> 'TabularValidationSchema':
+        """Infer schema from a file"""
+        file_type = FileType.from_extension(filepath)
+        
+        if file_type == FileType.PARQUET:
+            return cls.infer_from_parquet(name, description, None, filepath, include_min_max)
+        else:  # csv or tsv
+            separator = '\t' if file_type == FileType.TSV else ','
+            df = pd.read_csv(filepath, sep=separator)
+            return cls.infer_from_dataframe(df, name, description, include_min_max, separator)
+        
+    @classmethod
+    def infer_from_dataframe(cls, df: pd.DataFrame, name: str, description: str, include_min_max: bool = False, separator: str = ',') -> 'TabularValidationSchema':
+        """Infer schema from a pandas DataFrame"""
+        type_map = {
+            'int16': ('integer', IntegerProperty, int),
+            'int32': ('integer', IntegerProperty, int),
+            'int64': ('integer', IntegerProperty, int),
+            'uint8': ('integer', IntegerProperty, int),
+            'uint16': ('integer', IntegerProperty, int),
+            'uint32': ('integer', IntegerProperty, int),
+            'uint64': ('integer', IntegerProperty, int),
+            'float16': ('number', NumberProperty, float),
+            'float32': ('number', NumberProperty, float),
+            'float64': ('number', NumberProperty, float),
+            'bool': ('boolean', BooleanProperty, None),
+        }
+        
+        properties = {}
+        for i, (column_name, dtype) in enumerate(df.dtypes.items()):
+            dtype_str = str(dtype)
+            datatype, property_class, converter = type_map.get(dtype_str, ('string', StringProperty, None))
+            
+            kwargs = {
+                "datatype": datatype,
+                "description": f"Column {column_name}",
+                "index": i
+            }
+            
+            if include_min_max and converter:
+                kwargs.update({
+                    "minimum": converter(df[column_name].min()),
+                    "maximum": converter(df[column_name].max())
+                })
                 
-                if field_type == 'string':
-                    properties[field_name] = StringProperty(
-                        datatype='string',
+            properties[column_name] = property_class(**kwargs)
+        
+        return cls(
+            name=name,
+            description=description,
+            properties=properties,
+            required=list(properties.keys()),
+            separator=separator,
+            header=True
+        )
+
+    @classmethod
+    def infer_from_parquet(cls, name: str, description: str, guid: Optional[str], filepath: str, include_min_max: bool = False) -> 'TabularValidationSchema':
+        """Infer schema from a Parquet file"""
+        table = pq.read_table(filepath)
+        schema = table.schema
+        properties = {}
+
+        for i, field in enumerate(schema):
+            field_name = field.name
+            field_type = map_arrow_type_to_json_schema(field.type)
+            
+            if field_type == 'string':
+                properties[field_name] = StringProperty(
+                    datatype='string',
+                    description=f"Column {field_name}",
+                    index=i
+                )
+            elif field_type == 'integer':
+                if include_min_max:
+                    column = table.column(field_name)
+                    min_max = pc.min_max(column)
+                    properties[field_name] = IntegerProperty(
+                        datatype='integer',
+                        description=f"Column {field_name}",
+                        index=i,
+                        minimum=min_max['min'].as_py(),
+                        maximum=min_max['max'].as_py()
+                    )
+                else:
+                    properties[field_name] = IntegerProperty(
+                        datatype='integer',
                         description=f"Column {field_name}",
                         index=i
                     )
-                elif field_type in ['integer', 'number']:
-                    if include_min_max:
-                        column = table.column(field_name)
-                        min_max = pc.min_max(column)
-                        min_value = min_max['min'].as_py()
-                        max_value = min_max['max'].as_py()
-                        
-                        if field_type == 'integer':
-                            properties[field_name] = IntegerProperty(
-                                datatype='integer',
-                                description=f"Column {field_name}",
-                                index=i,
-                                minimum=min_value,
-                                maximum=max_value
-                            )
-                        else:
-                            properties[field_name] = NumberProperty(
-                                datatype='number',
-                                description=f"Column {field_name}",
-                                index=i,
-                                minimum=min_value,
-                                maximum=max_value
-                            )
-                    else:
-                        if field_type == 'integer':
-                            properties[field_name] = IntegerProperty(
-                                datatype='integer',
-                                description=f"Column {field_name}",
-                                index=i
-                            )
-                        else:
-                            properties[field_name] = NumberProperty(
-                                datatype='number',
-                                description=f"Column {field_name}",
-                                index=i
-                            )
-                elif field_type == 'boolean':
-                    properties[field_name] = BooleanProperty(
-                        datatype='boolean',
+            elif field_type == 'number':
+                if include_min_max:
+                    column = table.column(field_name)
+                    min_max = pc.min_max(column)
+                    properties[field_name] = NumberProperty(
+                        datatype='number',
+                        description=f"Column {field_name}",
+                        index=i,
+                        minimum=min_max['min'].as_py(),
+                        maximum=min_max['max'].as_py()
+                    )
+                else:
+                    properties[field_name] = NumberProperty(
+                        datatype='number',
                         description=f"Column {field_name}",
                         index=i
                     )
-                elif field_type == 'array':
-                    item_type = map_arrow_type_to_json_schema(field.type.value_type)
-                    properties[field_name] = ArrayProperty(
-                        datatype='array',
-                        description=f"Column {field_name}",
-                        index=str(i),
-                        items=Items(datatype=DatatypeEnum(item_type))
-                    )
+            elif field_type == 'boolean':
+                properties[field_name] = BooleanProperty(
+                    datatype='boolean',
+                    description=f"Column {field_name}",
+                    index=i
+                )
 
-            return cls(
-                name=name,
-                description=description,
-                guid=guid,
-                properties=properties,
-                required=list(properties.keys()),
-                separator=",",  
-                header=True  
-            )
-        except Exception as e:
-            raise ValueError(f"Error inferring schema: {str(e)}")
+        return cls(
+            name=name,
+            description=description,
+            guid=guid,
+            properties=properties,
+            required=list(properties.keys()),
+            separator=",",  # Not used for parquet but required
+            header=True    # Not used for parquet but required
+        )
 
+    def validate_dataframe(self, df: pd.DataFrame) -> List[Dict]:
+        """Validate a dataframe against the schema with lenient string type checking.
+        Only reports string validation errors for pattern mismatches, not type mismatches."""
+        json_schema = self.to_json_schema()
+        validator = jsonschema.Draft202012Validator(json_schema)
+        errors = []
 
+        for i, row in df.iterrows():
+            row_dict = row.to_dict()
+            validation_errors = sorted(validator.iter_errors(row_dict), key=lambda e: e.path)
+            
+            for err in validation_errors:
+                # Skip type validation errors for string fields unless there's a pattern mismatch
+                if err.validator == "type":
+                    field_name = list(err.path)[-1] if err.path else None
+                    if field_name in self.properties:
+                        prop = self.properties[field_name]
+                        if prop.datatype == "string":
+                            # Skip string type validation errors
+                            continue
+                
+                # Include all other validation errors
+                errors.append({
+                    "message": err.message,
+                    "row": i,
+                    "field": list(err.path)[-1] if err.path else None,
+                    "type": "ValidationError",
+                    "failed_keyword": err.validator
+                })
+
+        return errors
+
+    def validate_file(self, filepath: str) -> List[Dict]:
+        """Validate a file against the schema"""
+        file_type = FileType.from_extension(filepath)
+        
+        if file_type == FileType.PARQUET:
+            df = pd.read_parquet(filepath)
+        else:  # csv or tsv
+            sep = '\t' if file_type == FileType.TSV else self.separator
+            df = pd.read_csv(filepath, sep=sep, header=0 if self.header else None)
+        
+        return self.validate_dataframe(df)
+
+HDF5Union = Union[TabularValidationSchema]
+class HDF5Schema(BaseSchema):
+    properties: Dict[str, HDF5Union] = Field(default={})
+
+    @staticmethod
+    def dataset_to_dataframe(dataset: h5py.Dataset) -> pd.DataFrame:
+        """Convert any HDF5 dataset to a pandas DataFrame"""
+        data = dataset[()]
+        
+        # If it's a structured array (compound dtype), pandas can handle it directly
+        if dataset.dtype.fields:
+            return pd.DataFrame(data)
+            
+        # For multi-dimensional arrays, create column names based on shape
+        elif len(dataset.shape) > 1:
+            n_cols = dataset.shape[1] if len(dataset.shape) > 1 else 1
+            columns = [f"column_{i}" for i in range(n_cols)]
+            return pd.DataFrame(data, columns=columns)
+            
+        # For 1D arrays, convert to single column DataFrame
+        else:
+            return pd.DataFrame(data, columns=['value'])
+
+    @classmethod 
+    def infer_from_file(cls, filepath: str, name: str, description: str, include_min_max: bool = False) -> 'HDF5Schema':
+        """Infer schema from HDF5 file"""
+        schema = cls(name=name, description=description)
+        properties = {}
+        
+        with h5py.File(filepath, 'r') as f:
+            def process_group(group, parent_path=""):
+                for key, item in group.items():
+                    path = f"{parent_path}/{key}" if parent_path else key
+                    
+                    if isinstance(item, h5py.Dataset):
+                        try:
+                            df = cls.dataset_to_dataframe(item)
+                            properties[path] = TabularValidationSchema.infer_from_dataframe(
+                                df,
+                                name=f"{name}_{path.replace('/', '_')}",
+                                description=f"Dataset at {path}",
+                                include_min_max=include_min_max
+                            )
+                        except Exception as e:
+                            print(f"Warning: Could not convert dataset {path} to DataFrame: {str(e)}")
+                    
+                    elif isinstance(item, h5py.Group):
+                        # Recursively process group contents
+                        process_group(item, path)
+                
+            process_group(f)
+            schema.properties = properties
+            schema.required = list(properties.keys())
+        
+        return schema
+
+    def validate_file(self, filepath: str) -> List[Dict]:
+        """Validate an HDF5 file against the schema"""
+        errors = []
+        
+        with h5py.File(filepath, 'r') as f:
+            for path, schema in self.properties.items():
+                try:
+                    # Try to get the dataset using the path
+                    dataset = f[path]
+                    if isinstance(dataset, h5py.Dataset):
+                        # Convert dataset to DataFrame
+                        df = self.dataset_to_dataframe(dataset)
+                        # Validate using the TabularValidationSchema's validate_dataframe method
+                        dataset_errors = schema.validate_dataframe(df)
+                        # Add path information to errors
+                        for error in dataset_errors:
+                            error['path'] = path
+                        errors.extend(dataset_errors)
+                except KeyError:
+                    errors.append({
+                        "message": f"Dataset {path} not found",
+                        "path": path,
+                        "type": "ValidationError",
+                        "failed_keyword": "required"
+                    })
+                except Exception as e:
+                    errors.append({
+                        "message": f"Error validating dataset {path}: {str(e)}",
+                        "path": path,
+                        "type": "ValidationError",
+                        "failed_keyword": "format"
+                    })
+        
+        return errors
+
+    
 def AppendProperty(schemaFilepath: str, propertyInstance, propertyName: str) -> None: 
     # check that schemaFile exists
     schemaPath = pathlib.Path(schemaFilepath)

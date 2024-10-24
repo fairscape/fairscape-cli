@@ -5,6 +5,11 @@ import pathlib
 from pydantic import (
         ValidationError
 )
+from typing import (
+    Union,
+    Type
+)
+
 
 from fairscape_cli.models.schema.tabular import (
     TabularValidationSchema,
@@ -20,7 +25,9 @@ from fairscape_cli.models.schema.tabular import (
     PropertyNameException,
     ColumnIndexException,
     DatatypeEnum,
-    Items
+    Items,
+    FileType,
+    HDF5Schema
 )
 
 from fairscape_cli.config import (
@@ -52,7 +59,7 @@ def create_tabular_schema(
     separator,
     schema_file
 ):
-    """Initalize a Tabular Schema.
+    """Initialize a Tabular Schema.
     """
     # create the model
     try:
@@ -60,9 +67,9 @@ def create_tabular_schema(
             "name": name,
             "description":description,
             "guid":guid,
-            "propeties":{},
+            "properties":{},
             "required": [],
-            "header" :header,
+            "header":header,
             "separator": separator
         })
 
@@ -74,7 +81,6 @@ def create_tabular_schema(
 
     WriteSchema(schema_model, schema_file)
     click.echo(f"Wrote Schema: {str(schema_file)}") 
-
 
 
 @schema.group('add-property')
@@ -95,7 +101,6 @@ def add_property():
 def add_property_string(ctx, name, index, description, value_url, pattern, schema_file):
     """Add a String Property to an existing Schema.
     """
-    # instantiate the StringProperty
     try: 
         stringPropertyModel = StringProperty.model_validate({
             "name": name,
@@ -114,7 +119,6 @@ def add_property_string(ctx, name, index, description, value_url, pattern, schem
     ClickAppendProperty(ctx, schema_file, stringPropertyModel, name)
 
 
-
 @add_property.command('number')
 @click.option('--name', type=str, required=True)
 @click.option('--index', type=int, required=True)
@@ -125,9 +129,8 @@ def add_property_string(ctx, name, index, description, value_url, pattern, schem
 @click.argument('schema_file', type=click.Path(exists=True))
 @click.pass_context
 def add_property_number(ctx, name, index, description, maximum, minimum, value_url, schema_file):
-    """Add a Numberic property to an existing Schema.
+    """Add a Numeric property to an existing Schema.
     """
-    # instantiate the NumberPropertyModel
     try:
         numberPropertyModel = NumberProperty.model_validate({
             "name": name,
@@ -146,7 +149,6 @@ def add_property_number(ctx, name, index, description, maximum, minimum, value_u
         ctx.exit(code=1)
 
     ClickAppendProperty(ctx, schema_file, numberPropertyModel, name)
-
 
 
 @add_property.command('boolean')
@@ -189,7 +191,6 @@ def add_property_boolean(ctx, name, index, description, value_url, schema_file):
 def add_property_integer(ctx, name, index, description, maximum, minimum, value_url, schema_file):
     """Add an Integer property to an existing Schema.
     """
-
     try:
         integerPropertyModel = IntegerProperty.model_validate({
             "name": name,
@@ -234,14 +235,14 @@ def add_property_array(ctx, name, index, description, value_url, items_datatype,
 
     try:
         arrayPropertyModel = ArrayProperty(
-            datatype = 'array',
-            index = index,
-            description = description,
-            valueURL = value_url,
-            maxItems = max_items,
-            minItems = min_items,
-            uniqueItems = unique_items,
-            items = Items(datatype=datatype_enum)
+            datatype='array',
+            index=index,
+            description=description,
+            valueURL=value_url,
+            maxItems=max_items,
+            minItems=min_items,
+            uniqueItems=unique_items,
+            items=Items(datatype=datatype_enum)
             )
 
     except ValidationError as metadataError:
@@ -251,74 +252,120 @@ def add_property_array(ctx, name, index, description, value_url, items_datatype,
         ctx.exit(code=1)
 
     ClickAppendProperty(ctx, schema_file, arrayPropertyModel, name)
-    
 
+
+def determine_schema_type(filepath: str) -> Type[Union[TabularValidationSchema, HDF5Schema]]:
+    """Determine which schema type to use based on file extension"""
+    ext = pathlib.Path(filepath).suffix.lower()[1:]
+    if ext in ('h5', 'hdf5'):
+        return HDF5Schema
+    elif ext in ('csv', 'tsv', 'parquet'):
+        return TabularValidationSchema
+    else:
+        raise ValueError(f"Unsupported file extension: {ext}")
 
 @schema.command('validate')
 @click.option('--schema', type=str, required=True)
 @click.option('--data', type=str, required=True)
-#@click.option('--ro-crate', type=str, required=False, default=None)
 @click.pass_context
 def validate(ctx, schema, data): 
-    """Execute validation of a Schema against the provided data.
-    """
-
-
-    # if not a default schema
+    """Execute validation of a Schema against the provided data."""
+    # Check if schema file exists (if not a default schema)
     if 'ark' not in schema:
-        schemaPath = pathlib.Path(schema)
-        if not schemaPath.exists():
+        schema_path = pathlib.Path(schema)
+        if not schema_path.exists():
             click.echo(f"ERROR: Schema file at path {schema} does not exist")
             ctx.exit(1)
     
-    dataPath = pathlib.Path(data)
-    if not dataPath.exists():
+    data_path = pathlib.Path(data)
+    if not data_path.exists():
         click.echo(f"ERROR: Data file at path {data} does not exist")
         ctx.exit(1)
 
     try:
-        tabular_schema = ReadSchema(schema)
-    except ValidationError as metadataError:
+        # Load the schema file
+        with open(schema) as f:
+            schema_json = json.load(f)
+        
+        # Determine schema type based on the data file
+        schema_class = determine_schema_type(data)
+        validation_schema = schema_class.model_validate(schema_json)
+        
+        # Validate the file
+        validation_errors = validation_schema.validate_file(data)
+
+        if len(validation_errors) != 0:
+            # Create a pretty table of validation errors
+            error_table = PrettyTable()
+            if isinstance(validation_schema, HDF5Schema):
+                error_table.field_names = ['path', 'error_type', 'failed_keyword', 'message']
+            else:
+                error_table.field_names = ['row', 'error_type', 'failed_keyword', 'message']
+
+            for err in validation_errors:
+                if isinstance(validation_schema, HDF5Schema):
+                    error_table.add_row([
+                        err.get("path"), 
+                        err.get("type"), 
+                        err.get("failed_keyword"), 
+                        str(err.get('message'))
+                    ])
+                else:
+                    error_table.add_row([
+                        err.get("row"), 
+                        err.get("type"), 
+                        err.get("failed_keyword"), 
+                        str(err.get('message'))
+                    ])
+
+            print(error_table)
+            ctx.exit(1)
+        else:
+            print('Validation Success')
+            ctx.exit(0)
+
+    except ValidationError as metadata_error:
         click.echo("Error with schema definition")
-        for validationFailure in metadataError.errors(): 
-            click.echo(f"property: {validationFailure.get('loc')} \tmsg: {validationFailure.get('msg')}")
+        for validation_failure in metadata_error.errors(): 
+            click.echo(f"property: {validation_failure.get('loc')} \tmsg: {validation_failure.get('msg')}")
         ctx.exit(1)
-
-    validation_errors = tabular_schema.execute_validation(data)
-
-    if len(validation_errors) !=0:
-        # print out all errors
-
-        # create a pretty table of validation errors
-        errorTable = PrettyTable()
-        errorTable.field_names = ['row', 'error_type', 'failed_keyword',  'message']
-
-        for err in validation_errors:
-            errorTable.add_row([err.get("row"), err.get("type"), err.get("failed_keyword"), str(err.get('message'))])
-
-        print(errorTable)
+    except Exception as e:
+        click.echo(f"Error during validation: {str(e)}")
         ctx.exit(1)
-
-    else:
-        print('Validation Success')
-        ctx.exit(0)
 
 @schema.command('infer')
 @click.option('--name', required=True, type=str)
 @click.option('--description', required=True, type=str)
 @click.option('--guid', required=False, type=str, default="", show_default=False)
 @click.option('--include-min-max', is_flag=True, help="Include min and max values for numeric and integer fields")
-@click.argument('parquet_file', type=click.Path(exists=True))
+@click.argument('input_file', type=click.Path(exists=True))
 @click.argument('schema_file', type=str)
 @click.pass_context
-def infer_schema(ctx, name, description, guid, include_min_max, parquet_file, schema_file):
-    """Infer a Tabular Schema from a Parquet file."""
+def infer_schema(ctx, name, description, guid, include_min_max, input_file, schema_file):
+    """Infer a schema from a file (CSV, TSV, Parquet, or HDF5)."""
     try:
-        schema_model = TabularValidationSchema.infer_from_parquet(name, description, guid, parquet_file, include_min_max)
+        # Determine which schema type to use based on input file
+        schema_class = determine_schema_type(input_file)
+        
+        # Infer the schema
+        schema_model = schema_class.infer_from_file(
+            input_file, 
+            name, 
+            description,
+            include_min_max
+        )
+        if guid:
+            schema_model.guid = guid
+            
         WriteSchema(schema_model, schema_file)
-        click.echo(f"Inferred Schema: {str(schema_file)}")
+        
+        # Get file type for display
+        ext = pathlib.Path(input_file).suffix.lower()[1:]
+        click.echo(f"Inferred Schema from {ext} file: {str(schema_file)}")
+    
+    except ValueError as e:
+        click.echo(f"Error with file type: {str(e)}")
+        ctx.exit(code=1)
     except Exception as e:
         click.echo(f"Error inferring schema: {str(e)}")
         ctx.exit(code=1)
-
-
