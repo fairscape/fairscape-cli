@@ -143,7 +143,6 @@ class IntegerProperty(BaseProperty):
         return self
 
 PropertyUnion = Union[StringProperty, ArrayProperty, BooleanProperty, NumberProperty, IntegerProperty, NullProperty]
-
 class BaseSchema(BaseModel):
     guid: Optional[str] = Field(alias="@id", default=None)
     context: Optional[Dict] = Field(default=DEFAULT_CONTEXT, alias="@context")
@@ -491,7 +490,6 @@ def AppendProperty(schemaFilepath: str, propertyInstance, propertyName: str) -> 
         schemaFile.seek(0)
         schemaFile.write(schemaJson)
 
-
 def ClickAppendProperty(ctx, schemaFile, propertyModel, name): 
     try:
         # append the property to the 
@@ -508,14 +506,11 @@ def ClickAppendProperty(ctx, schemaFile, propertyModel, name):
         print(str(propertyException))
         ctx.exit(code=1)
 
-
 def ReadSchemaGithub(schemaURI: str) -> TabularValidationSchema:
     pass
 
 def ReadSchemaFairscape(schemaArk: str) -> TabularValidationSchema:
     pass
-
-
 
 def ReadSchemaLocal(schemaFile: str) -> TabularValidationSchema:
     """ Helper function for reading the schema and marshaling into the pydantic model
@@ -530,7 +525,6 @@ def ReadSchemaLocal(schemaFile: str) -> TabularValidationSchema:
     # load the model into 
     tabularSchema = TabularValidationSchema.model_validate(schemaJson)
     return tabularSchema
-
 
 def ReadSchema(schemaFile:str) -> TabularValidationSchema:
     ''' Read a schema specified by the argument schemaFile
@@ -562,8 +556,6 @@ def ReadSchema(schemaFile:str) -> TabularValidationSchema:
         schemaInstance = ReadSchemaLocal(schemaFile)
         return schemaInstance
 
-
-
 def WriteSchema(tabular_schema: TabularValidationSchema, schema_file):
     """ Helper Function for writing files
     """
@@ -574,8 +566,6 @@ def WriteSchema(tabular_schema: TabularValidationSchema, schema_file):
     # dump json to a file
     with open(schema_file, "w") as output_file:
         output_file.write(schema_json)
-
-
 
 @lru_cache
 def ImportDefaultSchemas()-> List[TabularValidationSchema]:
