@@ -366,17 +366,17 @@ class HDF5Schema(BaseSchema):
         """Convert any HDF5 dataset to a pandas DataFrame"""
         data = dataset[()]
         
-        # If it's a structured array (compound dtype), pandas can handle it directly
+        # structured array convert directly
         if dataset.dtype.fields:
             return pd.DataFrame(data)
             
-        # For multi-dimensional arrays, create column names based on shape
+        # For multi-dimensional arrays make up column name
         elif len(dataset.shape) > 1:
             n_cols = dataset.shape[1] if len(dataset.shape) > 1 else 1
             columns = [f"column_{i}" for i in range(n_cols)]
             return pd.DataFrame(data, columns=columns)
             
-        # For 1D arrays, convert to single column DataFrame
+        # For 1D arrays convert to single column DataFrame
         else:
             return pd.DataFrame(data, columns=['value'])
 
