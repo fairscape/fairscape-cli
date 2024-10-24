@@ -314,6 +314,18 @@ class TabularValidationSchema(BaseSchema):
             header=True    # Not used for parquet but required
         )
 
+    def validate_file(self, filepath: str) -> List[Dict]:
+        """Validate a file against the schema"""
+        file_type = FileType.from_extension(filepath)
+        
+        if file_type == FileType.PARQUET:
+            df = pd.read_parquet(filepath)
+        else:  # csv or tsv
+            sep = '\t' if file_type == FileType.TSV else self.separator
+            df = pd.read_csv(filepath, sep=sep, header=0 if self.header else None)
+        
+        return self.validate_dataframe(df)
+
     def validate_dataframe(self, df: pd.DataFrame) -> List[Dict]:
         """Validate a dataframe against the schema with lenient string type checking.
         Only reports string validation errors for pattern mismatches, not type mismatches."""
@@ -345,18 +357,6 @@ class TabularValidationSchema(BaseSchema):
                 })
 
         return errors
-
-    def validate_file(self, filepath: str) -> List[Dict]:
-        """Validate a file against the schema"""
-        file_type = FileType.from_extension(filepath)
-        
-        if file_type == FileType.PARQUET:
-            df = pd.read_parquet(filepath)
-        else:  # csv or tsv
-            sep = '\t' if file_type == FileType.TSV else self.separator
-            df = pd.read_csv(filepath, sep=sep, header=0 if self.header else None)
-        
-        return self.validate_dataframe(df)
 
 class HDF5Schema(BaseSchema):
     properties: Dict[str, TabularValidationSchema] = Field(default={})
