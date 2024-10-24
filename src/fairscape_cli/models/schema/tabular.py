@@ -142,7 +142,6 @@ class IntegerProperty(BaseProperty):
                 raise ValueError('IntegerProperty attribute maximum !< minimum')
         return self
 
-PropertyUnion = Union[StringProperty, ArrayProperty, BooleanProperty, NumberProperty, IntegerProperty, NullProperty]
 class BaseSchema(BaseModel):
     guid: Optional[str] = Field(alias="@id", default=None)
     context: Optional[Dict] = Field(default=DEFAULT_CONTEXT, alias="@context")
@@ -184,6 +183,7 @@ class BaseSchema(BaseModel):
         )
         return schema
 
+PropertyUnion = Union[StringProperty, ArrayProperty, BooleanProperty, NumberProperty, IntegerProperty, NullProperty]
 class TabularValidationSchema(BaseSchema):
     properties: Dict[str, PropertyUnion] = Field(default={})
     separator: str = Field(description="Field separator for the file")
@@ -358,9 +358,8 @@ class TabularValidationSchema(BaseSchema):
         
         return self.validate_dataframe(df)
 
-HDF5Union = Union[TabularValidationSchema]
 class HDF5Schema(BaseSchema):
-    properties: Dict[str, HDF5Union] = Field(default={})
+    properties: Dict[str, TabularValidationSchema] = Field(default={})
 
     @staticmethod
     def dataset_to_dataframe(dataset: h5py.Dataset) -> pd.DataFrame:
