@@ -22,7 +22,8 @@ from pydantic import (
     BaseModel,
     constr,
     Field,
-    AnyUrl
+    AnyUrl,
+    field_serializer
 )
 from datetime import datetime
 
@@ -31,42 +32,47 @@ class Dataset(FairscapeBaseModel):
     guid: Optional[str] = Field(alias="@id", default=None)
     metadataType: Optional[str] = Field(alias="@type", default="https://w3id.org/EVI#Dataset")
     author: str = Field(max_length=64)
-    datePublished: str = Field(...)
+    datePublished: Optional[datetime] = Field(default_factory=datetime.now)
     version: str
     description: str = Field(min_length=10)
     keywords: List[str] = Field(...)
     associatedPublication: Optional[str] = Field(default=None)
     additionalDocumentation: Optional[str] = Field(default=None)
     fileFormat: str = Field(alias="format")
-    dataSchema: Optional[Union[str, TabularValidationSchema]] = Field(alias="schema", default=None)
+    dataSchema: Optional[str] = Field(alias="schema", default=None)
     generatedBy: Optional[List[str]] = Field(default=[])
     derivedFrom: Optional[List[str]] = Field(default=[])
     usedBy: Optional[List[str]] = Field(default=[])
-    contentUrl: Optional[str] = None
+    contentUrl: Optional[str] = Field(default=None)
+
+    @field_serializer('datePublished')
+    def serialize_date_published(self, datePublished: datetime):
+        return datePublished.timestamp()
+
 
 
 def GenerateDataset(
-        guid,
-        url,
-        author,
-        description,
-        name,
-        keywords,
-        datePublished,
-        version,
-        associatedPublication,
-        additionalDocumentation,
-        dataFormat,
-        schema,
-        derivedFrom,
-        usedBy,
-        filepath,
-        cratePath
-        ):
+    guid: Optional[str],
+    url: Optional[str],
+    author: str,
+    description: str,
+    name: str,
+    keywords: List[str],
+    datePublished: Optional[datetime],
+    version: str,
+    associatedPublication: Optional[str],
+    additionalDocumentation: Optional[str],
+    dataFormat: str,
+    schema: Optional[str],
+    derivedFrom: Optional[List[str]],
+    usedBy: Optional[List[str]],
+    generatedBy: Optional[List[str]],
+    filepath: Optional[str],
+    cratePath
+    ):
    
-    if guid is None or guid=="":
-        sq = GenerateDatetimeSquid()
-        guid = f"ark:{NAAN}/dataset-{name.lower().replace(' ', '-')}-{sq}"
+    sq = GenerateDatetimeSquid()
+    guid = f"ark:{NAAN}/dataset-{name.lower().replace(' ', '-')}-{sq}"
     
     datasetMetadata = {
             "@id": guid,
@@ -89,32 +95,45 @@ def GenerateDataset(
             "usedBy": [
                 used.strip("\n") for used in usedBy 
             ],
+            "generatedBy": [
+                gen.strip("\n") for gen in generatedBy
+            ]
         }
 
-    # set relative filepath
-    if filepath is not None:
-        # if filepath is a url        
-        if 'http' in  filepath:
-            datasetMetadata['contentUrl'] = filepath
-
-        # if filepath is a path that exists
-        else:
-            if 'ro-crate-metadata.json' in str(cratePath):
-                rocratePath = pathlib.Path(cratePath).parent.absolute()
-            else:
-                rocratePath = pathlib.Path(cratePath).absolute()
-            
-            datasetPath = pathlib.Path(filepath).absolute()
-            if datasetPath.exists():
-                try:
-                    relativePath = datasetPath.relative_to(rocratePath)
-                    datasetMetadata['contentUrl'] = f"file:///{str(relativePath)}"
-                except:
-                    raise FileNotInCrateException(cratePath=cratePath, filePath=datasetPath)
-
-            else:
-                raise Exception(f"Dataset File Does Not Exist: {str(datasetPath)}")
+    datasetMetadata['contentURL'] = setRelativeFilepath(cratePath, filepath)
 
     datasetInstance = Dataset.model_validate(datasetMetadata)
 
     return datasetInstance
+
+
+def setRelativeFilepath(cratePath, filePath):
+    ''' Modify the filepath specified in metadata s.t. 
+    '''
+
+    if filePath is None:
+        return None
+
+    # if filepath is a url        
+    if 'http' in  filePath:
+        return filePath
+
+    # if a relative file uri to the crate 
+    if 'file:///' in filePath:
+        # TODO: search within crate to determine file is relative to crate
+        # filePath = filePath.replace("file:///", "")
+
+        return filePath
+
+    # set relative filepath
+    # if filepath is a path that exists
+    if 'ro-crate-metadata.json' in str(cratePath):
+        rocratePath = pathlib.Path(cratePath).parent.absolute()
+    else:
+        rocratePath = pathlib.Path(cratePath).absolute()
+
+            
+    # if relative filepath
+    datasetPath = pathlib.Path(filePath).absolute()
+    relativePath = datasetPath.relative_to(rocratePath)
+    return f"file:///{str(relativePath)}"

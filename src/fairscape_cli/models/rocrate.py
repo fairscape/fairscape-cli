@@ -37,19 +37,18 @@ class ROCrateMetadata(BaseModel):
     metadataGraph: Optional[List[Union[Dataset,Software, Computation]]] = Field(alias="@graph", default=[])
 
 def GenerateROCrate(
-        path: pathlib.Path,
-        guid: str,
-        name: str,
-        description: str,
-        keywords: List[str],
-        organizationName: str = None,
-        projectName: str = None,
+    path: pathlib.Path,
+    guid: str,
+    name: str,
+    description: str,
+    keywords: List[str],
+    organizationName: str = None,
+    projectName: str = None,
     ):
         
-
-    if guid=="" or guid is None:
-        sq = GenerateDatetimeSquid()
-        guid = f"ark:{NAAN}/rocrate-{name.lower().replace(' ', '-')}-{sq}"
+    # overwrite custom GUIDs
+    sq = GenerateDatetimeSquid()
+    guid = f"ark:{NAAN}/rocrate-{name.lower().replace(' ', '-')}-{sq}"
 
     roCrateInstanceMetadata = {
         "@id": guid,
@@ -258,7 +257,7 @@ class ROCrate(BaseModel):
 
 
 def ReadROCrateMetadata(
-        cratePath
+    cratePath: pathlib.Path
 )-> ROCrateMetadata:
     """ Given a path read the rocrate metadata into a pydantic model
     """

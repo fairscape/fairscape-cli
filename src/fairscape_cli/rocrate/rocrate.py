@@ -315,7 +315,7 @@ def computation(
         computationInstance = GenerateComputation(
             guid=guid,
             name=name,
-            run_by=run_by,
+            runBy=run_by,
             command= command,
             dateCreated= date_created,
             description= description,

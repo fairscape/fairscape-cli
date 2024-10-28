@@ -17,23 +17,31 @@ from datetime import datetime
 
 
 class Computation(FairscapeBaseModel):
-    guid: Optional[str] = Field(default=None, alias="@id", validation_alias="@id")
-    metadataType: str = Field(default="https://w3id.org/EVI#Computation", alias="@type", validation_alias="@type")
+    guid: Optional[str] = Field(
+        default=None, 
+        alias="@id", 
+        validation_alias="@id"
+        )
+    metadataType: str = Field(
+        default="https://w3id.org/EVI#Computation", 
+        alias="@type", 
+        validation_alias="@type"
+        )
     runBy: str
     dateCreated: str 
-    description: str = Field(min_length=10, max_length=2056)
+    description: str = Field(min_length=10)
     associatedPublication: Optional[str] = Field(default=None)
     additionalDocumentation: Optional[str] = Field(default=None)
     command: Optional[Union[List[str], str]] = Field(default="")
     usedSoftware: Optional[List[str]] = Field(default=[])
-    usedDataset: Optional[Union[List[str], str]] = Field(default=[])
-    generated: Optional[Union[str,List[str]]] = Field(default=[])
+    usedDataset: Optional[List[str]] = Field(default=[])
+    generated: Optional[List[str]] = Field(default=[])
 
 
 def GenerateComputation(
     guid: str,
     name: str,
-    run_by: str,
+    runBy: str,
     command: Optional[Union[str, List[str]]],
     dateCreated: str,
     description: str,
@@ -45,9 +53,8 @@ def GenerateComputation(
     """ Generate a Computation model class from command line arguments
     """
     
-    if guid is None or guid=="":
-        sq = GenerateDatetimeSquid()
-        guid = f"ark:{NAAN}/computation-{name.lower().replace(' ', '-')}-{sq}"
+    sq = GenerateDatetimeSquid()
+    guid = f"ark:{NAAN}/computation-{name.lower().replace(' ', '-')}-{sq}"
 
 
     computation_model = Computation.model_validate(   
@@ -57,7 +64,7 @@ def GenerateComputation(
         "name": name,
         "description": description,
         "keywords": keywords,
-        "runBy": run_by,
+        "runBy": runBy,
         "command": command,
         "dateCreated": dateCreated,
         "description": description,

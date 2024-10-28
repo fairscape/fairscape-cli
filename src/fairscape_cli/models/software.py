@@ -51,9 +51,8 @@ def GenerateSoftware(
     """ Generate a Software Model Class
     """
 
-    if guid is None or guid=="":
-        sq = GenerateDatetimeSquid()
-        guid = f"ark:{NAAN}/software-{name.lower().replace(' ', '-')}-{sq}"
+    sq = GenerateDatetimeSquid()
+    guid = f"ark:{NAAN}/software-{name.lower().replace(' ', '-')}-{sq}"
 
     softwareMetadata = {
             "@id": guid,
