@@ -56,6 +56,13 @@ def GenerateComputation(
     sq = GenerateDatetimeSquid()
     guid = f"ark:{NAAN}/computation-{name.lower().replace(' ', '-')}-{sq}"
 
+    if generated is None:
+        processedGenerated = []
+    else:
+        processedGenerated = [
+                output.strip("\n") for output in generated
+            ]
+
 
     computation_model = Computation.model_validate(   
         {
@@ -75,10 +82,8 @@ def GenerateComputation(
         "usedDataset": [
             dataset.strip("\n") for dataset in usedDataset 
         ],
-        "generated": [
-            output.strip("\n") for output in generated
-        ],
-    })
+        "generated": processedGenerated
+        })
     
 
     return computation_model
