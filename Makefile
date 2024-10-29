@@ -1,7 +1,7 @@
-VERSION ?= 0.1.16a11
+VERSION ?= 1.0.1
 
 build:
-	rm dist/*
+	#rm dist/*
 	python3 -m build
 
 push:
