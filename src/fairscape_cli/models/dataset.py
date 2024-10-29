@@ -32,7 +32,7 @@ class Dataset(FairscapeBaseModel):
     guid: Optional[str] = Field(alias="@id", default=None)
     metadataType: Optional[str] = Field(alias="@type", default="https://w3id.org/EVI#Dataset")
     author: str = Field(max_length=64)
-    datePublished: Optional[datetime] = Field(default_factory=datetime.now)
+    datePublished: Optional[str] = Field()
     version: str
     description: str = Field(min_length=10)
     keywords: List[str] = Field(...)
@@ -45,9 +45,9 @@ class Dataset(FairscapeBaseModel):
     usedBy: Optional[List[str]] = Field(default=[])
     contentUrl: Optional[str] = Field(default=None)
 
-    @field_serializer('datePublished')
-    def serialize_date_published(self, datePublished: datetime):
-        return datePublished.timestamp()
+    #@field_serializer('datePublished')
+    #def serialize_date_published(self, datePublished: datetime):
+    #    return datePublished.timestamp()
 
 
 
@@ -58,7 +58,7 @@ def GenerateDataset(
     description: str,
     name: str,
     keywords: List[str],
-    datePublished: Optional[datetime],
+    datePublished: str,
     version: str,
     associatedPublication: Optional[str],
     additionalDocumentation: Optional[str],

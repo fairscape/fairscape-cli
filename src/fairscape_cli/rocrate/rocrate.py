@@ -206,6 +206,7 @@ def registerSoftware(
 @click.option('--filepath', required=True)
 @click.option('--used-by', required=False, multiple=True)
 @click.option('--derived-from', required=False, multiple=True)
+@click.option('--generated-by', required=False, multiple=True)
 @click.option('--schema', required=False, type=str)
 @click.option('--associated-publication', required=False)
 @click.option('--additional-documentation', required=False)
@@ -225,6 +226,7 @@ def registerDataset(
     filepath: str,
     used_by: Optional[List[str]],
     derived_from: Optional[List[str]],
+    generated_by: Optional[List[str]],
     schema: str,
     associated_publication: Optional[str],
     additional_documentation: Optional[List[str]],
@@ -252,6 +254,7 @@ def registerDataset(
             dataFormat=data_format,
             schema=schema,
             derivedFrom=derived_from,
+            generatedBy=generated_by,
             usedBy=used_by,
             filepath=filepath,
             cratePath=rocrate_path
@@ -433,6 +436,7 @@ def software(
 @click.option('--destination-filepath', required=True)
 @click.option('--used-by', required=False, multiple=True)
 @click.option('--derived-from', required=False, multiple=True)
+@click.option('--generated-by', required=False, multiple=True)
 @click.option('--schema', required=False, type=str)
 @click.option('--associated-publication', required=False)
 @click.option('--additional-documentation', required=False)
@@ -453,6 +457,7 @@ def dataset(
     destination_filepath,
     used_by,
     derived_from,
+    generated_by,
     schema,
     associated_publication,
     additional_documentation,
@@ -482,6 +487,7 @@ def dataset(
             dataFormat=data_format,
             schema=schema,
             derivedFrom=derived_from,
+            generatedBy=generated_by,
             usedBy=used_by,
             filepath=destination_filepath,
             cratePath=rocrate_path
