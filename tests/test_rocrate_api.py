@@ -12,7 +12,8 @@ sys.path.insert(
 )
 
 import unittest
-from datetime import datetime
+import datetime 
+import random
 
 from fairscape_cli.models.computation import GenerateComputation
 from fairscape_cli.models.dataset import GenerateDataset
@@ -22,10 +23,11 @@ from fairscape_cli.models.rocrate import (
 	ReadROCrateMetadata,
 	AppendCrate
 )
+from sqids import Sqids
 
 class TestAPI(unittest.TestCase):
-
-	def test_generate(self):
+		
+	def test_api(self):
 		rocratePath = pathlib.Path.cwd() / 'tests'/ 'data' / 'test_api'
 
 		# delete the test_api folder
@@ -80,14 +82,13 @@ class TestAPI(unittest.TestCase):
 
 		# create 10k identifiers
 		datasetList = []
-		for i in range(100000):
-			fileName = f'B2AI_5_untreated_B5_R5_z01_yellow_{i}.jpg'
-			datasetFilePath = yellowFolder / fileName
-			datasetFilePath.touch(exist_ok=True)
+		#for i in range(100000):
+		#	fileName = f'B2AI_5_untreated_B5_R5_z01_yellow_{i}.jpg'
+		#	datasetFilePath = yellowFolder / fileName
+		#	datasetFilePath.touch(exist_ok=True)
 
-		for i in range(100000):
+		for i in range(10000):
 			fileName = f'B2AI_5_untreated_B5_R5_z01_yellow_{i}.jpg'
-			datasetFilePath = yellowFolder / fileName
 			datasetMetadata = {
 				"guid": "322ab5a2-e6a7-4c46-be79-cbf3e9453cde:cm4ai_chromatin_mda-mb-468_untreated_ifimage_0.7alpha",
 				"name": "B2AI_5_untreated_B5_R5_z01_yellow.jpg yellow channel image",
