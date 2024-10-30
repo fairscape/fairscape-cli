@@ -5,7 +5,7 @@ build:
 	python3 -m build
 
 push:
-	python3 -m twine upload --repository pypi dist/*	
+	python3 -m twine upload --repository fairscape-cli dist/*	
 
 push-test:
 	python3 -m twine upload --repository test-fairscape-cli dist/*	
