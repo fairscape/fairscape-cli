@@ -1,14 +1,14 @@
 cff-version: 1.1.0
 message: "If you use this software, please cite it as below."
 authors:
-  - family-names: Max
-    given-names: Levinson
+  - family-names: Levinson
+    given-names: Max
     orcid: https://orcid.org/0000-0003-0384-8499
-  - family-names: Sadnan
-    given-names: Al Manir
+  - family-names: Al Manir
+    given-names: Sadnan
     orcid: https://orcid.org/0000-0003-4647-3877
-  - family-names: Timothy
-    given-names: Clark
+  - family-names: Clark
+    given-names: Timothy 
     orcid: https://orcid.org/0000-0003-4060-7360
 title: "fairscape-cli: A utility for packaging objects and validating metadata for FAIRSCAPE."
 version: 0.2.0
