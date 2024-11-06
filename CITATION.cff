@@ -1,16 +1,61 @@
-cff-version: 1.1.0
-message: "If you use this software, please cite it as below."
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: FAIRSCAPE CLI
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
 authors:
-  - family-names: Levinson
-    given-names: Max
-    orcid: https://orcid.org/0000-0003-0384-8499
-  - family-names: Al Manir
-    given-names: Sadnan
-    orcid: https://orcid.org/0000-0003-4647-3877
-  - family-names: Clark
-    given-names: Timothy 
-    orcid: https://orcid.org/0000-0003-4060-7360
-title: "fairscape-cli: A utility for packaging objects and validating metadata for FAIRSCAPE."
-version: 0.2.0
-date-released: 2024-03-28
-url: "https://github.com/fairscape/fairscape-cli"
+  - given-names: Maxwell Adam
+    family-names: Levinson
+    email: mal8ch@virginia.edu
+    affiliation: University of Virginia
+    orcid: 'https://orcid.org/0000-0003-0384-8499'
+  - given-names: Sadnan
+    family-names: Al Manir
+    affiliation: University of Virginia
+    email: ma3xy@virginia.edu
+    orcid: 'https://orcid.org/0000-0003-4647-3877'
+  - given-names: Timothy
+    family-names: Clark
+    email: twclark@virginia.edu
+    affiliation: University of Virginia
+    orcid: 'https://orcid.org/0000-0003-4060-7360'
+repository-code: 'https://github.com/fairscape/fairscape-cli'
+url: 'https://fairscape.net'
+abstract: >-
+  FAIRSCAPE is a FAIRness and AI-readiness service providing
+  deep provenance graphs and data dictionaries with data
+  element validation on uploaded data, software, and
+  computations, with special reference to biomedical
+  datasets. FAIRSCAPE provenance graphs are represented
+  using the Evidence Graph Ontology, EVI, an OWL2
+  representation derived from W3C PROV and specialized for
+  biomedical research data. The FAIRSCAPE server is a
+  cloud-ready environment that processes RO-Crate
+  data+metadata packages produced by the FAIRSCAPE CLI- and
+  GUI-based clients, registers them with persistent IDs,
+  decomposes and registers their components, computes
+  provenance graph entailments of each component, and
+  integrates the provenance graphs. FAIRSCAPE server
+  provides a web-based GUI for inspecting metadata,
+  visualizing provenance graphs, and obtaining downloads
+  packaged as RO-Crates. 
+
+
+  FAIRSCAPE is supported by the U.S. National Institutes of
+  Health Bridge2AI program under grants OT2OD032742
+  [Bridge2AI: Cell Maps for AI (CM4AI) Data Generation
+  Project] and OT2OD032701 [Bridge2AI: Patient-Focused
+  Collaborative Hospital Repository Uniting Standards
+  (CHoRUS) for Equitable AI],  and by the Frederick Thomas
+  Fund of the University of Virginia.
+keywords:
+  - FAIR
+  - Data Science
+  - EVI
+  - Ontology
+  - Provenance
+license: MIT
