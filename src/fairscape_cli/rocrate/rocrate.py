@@ -5,9 +5,12 @@ import json
 from pydantic import ValidationError
 from datetime import datetime
 
-
+from fairscape_cli.config import (
+    NAAN
+)
 from fairscape_cli.models.utils import (
-    FileNotInCrateException
+    FileNotInCrateException, 
+    GenerateDatetimeSquid
 )
 from fairscape_cli.models import (
     Dataset,
@@ -204,6 +207,7 @@ def registerSoftware(
 @click.option('--keywords', required=True, multiple=True)
 @click.option('--data-format', required=True) 
 @click.option('--filepath', required=True)
+@click.option('--summary-statistics-filepath', required=False, type=click.Path(exists=True))
 @click.option('--used-by', required=False, multiple=True)
 @click.option('--derived-from', required=False, multiple=True)
 @click.option('--generated-by', required=False, multiple=True)
@@ -224,6 +228,7 @@ def registerDataset(
     keywords: List[str],
     data_format: str,
     filepath: str,
+    summary_statistics_filepath: Optional[str],
     used_by: Optional[List[str]],
     derived_from: Optional[List[str]],
     generated_by: Optional[List[str]],
@@ -231,8 +236,7 @@ def registerDataset(
     associated_publication: Optional[str],
     additional_documentation: Optional[List[str]],
 ):
-    """Register Dataset object metadata with the specified RO-Crate 
-    """    
+    """Register Dataset object metadata with the specified RO-Crate"""    
     try:
         crate_instance = ReadROCrateMetadata(rocrate_path)
     except Exception as exc:
@@ -240,8 +244,33 @@ def registerDataset(
         ctx.exit(code=1)
     
     try:
+        # Generate main dataset GUID
+        sq_dataset = GenerateDatetimeSquid()
+        dataset_guid = guid if guid else f"ark:{NAAN}/dataset-{name.lower().replace(' ', '-')}-{sq_dataset}"
+
+        summary_stats_guid = None
+        elements = []
+        
+        # Handle summary statistics if provided
+        if summary_statistics_filepath:
+            summary_stats_guid, summary_stats_instance, computation_instance = generate_summary_stats_elements(
+                name=name,
+                author=author,
+                keywords=keywords,
+                date_published=date_published,
+                version=version,
+                associated_publication=associated_publication,
+                additional_documentation=additional_documentation,
+                schema=schema,
+                dataset_guid=dataset_guid,
+                summary_statistics_filepath=summary_statistics_filepath,
+                crate_path=rocrate_path
+            )
+            elements.extend([computation_instance, summary_stats_instance])
+
+        # Generate main dataset
         dataset_instance = GenerateDataset(
-            guid=guid,
+            guid=dataset_guid,
             url=url,
             author=author,
             name=name,
@@ -257,9 +286,12 @@ def registerDataset(
             generatedBy=generated_by,
             usedBy=used_by,
             filepath=filepath,
-            cratePath=rocrate_path
+            cratePath=rocrate_path,
+            summary_stats_guid=summary_stats_guid
         )
-        AppendCrate(cratePath = rocrate_path, elements=[dataset_instance])
+        
+        elements.insert(0, dataset_instance)
+        AppendCrate(cratePath=rocrate_path, elements=elements)
         click.echo(dataset_instance.guid)
     
     except FileNotInCrateException as e:
@@ -275,8 +307,6 @@ def registerDataset(
         click.echo(f"ERROR: {str(exc)}")
         ctx.exit(code=1)
  
- 
-
 
 @register.command('computation')
 @click.argument('rocrate-path', type=click.Path(exists=True, path_type=pathlib.Path))
