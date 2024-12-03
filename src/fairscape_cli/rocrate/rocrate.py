@@ -24,7 +24,8 @@ from fairscape_cli.models import (
     ReadROCrateMetadata,
     AppendCrate,
     CopyToROCrate,
-    BagIt
+    BagIt,
+    generateSummaryStatsElements
 )
 
 from typing import (
@@ -253,7 +254,7 @@ def registerDataset(
         
         # Handle summary statistics if provided
         if summary_statistics_filepath:
-            summary_stats_guid, summary_stats_instance, computation_instance = generate_summary_stats_elements(
+            summary_stats_guid, summary_stats_instance, computation_instance = generateSummaryStatsElements(
                 name=name,
                 author=author,
                 keywords=keywords,
@@ -464,6 +465,8 @@ def software(
 @click.option('--data-format', required=True) 
 @click.option('--source-filepath', required=True)
 @click.option('--destination-filepath', required=True)
+@click.option('--summary-statistics-source', required=False, type=click.Path(exists=True))
+@click.option('--summary-statistics-destination', required=False, type=click.Path())
 @click.option('--used-by', required=False, multiple=True)
 @click.option('--derived-from', required=False, multiple=True)
 @click.option('--generated-by', required=False, multiple=True)
@@ -485,6 +488,8 @@ def dataset(
     data_format,
     source_filepath,
     destination_filepath,
+    summary_statistics_source,
+    summary_statistics_destination,
     used_by,
     derived_from,
     generated_by,
@@ -492,9 +497,7 @@ def dataset(
     associated_publication,
     additional_documentation,
 ):
-    """Add a Dataset file and its metadata to the RO-Crate.
-    """
-
+    """Add a Dataset file and its metadata to the RO-Crate."""
     try:
         crateInstance = ReadROCrateMetadata(rocrate_path)
     except Exception as exc:
@@ -502,9 +505,40 @@ def dataset(
         ctx.exit(code=1)
 
     try:
+        # Copy main dataset file
         CopyToROCrate(source_filepath, destination_filepath)
+        
+        # Generate main dataset GUID
+        sq_dataset = GenerateDatetimeSquid()
+        dataset_guid = guid if guid else f"ark:{NAAN}/dataset-{name.lower().replace(' ', '-')}-{sq_dataset}"
+
+        summary_stats_guid = None
+        elements = []
+        
+        # Handle summary statistics if provided
+        if summary_statistics_source and summary_statistics_destination:
+            # Copy summary statistics file
+            CopyToROCrate(summary_statistics_source, summary_statistics_destination)
+            
+            # Generate summary statistics elements
+            summary_stats_guid, summary_stats_instance, computation_instance = generateSummaryStatsElements(
+                name=name,
+                author=author,
+                keywords=keywords,
+                date_published=date_published,
+                version=version,
+                associated_publication=associated_publication,
+                additional_documentation=additional_documentation,
+                schema=schema,
+                dataset_guid=dataset_guid,
+                summary_statistics_filepath=summary_statistics_destination,
+                crate_path=rocrate_path
+            )
+            elements.extend([computation_instance, summary_stats_instance])
+
+        # Generate main dataset
         dataset_instance = GenerateDataset(
-            guid=guid,
+            guid=dataset_guid,
             url=url,
             author=author,
             name=name,
@@ -520,9 +554,12 @@ def dataset(
             generatedBy=generated_by,
             usedBy=used_by,
             filepath=destination_filepath,
-            cratePath=rocrate_path
+            cratePath=rocrate_path,
+            summary_stats_guid=summary_stats_guid
         )
-        AppendCrate(cratePath = rocrate_path, elements=[dataset_instance])
+        
+        elements.insert(0, dataset_instance)
+        AppendCrate(cratePath=rocrate_path, elements=elements)
         click.echo(dataset_instance.guid)
 
     except ValidationError as e:
@@ -533,5 +570,3 @@ def dataset(
     except Exception as exc:
         click.echo(f"ERROR: {str(exc)}")
         ctx.exit(code=1)
-    
-    # TODO add to cache 

@@ -137,7 +137,7 @@ def setRelativeFilepath(cratePath, filePath):
     return f"file:///{str(relativePath)}"
 
 
-def generate_summary_stats_elements(
+def generateSummaryStatsElements(
     name: str,
     author: str,
     keywords: List[str],
