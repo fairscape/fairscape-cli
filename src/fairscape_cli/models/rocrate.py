@@ -1,30 +1,16 @@
-from fairscape_cli.models import (
-    Software,
-    Dataset,
-    Computation
-)
-from fairscape_cli.models.utils import GenerateDatetimeSquid
-from fairscape_cli.config import (
-    DEFAULT_CONTEXT,
-    NAAN
-)
-
 import pathlib
 import shutil
 import json
+from typing import Optional, Union, List, Literal, Dict
+
 from prettytable import PrettyTable
-from pydantic import (
-    BaseModel,
-    computed_field,
-    Field,
-)
-from typing import (
-    Optional,
-    Union,
-    List,
-    Literal,
-    Dict
-)
+from pydantic import BaseModel, computed_field, Field
+
+from fairscape_cli.config import NAAN, DEFAULT_CONTEXT
+from fairscape_cli.models.software import Software
+from fairscape_cli.models.dataset import Dataset
+from fairscape_cli.models.computation import Computation
+from fairscape_cli.models.guid_utils import GenerateDatetimeSquid
 
 class ROCrateMetadata(BaseModel):
     guid: Optional[str] = Field(alias="@id", default=None)
@@ -321,3 +307,32 @@ def CopyToROCrate(source_filepath: str, destination_filepath: str):
     # copy the file into the destinationPath
     shutil.copy(source_path, destination_path)
 
+def UpdateCrate(
+    cratePath: pathlib.Path,
+    element: Union[Dataset, Software, Computation]
+):
+    """Update an existing element in the RO-Crate metadata by matching @id
+    
+    Args:
+        cratePath: Path to the RO-Crate directory or metadata file
+        element: Updated element to replace existing one with matching @id
+    """
+    if cratePath.is_dir():
+        cratePath = cratePath / 'ro-crate-metadata.json'
+
+    with cratePath.open("r+") as rocrate_metadata_file:
+        rocrate_metadata = json.load(rocrate_metadata_file)
+        
+        # Find and replace the element with matching @id
+        for i, existing in enumerate(rocrate_metadata['@graph']):
+            if existing.get('@id') == element.guid:
+                rocrate_metadata['@graph'][i] = element.model_dump(
+                    by_alias=True,
+                    exclude_none=True
+                )
+                break
+        
+        # Write back the updated metadata
+        rocrate_metadata_file.seek(0)
+        rocrate_metadata_file.truncate()
+        json.dump(rocrate_metadata, rocrate_metadata_file, indent=2)

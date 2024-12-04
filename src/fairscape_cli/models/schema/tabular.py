@@ -32,7 +32,7 @@ from fairscape_cli.models.schema.utils import (
     map_arrow_type_to_json_schema
 )
 
-from fairscape_cli.models.utils import (
+from fairscape_cli.models.guid_utils import (
     GenerateDatetimeSquid
 )
 

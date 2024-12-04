@@ -1,34 +1,19 @@
-from fairscape_cli.models.base import (
-    FairscapeBaseModel,
-    Identifier
-)
-
-from fairscape_cli.models.computation import GenerateComputation, Computation
-from fairscape_cli.config import (
-    NAAN
-)
-from fairscape_cli.models.utils import GenerateDatetimeSquid, FileNotInCrateException
-from fairscape_cli.models.schema.tabular import (
-    TabularValidationSchema
-)
-
+# Standard library imports
 import pathlib
-from typing import (
-    Optional,
-    List,
-    Union,
-    Dict
-)
+from datetime import datetime
+from typing import Optional, List, Union, Dict, Tuple, Set
 
 from pydantic import (
     BaseModel,
     constr,
     Field,
-    Tuple,
     AnyUrl,
     field_serializer
 )
-from datetime import datetime
+
+from fairscape_cli.models.base import FairscapeBaseModel
+from fairscape_cli.models.guid_utils import GenerateDatetimeSquid
+from fairscape_cli.config import NAAN
 
 
 class Dataset(FairscapeBaseModel):
@@ -47,7 +32,7 @@ class Dataset(FairscapeBaseModel):
     derivedFrom: Optional[List[str]] = Field(default=[])
     usedBy: Optional[List[str]] = Field(default=[])
     contentUrl: Optional[str] = Field(default=None)
-    hasSummaryStatistics: Optional[str] = Field(default=None)
+    hasSummaryStatistics: Optional[Union[str, List[str]]] = Field(default=None)
 
     #@field_serializer('datePublished')
     #def serialize_date_published(self, datePublished: datetime):
@@ -97,10 +82,11 @@ def GenerateDataset(
             "derivedFrom": [derived.strip("\n") for derived in derivedFrom],
             "usedBy": [used.strip("\n") for used in usedBy],
             "generatedBy": [gen.strip("\n") for gen in generatedBy],
+            "contentU"
             "hasSummaryStatistics": summary_stats_guid
         }
 
-    datasetMetadata['contentURL'] = setRelativeFilepath(cratePath, filepath)
+    datasetMetadata['contentUrl'] = setRelativeFilepath(cratePath, filepath)
     datasetInstance = Dataset.model_validate(datasetMetadata)
     return datasetInstance
 
@@ -137,6 +123,7 @@ def setRelativeFilepath(cratePath, filePath):
     return f"file:///{str(relativePath)}"
 
 
+from fairscape_cli.models.computation import GenerateComputation, Computation
 def generateSummaryStatsElements(
     name: str,
     author: str,
@@ -215,3 +202,35 @@ def generateSummaryStatsElements(
     )
     
     return summary_stats_guid, summary_stats_instance, computation_instance
+
+def registerOutputs(
+    new_files: Set[pathlib.Path],
+    computation_id: str, 
+    dataset_id: str,
+    author: str
+) -> List[Dict]:
+    """Register all outputs as datasets"""
+    output_instances = []
+    for file_path in new_files:
+        file_path_str = str(file_path)
+        output_instance = GenerateDataset(
+            guid=None,
+            name=f"Statistics Output - {file_path.name}",
+            author=author,  # Use the original author
+            description=f"Statistical analysis output for {dataset_id}",
+            keywords=["statistics"],
+            datePublished=datetime.now().isoformat(),
+            version="1.0",
+            dataFormat=file_path.suffix[1:],
+            filepath=file_path_str,
+            cratePath=str(file_path.parent),
+            url=None,
+            associatedPublication=None,
+            additionalDocumentation=None,
+            schema=None,
+            derivedFrom=[],
+            usedBy=[],
+            generatedBy=[computation_id]
+        )
+        output_instances.append(output_instance)
+    return output_instances
