@@ -82,7 +82,6 @@ def GenerateDataset(
             "derivedFrom": [derived.strip("\n") for derived in derivedFrom],
             "usedBy": [used.strip("\n") for used in usedBy],
             "generatedBy": [gen.strip("\n") for gen in generatedBy],
-            "contentU"
             "hasSummaryStatistics": summary_stats_guid
         }
 

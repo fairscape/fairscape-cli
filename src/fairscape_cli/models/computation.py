@@ -60,7 +60,7 @@ def GenerateComputation(
     computation_model = Computation.model_validate(   
         {
         "@id": guid,
-        "@type": "https://w2id.org/EVI#Computation",
+        "@type": "https://w3id.org/EVI#Computation",
         "name": name,
         "description": description,
         "keywords": keywords,
