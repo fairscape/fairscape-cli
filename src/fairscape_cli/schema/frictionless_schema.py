@@ -32,16 +32,16 @@ from fairscape_cli.config import (
     FAIRSCAPE_URI
 )
 
-@click.group('schema')
-def schema():
+@click.group('frictionless')
+def frictionless():
     """Invoke operations on dataset schema.
     """
     pass
 
-@schema.command('create-tabular')
+@frictionless.command('create-tabular')
 @click.option('--name', required=True, type=str)
 @click.option('--description', required=True, type=str)
-@click.option('--guid', required=False, type=str, default="", show_default=False)
+@click.option('--guid', required=False, type=str, default=None, show_default=False)
 @click.option('--separator', type=str, required=True)
 @click.option('--header', required=False, type=bool, default=False)
 @click.argument('schema_file', type=str)
@@ -77,7 +77,7 @@ def create_tabular_schema(
     WriteSchema(schema_model, schema_file)
     click.echo(f"Wrote Schema: {str(schema_file)}")
 
-@schema.group('add-property')
+@frictionless.group('add-property')
 def add_property():
     """Add a Property to an existing schema.
     """
@@ -248,7 +248,7 @@ def determine_schema_type(filepath: str) -> Type[Union[TabularValidationSchema, 
     else:
         raise ValueError(f"Unsupported file extension: {ext}")
 
-@schema.command('validate')
+@frictionless.command('validate')
 @click.option('--schema', type=str, required=True)
 @click.option('--data', type=str, required=True)
 @click.pass_context
@@ -270,7 +270,7 @@ def validate(ctx, schema, data):
             schema_json = json.load(f)
         
         schema_class = determine_schema_type(data)
-        validation_schema = schema_class.model_validate(schema_json)
+        validation_schema = schema_class.from_dict(schema_json)
         
         validation_errors = validation_schema.validate_file(data)
 
@@ -284,17 +284,17 @@ def validate(ctx, schema, data):
             for err in validation_errors:
                 if isinstance(validation_schema, HDF5ValidationSchema):
                     error_table.add_row([
-                        err.get("path"), 
-                        err.get("type"), 
-                        err.get("failed_keyword"), 
-                        str(err.get('message'))
+                        err.path,
+                        err.type,
+                        err.failed_keyword,
+                        str(err.message)
                     ])
                 else:
                     error_table.add_row([
-                        err.get("row"), 
-                        err.get("type"), 
-                        err.get("failed_keyword"), 
-                        str(err.get('message'))
+                        err.row,
+                        err.type, 
+                        err.failed_keyword,
+                        str(err.message)
                     ])
 
             print(error_table)
@@ -312,7 +312,7 @@ def validate(ctx, schema, data):
         click.echo(f"Error during validation: {str(e)}")
         ctx.exit(1)
 
-@schema.command('infer')
+@frictionless.command('infer')
 @click.option('--name', required=True, type=str)
 @click.option('--description', required=True, type=str)
 @click.option('--guid', required=False, type=str, default="", show_default=False)

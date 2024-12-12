@@ -158,6 +158,20 @@ def frictionless_type_to_json_schema(field_type: str) -> str:
     }
     return type_mapping.get(field_type, 'string')
 
+
+PropertyUnion = Union[StringProperty, ArrayProperty, BooleanProperty, NumberProperty, IntegerProperty, NullProperty]
+def frictionless_type_from_property(prop: PropertyUnion) -> str:
+    """Convert PropertyUnion type to Frictionless field type"""
+    type_mapping = {
+        'string': 'string',
+        'integer': 'integer',
+        'number': 'number',
+        'boolean': 'boolean',
+        'array': 'array',
+        'null': 'string'  # Default to string for null type
+    }
+    return type_mapping.get(prop.datatype, 'string')
+
 class TabularValidationSchema(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     
@@ -171,10 +185,10 @@ class TabularValidationSchema(BaseModel):
     separator: str = Field(description="Field separator for the file")
     header: bool = Field(description="Do files of this schema have a header row", default=True)
     required: List[str] = Field(default=[])
-    properties: Dict[str, Dict] = Field(default={})
+    properties: Dict[str, PropertyUnion] = Field(default={})
     additionalProperties: bool = Field(default=True)
     
-    # Will store the frictionless schema
+    # Store the frictionless schema
     _frictionless_schema: Optional[Schema] = None
 
     def generate_guid(self) -> str:
@@ -198,23 +212,28 @@ class TabularValidationSchema(BaseModel):
         separator = '\t' if file_type == FileType.TSV else ','
         
         resource = describe(filepath)
-
         properties = {}
-        required_fields = []
+        required_fields = [] 
+        
+        type_mapping = {
+            'string': (StringProperty, 'string'),
+            'integer': (IntegerProperty, 'integer'),
+            'number': (NumberProperty, 'number'),
+            'boolean': (BooleanProperty, 'boolean'),
+            'array': (ArrayProperty, 'array'),
+        }
         
         for i, field in enumerate(resource.schema.fields):
-            json_schema_type = frictionless_type_to_json_schema(field.type)
+            property_class, datatype = type_mapping.get(field.type, (StringProperty, 'string'))
             
-            property_def = {
-                "type": json_schema_type,
-                "description": field.description or f"Column {field.name}",
-                "index": i
-            }
-                    
+            property_def = property_class(
+                datatype=datatype,
+                description=field.description or f"Column {field.name}",
+                index=i
+            )
+            
             properties[field.name] = property_def
-            
-            if field.required:
-                required_fields.append(field.name)
+            required_fields.append(field.name)  
         
         schema = cls(
             name=name,
@@ -239,7 +258,6 @@ class TabularValidationSchema(BaseModel):
         )
         report = resource.validate()
         
-        # Convert Frictionless errors to our format
         errors = []
         for task in report.tasks:
             for error in task.errors:
@@ -269,9 +287,9 @@ class TabularValidationSchema(BaseModel):
         """Create a schema instance from a dictionary"""
         properties = data.pop('properties', {})
         required_fields = data.pop('required', [])
+        
         frictionless_schema = Schema()
         
-        # Map JSON Schema types to frictionless field types
         type_to_field = {
             'string': fields.StringField,
             'integer': fields.IntegerField,
@@ -288,6 +306,7 @@ class TabularValidationSchema(BaseModel):
                 constraints={}
             )
             
+            # Add constraints if they exist
             if 'minimum' in prop:
                 field.constraints['minimum'] = prop['minimum']
             if 'maximum' in prop:
@@ -318,18 +337,27 @@ def read_schema(schema_file: str) -> TabularValidationSchema:
         
     return TabularValidationSchema.from_dict(schema_dict)
 
-def write_schema(schema: TabularValidationSchema, output_file: str):
-    """Write a schema to a file"""
-    schema_dict = schema.to_dict()
-    
-    with open(output_file, 'w') as f:
-        json.dump(schema_dict, f, indent=2)
-
 class HDF5ValidationSchema(BaseModel):
+    guid: Optional[str] = Field(alias="@id", default=None)
+    context: Optional[Dict] = Field(default=DEFAULT_CONTEXT, alias="@context")
     name: str
     description: str
     properties: Dict[str, TabularValidationSchema] = Field(default={})
     required: List[str] = Field(default=[])
+
+    def generate_guid(self) -> str:
+        """Generate a unique identifier for the schema"""
+        if self.guid is None:
+            prefix = f"schema-{self.name.lower().replace(' ', '-')}"
+            timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+            self.guid = f"ark:{NAAN}/{prefix}-{timestamp}"
+        return self.guid
+
+    @model_validator(mode='after')
+    def generate_all_guids(self) -> 'HDF5ValidationSchema':
+        """Generate GUIDs for this schema and any nested schemas"""
+        self.generate_guid()
+        return self
     
     @staticmethod
     def dataset_to_dataframe(dataset: h5py.Dataset) -> pd.DataFrame:
@@ -354,6 +382,28 @@ class HDF5ValidationSchema(BaseModel):
         )
         properties = {}
         
+        def create_property(field_type: str, field_name: str, index: int, description: str) -> PropertyUnion:
+            """Helper function to create the correct property type instance"""
+            base_args = {
+                "description": description,
+                "index": index,
+            }
+            
+            if field_type == 'number':
+                return NumberProperty(datatype='number', **base_args)
+            elif field_type == 'integer':
+                return IntegerProperty(datatype='integer', **base_args)
+            elif field_type == 'boolean':
+                return BooleanProperty(datatype='boolean', **base_args)
+            elif field_type == 'array':
+                return ArrayProperty(
+                    datatype='array',
+                    items=Items(datatype='number'),
+                    **base_args
+                )
+            else:  # default to string
+                return StringProperty(datatype='string', **base_args)
+
         with h5py.File(filepath, 'r') as f:
             def process_group(group, parent_path=""):
                 for key, item in group.items():
@@ -362,7 +412,6 @@ class HDF5ValidationSchema(BaseModel):
                     if isinstance(item, h5py.Dataset):
                         try:
                             df = cls.dataset_to_dataframe(item)
-                            
                             resource = describe(df)
                             
                             tabular_schema = TabularValidationSchema(
@@ -371,23 +420,21 @@ class HDF5ValidationSchema(BaseModel):
                                 separator=",",
                                 header=True,
                                 properties={},
-                                required=[]
+                                required=[],
+                                context=None
                             )
                             
                             tabular_schema._frictionless_schema = resource.schema
                             
                             for i, field in enumerate(resource.schema.fields):
-                                property_def = {
-                                    "type": field.type,
-                                    "description": field.description or f"Column {field.name}",
-                                    "index": i
-                                }
+                                property_instance = create_property(
+                                    field_type=field.type,
+                                    field_name=field.name,
+                                    index=i,
+                                    description=field.description or f"Column {field.name}"
+                                )
                                 
-                                if field.constraints:
-                                    for key, value in field.constraints.items():
-                                        property_def[key] = value
-                                
-                                tabular_schema.properties[field.name] = property_def
+                                tabular_schema.properties[field.name] = property_instance
                                 tabular_schema.required.append(field.name)
                             
                             properties[path] = tabular_schema
@@ -452,16 +499,8 @@ class HDF5ValidationSchema(BaseModel):
         return errors
     
     def to_dict(self) -> dict:
-        """Convert the schema to a dictionary format"""
-        return {
-            "name": self.name,
-            "description": self.description,
-            "properties": {
-                path: schema.to_dict() 
-                for path, schema in self.properties.items()
-            },
-            "required": self.required
-        }
+        """Convert the schema to a dictionary format including all fields"""
+        return self.model_dump(by_alias=True)
 
     @classmethod
     def from_dict(cls, data: dict) -> 'HDF5ValidationSchema':
@@ -477,6 +516,13 @@ class HDF5ValidationSchema(BaseModel):
             properties=properties,
             required=data.get('required', [])
         )
+    
+def write_schema(schema: TabularValidationSchema, output_file: str):
+    """Write a schema to a file"""
+    schema_dict = schema.to_dict()
+    
+    with open(output_file, 'w') as f:
+        json.dump(schema_dict, f, indent=2)
     
 def AppendProperty(schemaFilepath: str, propertyInstance, propertyName: str) -> None: 
     # check that schemaFile exists
