@@ -377,28 +377,6 @@ class HDF5ValidationSchema(BaseModel):
             description=description
         )
         properties = {}
-        
-        def create_property(field_type: str, field_name: str, index: int, description: str) -> PropertyUnion:
-            """Helper function to create the correct property type instance"""
-            base_args = {
-                "description": description,
-                "index": index,
-            }
-            
-            if field_type == 'number':
-                return NumberProperty(datatype='number', **base_args)
-            elif field_type == 'integer':
-                return IntegerProperty(datatype='integer', **base_args)
-            elif field_type == 'boolean':
-                return BooleanProperty(datatype='boolean', **base_args)
-            elif field_type == 'array':
-                return ArrayProperty(
-                    datatype='array',
-                    items=Items(datatype='number'),
-                    **base_args
-                )
-            else:  # default to string
-                return StringProperty(datatype='string', **base_args)
 
         with h5py.File(filepath, 'r') as f:
             def process_group(group, parent_path=""):
