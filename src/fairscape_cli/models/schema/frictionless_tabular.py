@@ -499,43 +499,28 @@ def write_schema(schema: TabularValidationSchema, output_file: str):
     with open(output_file, 'w') as f:
         json.dump(schema_dict, f, indent=2)
     
-def AppendProperty(schemaFilepath: str, propertyInstance, propertyName: str) -> None: 
+def AppendProperty(schemaFilepath: str, propertyInstance, propertyName: str) -> None:
     # check that schemaFile exists
     schemaPath = pathlib.Path(schemaFilepath)
-
     if not schemaPath.exists():
         raise Exception
 
     with schemaPath.open("r+") as schemaFile:
         schemaFileContents = schemaFile.read()
-        schemaJson =  json.loads(schemaFileContents) 
+        schemaJson = json.loads(schemaFileContents)
 
-        # load the model into a tabular validation schema
         schemaModel = TabularValidationSchema.model_validate(schemaJson)
 
-        # TODO check for inconsitencies
-
-        # does there exist a property with same name
         if propertyName in [key for key in schemaModel.properties.keys()]:
             raise PropertyNameException(propertyName)
 
-        # does there exist a property with same column number
-        schema_indicies = [ val.index for val in schemaModel.properties.values()]
-
-        # check overlap of indicies
-        # CheckOverlap
-
-
-        # add new property to schema
+        schema_indicies = [val['index'] for val in schemaModel.properties.values()]
+        
         schemaModel.properties[propertyName] = propertyInstance
-
-        # add new property as required
         schemaModel.required.append(propertyName)
+        schemaJson = json.dumps(schemaModel.model_dump(by_alias=True, exclude_none=True), indent=2)
 
-        # serialize model to json
-        schemaJson = json.dumps(schemaModel.model_dump(by_alias=True) , indent=2)
-
-        # overwrite file contents
+        # overwrite file contents  
         schemaFile.seek(0)
         schemaFile.write(schemaJson)
 
