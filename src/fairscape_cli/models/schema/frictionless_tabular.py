@@ -423,14 +423,13 @@ class HDF5ValidationSchema(BaseModel):
                             tabular_schema._frictionless_schema = resource.schema
                             
                             for i, field in enumerate(resource.schema.fields):
-                                property_instance = create_property(
-                                    field_type=field.type,
-                                    field_name=field.name,
-                                    index=i,
-                                    description=field.description or f"Column {field.name}"
-                                )
+                                property_def = {
+                                    "type": field.type,
+                                    "description": field.description or f"Column {field.name}",
+                                    "index": i
+                                }
                                 
-                                tabular_schema.properties[field.name] = property_instance
+                                tabular_schema.properties[field.name] = property_def
                                 tabular_schema.required.append(field.name)
                             
                             properties[path] = tabular_schema
@@ -457,6 +456,8 @@ class HDF5ValidationSchema(BaseModel):
                     dataset = f[path]
                     if isinstance(dataset, h5py.Dataset):
                         df = self.dataset_to_dataframe(dataset)
+                        print(df)
+                        print(schema._frictionless_schema)
                         resource = Resource(data=df, schema=schema._frictionless_schema)
                         report = resource.validate()
                         
