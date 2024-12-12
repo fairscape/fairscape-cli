@@ -185,7 +185,7 @@ class TabularValidationSchema(BaseModel):
     separator: str = Field(description="Field separator for the file")
     header: bool = Field(description="Do files of this schema have a header row", default=True)
     required: List[str] = Field(default=[])
-    properties: Dict[str, PropertyUnion] = Field(default={})
+    properties: Dict[str, Dict] = Field(default={})
     additionalProperties: bool = Field(default=True)
     
     # Store the frictionless schema
@@ -206,35 +206,29 @@ class TabularValidationSchema(BaseModel):
         return self
 
     @classmethod
-    def infer_from_file(cls, filepath: str, name: str, description: str) -> 'TabularValidationSchema':
+    def infer_from_file(cls, filepath: str, name: str, description: str, include_min_max: bool = False) -> 'TabularValidationSchema':
         """Infer schema from a file using Frictionless"""
         file_type = FileType.from_extension(filepath)
         separator = '\t' if file_type == FileType.TSV else ','
         
         resource = describe(filepath)
-        properties = {}
-        required_fields = [] 
         
-        type_mapping = {
-            'string': (StringProperty, 'string'),
-            'integer': (IntegerProperty, 'integer'),
-            'number': (NumberProperty, 'number'),
-            'boolean': (BooleanProperty, 'boolean'),
-            'array': (ArrayProperty, 'array'),
-        }
+        properties = {}
+        required_fields = []
         
         for i, field in enumerate(resource.schema.fields):
-            property_class, datatype = type_mapping.get(field.type, (StringProperty, 'string'))
+            json_schema_type = frictionless_type_to_json_schema(field.type)
             
-            property_def = property_class(
-                datatype=datatype,
-                description=field.description or f"Column {field.name}",
-                index=i
-            )
-            
+            property_def = {
+                "type": json_schema_type,
+                "description": field.description or f"Column {field.name}",
+                "index": i
+            }
+                    
             properties[field.name] = property_def
-            required_fields.append(field.name)  
+            required_fields.append(field.name)
         
+        # Create our schema instance
         schema = cls(
             name=name,
             description=description,
@@ -243,6 +237,8 @@ class TabularValidationSchema(BaseModel):
             properties=properties,
             required=required_fields
         )
+        
+        # Store the frictionless schema for validation
         schema._frictionless_schema = resource.schema
         return schema
 
