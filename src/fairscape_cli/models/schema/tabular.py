@@ -158,20 +158,6 @@ def frictionless_type_to_json_schema(field_type: str) -> str:
     }
     return type_mapping.get(field_type, 'string')
 
-
-PropertyUnion = Union[StringProperty, ArrayProperty, BooleanProperty, NumberProperty, IntegerProperty, NullProperty]
-def frictionless_type_from_property(prop: PropertyUnion) -> str:
-    """Convert PropertyUnion type to Frictionless field type"""
-    type_mapping = {
-        'string': 'string',
-        'integer': 'integer',
-        'number': 'number',
-        'boolean': 'boolean',
-        'array': 'array',
-        'null': 'string'  # Default to string for null type
-    }
-    return type_mapping.get(prop.datatype, 'string')
-
 class TabularValidationSchema(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     
