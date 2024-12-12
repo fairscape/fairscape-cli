@@ -306,18 +306,6 @@ class TabularValidationSchema(BaseModel):
         schema = cls(**data, properties=properties, required=required_fields)
         schema._frictionless_schema = frictionless_schema
         return schema
-    
-def read_schema(schema_file: str) -> TabularValidationSchema:
-    """Read a schema from a file"""
-    schema_path = pathlib.Path(schema_file)
-    
-    if not schema_path.exists():
-        raise FileNotFoundError(f"Schema file not found: {schema_file}")
-        
-    with schema_path.open('r') as f:
-        schema_dict = json.load(f)
-        
-    return TabularValidationSchema.from_dict(schema_dict)
 
 class HDF5ValidationSchema(BaseModel):
     guid: Optional[str] = Field(alias="@id", default=None)

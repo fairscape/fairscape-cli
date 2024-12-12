@@ -14,22 +14,14 @@ from fairscape_cli.models.schema.tabular import (
     TabularValidationSchema,
     HDF5ValidationSchema,
     write_schema as WriteSchema,
-    read_schema as ReadSchema,
     StringProperty,
     NumberProperty,
     IntegerProperty,
     BooleanProperty,
     ArrayProperty,
-    AppendProperty,
     ClickAppendProperty,
     DatatypeEnum,
     Items,
-    PropertyNameException,
-    ColumnIndexException
-)
-
-from fairscape_cli.config import (
-    FAIRSCAPE_URI
 )
 
 @click.group('schema')
