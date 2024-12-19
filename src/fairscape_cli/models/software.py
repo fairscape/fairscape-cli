@@ -1,21 +1,12 @@
-from fairscape_cli.models.base import FairscapeBaseModel
-from fairscape_cli.models.utils import GenerateDatetimeSquid, FileNotInCrateException
-from fairscape_cli.config import NAAN
 import pathlib
-
-from pydantic import (
-    Field,
-    AnyUrl,
-    ConfigDict
-)
 from datetime import datetime
-from typing import (
-    Optional,
-    Union,
-    Dict,
-    List 
-)
+from typing import Optional, Union, Dict, List
 
+from pydantic import Field, AnyUrl, ConfigDict
+
+from fairscape_cli.config import NAAN
+from fairscape_cli.models.base import FairscapeBaseModel
+from fairscape_cli.models.guid_utils import GenerateDatetimeSquid
 
 
 class Software(FairscapeBaseModel): 

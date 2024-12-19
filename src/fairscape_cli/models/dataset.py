@@ -1,22 +1,7 @@
-from fairscape_cli.models.base import (
-    FairscapeBaseModel,
-    Identifier
-)
-from fairscape_cli.config import (
-    NAAN
-)
-from fairscape_cli.models.utils import GenerateDatetimeSquid, FileNotInCrateException
-from fairscape_cli.models.schema.tabular import (
-    TabularValidationSchema
-)
-
+# Standard library imports
 import pathlib
-from typing import (
-    Optional,
-    List,
-    Union,
-    Dict
-)
+from datetime import datetime
+from typing import Optional, List, Union, Dict, Tuple, Set
 
 from pydantic import (
     BaseModel,
@@ -25,7 +10,10 @@ from pydantic import (
     AnyUrl,
     field_serializer
 )
-from datetime import datetime
+
+from fairscape_cli.models.base import FairscapeBaseModel
+from fairscape_cli.models.guid_utils import GenerateDatetimeSquid
+from fairscape_cli.config import NAAN
 
 
 class Dataset(FairscapeBaseModel):
@@ -44,6 +32,7 @@ class Dataset(FairscapeBaseModel):
     derivedFrom: Optional[List[str]] = Field(default=[])
     usedBy: Optional[List[str]] = Field(default=[])
     contentUrl: Optional[str] = Field(default=None)
+    hasSummaryStatistics: Optional[Union[str, List[str]]] = Field(default=None)
 
     #@field_serializer('datePublished')
     #def serialize_date_published(self, datePublished: datetime):
@@ -68,11 +57,13 @@ def GenerateDataset(
     usedBy: Optional[List[str]],
     generatedBy: Optional[List[str]],
     filepath: Optional[str],
-    cratePath
+    cratePath,
+    summary_stats_guid: Optional[str] = None
     ):
    
-    sq = GenerateDatetimeSquid()
-    guid = f"ark:{NAAN}/dataset-{name.lower().replace(' ', '-')}-{sq}"
+    if not guid:
+        sq = GenerateDatetimeSquid()
+        guid = f"ark:{NAAN}/dataset-{name.lower().replace(' ', '-')}-{sq}"
     
     datasetMetadata = {
             "@id": guid,
@@ -88,22 +79,14 @@ def GenerateDataset(
             "additionalDocumentation": additionalDocumentation,
             "format": dataFormat,
             "schema": schema,
-            # sanitize input lists of newline breaks
-            "derivedFrom": [
-                derived.strip("\n") for derived in derivedFrom
-            ],
-            "usedBy": [
-                used.strip("\n") for used in usedBy 
-            ],
-            "generatedBy": [
-                gen.strip("\n") for gen in generatedBy
-            ]
+            "derivedFrom": [derived.strip("\n") for derived in derivedFrom],
+            "usedBy": [used.strip("\n") for used in usedBy],
+            "generatedBy": [gen.strip("\n") for gen in generatedBy],
+            "hasSummaryStatistics": summary_stats_guid
         }
 
-    datasetMetadata['contentURL'] = setRelativeFilepath(cratePath, filepath)
-
+    datasetMetadata['contentUrl'] = setRelativeFilepath(cratePath, filepath)
     datasetInstance = Dataset.model_validate(datasetMetadata)
-
     return datasetInstance
 
 
@@ -137,3 +120,116 @@ def setRelativeFilepath(cratePath, filePath):
     datasetPath = pathlib.Path(filePath).absolute()
     relativePath = datasetPath.relative_to(rocratePath)
     return f"file:///{str(relativePath)}"
+
+
+from fairscape_cli.models.computation import GenerateComputation, Computation
+def generateSummaryStatsElements(
+    name: str,
+    author: str,
+    keywords: List[str],
+    date_published: str,
+    version: str,
+    associated_publication: Optional[str],
+    additional_documentation: Optional[str],
+    schema: Optional[str],
+    dataset_guid: str,
+    summary_statistics_filepath: str,
+    crate_path: pathlib.Path
+) -> Tuple[str, Dataset, Computation]:
+    """Generate summary statistics dataset and computation elements
+    
+    Args:
+        name: Name of the main dataset
+        author: Author of the dataset
+        keywords: Dataset keywords
+        date_published: Publication date
+        version: Dataset version
+        associated_publication: Optional associated publication
+        additional_documentation: Optional additional documentation
+        schema: Optional schema
+        dataset_guid: GUID of the main dataset
+        summary_statistics_filepath: Path to summary statistics file
+        crate_path: Path to RO-Crate
+        
+    Returns:
+        Tuple containing:
+        - Summary statistics GUID
+        - Summary statistics Dataset instance
+        - Computation instance that generated the summary statistics
+    """
+    # Generate GUIDs
+    sq_stats = GenerateDatetimeSquid()
+    summary_stats_guid = f"ark:{NAAN}/dataset-{name.lower().replace(' ', '-')}-stats-{sq_stats}"
+    
+    sq_comp = GenerateDatetimeSquid()
+    computation_guid = f"ark:{NAAN}/computation-{name.lower().replace(' ', '-')}-stats-{sq_comp}"
+    
+    # Create computation instance
+    computation_instance = GenerateComputation(
+        guid=computation_guid,
+        name=f"Summary Statistics Computation for {name}",
+        runBy=author,
+        command="",
+        dateCreated=date_published,
+        description=f"Computation that generated summary statistics for dataset: {name}",
+        keywords=keywords,
+        usedSoftware=[],
+        usedDataset=[dataset_guid],
+        generated=[summary_stats_guid]
+    )
+
+    # Create summary statistics dataset
+    summary_stats_instance = GenerateDataset(
+        guid=summary_stats_guid,
+        url=None,
+        author=author,
+        name=f"{name} - Summary Statistics",
+        description=f"Summary statistics for dataset: {name}",
+        keywords=keywords,
+        datePublished=date_published,
+        version=version,
+        associatedPublication=associated_publication,
+        additionalDocumentation=additional_documentation,
+        dataFormat='pdf',
+        schema=schema,
+        derivedFrom=[],
+        generatedBy=[computation_guid],
+        usedBy=[],
+        filepath=summary_statistics_filepath,
+        cratePath=crate_path,
+        summary_stats_guid=None
+    )
+    
+    return summary_stats_guid, summary_stats_instance, computation_instance
+
+def registerOutputs(
+    new_files: Set[pathlib.Path],
+    computation_id: str, 
+    dataset_id: str,
+    author: str
+) -> List[Dict]:
+    """Register all outputs as datasets"""
+    output_instances = []
+    for file_path in new_files:
+        file_path_str = str(file_path)
+        output_instance = GenerateDataset(
+            guid=None,
+            name=f"Statistics Output - {file_path.name}",
+            author=author,  # Use the original author
+            description=f"Statistical analysis output for {dataset_id}",
+            keywords=["statistics"],
+            datePublished=datetime.now().isoformat(),
+            version="1.0",
+            dataFormat=file_path.suffix[1:],
+            filepath=file_path_str,
+            cratePath=str(file_path.parent),
+            url=None,
+            associatedPublication=None,
+            additionalDocumentation=None,
+            schema=None,
+            derivedFrom=[],
+            usedBy=[],
+            generatedBy=[computation_id]
+        )
+        output_instances.append(output_instance)
+    return output_instances

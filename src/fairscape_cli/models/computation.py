@@ -1,19 +1,12 @@
-from fairscape_cli.models.base import FairscapeBaseModel
-from fairscape_cli.models.utils import GenerateDatetimeSquid
-from fairscape_cli.config import NAAN
-
-from typing import (
-    Optional,
-    List,
-    Union,
-    Dict,
-)
-from pydantic import (
-    Field,
-    AnyUrl
-)
 import re
 from datetime import datetime
+from typing import Optional, List, Union, Dict
+
+from pydantic import Field, AnyUrl
+
+from fairscape_cli.config import NAAN
+from fairscape_cli.models.base import FairscapeBaseModel
+from fairscape_cli.models.guid_utils import GenerateDatetimeSquid
 
 
 class Computation(FairscapeBaseModel):
@@ -67,7 +60,7 @@ def GenerateComputation(
     computation_model = Computation.model_validate(   
         {
         "@id": guid,
-        "@type": "https://w2id.org/EVI#Computation",
+        "@type": "https://w3id.org/EVI#Computation",
         "name": name,
         "description": description,
         "keywords": keywords,

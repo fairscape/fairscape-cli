@@ -2,32 +2,42 @@ import click
 import pathlib
 import shutil
 import json
-from pydantic import ValidationError
 from datetime import datetime
+from typing import List, Optional, Union
 
+from pydantic import ValidationError
 
+from fairscape_cli.config import NAAN
+from fairscape_cli.models.guid_utils import GenerateDatetimeSquid
 from fairscape_cli.models.utils import (
-    FileNotInCrateException
+    FileNotInCrateException,
+    getDirectoryContents,
+    getEntityFromCrate,
+    run_command
 )
 from fairscape_cli.models import (
+    # Core models
     Dataset,
-    GenerateDataset,
     Software,
-    GenerateSoftware,
     Computation,
+    ROCrate,
+    BagIt,
+    
+    # Generator functions
+    GenerateDataset,
+    GenerateSoftware,
     GenerateComputation,
     GenerateROCrate,
-    ROCrate,
+    
+    # RO Crate operations
     ReadROCrateMetadata,
     AppendCrate,
     CopyToROCrate,
-    BagIt
-)
-
-from typing import (
-    List,
-    Optional,
-    Union
+    UpdateCrate,
+    
+    # Additional utilities
+    generateSummaryStatsElements,
+    registerOutputs
 )
 
 
@@ -204,6 +214,7 @@ def registerSoftware(
 @click.option('--keywords', required=True, multiple=True)
 @click.option('--data-format', required=True) 
 @click.option('--filepath', required=True)
+@click.option('--summary-statistics-filepath', required=False, type=click.Path(exists=True))
 @click.option('--used-by', required=False, multiple=True)
 @click.option('--derived-from', required=False, multiple=True)
 @click.option('--generated-by', required=False, multiple=True)
@@ -224,6 +235,7 @@ def registerDataset(
     keywords: List[str],
     data_format: str,
     filepath: str,
+    summary_statistics_filepath: Optional[str],
     used_by: Optional[List[str]],
     derived_from: Optional[List[str]],
     generated_by: Optional[List[str]],
@@ -231,8 +243,7 @@ def registerDataset(
     associated_publication: Optional[str],
     additional_documentation: Optional[List[str]],
 ):
-    """Register Dataset object metadata with the specified RO-Crate 
-    """    
+    """Register Dataset object metadata with the specified RO-Crate"""    
     try:
         crate_instance = ReadROCrateMetadata(rocrate_path)
     except Exception as exc:
@@ -240,8 +251,33 @@ def registerDataset(
         ctx.exit(code=1)
     
     try:
+        # Generate main dataset GUID
+        sq_dataset = GenerateDatetimeSquid()
+        dataset_guid = guid if guid else f"ark:{NAAN}/dataset-{name.lower().replace(' ', '-')}-{sq_dataset}"
+
+        summary_stats_guid = None
+        elements = []
+        
+        # Handle summary statistics if provided
+        if summary_statistics_filepath:
+            summary_stats_guid, summary_stats_instance, computation_instance = generateSummaryStatsElements(
+                name=name,
+                author=author,
+                keywords=keywords,
+                date_published=date_published,
+                version=version,
+                associated_publication=associated_publication,
+                additional_documentation=additional_documentation,
+                schema=schema,
+                dataset_guid=dataset_guid,
+                summary_statistics_filepath=summary_statistics_filepath,
+                crate_path=rocrate_path
+            )
+            elements.extend([computation_instance, summary_stats_instance])
+
+        # Generate main dataset
         dataset_instance = GenerateDataset(
-            guid=guid,
+            guid=dataset_guid,
             url=url,
             author=author,
             name=name,
@@ -257,9 +293,12 @@ def registerDataset(
             generatedBy=generated_by,
             usedBy=used_by,
             filepath=filepath,
-            cratePath=rocrate_path
+            cratePath=rocrate_path,
+            summary_stats_guid=summary_stats_guid
         )
-        AppendCrate(cratePath = rocrate_path, elements=[dataset_instance])
+        
+        elements.insert(0, dataset_instance)
+        AppendCrate(cratePath=rocrate_path, elements=elements)
         click.echo(dataset_instance.guid)
     
     except FileNotInCrateException as e:
@@ -275,8 +314,6 @@ def registerDataset(
         click.echo(f"ERROR: {str(exc)}")
         ctx.exit(code=1)
  
- 
-
 
 @register.command('computation')
 @click.argument('rocrate-path', type=click.Path(exists=True, path_type=pathlib.Path))
@@ -434,6 +471,8 @@ def software(
 @click.option('--data-format', required=True) 
 @click.option('--source-filepath', required=True)
 @click.option('--destination-filepath', required=True)
+@click.option('--summary-statistics-source', required=False, type=click.Path(exists=True))
+@click.option('--summary-statistics-destination', required=False, type=click.Path())
 @click.option('--used-by', required=False, multiple=True)
 @click.option('--derived-from', required=False, multiple=True)
 @click.option('--generated-by', required=False, multiple=True)
@@ -455,6 +494,8 @@ def dataset(
     data_format,
     source_filepath,
     destination_filepath,
+    summary_statistics_source,
+    summary_statistics_destination,
     used_by,
     derived_from,
     generated_by,
@@ -462,9 +503,7 @@ def dataset(
     associated_publication,
     additional_documentation,
 ):
-    """Add a Dataset file and its metadata to the RO-Crate.
-    """
-
+    """Add a Dataset file and its metadata to the RO-Crate."""
     try:
         crateInstance = ReadROCrateMetadata(rocrate_path)
     except Exception as exc:
@@ -472,9 +511,40 @@ def dataset(
         ctx.exit(code=1)
 
     try:
+        # Copy main dataset file
         CopyToROCrate(source_filepath, destination_filepath)
+        
+        # Generate main dataset GUID
+        sq_dataset = GenerateDatetimeSquid()
+        dataset_guid = guid if guid else f"ark:{NAAN}/dataset-{name.lower().replace(' ', '-')}-{sq_dataset}"
+
+        summary_stats_guid = None
+        elements = []
+        
+        # Handle summary statistics if provided
+        if summary_statistics_source and summary_statistics_destination:
+            # Copy summary statistics file
+            CopyToROCrate(summary_statistics_source, summary_statistics_destination)
+            
+            # Generate summary statistics elements
+            summary_stats_guid, summary_stats_instance, computation_instance = generateSummaryStatsElements(
+                name=name,
+                author=author,
+                keywords=keywords,
+                date_published=date_published,
+                version=version,
+                associated_publication=associated_publication,
+                additional_documentation=additional_documentation,
+                schema=schema,
+                dataset_guid=dataset_guid,
+                summary_statistics_filepath=summary_statistics_destination,
+                crate_path=rocrate_path
+            )
+            elements.extend([computation_instance, summary_stats_instance])
+
+        # Generate main dataset
         dataset_instance = GenerateDataset(
-            guid=guid,
+            guid=dataset_guid,
             url=url,
             author=author,
             name=name,
@@ -490,9 +560,12 @@ def dataset(
             generatedBy=generated_by,
             usedBy=used_by,
             filepath=destination_filepath,
-            cratePath=rocrate_path
+            cratePath=rocrate_path,
+            summary_stats_guid=summary_stats_guid
         )
-        AppendCrate(cratePath = rocrate_path, elements=[dataset_instance])
+        
+        elements.insert(0, dataset_instance)
+        AppendCrate(cratePath=rocrate_path, elements=elements)
         click.echo(dataset_instance.guid)
 
     except ValidationError as e:
@@ -503,5 +576,85 @@ def dataset(
     except Exception as exc:
         click.echo(f"ERROR: {str(exc)}")
         ctx.exit(code=1)
+
+#################
+# Summary Statistics
+#################
+@rocrate.command('compute-statistics')
+@click.argument('rocrate-path', type=click.Path(exists=True, path_type=pathlib.Path))
+@click.option('--dataset-id', required=True, help='ID of dataset to compute statistics for')
+@click.option('--software-id', required=True, help='ID of software to run')
+@click.option('--command', required=True, help='Python command to execute (e.g. python)')
+@click.pass_context
+def compute_statistics(
+    ctx,
+    rocrate_path: pathlib.Path,
+    dataset_id: str,
+    software_id: str,
+    command: str
+):
+    """Compute statistics for a dataset using specified software"""
+    crate_instance = ReadROCrateMetadata(rocrate_path)
+    initial_files = getDirectoryContents(rocrate_path)
     
-    # TODO add to cache 
+    # Get original dataset info
+    dataset_info = getEntityFromCrate(crate_instance, dataset_id)
+    software_info = getEntityFromCrate(crate_instance, software_id)
+    if not dataset_info or not software_info:
+        raise ValueError(f"Dataset or software not found in crate")
+
+    # Get original dataset author
+    original_author = dataset_info.get("author", "Unknown")
+    dataset_path = dataset_info.get("contentUrl", "").replace("file:///", "")
+    software_path = software_info.get("contentUrl", "").replace("file:///", "")
+    
+    if not dataset_path or not software_path:
+        raise ValueError("Dataset or software path not found")
+
+    full_command = f"{command} {software_path} {dataset_path} {rocrate_path}"
+    success, stdout, stderr = run_command(full_command)
+    if not success:
+        raise RuntimeError(f"Command failed: {stderr}")
+
+    final_files = getDirectoryContents(rocrate_path)
+    new_files = final_files - initial_files
+    if not new_files:
+        raise RuntimeError("No output files generated")
+
+    computation_instance = GenerateComputation(
+        guid=None,
+        name=f"Statistics Computation for {dataset_id}",
+        runBy="Fairscape-CLI",
+        command=full_command,
+        dateCreated=datetime.now().isoformat(),
+        description=f"Generated statistics\nstdout:\n{stdout}\nstderr:\n{stderr}",
+        keywords=["statistics"],
+        usedSoftware=[software_id],
+        usedDataset=[dataset_id],
+        generated=[]
+    )
+
+    output_instances = registerOutputs(
+        new_files=new_files,
+        computation_id=computation_instance.guid,
+        dataset_id=dataset_id,
+        author=original_author
+    )
+    
+    stats_output = [out.guid for out in output_instances]
+    computation_instance.generated = stats_output
+
+    if stats_output:
+        # Update the original dataset metadata
+        dataset_info["hasSummaryStatistics"] = stats_output
+        # Generate a new Dataset instance with updated metadata
+        updated_dataset = Dataset.model_validate(dataset_info)
+        
+        # Update the dataset in the crate and append new elements
+        UpdateCrate(cratePath=rocrate_path, element=updated_dataset)
+        AppendCrate(
+            cratePath=rocrate_path,
+            elements=[computation_instance] + output_instances
+        )
+
+    click.echo(computation_instance.guid)

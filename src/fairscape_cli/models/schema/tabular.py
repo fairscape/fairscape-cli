@@ -1,17 +1,13 @@
-import jsonschema
 import pathlib
-from functools import lru_cache
 import os
 import json
 import pandas as pd
-import pyarrow.parquet as pq
-import pyarrow.compute as pc
 import h5py
+from datetime import datetime
 from enum import Enum
 from pydantic import (
     BaseModel,
     ConfigDict,
-    computed_field,
     Field,
     ValidationError,
     model_validator
@@ -19,21 +15,16 @@ from pydantic import (
 from typing import (
     Dict, 
     List, 
-    Optional,
-    Union,
+    Optional, 
     Literal,
-    Type
+    Union
 )
+from frictionless import Schema, Resource, describe, fields
+
 
 from fairscape_cli.models.schema.utils import (
-    GenerateSlice,
     PropertyNameException,
     ColumnIndexException,
-    map_arrow_type_to_json_schema
-)
-
-from fairscape_cli.models.utils import (
-    GenerateDatetimeSquid
 )
 
 from fairscape_cli.config import (
@@ -46,14 +37,11 @@ class FileType(str, Enum):
     CSV = "csv"
     TSV = "tsv"
     PARQUET = "parquet"
-    HDF5 = "h5"
     
     @classmethod
     def from_extension(cls, filepath: str) -> 'FileType':
-        ext = pathlib.Path(filepath).suffix.lower()[1:]  # Remove the dot
-        if ext == 'h5' or ext == 'hdf5':
-            return cls.HDF5
-        elif ext == 'parquet':
+        ext = pathlib.Path(filepath).suffix.lower()[1:]
+        if ext == 'parquet':
             return cls.PARQUET
         elif ext == 'tsv':
             return cls.TSV
@@ -61,6 +49,14 @@ class FileType(str, Enum):
             return cls.CSV
         else:
             raise ValueError(f"Unsupported file extension: {ext}")
+
+class ValidationError(BaseModel):
+    message: str
+    row: Optional[int] = None
+    field: Optional[str] = None
+    type: str = "ValidationError"
+    failed_keyword: str
+    path: Optional[str] = None
 
 class DatatypeEnum(str, Enum):
     NULL = "null"
@@ -142,250 +138,220 @@ class IntegerProperty(BaseProperty):
                 raise ValueError('IntegerProperty attribute maximum !< minimum')
         return self
 
-class BaseSchema(BaseModel):
+def frictionless_type_to_json_schema(field_type: str) -> str:
+    """Convert Frictionless types to JSON Schema types"""
+    type_mapping = {
+        'string': 'string',
+        'integer': 'integer',
+        'number': 'number',
+        'boolean': 'boolean',
+        'date': 'string',
+        'datetime': 'string',
+        'year': 'integer',
+        'yearmonth': 'string',
+        'duration': 'string',
+        'geopoint': 'array',
+        'geojson': 'object',
+        'array': 'array',
+        'object': 'object',
+        'time': 'string'
+    }
+    return type_mapping.get(field_type, 'string')
+
+class TabularValidationSchema(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+    
     guid: Optional[str] = Field(alias="@id", default=None)
     context: Optional[Dict] = Field(default=DEFAULT_CONTEXT, alias="@context")
     metadataType: Optional[str] = Field(default=DEFAULT_SCHEMA_TYPE, alias="@type")
-    schema_version: str = Field(default="https://json-schema.org/draft/2020-12/schema", alias="schema")
+    schema_version: str = Field(default="https://json-schema.org/draft/2020-12/schema", alias="$schema")
     name: str
     description: str
     datatype: str = Field(default="object", alias="type")
+    separator: str = Field(description="Field separator for the file")
+    header: bool = Field(description="Do files of this schema have a header row", default=True)
+    required: List[str] = Field(default=[])
+    properties: Dict[str, Dict] = Field(default={})
     additionalProperties: bool = Field(default=True)
-    required: List[str] = Field(description="list of required properties by name", default=[])
-    examples: Optional[List[Dict[str, str]]] = Field(default=[])
+    
+    # Store the frictionless schema
+    _frictionless_schema: Optional[Schema] = None
 
     def generate_guid(self) -> str:
+        """Generate a unique identifier for the schema"""
         if self.guid is None:
             prefix = f"schema-{self.name.lower().replace(' ', '-')}"
-            sq = GenerateDatetimeSquid()
-            self.guid = f"ark:{NAAN}/{prefix}-{sq}"
+            timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+            self.guid = f"ark:{NAAN}/{prefix}-{timestamp}"
         return self.guid
-    
+
     @model_validator(mode='after')
-    def generate_all_guids(self) -> 'BaseSchema':
+    def generate_all_guids(self) -> 'TabularValidationSchema':
         """Generate GUIDs for this schema and any nested schemas"""
         self.generate_guid()
-        
-        # Generate GUIDs for any nested schemas in properties
-        if hasattr(self, 'properties'):
-            for prop in self.properties.values():
-                if isinstance(prop, BaseSchema):
-                    prop.generate_guid()
-        
         return self
-    
-    def to_json_schema(self) -> dict:
-        """Convert the HDF5Schema to JSON Schema format"""
-        schema = self.model_dump(
-            by_alias=True,
-            exclude_unset=True,
-            exclude_none=True
-        )
-        return schema
-
-PropertyUnion = Union[StringProperty, ArrayProperty, BooleanProperty, NumberProperty, IntegerProperty, NullProperty]
-class TabularValidationSchema(BaseSchema):
-    properties: Dict[str, PropertyUnion] = Field(default={})
-    separator: str = Field(description="Field separator for the file")
-    header: bool = Field(description="Do files of this schema have a header row", default=False)
 
     @classmethod
     def infer_from_file(cls, filepath: str, name: str, description: str, include_min_max: bool = False) -> 'TabularValidationSchema':
-        """Infer schema from a file"""
+        """Infer schema from a file using Frictionless"""
         file_type = FileType.from_extension(filepath)
+        separator = '\t' if file_type == FileType.TSV else ','
         
-        if file_type == FileType.PARQUET:
-            return cls.infer_from_parquet(name, description, None, filepath, include_min_max)
-        else:  # csv or tsv
-            separator = '\t' if file_type == FileType.TSV else ','
-            df = pd.read_csv(filepath, sep=separator)
-            return cls.infer_from_dataframe(df, name, description, include_min_max, separator)
-        
-    @classmethod
-    def infer_from_dataframe(cls, df: pd.DataFrame, name: str, description: str, include_min_max: bool = False, separator: str = ',') -> 'TabularValidationSchema':
-        """Infer schema from a pandas DataFrame"""
-        type_map = {
-            'int16': ('integer', IntegerProperty, int),
-            'int32': ('integer', IntegerProperty, int),
-            'int64': ('integer', IntegerProperty, int),
-            'uint8': ('integer', IntegerProperty, int),
-            'uint16': ('integer', IntegerProperty, int),
-            'uint32': ('integer', IntegerProperty, int),
-            'uint64': ('integer', IntegerProperty, int),
-            'float16': ('number', NumberProperty, float),
-            'float32': ('number', NumberProperty, float),
-            'float64': ('number', NumberProperty, float),
-            'bool': ('boolean', BooleanProperty, None),
-        }
+        resource = describe(filepath)
         
         properties = {}
-        for i, (column_name, dtype) in enumerate(df.dtypes.items()):
-            dtype_str = str(dtype)
-            datatype, property_class, converter = type_map.get(dtype_str, ('string', StringProperty, None))
+        required_fields = []
+        
+        for i, field in enumerate(resource.schema.fields):
+            json_schema_type = frictionless_type_to_json_schema(field.type)
             
-            kwargs = {
-                "datatype": datatype,
-                "description": f"Column {column_name}",
+            property_def = {
+                "type": json_schema_type,
+                "description": field.description or f"Column {field.name}",
                 "index": i
             }
-            
-            if include_min_max and converter:
-                kwargs.update({
-                    "minimum": converter(df[column_name].min()),
-                    "maximum": converter(df[column_name].max())
-                })
-                
-            properties[column_name] = property_class(**kwargs)
+                    
+            properties[field.name] = property_def
+            required_fields.append(field.name)
         
-        return cls(
+        # Create our schema instance
+        schema = cls(
             name=name,
             description=description,
-            properties=properties,
-            required=list(properties.keys()),
             separator=separator,
-            header=True
-        )
-
-    @classmethod
-    def infer_from_parquet(cls, name: str, description: str, guid: Optional[str], filepath: str, include_min_max: bool = False) -> 'TabularValidationSchema':
-        """Infer schema from a Parquet file"""
-        table = pq.read_table(filepath)
-        schema = table.schema
-        properties = {}
-
-        for i, field in enumerate(schema):
-            field_name = field.name
-            field_type = map_arrow_type_to_json_schema(field.type)
-            
-            if field_type == 'string':
-                properties[field_name] = StringProperty(
-                    datatype='string',
-                    description=f"Column {field_name}",
-                    index=i
-                )
-            elif field_type == 'integer':
-                if include_min_max:
-                    column = table.column(field_name)
-                    min_max = pc.min_max(column)
-                    properties[field_name] = IntegerProperty(
-                        datatype='integer',
-                        description=f"Column {field_name}",
-                        index=i,
-                        minimum=min_max['min'].as_py(),
-                        maximum=min_max['max'].as_py()
-                    )
-                else:
-                    properties[field_name] = IntegerProperty(
-                        datatype='integer',
-                        description=f"Column {field_name}",
-                        index=i
-                    )
-            elif field_type == 'number':
-                if include_min_max:
-                    column = table.column(field_name)
-                    min_max = pc.min_max(column)
-                    properties[field_name] = NumberProperty(
-                        datatype='number',
-                        description=f"Column {field_name}",
-                        index=i,
-                        minimum=min_max['min'].as_py(),
-                        maximum=min_max['max'].as_py()
-                    )
-                else:
-                    properties[field_name] = NumberProperty(
-                        datatype='number',
-                        description=f"Column {field_name}",
-                        index=i
-                    )
-            elif field_type == 'boolean':
-                properties[field_name] = BooleanProperty(
-                    datatype='boolean',
-                    description=f"Column {field_name}",
-                    index=i
-                )
-
-        return cls(
-            name=name,
-            description=description,
-            guid=guid,
+            header=True,
             properties=properties,
-            required=list(properties.keys()),
-            separator=",",  # Not used for parquet but required
-            header=True    # Not used for parquet but required
+            required=required_fields
         )
-
-    def validate_file(self, filepath: str) -> List[Dict]:
-        """Validate a file against the schema"""
-        file_type = FileType.from_extension(filepath)
         
-        if file_type == FileType.PARQUET:
-            df = pd.read_parquet(filepath)
-        else:  # csv or tsv
-            sep = '\t' if file_type == FileType.TSV else self.separator
-            df = pd.read_csv(filepath, sep=sep, header=0 if self.header else None)
-        
-        return self.validate_dataframe(df)
+        # Store the frictionless schema for validation
+        schema._frictionless_schema = resource.schema
+        return schema
 
-    def validate_dataframe(self, df: pd.DataFrame) -> List[Dict]:
-        """Validate a dataframe against the schema with lenient string type checking.
-        Only reports string validation errors for pattern mismatches, not type mismatches."""
-        json_schema = self.to_json_schema()
-        validator = jsonschema.Draft202012Validator(json_schema)
+    def validate_file(self, filepath: str) -> List[ValidationError]:
+        """Validate a file against the schema using Frictionless"""
+        if not self._frictionless_schema:
+            raise ValueError("Schema not properly initialized")
+        
+        resource = Resource(
+            path=os.path.basename(filepath), 
+            basepath=os.path.dirname(filepath), 
+            schema=self._frictionless_schema
+        )
+        report = resource.validate()
+        
         errors = []
-
-        for i, row in df.iterrows():
-            row_dict = row.to_dict()
-            validation_errors = sorted(validator.iter_errors(row_dict), key=lambda e: e.path)
-            
-            for err in validation_errors:
-                # Skip type validation errors for string fields unless there's a pattern mismatch
-                if err.validator == "type":
-                    field_name = list(err.path)[-1] if err.path else None
-                    if field_name in self.properties:
-                        prop = self.properties[field_name]
-                        if prop.datatype == "string":
-                            # Skip string type validation errors
-                            continue
+        for task in report.tasks:
+            for error in task.errors:
+                if isinstance(error, TypeError):
+                    validation_error = ValidationError(
+                        message=str(error),
+                        type="ValidationError",
+                        failed_keyword="type"
+                    )
+                else:
+                    validation_error = ValidationError(
+                        message=error.message,
+                        row=error.row_number if hasattr(error, 'row_number') else None,
+                        field=error.field_name if hasattr(error, 'field_name') else None,
+                        failed_keyword=error.code if hasattr(error, 'code') else "error"
+                    )
+                errors.append(validation_error)
                 
-                # Include all other validation errors
-                errors.append({
-                    "message": err.message,
-                    "row": i,
-                    "field": list(err.path)[-1] if err.path else None,
-                    "type": "ValidationError",
-                    "failed_keyword": err.validator
-                })
-
         return errors
 
-class HDF5Schema(BaseSchema):
-    properties: Dict[str, TabularValidationSchema] = Field(default={})
+    def to_dict(self) -> dict:
+        """Convert the schema to a dictionary format"""
+        return self.model_dump(by_alias=True, exclude={'_frictionless_schema'})
 
+    @classmethod
+    def from_dict(cls, data: dict) -> 'TabularValidationSchema':
+        """Create a schema instance from a dictionary"""
+        properties = data.pop('properties', {})
+        required_fields = data.pop('required', [])
+        
+        frictionless_schema = Schema()
+        
+        type_to_field = {
+            'string': fields.StringField,
+            'integer': fields.IntegerField,
+            'number': fields.NumberField,
+            'boolean': fields.BooleanField,
+            'array': fields.ArrayField
+        }
+        
+        for name, prop in properties.items():
+            field_type = type_to_field.get(prop.get('type', 'string'), fields.StringField)
+            field = field_type(
+                name=name,
+                description=prop.get('description', ''),
+                constraints={}
+            )
+            
+            # Add constraints if they exist
+            if 'minimum' in prop:
+                field.constraints['minimum'] = prop['minimum']
+            if 'maximum' in prop:
+                field.constraints['maximum'] = prop['maximum']
+            if 'pattern' in prop:
+                field.constraints['pattern'] = prop['pattern']
+            if 'minLength' in prop:
+                field.constraints['minLength'] = prop['minLength']
+            if 'maxLength' in prop:
+                field.constraints['maxLength'] = prop['maxLength']
+                
+            frictionless_schema.add_field(field)
+        
+        # Create our schema instance
+        schema = cls(**data, properties=properties, required=required_fields)
+        schema._frictionless_schema = frictionless_schema
+        return schema
+
+class HDF5ValidationSchema(BaseModel):
+    guid: Optional[str] = Field(alias="@id", default=None)
+    context: Optional[Dict] = Field(default=DEFAULT_CONTEXT, alias="@context")
+    name: str
+    description: str
+    properties: Dict[str, TabularValidationSchema] = Field(default={})
+    required: List[str] = Field(default=[])
+
+    def generate_guid(self) -> str:
+        """Generate a unique identifier for the schema"""
+        if self.guid is None:
+            prefix = f"schema-{self.name.lower().replace(' ', '-')}"
+            timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+            self.guid = f"ark:{NAAN}/{prefix}-{timestamp}"
+        return self.guid
+
+    @model_validator(mode='after')
+    def generate_all_guids(self) -> 'HDF5ValidationSchema':
+        """Generate GUIDs for this schema and any nested schemas"""
+        self.generate_guid()
+        return self
+    
     @staticmethod
     def dataset_to_dataframe(dataset: h5py.Dataset) -> pd.DataFrame:
-        """Convert any HDF5 dataset to a pandas DataFrame"""
+        """Convert an HDF5 dataset to a pandas DataFrame"""
         data = dataset[()]
         
-        # structured array convert directly
-        if dataset.dtype.fields:
+        if dataset.dtype.fields:  # Structured array
             return pd.DataFrame(data)
-            
-        # For multi-dimensional arrays make up column name
-        elif len(dataset.shape) > 1:
-            n_cols = dataset.shape[1] if len(dataset.shape) > 1 else 1
+        elif len(dataset.shape) > 1:  # Multi-dimensional array
+            n_cols = dataset.shape[1]
             columns = [f"column_{i}" for i in range(n_cols)]
             return pd.DataFrame(data, columns=columns)
-            
-        # For 1D arrays convert to single column DataFrame
-        else:
+        else:  # 1D array
             return pd.DataFrame(data, columns=['value'])
 
-    @classmethod 
-    def infer_from_file(cls, filepath: str, name: str, description: str, include_min_max: bool = False) -> 'HDF5Schema':
-        """Infer schema from HDF5 file"""
-        schema = cls(name=name, description=description)
+    @classmethod
+    def infer_from_file(cls, filepath: str, name: str, description: str) -> 'HDF5ValidationSchema':
+        """Infer schema from an HDF5 file"""
+        schema = cls(
+            name=name,
+            description=description
+        )
         properties = {}
-        
+
         with h5py.File(filepath, 'r') as f:
             def process_group(group, parent_path=""):
                 for key, item in group.items():
@@ -394,98 +360,139 @@ class HDF5Schema(BaseSchema):
                     if isinstance(item, h5py.Dataset):
                         try:
                             df = cls.dataset_to_dataframe(item)
-                            properties[path] = TabularValidationSchema.infer_from_dataframe(
-                                df,
+                            resource = describe(df)
+                            
+                            tabular_schema = TabularValidationSchema(
                                 name=f"{name}_{path.replace('/', '_')}",
                                 description=f"Dataset at {path}",
-                                include_min_max=include_min_max
+                                separator=",",
+                                header=True,
+                                properties={},
+                                required=[],
+                                context=None
                             )
+                            
+                            tabular_schema._frictionless_schema = resource.schema
+                            
+                            for i, field in enumerate(resource.schema.fields):
+                                property_def = {
+                                    "type": field.type,
+                                    "description": field.description or f"Column {field.name}",
+                                    "index": i
+                                }
+                                
+                                tabular_schema.properties[field.name] = property_def
+                                tabular_schema.required.append(field.name)
+                            
+                            properties[path] = tabular_schema
+                            
                         except Exception as e:
-                            print(f"Warning: Could not convert dataset {path} to DataFrame: {str(e)}")
+                            print(f"Warning: Could not process dataset {path}: {str(e)}")
                     
                     elif isinstance(item, h5py.Group):
-                        # Recursively process group contents
                         process_group(item, path)
-                
+                        
             process_group(f)
             schema.properties = properties
             schema.required = list(properties.keys())
         
         return schema
 
-    def validate_file(self, filepath: str) -> List[Dict]:
+    def validate_file(self, filepath: str) -> List[ValidationError]:
         """Validate an HDF5 file against the schema"""
         errors = []
         
         with h5py.File(filepath, 'r') as f:
             for path, schema in self.properties.items():
                 try:
-                    # Try to get the dataset using the path
                     dataset = f[path]
                     if isinstance(dataset, h5py.Dataset):
-                        # Convert dataset to DataFrame
                         df = self.dataset_to_dataframe(dataset)
-                        # Validate using the TabularValidationSchema's validate_dataframe method
-                        dataset_errors = schema.validate_dataframe(df)
-                        # Add path information to errors
-                        for error in dataset_errors:
-                            error['path'] = path
-                        errors.extend(dataset_errors)
+                        resource = Resource(data=df, schema=schema._frictionless_schema)
+                        report = resource.validate()
+                        
+                        for task in report.tasks:
+                            for error in task.errors:
+                                # Skip string type errors
+                                if (hasattr(error, 'type') and error.type == 'type-error' and
+                                    hasattr(error, 'note') and 'type is "string' in error.note):
+                                    continue
+                                    
+                                validation_error = ValidationError(
+                                    message=error.message,
+                                    row=error.rowNumber if hasattr(error, 'rowNumber') else None,
+                                    field=error.fieldName if hasattr(error, 'fieldName') else None,
+                                    type="ValidationError",
+                                    failed_keyword=error.type if hasattr(error, 'type') else "error",
+                                    path=path
+                                )
+                                errors.append(validation_error)
+                                
                 except KeyError:
-                    errors.append({
-                        "message": f"Dataset {path} not found",
-                        "path": path,
-                        "type": "ValidationError",
-                        "failed_keyword": "required"
-                    })
+                    errors.append(ValidationError(
+                        message=f"Dataset {path} not found",
+                        type="ValidationError",
+                        failed_keyword="required",
+                        path=path
+                    ))
                 except Exception as e:
-                    errors.append({
-                        "message": f"Error validating dataset {path}: {str(e)}",
-                        "path": path,
-                        "type": "ValidationError",
-                        "failed_keyword": "format"
-                    })
+                    errors.append(ValidationError(
+                        message=f"Error validating dataset {path}: {str(e)}",
+                        type="ValidationError",
+                        failed_keyword="format",
+                        path=path
+                    ))
         
         return errors
-
     
-def AppendProperty(schemaFilepath: str, propertyInstance, propertyName: str) -> None: 
+    def to_dict(self) -> dict:
+        """Convert the schema to a dictionary format including all fields"""
+        return self.model_dump(by_alias=True)
+
+    @classmethod
+    def from_dict(cls, data: dict) -> 'HDF5ValidationSchema':
+        """Create a schema instance from a dictionary"""
+        properties = {
+            path: TabularValidationSchema.from_dict(schema_dict)
+            for path, schema_dict in data.get('properties', {}).items()
+        }
+        
+        return cls(
+            name=data['name'],
+            description=data['description'],
+            properties=properties,
+            required=data.get('required', [])
+        )
+    
+def write_schema(schema: TabularValidationSchema, output_file: str):
+    """Write a schema to a file"""
+    schema_dict = schema.to_dict()
+    
+    with open(output_file, 'w') as f:
+        json.dump(schema_dict, f, indent=2)
+    
+def AppendProperty(schemaFilepath: str, propertyInstance, propertyName: str) -> None:
     # check that schemaFile exists
     schemaPath = pathlib.Path(schemaFilepath)
-
     if not schemaPath.exists():
         raise Exception
 
     with schemaPath.open("r+") as schemaFile:
         schemaFileContents = schemaFile.read()
-        schemaJson =  json.loads(schemaFileContents) 
+        schemaJson = json.loads(schemaFileContents)
 
-        # load the model into a tabular validation schema
         schemaModel = TabularValidationSchema.model_validate(schemaJson)
 
-        # TODO check for inconsitencies
-
-        # does there exist a property with same name
         if propertyName in [key for key in schemaModel.properties.keys()]:
             raise PropertyNameException(propertyName)
 
-        # does there exist a property with same column number
-        schema_indicies = [ val.index for val in schemaModel.properties.values()]
-
-        # check overlap of indicies
-        # CheckOverlap
-
-
-        # add new property to schema
+        schema_indicies = [val['index'] for val in schemaModel.properties.values()]
+        
         schemaModel.properties[propertyName] = propertyInstance
-
-        # add new property as required
         schemaModel.required.append(propertyName)
+        schemaJson = json.dumps(schemaModel.model_dump(by_alias=True, exclude_none=True), indent=2)
 
-        # serialize model to json
-        schemaJson = json.dumps(schemaModel.model_dump(by_alias=True) , indent=2)
-
-        # overwrite file contents
+        # overwrite file contents  
         schemaFile.seek(0)
         schemaFile.write(schemaJson)
 
@@ -525,64 +532,3 @@ def ReadSchemaLocal(schemaFile: str) -> TabularValidationSchema:
     tabularSchema = TabularValidationSchema.model_validate(schemaJson)
     return tabularSchema
 
-def ReadSchema(schemaFile:str) -> TabularValidationSchema:
-    ''' Read a schema specified by the argument schemaFile
-
-    The schemaFile parameter can be a url to a rawgithub link, or an ark identifier.
-    If the ark identifier is in the supplied, default schemas provided in the fairscape cli pacakges will be searched.
-    If there is no match then 
-    '''
-
-    if 'raw.githubusercontent' in schemaFile:
-        schemaInstance = ReadSchemaGithub(schemaFile)
-        return schemaInstance
-
-
-    elif 'ark' in schemaFile:
-        defaultSchemas = ImportDefaultSchemas()
-        matchingSchemas = list(filter(lambda schema: schema.guid == str(schemaFile), defaultSchemas))
-
-        if len(matchingSchemas) == 0:
-            # request against fairscape
-            schemaInstance = ReadSchemaFairscape(schemaFile)
-            return schemaInstance
-        else:
-            defaultSchema = matchingSchemas[0]
-            return defaultSchema
-
-    else: 
-        # schema must be a path that exists
-        schemaInstance = ReadSchemaLocal(schemaFile)
-        return schemaInstance
-
-def WriteSchema(tabular_schema: TabularValidationSchema, schema_file):
-    """ Helper Function for writing files
-    """
-
-    schema_dictionary = tabular_schema.model_dump(by_alias=True) 
-    schema_json = json.dumps(schema_dictionary, indent=2)
-
-    # dump json to a file
-    with open(schema_file, "w") as output_file:
-        output_file.write(schema_json)
-
-@lru_cache
-def ImportDefaultSchemas()-> List[TabularValidationSchema]:
-	defaultSchemaLocation = pathlib.Path(os.path.dirname(os.path.realpath(__file__))) / 'default_schemas'
-	schemaPaths = list(defaultSchemaLocation.rglob("*/*.json"))
-
-	defaultSchemaList = []
-	for schemaPathElem in schemaPaths:
-
-		with schemaPathElem.open("r") as inputSchema:
-			inputSchemaData = inputSchema.read()
-			schemaJson =  json.loads(inputSchemaData) 
-
-		try:		
-			schemaElem = TabularValidationSchema.model_validate(schemaJson)
-			defaultSchemaList.append(schemaElem)
-		except:
-			# TODO handle validation failures from default schemas
-			pass
-	
-	return defaultSchemaList
