@@ -40,11 +40,6 @@ class FairscapeBaseModel(BaseModel):
         title="guid",
         alias="@id"
     )
-    context: Dict[str,str] = Field(
-        default=default_context,
-        title="context",
-        alias="@context"
-    )
     metadataType: str = Field(
         title="metadataType",
         alias="@type"

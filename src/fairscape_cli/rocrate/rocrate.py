@@ -79,7 +79,7 @@ def init(
         path = pathlib.Path.cwd(), 
     )
 
-    click.echo(passed_crate.guid)
+    click.echo(passed_crate.get("@id"))
     
 
 @rocrate.command('create')
@@ -112,7 +112,7 @@ def create(
         path = rocrate_path
     )
     
-    click.echo(passed_crate.guid)
+    click.echo(passed_crate.get("@id"))
 
 
 
