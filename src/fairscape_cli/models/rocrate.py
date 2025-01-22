@@ -196,9 +196,7 @@ class ROCrate(BaseModel):
             if 'isPartOf' not in root_dataset:
                 root_dataset['isPartOf'] = []
             root_dataset['isPartOf'].append({
-                "@id": project_guid,
-                "@type": "Project",
-                "name": self.projectName
+                "@id": project_guid
             })
 
         # Create metadata descriptor
