@@ -1,6 +1,7 @@
 import pathlib
 import shutil
 import json
+from datetime import datetime
 from typing import Optional, Union, List, Literal, Dict, Any
 from pydantic import BaseModel, Field, ConfigDict, model_validator
 
@@ -76,78 +77,81 @@ class ROCrateMetadata(BaseModel):
                         raise ValueError(f"Nested object under '{key}' can only contain '@id' property")
 
 def GenerateROCrate(
-    path: pathlib.Path,
-    guid: str,
-    name: str,
-    description: str,
-    keywords: List[str],
-    organizationName: str = None,
-    projectName: str = None,
-    ):
-        
-    # Generate GUID if not provided
-    sq = GenerateDatetimeSquid()
-    guid = f"ark:{NAAN}/rocrate-{name.lower().replace(' ', '-')}-{sq}"
+   path: pathlib.Path,
+   guid: str,
+   name: str, 
+   description: str,
+   keywords: List[str],
+   organizationName: str = None,
+   projectName: str = None,
+   license: str = "https://creativecommons.org/licenses/by/4.0/",
+   datePublished: str = None,
+):
+   # Generate GUID if not provided
+   sq = GenerateDatetimeSquid()
+   guid = f"ark:{NAAN}/rocrate-{name.lower().replace(' ', '-')}-{sq}/"
 
-    # Create root dataset entity
-    root_dataset = {
-        "@id": guid,
-        "@type": ["Dataset", "https://w3id.org/EVI#ROCrate"],
-        "name": name,
-        "keywords": keywords,
-        "description": description,
-        "hasPart": []
-    }
+   if datePublished is None:
+       datePublished = datetime.now().isoformat()
 
-    if 'isPartOf' not in root_dataset:
-        root_dataset['isPartOf'] = []
-    
-    if organizationName:
-        organization_guid = f"ark:{NAAN}/organization-{organizationName.lower().replace(' ', '-')}-{GenerateDatetimeSquid()}"
-        root_dataset['isPartOf'] = [{
-            "@id": organization_guid
-        }]
+   # Create root dataset entity
+   root_dataset = {
+       "@id": guid,
+       "@type": ["Dataset", "https://w3id.org/EVI#ROCrate"],
+       "name": name,
+       "keywords": keywords,
+       "description": description,
+       "license": license,
+       "datePublished": datePublished,
+       "hasPart": [],
+       "isPartOf": []
+   }
 
-    if projectName:
-        project_guid = f"ark:{NAAN}/project-{projectName.lower().replace(' ', '-')}-{GenerateDatetimeSquid()}"
+   if organizationName:
+       organization_guid = f"ark:{NAAN}/organization-{organizationName.lower().replace(' ', '-')}-{GenerateDatetimeSquid()}"
+       root_dataset['isPartOf'] = [{
+           "@id": organization_guid
+       }]
 
-        root_dataset['isPartOf'].append({
-            "@id": project_guid
-        })
+   if projectName:
+       project_guid = f"ark:{NAAN}/project-{projectName.lower().replace(' ', '-')}-{GenerateDatetimeSquid()}"
+       root_dataset['isPartOf'].append({
+           "@id": project_guid
+       })
 
-    metadata_descriptor = {
-        "@id": "ro-crate-metadata.json",
-        "@type": "CreativeWork",
-        "conformsTo": {"@id": "https://w3id.org/ro/crate/1.2-DRAFT"},
-        "about": {"@id": guid}
-    }
+   metadata_descriptor = {
+       "@id": "ro-crate-metadata.json",
+       "@type": "CreativeWork",
+       "conformsTo": {"@id": "https://w3id.org/ro/crate/1.2-DRAFT"},
+       "about": {"@id": guid}
+   }
 
-    # Create full RO-Crate structure
-    rocrate_metadata = {
-        "@context": DEFAULT_CONTEXT,
-        "@graph": [
-            metadata_descriptor,
-            root_dataset
-        ]
-    }
+   # Create full RO-Crate structure
+   rocrate_metadata = {
+       "@context": DEFAULT_CONTEXT,
+       "@graph": [
+           metadata_descriptor,
+           root_dataset
+       ]
+   }
 
-    # Validate the structure
-    ROCrateMetadata(**rocrate_metadata)
-    
-    # Write to file
-    if 'ro-crate-metadata.json' in str(path):
-        roCrateMetadataPath = path
-        if not path.parent.exists():
-            path.parent.mkdir(parents=True, exist_ok=True)
-    else:
-        roCrateMetadataPath = path / 'ro-crate-metadata.json'
-        if not path.exists():
-            path.mkdir(parents=True, exist_ok=True)
+   # Validate the structure
+   ROCrateMetadata(**rocrate_metadata)
 
-    with roCrateMetadataPath.open(mode="w") as metadataFile:
-        json.dump(rocrate_metadata, metadataFile, indent=2)
+   # Write to file
+   if 'ro-crate-metadata.json' in str(path):
+       roCrateMetadataPath = path
+       if not path.parent.exists():
+           path.parent.mkdir(parents=True, exist_ok=True)
+   else:
+       roCrateMetadataPath = path / 'ro-crate-metadata.json'
+       if not path.exists():
+           path.mkdir(parents=True, exist_ok=True)
 
-    return rocrate_metadata["@graph"][1]
+   with roCrateMetadataPath.open(mode="w") as metadataFile:
+       json.dump(rocrate_metadata, metadataFile, indent=2)
+
+   return rocrate_metadata["@graph"][1]
 
 class ROCrate(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -163,7 +167,7 @@ class ROCrate(BaseModel):
     def generate_guid(self) -> str:
         if self.guid is None:
             sq = GenerateDatetimeSquid()
-            self.guid = f"ark:{NAAN}/rocrate-{self.name.replace(' ', '-').lower()}-{sq}"
+            self.guid = f"ark:{NAAN}/rocrate-{self.name.replace(' ', '-').lower()}-{sq}/"
         return self.guid
 
     def createCrateFolder(self):

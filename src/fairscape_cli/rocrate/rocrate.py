@@ -54,66 +54,73 @@ def rocrate():
 
 @rocrate.command('init')
 @click.option('--guid', required=False, type=str, default="", show_default=False)
-@click.option('--name', required=True, type=str) 
-@click.option('--organization-name', required=True, type=str) 
-@click.option('--project-name', required=True, type=str) 
+@click.option('--name', required=True, type=str)
+@click.option('--organization-name', required=True, type=str)
+@click.option('--project-name', required=True, type=str)
 @click.option('--description', required=True, type=str)
 @click.option('--keywords', required=True, multiple=True, type=str)
+@click.option('--license', required=False, type=str, default="https://creativecommons.org/licenses/by/4.0/")
+@click.option('--date-published', required=False, type=str)
 def init(
-    guid,
-    name,
-    organization_name,
-    project_name,
-    description,
-    keywords
+   guid,
+   name, 
+   organization_name,
+   project_name,
+   description,
+   keywords,
+   license,
+   date_published
 ):
-    """ Initalize a rocrate in the current working directory by instantiating a ro-crate-metadata.json file.
-    """
-    
-    passed_crate = GenerateROCrate(
-        guid=guid,
-        name=name,
-        organizationName = organization_name,
-        projectName = project_name,
-        description = description,
-        keywords = keywords,
-        path = pathlib.Path.cwd(), 
-    )
-
-    click.echo(passed_crate.get("@id"))
-    
+   """ Initialize a rocrate in the current working directory by instantiating a ro-crate-metadata.json file.
+   """
+   passed_crate = GenerateROCrate(
+       guid=guid,
+       name=name,
+       organizationName=organization_name,
+       projectName=project_name,
+       description=description,
+       keywords=keywords,
+       license=license,
+       datePublished=date_published,
+       path=pathlib.Path.cwd(),
+   )
+   click.echo(passed_crate.get("@id"))
 
 @rocrate.command('create')
 @click.option('--guid', required=False, type=str, default="", show_default=False)
 @click.option('--name', required=True, type=str)
-@click.option('--organization-name', required=True, type=str) 
-@click.option('--project-name', required=True, type=str) 
+@click.option('--organization-name', required=True, type=str)
+@click.option('--project-name', required=True, type=str)
 @click.option('--description', required=True, type=str)
 @click.option('--keywords', required=True, multiple=True, type=str)
+@click.option('--license', required=False, type=str, default="https://creativecommons.org/licenses/by/4.0/")
+@click.option('--date-published', required=False, type=str)
 @click.argument('rocrate-path', type=click.Path(exists=False, path_type=pathlib.Path))
 def create(
-    rocrate_path, 
-    guid,
-    name,
-    organization_name,
-    project_name,
-    description,
-    keywords
-): 
-    '''Create an ROCrate in a new path specified by the rocrate-path argument
-    '''
-
-    passed_crate = GenerateROCrate(
-        guid=guid,
-        name=name,
-        organizationName = organization_name,
-        projectName = project_name,
-        description = description,
-        keywords = keywords,
-        path = rocrate_path
-    )
-    
-    click.echo(passed_crate.get("@id"))
+   rocrate_path,
+   guid,
+   name,
+   organization_name,
+   project_name,
+   description,
+   keywords,
+   license,
+   date_published
+):
+   '''Create an ROCrate in a new path specified by the rocrate-path argument
+   '''
+   passed_crate = GenerateROCrate(
+       guid=guid,
+       name=name,
+       organizationName=organization_name,
+       projectName=project_name,
+       description=description,
+       keywords=keywords,
+       license=license,
+       datePublished=date_published,
+       path=rocrate_path
+   )
+   click.echo(passed_crate.get("@id"))
 
 
 

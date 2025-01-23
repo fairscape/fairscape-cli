@@ -132,7 +132,7 @@ class TestAPI(unittest.TestCase):
 
         # Verify crate metadata
         rocrateMetadataRecord = ReadROCrateMetadata(self.rocratePath)
-        rocrateGUIDs = [elem.guid for elem in rocrateMetadataRecord.metadataGraph]
+        rocrateGUIDs = [elem["@id"] for elem in rocrateMetadataRecord["@graph"]]
 
         # Verify all dataset GUIDs are present
         for ds in datasetList:
@@ -155,7 +155,7 @@ class TestAPI(unittest.TestCase):
 
         # Final verification
         rocrateMetadataRecord = ReadROCrateMetadata(self.rocratePath)
-        rocrateGUIDs = [elem.guid for elem in rocrateMetadataRecord.metadataGraph]
+        rocrateGUIDs = [elem["@id"] for elem in rocrateMetadataRecord["@graph"]]
 
         self.assertIn(computation.guid, rocrateGUIDs, "Computation GUID not found in metadata")
         self.assertIn(software.guid, rocrateGUIDs, "Software GUID not found in metadata")
