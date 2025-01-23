@@ -1,10 +1,9 @@
 import pathlib
 import shutil
 import json
-from typing import Optional, Union, List, Literal, Dict
-
-from prettytable import PrettyTable
-from pydantic import BaseModel, computed_field, Field
+from datetime import datetime
+from typing import Optional, Union, List, Literal, Dict, Any
+from pydantic import BaseModel, Field, ConfigDict, model_validator
 
 from fairscape_cli.config import NAAN, DEFAULT_CONTEXT
 from fairscape_cli.models.software import Software
@@ -12,254 +11,268 @@ from fairscape_cli.models.dataset import Dataset
 from fairscape_cli.models.computation import Computation
 from fairscape_cli.models.guid_utils import GenerateDatetimeSquid
 
+class ROCrateMetadataDescriptor(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+    
+    id: str = Field(default="ro-crate-metadata.json", alias="@id")
+    type: Literal["CreativeWork"] = Field(alias="@type")
+    conformsTo: Dict = Field(default={
+        "@id": "https://w3id.org/ro/crate/1.2-DRAFT"
+    })
+    about: Dict[str, str]
+
 class ROCrateMetadata(BaseModel):
-    guid: Optional[str] = Field(alias="@id", default=None)
-    metadataType: Optional[str] = Field(alias="@type", default= "https://w3id.org/EVI#ROCrate")
-    context: Dict[str, str] = Field(default=DEFAULT_CONTEXT)
-    name: str = Field(max_length=200)
-    description: str = Field(min_length=10)
-    keywords: List[str] = Field(default=[])
-    isPartOf: Optional[List[Dict]]
-    metadataGraph: Optional[List[Union[Dataset,Software, Computation]]] = Field(alias="@graph", default=[])
+    model_config = ConfigDict(
+        populate_by_name=True,
+        extra='forbid'
+    )
+    
+    context: Dict[str, str] = Field(
+        default={
+            "EVI": "https://w3id.org/EVI#",
+            "@vocab": "https://schema.org/"
+        },
+        alias="@context"
+    )
+    graph: List[Dict] = Field(alias="@graph")
+
+    @model_validator(mode='after')
+    def validate_metadata(self) -> 'ROCrateMetadata':
+        self.validate_metadata_descriptor()
+        self.validate_graph_elements()
+        return self
+
+    def validate_metadata_descriptor(self):
+        # Check for metadata descriptor
+        descriptors = [item for item in self.graph 
+                      if item.get("@id") == "ro-crate-metadata.json"]
+        if not descriptors:
+            raise ValueError("Missing required metadata descriptor in @graph")
+        
+        descriptor = descriptors[0]
+        # Validate descriptor
+        ROCrateMetadataDescriptor(**descriptor)
+        
+        # Validate about reference exists in graph
+        about_id = descriptor.get("about", {}).get("@id")
+        if not about_id:
+            raise ValueError("Metadata descriptor missing root node in about.@id")
+            
+        # Check root exists
+        root_items = [item for item in self.graph if item.get("@id") == about_id]
+        if not root_items:
+            raise ValueError(f"Root id {about_id} referenced in about.@id not found in @graph")
+
+    def validate_graph_elements(self):
+        """Validate each element in @graph is flat and has an id"""
+        for item in self.graph:
+            if "@id" not in item or "@type" not in item:
+                raise ValueError("All @graph elements must have @id and @type properties")
+                
+            # Validate nested objects only contain @id
+            for key, value in item.items():
+                if isinstance(value, dict):
+                    allowed_keys = {"@id"}
+                    if set(value.keys()) - allowed_keys:
+                        raise ValueError(f"Nested object under '{key}' can only contain '@id' property")
 
 def GenerateROCrate(
-    path: pathlib.Path,
-    guid: str,
-    name: str,
-    description: str,
-    keywords: List[str],
-    organizationName: str = None,
-    projectName: str = None,
-    ):
-        
-    # overwrite custom GUIDs
-    sq = GenerateDatetimeSquid()
-    guid = f"ark:{NAAN}/rocrate-{name.lower().replace(' ', '-')}-{sq}"
+   path: pathlib.Path,
+   guid: str,
+   name: str, 
+   description: str,
+   keywords: List[str],
+   organizationName: str = None,
+   projectName: str = None,
+   license: str = "https://creativecommons.org/licenses/by/4.0/",
+   datePublished: str = None,
+):
+   # Generate GUID if not provided
+   sq = GenerateDatetimeSquid()
+   guid = f"ark:{NAAN}/rocrate-{name.lower().replace(' ', '-')}-{sq}/"
 
-    roCrateInstanceMetadata = {
-        "@id": guid,
-        "@type": "https://w3id.org/EVI#ROCrate",
-        "name": name,
-        "isPartOf": [],
-        "keywords": keywords,
-        "description": description,
-        "metadataGraph": []
-        }
+   if datePublished is None:
+       datePublished = datetime.now().isoformat()
 
-    if organizationName:
-        organizationGuid = f"ark:{NAAN}/organization-{organizationName.lower().replace(' ', '-')}-{GenerateDatetimeSquid()}"
-        roCrateInstanceMetadata['isPartOf'].append(
-            {
-                "@id": organizationGuid,
-                "@type": "Organization",
-                "name": organizationName
-            }
-        )
+   # Create root dataset entity
+   root_dataset = {
+       "@id": guid,
+       "@type": ["Dataset", "https://w3id.org/EVI#ROCrate"],
+       "name": name,
+       "keywords": keywords,
+       "description": description,
+       "license": license,
+       "datePublished": datePublished,
+       "hasPart": [],
+       "isPartOf": []
+   }
 
-    if projectName:
-        projectGuid = f"ark:{NAAN}/project-{projectName.lower().replace(' ', '-')}-{GenerateDatetimeSquid()}"
-        roCrateInstanceMetadata['isPartOf'].append(
-            {
-                "@id": projectGuid,
-                "@type": "Project",
-                "name": projectName
-            }
-        )
+   if organizationName:
+       organization_guid = f"ark:{NAAN}/organization-{organizationName.lower().replace(' ', '-')}-{GenerateDatetimeSquid()}"
+       root_dataset['isPartOf'] = [{
+           "@id": organization_guid
+       }]
 
+   if projectName:
+       project_guid = f"ark:{NAAN}/project-{projectName.lower().replace(' ', '-')}-{GenerateDatetimeSquid()}"
+       root_dataset['isPartOf'].append({
+           "@id": project_guid
+       })
 
-    rocrateInstance = ROCrateMetadata.model_validate(roCrateInstanceMetadata)
-    
-    if 'ro-crate-metadata.json' in str(path):
-        roCrateMetadataPath = path
-       
-       # if the parent folder doesn't exist, create the parent folder
-        if not path.parent.exists():
-            path.parent.mkdir(parents=True, exist_ok=True)
-    else:
-        roCrateMetadataPath = path / 'ro-crate-metadata.json'
+   metadata_descriptor = {
+       "@id": "ro-crate-metadata.json",
+       "@type": "CreativeWork",
+       "conformsTo": {"@id": "https://w3id.org/ro/crate/1.2-DRAFT"},
+       "about": {"@id": guid}
+   }
 
-       # if the parent folder doesn't exist, create the parent folder
-        if not path.exists():
-            path.mkdir(parents=True, exist_ok=True)
+   # Create full RO-Crate structure
+   rocrate_metadata = {
+       "@context": DEFAULT_CONTEXT,
+       "@graph": [
+           metadata_descriptor,
+           root_dataset
+       ]
+   }
 
+   # Validate the structure
+   ROCrateMetadata(**rocrate_metadata)
 
-    with roCrateMetadataPath.open(mode="w") as metadataFile:
-        serializedMetadata = rocrateInstance.model_dump(by_alias=True)
-        json.dump(serializedMetadata, metadataFile, indent=2)
+   # Write to file
+   if 'ro-crate-metadata.json' in str(path):
+       roCrateMetadataPath = path
+       if not path.parent.exists():
+           path.parent.mkdir(parents=True, exist_ok=True)
+   else:
+       roCrateMetadataPath = path / 'ro-crate-metadata.json'
+       if not path.exists():
+           path.mkdir(parents=True, exist_ok=True)
 
-    return rocrateInstance
+   with roCrateMetadataPath.open(mode="w") as metadataFile:
+       json.dump(rocrate_metadata, metadataFile, indent=2)
 
-
+   return rocrate_metadata["@graph"][1]
 
 class ROCrate(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
     guid: Optional[str] = Field(alias="@id", default=None)
-    metadataType: str = Field(alias="@type", default="https://w3id.org/EVI#ROCrate")
     name: str = Field(max_length=200)
-    description: str = Field(min_length=10)
-    keywords: List[str] = Field(...)
-    projectName: Optional[str] = Field(default=None)
-    organizationName: Optional[str] = Field(default=None)
+    description: str = Field(min_length=5)
+    keywords: List[str]
+    projectName: Optional[str] = None
+    organizationName: Optional[str] = None
     path: pathlib.Path
-    metadataGraph: Optional[List[Union[Dataset,Software, Computation]]] = Field(alias="@graph", default=[])
 
     def generate_guid(self) -> str:
         if self.guid is None:
             sq = GenerateDatetimeSquid()
-            self.guid = f"ark:{NAAN}/rocrate-{self.name.replace(' ', '-').lower()}-{sq}"
+            self.guid = f"ark:{NAAN}/rocrate-{self.name.replace(' ', '-').lower()}-{sq}/"
         return self.guid
-
 
     def createCrateFolder(self):
         self.path.mkdir(parents=True, exist_ok=True)
-        
 
     def initCrate(self):
-        """Create an rocrate at the current working directory, initilize the ro-crate-metadata.json
-
-        """
-
-        # create basic rocrate metadata
-        if self.path.is_dir():
-            ro_crate_metadata_path = self.path / 'ro-crate-metadata.json'
-
-        # create guid if none exists
+        """Create an ROCrate and initialize ro-crate-metadata.json"""
+        ro_crate_metadata_path = self.path / 'ro-crate-metadata.json'
         self.generate_guid()
 
-        rocrate_metadata = {
+        # Create root dataset
+        root_dataset = {
             "@id": self.guid,
-            "@context": DEFAULT_CONTEXT,
-            "@type": "EVI:Dataset",
+            "@type": ["Dataset", "https://w3id.org/EVI#ROCrate"],
             "name": self.name,
             "description": self.description,
             "keywords": self.keywords,
-            "isPartOf": [],
-            "@graph": []  
+            "hasPart": []
         }
 
+        # Add organization and project if specified
         if self.organizationName:
             organization_guid = f"ark:{NAAN}/organization-{self.organizationName.lower().replace(' ', '-')}-{GenerateDatetimeSquid()}"
-            rocrate_metadata['isPartOf'].append(
-                {
-                    "@id": organization_guid,
-                    "@type": "Organization",
-                    "name": self.organizationName
-                }
-            )
+            root_dataset['isPartOf'] = [{
+                "@id": organization_guid,
+            }]
 
         if self.projectName:
             project_guid = f"ark:{NAAN}/project-{self.projectName.lower().replace(' ', '-')}-{GenerateDatetimeSquid()}"
-            rocrate_metadata['isPartOf'].append(
-                {
-                    "@id": project_guid,
-                    "@type": "Project",
-                    "name": self.projectName
-                }
-            )
+            if 'isPartOf' not in root_dataset:
+                root_dataset['isPartOf'] = []
+            root_dataset['isPartOf'].append({
+                "@id": project_guid
+            })
 
-        # write out to file
+        # Create metadata descriptor
+        metadata_descriptor = {
+            "@id": "ro-crate-metadata.json",
+            "@type": "CreativeWork",
+            "conformsTo": {"@id": "https://w3id.org/ro/crate/1.2-DRAFT"},
+            "about": {"@id": self.guid}
+        }
+
+        # Create full RO-Crate structure
+        rocrate_metadata = {
+            "@context": DEFAULT_CONTEXT,
+            "@graph": [
+                metadata_descriptor,
+                root_dataset
+            ]
+        }
+
+        # Validate the structure
+        ROCrateMetadata(**rocrate_metadata)
+
+        # Write to file
         with ro_crate_metadata_path.open(mode="w") as metadata_file:
             json.dump(rocrate_metadata, metadata_file, indent=2)
 
-        #TODO add to cache
-
-        #TODO list all contents that need to be registered as warnings   
-
- 
-    def copyObject(self, source_filepath: str, destination_filepath: str):
-
-        if source_filepath == "":
-            raise Exception(message="source path is None")
-
-        if destination_filepath == "":
-            raise Exception(message="destination path is None") 
-
-        # check if the source file exists 
-        source_path = pathlib.Path(source_filepath)
-        destination_path = pathlib.Path(destination_filepath)
-
-        if source_path.exists() != True:
-            raise Exception(
-                message =f"sourcePath: {source_path} Doesn't Exist"
-            )
-    
-        # TODO check that destination path is in the rocrate
-
-        # copy the file into the destinationPath
-        shutil.copy(source_path, destination_path)
-
-
-
     def registerObject(self, model: Union[Dataset, Software, Computation]):
-        ''' Add a specified peice of metadata to the graph of an ROCrate
-            Marshals a given model into JSON-LD, opens the ro-crate-metadata.json,
-            appends the new metadata to the @graph, and overwrites the ro-crate-metadata.json
-        '''
-
-        metadata_path = pathlib.Path(self.path)
+        """Add metadata to the graph of an ROCrate"""
+        metadata_path = self.path / 'ro-crate-metadata.json'
 
         with metadata_path.open("r+") as rocrate_metadata_file:
             rocrate_metadata = json.load(rocrate_metadata_file)
             
-             # TODO assure no duplicative content
+            # Add to the @graph
+            model_data = model.model_dump(by_alias=True, exclude_none=True)
+            rocrate_metadata['@graph'].append(model_data)
             
-            # add to the @graph
-            rocrate_metadata['@graph'].append(model.model_dump(by_alias=True))
+            # Add reference to root dataset's hasPart
+            root_dataset = rocrate_metadata['@graph'][1]  # Second element after descriptor
+            if 'hasPart' not in root_dataset:
+                root_dataset['hasPart'] = []
+            root_dataset['hasPart'].append({"@id": model_data["@id"]})
+
+            # Validate updated structure
+            ROCrateMetadata(**rocrate_metadata)
+            
+            # Write back to file
             rocrate_metadata_file.seek(0)
+            rocrate_metadata_file.truncate()
             json.dump(rocrate_metadata, rocrate_metadata_file, indent=2)
 
+    def registerDataset(self, dataset: Dataset):
+        self.registerObject(dataset)
 
-    def registerDataset(self, Dataset):
-        # TODO check for entailment
-        self.registerObject(model=Dataset)
-        
+    def registerSoftware(self, software: Software):
+        self.registerObject(software)
 
-    def registerSoftware(self, Software):
-        # TODO check for entailment
-        self.registerObject(model=Software)
+    def registerComputation(self, computation: Computation):
+        self.registerObject(computation)
 
-
-    def registerComputation(self, Computation):
-        # TODO check for entailment
-        self.registerObject(model=Computation)
-
-
-
-    def listContents(self):
-        rocrate_table = PrettyTable()
-
-        rocrate_table.field_names= ['ro_crate', '@id', 'type', 'name']
-        for metadata_element in self.graph:
-            rocrate_table.add_row(
-                [
-                    "*", 
-                    metadata_element.guid, 
-                    metadata_element.type, 
-                    metadata_element.name
-                ]
-            )
-
-        return rocrate_table
-
-
-
-def ReadROCrateMetadata(
-    cratePath: pathlib.Path
-)-> ROCrateMetadata:
-    """ Given a path read the rocrate metadata into a pydantic model
-    """
-
-    # if cratePath has metadata.json inside
-    if "ro-crate-metadata.json" in str(cratePath) :
-        metadataCratePath = cratePath
+def ReadROCrateMetadata(cratePath: pathlib.Path) -> Dict[str, Any]:
+    """Read and validate ROCrate metadata"""
+    if "ro-crate-metadata.json" in str(cratePath):
+        metadata_path = cratePath
     else:
-        metadataCratePath = cratePath / "ro-crate-metadata.json"
+        metadata_path = cratePath / "ro-crate-metadata.json"
 
-    with metadataCratePath.open("r") as metadataFile:
-        crateMetadata = json.load(metadataFile)
-        readCrate = ROCrateMetadata.model_validate(crateMetadata)
-    
-    return readCrate
-
+    with metadata_path.open("r") as metadata_file:
+        crate_metadata = json.load(metadata_file)
+        # Validate the structure
+        ROCrateMetadata(**crate_metadata)
+        return crate_metadata
 
 def AppendCrate(
     cratePath: pathlib.Path,
@@ -268,21 +281,28 @@ def AppendCrate(
     if cratePath.is_dir():
         cratePath = cratePath / 'ro-crate-metadata.json'
 
-    if len(elements) == 0:
+    if not elements:
         return None
 
     with cratePath.open("r+") as rocrate_metadata_file:
         rocrate_metadata = json.load(rocrate_metadata_file)
-            
-        # add to the @graph
-        for register_elem in elements:
-            rocrate_metadata['@graph'].append(
-                register_elem.model_dump(
-                    by_alias=True, 
-                    exclude_none=True
-                    ))
         
+        # Add elements to @graph and references to root dataset
+        root_dataset = rocrate_metadata['@graph'][1]  # Second element after descriptor
+        if 'hasPart' not in root_dataset:
+            root_dataset['hasPart'] = []
+            
+        for element in elements:
+            element_data = element.model_dump(by_alias=True, exclude_none=True)
+            rocrate_metadata['@graph'].append(element_data)
+            root_dataset['hasPart'].append({"@id": element_data["@id"]})
+        
+        # Validate updated structure
+        ROCrateMetadata(**rocrate_metadata)
+        
+        # Write back to file
         rocrate_metadata_file.seek(0)
+        rocrate_metadata_file.truncate()
         json.dump(rocrate_metadata, rocrate_metadata_file, indent=2)
 
 
@@ -311,12 +331,7 @@ def UpdateCrate(
     cratePath: pathlib.Path,
     element: Union[Dataset, Software, Computation]
 ):
-    """Update an existing element in the RO-Crate metadata by matching @id
-    
-    Args:
-        cratePath: Path to the RO-Crate directory or metadata file
-        element: Updated element to replace existing one with matching @id
-    """
+    """Update an existing element in the RO-Crate metadata"""
     if cratePath.is_dir():
         cratePath = cratePath / 'ro-crate-metadata.json'
 
@@ -324,15 +339,16 @@ def UpdateCrate(
         rocrate_metadata = json.load(rocrate_metadata_file)
         
         # Find and replace the element with matching @id
+        element_data = element.model_dump(by_alias=True, exclude_none=True)
         for i, existing in enumerate(rocrate_metadata['@graph']):
-            if existing.get('@id') == element.guid:
-                rocrate_metadata['@graph'][i] = element.model_dump(
-                    by_alias=True,
-                    exclude_none=True
-                )
+            if existing.get('@id') == element_data['@id']:
+                rocrate_metadata['@graph'][i] = element_data
                 break
         
-        # Write back the updated metadata
+        # Validate updated structure
+        ROCrateMetadata(**rocrate_metadata)
+        
+        # Write back to file
         rocrate_metadata_file.seek(0)
         rocrate_metadata_file.truncate()
         json.dump(rocrate_metadata, rocrate_metadata_file, indent=2)

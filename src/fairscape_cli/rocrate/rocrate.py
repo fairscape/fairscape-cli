@@ -21,6 +21,7 @@ from fairscape_cli.models import (
     Software,
     Computation,
     ROCrate,
+    ROCrateMetadata,
     BagIt,
     
     # Generator functions
@@ -53,66 +54,73 @@ def rocrate():
 
 @rocrate.command('init')
 @click.option('--guid', required=False, type=str, default="", show_default=False)
-@click.option('--name', required=True, type=str) 
-@click.option('--organization-name', required=True, type=str) 
-@click.option('--project-name', required=True, type=str) 
+@click.option('--name', required=True, type=str)
+@click.option('--organization-name', required=True, type=str)
+@click.option('--project-name', required=True, type=str)
 @click.option('--description', required=True, type=str)
 @click.option('--keywords', required=True, multiple=True, type=str)
+@click.option('--license', required=False, type=str, default="https://creativecommons.org/licenses/by/4.0/")
+@click.option('--date-published', required=False, type=str)
 def init(
-    guid,
-    name,
-    organization_name,
-    project_name,
-    description,
-    keywords
+   guid,
+   name, 
+   organization_name,
+   project_name,
+   description,
+   keywords,
+   license,
+   date_published
 ):
-    """ Initalize a rocrate in the current working directory by instantiating a ro-crate-metadata.json file.
-    """
-    
-    passed_crate = GenerateROCrate(
-        guid=guid,
-        name=name,
-        organizationName = organization_name,
-        projectName = project_name,
-        description = description,
-        keywords = keywords,
-        path = pathlib.Path.cwd(), 
-    )
-
-    click.echo(passed_crate.guid)
-    
+   """ Initialize a rocrate in the current working directory by instantiating a ro-crate-metadata.json file.
+   """
+   passed_crate = GenerateROCrate(
+       guid=guid,
+       name=name,
+       organizationName=organization_name,
+       projectName=project_name,
+       description=description,
+       keywords=keywords,
+       license=license,
+       datePublished=date_published,
+       path=pathlib.Path.cwd(),
+   )
+   click.echo(passed_crate.get("@id"))
 
 @rocrate.command('create')
 @click.option('--guid', required=False, type=str, default="", show_default=False)
 @click.option('--name', required=True, type=str)
-@click.option('--organization-name', required=True, type=str) 
-@click.option('--project-name', required=True, type=str) 
+@click.option('--organization-name', required=True, type=str)
+@click.option('--project-name', required=True, type=str)
 @click.option('--description', required=True, type=str)
 @click.option('--keywords', required=True, multiple=True, type=str)
+@click.option('--license', required=False, type=str, default="https://creativecommons.org/licenses/by/4.0/")
+@click.option('--date-published', required=False, type=str)
 @click.argument('rocrate-path', type=click.Path(exists=False, path_type=pathlib.Path))
 def create(
-    rocrate_path, 
-    guid,
-    name,
-    organization_name,
-    project_name,
-    description,
-    keywords
-): 
-    '''Create an ROCrate in a new path specified by the rocrate-path argument
-    '''
-
-    passed_crate = GenerateROCrate(
-        guid=guid,
-        name=name,
-        organizationName = organization_name,
-        projectName = project_name,
-        description = description,
-        keywords = keywords,
-        path = rocrate_path
-    )
-    
-    click.echo(passed_crate.guid)
+   rocrate_path,
+   guid,
+   name,
+   organization_name,
+   project_name,
+   description,
+   keywords,
+   license,
+   date_published
+):
+   '''Create an ROCrate in a new path specified by the rocrate-path argument
+   '''
+   passed_crate = GenerateROCrate(
+       guid=guid,
+       name=name,
+       organizationName=organization_name,
+       projectName=project_name,
+       description=description,
+       keywords=keywords,
+       license=license,
+       datePublished=date_published,
+       path=rocrate_path
+   )
+   click.echo(passed_crate.get("@id"))
 
 
 
@@ -373,7 +381,77 @@ def computation(
         click.echo(e)
         ctx.exit(code=1)
 
-
+@register.command('subrocrate')
+@click.argument('rocrate-path', type=click.Path(exists=True, path_type=pathlib.Path))
+@click.argument('subrocrate-path', type=click.Path(path_type=pathlib.Path))
+@click.option('--guid', required=False, type=str, default="", show_default=False)
+@click.option('--name', required=True, type=str)
+@click.option('--organization-name', required=True, type=str)
+@click.option('--project-name', required=True, type=str)
+@click.option('--description', required=True, type=str)
+@click.option('--keywords', required=True, multiple=True, type=str)
+@click.pass_context
+def subrocrate(
+    ctx,
+    rocrate_path: pathlib.Path,
+    subrocrate_path: pathlib.Path,
+    guid: str,
+    name: str,
+    organization_name: str,
+    project_name: str,
+    description: str,
+    keywords: List[str]
+):
+    """Register a new RO-Crate within an existing RO-Crate directory.
+    
+    ROCRATE_PATH: Path to the parent RO-Crate
+    SUBCRATE_PATH: Relative path within the parent RO-Crate where the subcrate should be created
+    """
+    try:
+        # Read parent crate metadata
+        parent_crate = ReadROCrateMetadata(rocrate_path)
+        
+        # Construct full path for subcrate
+        full_subcrate_path = rocrate_path / subrocrate_path
+        
+        # Create subcrate
+        subcrate = GenerateROCrate(
+            guid=guid,
+            name=name,
+            organizationName=organization_name,
+            projectName=project_name,
+            description=description,
+            keywords=keywords,
+            path=full_subcrate_path
+        )
+        
+        # Update parent crate to include reference to subcrate
+        with (rocrate_path / 'ro-crate-metadata.json').open('r+') as f:
+            parent_metadata = json.load(f)
+            
+            root_dataset = parent_metadata['@graph'][1]
+            
+            if 'hasPart' not in root_dataset:
+                root_dataset['hasPart'] = []
+            
+            subcrate_ref = {
+                "@id": subcrate['@id']
+            }
+            
+            if not any(part.get('@id') == subcrate['@id'] for part in root_dataset['hasPart']):
+                root_dataset['hasPart'].append(subcrate_ref)
+            
+            # Validate and write updated parent metadata
+            ROCrateMetadata(**parent_metadata)
+            f.seek(0)
+            f.truncate()
+            json.dump(parent_metadata, f, indent=2)
+        
+        click.echo(subcrate['@id'])
+        
+    except Exception as exc:
+        click.echo(f"ERROR: {str(exc)}")
+        ctx.exit(code=1)
 
 # RO Crate add subcommands
 @rocrate.group('add')
