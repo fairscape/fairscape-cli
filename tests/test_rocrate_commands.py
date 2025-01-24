@@ -4,6 +4,7 @@ import shutil
 import subprocess
 import json
 import os
+from rocrate_validator import services, models
 
 class TestCLICommands(unittest.TestCase):
     def setUp(self):
@@ -158,6 +159,37 @@ class TestCLICommands(unittest.TestCase):
                          if item['@id'] == computation_id)
         self.assertIn(software_id, computation['usedSoftware'])
         self.assertIn(subcrate_dataset_id, computation['usedDataset'])
+
+        for metadata_file in [self.test_dir / 'ro-crate-metadata.json', 
+                                self.test_dir / 'subcrate' / 'ro-crate-metadata.json']:
+            with open(metadata_file, 'r+') as f:
+                metadata = json.load(f)
+                metadata['@graph'][0]['conformsTo']['@id'] = 'https://w3id.org/ro/crate/1.1'
+                metadata['@context'] = 'https://w3id.org/ro/crate/1.1/context'
+                f.seek(0)
+                json.dump(metadata, f, indent=2)
+                f.truncate()
+
+        # Validate both crates
+        settings = services.ValidationSettings(
+            rocrate_uri=str(self.test_dir),
+            data_path=str(self.test_dir),
+            profile_identifier='ro-crate-1.1',
+            requirement_severity=models.Severity.REQUIRED
+        )
+        result = services.validate(settings)
+        self.assertFalse(result.has_issues(), 
+                        f"Top-level crate validation failed: {[i.message for i in result.get_issues()]}")
+
+        subcrate_settings = services.ValidationSettings(
+            rocrate_uri=str(self.test_dir / 'subcrate'),
+            data_path=str(self.test_dir / 'subcrate'),
+            profile_identifier='ro-crate-1.1',
+            requirement_severity=models.Severity.REQUIRED
+        )
+        subcrate_result = services.validate(subcrate_settings)
+        self.assertFalse(subcrate_result.has_issues(),
+                        f"Subcrate validation failed: {[i.message for i in subcrate_result.get_issues()]}")
 
 if __name__ == '__main__':
     unittest.main()
