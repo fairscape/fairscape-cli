@@ -157,8 +157,8 @@ class TestCLICommands(unittest.TestCase):
         # Verify computation relationships
         computation = next(item for item in sub_metadata['@graph']
                          if item['@id'] == computation_id)
-        self.assertIn(software_id, computation['usedSoftware'])
-        self.assertIn(subcrate_dataset_id, computation['usedDataset'])
+        self.assertIn(software_id, [item["@id"] for item in computation['usedSoftware']])
+        self.assertIn(subcrate_dataset_id, [item["@id"] for item in computation['usedDataset']])
 
         for metadata_file in [self.test_dir / 'ro-crate-metadata.json', 
                                 self.test_dir / 'subcrate' / 'ro-crate-metadata.json']:
