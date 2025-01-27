@@ -47,7 +47,7 @@ def GenerateSoftware(
 
     softwareMetadata = {
             "@id": guid,
-            "@type": "https://w2id.org/EVI#Software",
+            "@type": "https://w3id.org/EVI#Software",
             "url": url,
             "name": name,
             "author": author,
