@@ -408,46 +408,28 @@ def subrocrate(
     SUBCRATE_PATH: Relative path within the parent RO-Crate where the subcrate should be created
     """
     try:
-        # Read parent crate metadata
-        parent_crate = ReadROCrateMetadata(rocrate_path)
-        
-        # Construct full path for subcrate
-        full_subcrate_path = rocrate_path / subrocrate_path
-        
-        # Create subcrate
-        subcrate = GenerateROCrate(
-            guid=guid,
-            name=name,
-            organizationName=organization_name,
-            projectName=project_name,
-            description=description,
-            keywords=keywords,
-            path=full_subcrate_path
+        # Load existing crate
+        metadata = ReadROCrateMetadata(rocrate_path)
+        parent_crate = ROCrate(
+            guid=metadata['@graph'][1]['@id'],
+            name=metadata['@graph'][1]['name'],
+            description=metadata['@graph'][1]['description'],
+            keywords=metadata['@graph'][1]['keywords'],
+            path=rocrate_path
         )
         
-        # Update parent crate to include reference to subcrate
-        with (rocrate_path / 'ro-crate-metadata.json').open('r+') as f:
-            parent_metadata = json.load(f)
-            
-            root_dataset = parent_metadata['@graph'][1]
-            
-            if 'hasPart' not in root_dataset:
-                root_dataset['hasPart'] = []
-            
-            subcrate_ref = {
-                "@id": subcrate['@id']
-            }
-            
-            if not any(part.get('@id') == subcrate['@id'] for part in root_dataset['hasPart']):
-                root_dataset['hasPart'].append(subcrate_ref)
-            
-            # Validate and write updated parent metadata
-            ROCrateMetadata(**parent_metadata)
-            f.seek(0)
-            f.truncate()
-            json.dump(parent_metadata, f, indent=2)
+        # Create subcrate using the new method
+        subcrate_id = parent_crate.create_subcrate(
+            subcrate_path=subrocrate_path,
+            guid=guid,
+            name=name,
+            description=description,
+            keywords=keywords,
+            organization_name=organization_name,
+            project_name=project_name
+        )
         
-        click.echo(subcrate['@id'])
+        click.echo(subcrate_id)
         
     except Exception as exc:
         click.echo(f"ERROR: {str(exc)}")

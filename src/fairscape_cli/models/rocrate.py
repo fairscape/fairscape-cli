@@ -173,6 +173,99 @@ class ROCrate(BaseModel):
     def createCrateFolder(self):
         self.path.mkdir(parents=True, exist_ok=True)
 
+    def create_subcrate(
+        self,
+        subcrate_path: pathlib.Path,
+        name: str,
+        description: str,
+        keywords: List[str],
+        organization_name: Optional[str] = None,
+        project_name: Optional[str] = None,
+        guid: Optional[str] = None
+    ) -> str:
+        """Create a new subcrate within this RO-Crate.
+        
+        Args:
+            subcrate_path: Relative path within this crate where subcrate should be created
+            name: Name of the subcrate
+            description: Description of the subcrate
+            keywords: List of keywords for the subcrate
+            organization_name: Optional organization name
+            project_name: Optional project name
+            guid: Optional GUID for the subcrate
+            
+        Returns:
+            str: The GUID of the created subcrate
+            
+        Raises:
+            Exception: If there are errors creating or linking the subcrate
+        """
+        # Get parent (this crate's) metadata
+        parent_metadata_path = self.path / 'ro-crate-metadata.json'
+        with parent_metadata_path.open('r') as f:
+            parent_metadata = json.load(f)
+            parent_id = parent_metadata['@graph'][1]['@id']
+        
+        # Create full path for subcrate
+        full_subcrate_path = self.path / subcrate_path
+        
+        # Create subcrate
+        subcrate = GenerateROCrate(
+            path=full_subcrate_path,
+            guid=guid,
+            name=name,
+            description=description,
+            keywords=keywords,
+            organizationName=organization_name,
+            projectName=project_name
+        )
+        
+        # Update subcrate to reference parent
+        subcrate_metadata_path = full_subcrate_path / 'ro-crate-metadata.json'
+        with subcrate_metadata_path.open('r+') as f:
+            subcrate_metadata = json.load(f)
+            root_dataset = subcrate_metadata['@graph'][1]
+            
+            # Add isPartOf reference to parent
+            root_dataset['isPartOf'] = [{"@id": parent_id}]
+            
+            f.seek(0)
+            f.truncate()
+            json.dump(subcrate_metadata, f, indent=2)
+        
+        # Update parent crate with subcrate reference
+        with parent_metadata_path.open('r+') as f:
+            parent_metadata = json.load(f)
+            root_dataset = parent_metadata['@graph'][1]
+            
+            if 'hasPart' not in root_dataset:
+                root_dataset['hasPart'] = []
+            
+            # Create subcrate reference with metadata
+            subcrate_ref = {
+                "@id": subcrate['@id'],
+                "@type": ["Dataset", "https://w3id.org/EVI#ROCrate"],
+                "name": name,
+                "description": description,
+                "keywords": keywords,
+                "contentUrl": f"file:///{str(subcrate_path / 'ro-crate-metadata.json')}"
+            }
+            
+            # Add subcrate reference to parent's graph
+            parent_metadata['@graph'].append(subcrate_ref)
+            
+            # Add reference to hasPart
+            if not any(part.get('@id') == subcrate['@id'] for part in root_dataset['hasPart']):
+                root_dataset['hasPart'].append({"@id": subcrate['@id']})
+            
+            # Validate and save
+            ROCrateMetadata(**parent_metadata)
+            f.seek(0)
+            f.truncate()
+            json.dump(parent_metadata, f, indent=2)
+        
+        return subcrate['@id']
+
     def initCrate(self):
         """Create an ROCrate and initialize ro-crate-metadata.json"""
         ro_crate_metadata_path = self.path / 'ro-crate-metadata.json'
