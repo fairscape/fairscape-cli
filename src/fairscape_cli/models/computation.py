@@ -54,7 +54,7 @@ def GenerateComputation(
         processedGenerated = []
     else:
         processedGenerated = [
-            ArkPointer(ark=output.strip("\n")) for output in generated
+            {"@id": output.strip("\n")} for output in generated
         ]
 
     computation_model = Computation.model_validate(
@@ -75,7 +75,7 @@ def GenerateComputation(
             "usedDataset": [
                 {"@id": dataset.strip("\n")} for dataset in usedDataset
             ],
-            "generated": [{"@id": gen.ark} for gen in processedGenerated]
+            "generated": processedGenerated
         })
     
     return computation_model

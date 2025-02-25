@@ -78,11 +78,11 @@ def GenerateDataset(
             "associatedPublication": associatedPublication,
             "additionalDocumentation": additionalDocumentation,
             "format": dataFormat,
-            "schema": schema,
-            "derivedFrom": [derived.strip("\n") for derived in derivedFrom],
-            "usedBy": [used.strip("\n") for used in usedBy],
-            "generatedBy": [gen.strip("\n") for gen in generatedBy],
-            "hasSummaryStatistics": summary_stats_guid
+            "schema": {"@id":schema},
+            "derivedFrom": [{"@id":derived.strip("\n")} for derived in derivedFrom],
+            "usedBy": [{"@id":used.strip("\n")} for used in usedBy],
+            "generatedBy": [{"@id":gen.strip("\n")} for gen in generatedBy],
+            "hasSummaryStatistics": {"@id":summary_stats_guid}
         }
 
     datasetMetadata['contentUrl'] = setRelativeFilepath(cratePath, filepath)

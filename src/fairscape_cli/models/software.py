@@ -60,7 +60,7 @@ def GenerateSoftware(
             "format": fileFormat,
             # sanitize new line characters for multiple inputs
             "usedByComputation": [
-                computation.strip("\n") for computation in usedByComputation
+                {"@id":computation.strip("\n")} for computation in usedByComputation
             ],
         }
 
