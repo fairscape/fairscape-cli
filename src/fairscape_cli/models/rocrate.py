@@ -70,11 +70,11 @@ class ROCrateMetadata(BaseModel):
                 raise ValueError("All @graph elements must have @id and @type properties")
                 
             # Validate nested objects only contain @id
-            for key, value in item.items():
-                if isinstance(value, dict):
-                    allowed_keys = {"@id"}
-                    if set(value.keys()) - allowed_keys:
-                        raise ValueError(f"Nested object under '{key}' can only contain '@id' property")
+            # for key, value in item.items():
+            #     if isinstance(value, dict):
+            #         allowed_keys = {"@id"}
+            #         if set(value.keys()) - allowed_keys:
+            #             raise ValueError(f"Nested object under '{key}' can only contain '@id' property")
 
 def GenerateROCrate(
    path: pathlib.Path,

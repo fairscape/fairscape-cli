@@ -15,6 +15,12 @@ from fairscape_cli.models.base import FairscapeBaseModel
 from fairscape_cli.models.guid_utils import GenerateDatetimeSquid
 from fairscape_cli.config import NAAN
 
+class ArkPointer(BaseModel):
+    ark: str = Field(
+        alias="@id",
+        validation_alias="@id"
+    )
+
 
 class Dataset(FairscapeBaseModel):
     guid: Optional[str] = Field(alias="@id", default=None)
@@ -27,12 +33,12 @@ class Dataset(FairscapeBaseModel):
     associatedPublication: Optional[str] = Field(default=None)
     additionalDocumentation: Optional[str] = Field(default=None)
     fileFormat: str = Field(alias="format")
-    dataSchema: Optional[str] = Field(alias="schema", default=None)
-    generatedBy: Optional[List[str]] = Field(default=[])
-    derivedFrom: Optional[List[str]] = Field(default=[])
-    usedBy: Optional[List[str]] = Field(default=[])
+    dataSchema: Optional[ArkPointer] = Field(alias="schema", default=None)
+    generatedBy: Optional[List[ArkPointer]] = Field(default={})
+    derivedFrom: Optional[List[ArkPointer]] = Field(default=[])
+    usedBy: Optional[List[ArkPointer]] = Field(default=[])
     contentUrl: Optional[str] = Field(default=None)
-    hasSummaryStatistics: Optional[Union[str, List[str]]] = Field(default=None)
+    hasSummaryStatistics: Optional[ArkPointer] = Field(default=None)
 
     #@field_serializer('datePublished')
     #def serialize_date_published(self, datePublished: datetime):
@@ -58,7 +64,7 @@ def GenerateDataset(
     generatedBy: Optional[List[str]],
     filepath: Optional[str],
     cratePath,
-    summary_stats_guid: Optional[str] = None
+    summary_stats_guid: Optional[str] = ''
     ):
    
     if not guid:

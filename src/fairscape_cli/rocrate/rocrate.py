@@ -36,6 +36,9 @@ from fairscape_cli.models import (
     CopyToROCrate,
     UpdateCrate,
     
+    #Pep
+    PEPtoROCrateMapper,
+    
     # Additional utilities
     generateSummaryStatsElements,
     registerOutputs
@@ -718,3 +721,55 @@ def compute_statistics(
         )
 
     click.echo(computation_instance.guid)
+    
+@rocrate.command('from-pep')
+@click.argument('pep-path', type=click.Path(exists=True, path_type=pathlib.Path))
+@click.option('--output-path', required=False, type=click.Path(path_type=pathlib.Path), help='Path for RO-Crate (defaults to PEP directory)')
+@click.option('--name', required=False, type=str, help='Name for the RO-Crate (overrides PEP metadata)')
+@click.option('--description', required=False, type=str, help='Description (overrides PEP metadata)')
+@click.option('--author', required=False, type=str, help='Author (overrides PEP metadata)')
+@click.option('--organization-name', required=False, type=str, help='Organization name')
+@click.option('--project-name', required=False, type=str, help='Project name')
+@click.option('--keywords', required=False, multiple=True, type=str, help='Keywords (overrides PEP metadata)')
+@click.option('--license', required=False, type=str, default="https://creativecommons.org/licenses/by/4.0/", help='License URL')
+@click.option('--date-published', required=False, type=str, help='Publication date')
+@click.option('--version', required=False, type=str, default="1.0", help='Version string')
+@click.pass_context
+def from_pep(
+    ctx,
+    pep_path: pathlib.Path,
+    output_path: Optional[pathlib.Path],
+    name: Optional[str],
+    description: Optional[str],
+    author: Optional[str],
+    organization_name: Optional[str],
+    project_name: Optional[str],
+    keywords: Optional[List[str]],
+    license: Optional[str],
+    date_published: Optional[str],
+    version: str
+):
+    """Convert a Portable Encapsulated Project (PEP) to an RO-Crate.
+    
+    PEP-PATH: Path to the PEP directory or config file
+    """
+    try:
+        
+        
+        mapper = PEPtoROCrateMapper(pep_path)
+        rocrate_id = mapper.create_rocrate(
+            output_path=output_path,
+            name=name,
+            description=description,
+            author=author,
+            organization_name=organization_name,
+            project_name=project_name,
+            keywords=keywords,
+            license=license,
+            date_published=date_published,
+            version=version
+        )
+        click.echo(rocrate_id)
+    except Exception as exc:
+        click.echo(f"ERROR: {str(exc)}")
+        ctx.exit(code=1)
