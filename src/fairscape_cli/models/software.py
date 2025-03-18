@@ -21,6 +21,10 @@ class Software(FairscapeBaseModel):
     fileFormat: str = Field(title="fileFormat", alias="format")
     usedByComputation: Optional[List[str]]
     contentUrl: Optional[str] = Field(default=None)
+    
+    model_config = {
+        "extra": "allow"
+    }
  
 
 def GenerateSoftware(    
@@ -37,6 +41,7 @@ def GenerateSoftware(
     usedByComputation,
     associatedPublication,
     additionalDocumentation,
+    additional_metadata,
     cratePath
 ) -> Software:
     """ Generate a Software Model Class
@@ -63,7 +68,10 @@ def GenerateSoftware(
                 {"@id":computation.strip("\n")} for computation in usedByComputation
             ],
         }
-
+    
+    if additional_metadata:
+        softwareMetadata.update(additional_metadata)
+        
     if filepath is not None:
 
         # if filepath is a url        
@@ -88,7 +96,7 @@ def GenerateSoftware(
             else:
                 raise Exception(f"Software File Does Not Exist: {str(softwarePath)}")
 
-
+        
     # validate metadata
     softwareModel = Software.model_validate(softwareMetadata)
 

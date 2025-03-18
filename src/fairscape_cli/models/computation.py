@@ -1,6 +1,6 @@
 import re
 from datetime import datetime
-from typing import Optional, List, Union, Dict
+from typing import Optional, List, Union, Dict, Any
 from pydantic import Field, AnyUrl, BaseModel
 from fairscape_cli.config import NAAN
 from fairscape_cli.models.base import FairscapeBaseModel
@@ -32,6 +32,10 @@ class Computation(FairscapeBaseModel):
     usedSoftware: Optional[List[ArkPointer]] = Field(default_factory=list)
     usedDataset: Optional[List[ArkPointer]] = Field(default_factory=list)
     generated: Optional[List[ArkPointer]] = Field(default_factory=list)
+    
+    model_config = {
+        "extra": "allow"
+    }
 
 def GenerateComputation(
     guid: str,
@@ -43,7 +47,8 @@ def GenerateComputation(
     keywords: List[str],
     usedSoftware: List[str],
     usedDataset: List[str],
-    generated: Optional[List[str]] = None
+    generated: Optional[List[str]] = None,
+    additional_metadata: Optional[Dict[str, Any]] = None
 ) -> Computation:
     """ Generate a Computation model class from command line arguments
     """
@@ -56,9 +61,8 @@ def GenerateComputation(
         processedGenerated = [
             {"@id": output.strip("\n")} for output in generated
         ]
-
-    computation_model = Computation.model_validate(
-        {
+        
+    computation_metadata = {
             "@id": guid,
             "@type": "https://w3id.org/EVI#Computation",
             "name": name,
@@ -76,6 +80,11 @@ def GenerateComputation(
                 {"@id": dataset.strip("\n")} for dataset in usedDataset
             ],
             "generated": processedGenerated
-        })
+        }
+        
+    if additional_metadata:
+        computation_metadata.update(additional_metadata)
+
+    computation_model = Computation.model_validate(computation_metadata)
     
     return computation_model

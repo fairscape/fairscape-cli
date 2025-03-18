@@ -1,7 +1,7 @@
 # Standard library imports
 import pathlib
 from datetime import datetime
-from typing import Optional, List, Union, Dict, Tuple, Set
+from typing import Optional, List, Union, Dict, Tuple, Set, Any
 
 from pydantic import (
     BaseModel,
@@ -34,64 +34,95 @@ class Dataset(FairscapeBaseModel):
     additionalDocumentation: Optional[str] = Field(default=None)
     fileFormat: str = Field(alias="format")
     dataSchema: Optional[ArkPointer] = Field(alias="schema", default=None)
-    generatedBy: Optional[List[ArkPointer]] = Field(default={})
-    derivedFrom: Optional[List[ArkPointer]] = Field(default=[])
-    usedBy: Optional[List[ArkPointer]] = Field(default=[])
-    contentUrl: Optional[str] = Field(default=None)
+    generatedBy: Optional[List[ArkPointer]] = Field(default_factory=list)
+    derivedFrom: Optional[List[ArkPointer]] = Field(default_factory=list)
+    usedBy: Optional[List[ArkPointer]] = Field(default_factory=list)
+    contentUrl: Optional[Union[str,List]] = Field(default=None)
     hasSummaryStatistics: Optional[ArkPointer] = Field(default=None)
+    
+    model_config = {
+        "extra": "allow"
+    }
 
     #@field_serializer('datePublished')
     #def serialize_date_published(self, datePublished: datetime):
     #    return datePublished.timestamp()
 
 
-
 def GenerateDataset(
     guid: Optional[str],
     url: Optional[str],
     author: str,
-    description: str,
     name: str,
+    description: str,
     keywords: List[str],
     datePublished: str,
     version: str,
-    associatedPublication: Optional[str],
-    additionalDocumentation: Optional[str],
     dataFormat: str,
-    schema: Optional[str],
-    derivedFrom: Optional[List[str]],
-    usedBy: Optional[List[str]],
-    generatedBy: Optional[List[str]],
-    filepath: Optional[str],
-    cratePath,
-    summary_stats_guid: Optional[str] = ''
+    associatedPublication: Optional[str] = None,
+    additionalDocumentation: Optional[str] = None,
+    schema: Optional[str] = None,
+    derivedFrom: Optional[List[str]] = None,
+    usedBy: Optional[List[str]] = None,
+    generatedBy: Optional[List[str]] = None,
+    filepath: Optional[str] = None,
+    contentUrl: Optional[Union[str,List]] = None,
+    cratePath = None,
+    summary_stats_guid: Optional[str] = None,
+    additional_metadata: Optional[Dict[str, Any]] = None
     ):
    
     if not guid:
         sq = GenerateDatetimeSquid()
         guid = f"ark:{NAAN}/dataset-{name.lower().replace(' ', '-')}-{sq}"
     
+    # Start with required fields
     datasetMetadata = {
-            "@id": guid,
-            "@type": "https://w3id.org/EVI#Dataset",
-            "url": url,
-            "author": author,
-            "name": name,
-            "description": description,
-            "keywords": keywords,
-            "datePublished": datePublished,
-            "version": version,
-            "associatedPublication": associatedPublication,
-            "additionalDocumentation": additionalDocumentation,
-            "format": dataFormat,
-            "schema": {"@id":schema},
-            "derivedFrom": [{"@id":derived.strip("\n")} for derived in derivedFrom],
-            "usedBy": [{"@id":used.strip("\n")} for used in usedBy],
-            "generatedBy": [{"@id":gen.strip("\n")} for gen in generatedBy],
-            "hasSummaryStatistics": {"@id":summary_stats_guid}
-        }
-
-    datasetMetadata['contentUrl'] = setRelativeFilepath(cratePath, filepath)
+        "@id": guid,
+        "@type": "https://w3id.org/EVI#Dataset",
+        "author": author,
+        "name": name,
+        "description": description,
+        "keywords": keywords,
+        "datePublished": datePublished,
+        "version": version,
+        "format": dataFormat
+    }
+    
+    # Add optional fields only if they have values
+    if url:
+        datasetMetadata["url"] = url
+        
+    if associatedPublication:
+        datasetMetadata["associatedPublication"] = associatedPublication
+        
+    if additionalDocumentation:
+        datasetMetadata["additionalDocumentation"] = additionalDocumentation
+        
+    if schema:
+        datasetMetadata["schema"] = {"@id": schema}
+        
+    if derivedFrom and len(derivedFrom) > 0:
+        datasetMetadata["derivedFrom"] = [{"@id": derived.strip("\n")} for derived in derivedFrom]
+        
+    if usedBy and len(usedBy) > 0:
+        datasetMetadata["usedBy"] = [{"@id": used.strip("\n")} for used in usedBy]
+        
+    if generatedBy and len(generatedBy) > 0:
+        datasetMetadata["generatedBy"] = [{"@id": gen.strip("\n")} for gen in generatedBy]
+        
+    if summary_stats_guid:
+        datasetMetadata["hasSummaryStatistics"] = {"@id": summary_stats_guid}
+    
+    # Handle file path if provided
+    if filepath:
+        datasetMetadata['contentUrl'] = setRelativeFilepath(cratePath, filepath)
+    if contentUrl:
+        datasetMetadata['contentUrl'] = contentUrl
+    
+    if additional_metadata:
+        datasetMetadata.update(additional_metadata)
+        
     datasetInstance = Dataset.model_validate(datasetMetadata)
     return datasetInstance
 
@@ -184,27 +215,30 @@ def generateSummaryStatsElements(
         generated=[summary_stats_guid]
     )
 
-    # Create summary statistics dataset
-    summary_stats_instance = GenerateDataset(
-        guid=summary_stats_guid,
-        url=None,
-        author=author,
-        name=f"{name} - Summary Statistics",
-        description=f"Summary statistics for dataset: {name}",
-        keywords=keywords,
-        datePublished=date_published,
-        version=version,
-        associatedPublication=associated_publication,
-        additionalDocumentation=additional_documentation,
-        dataFormat='pdf',
-        schema=schema,
-        derivedFrom=[],
-        generatedBy=[computation_guid],
-        usedBy=[],
-        filepath=summary_statistics_filepath,
-        cratePath=crate_path,
-        summary_stats_guid=None
-    )
+    # Create summary statistics dataset with only non-empty fields
+    stats_dataset_params = {
+        "guid": summary_stats_guid,
+        "author": author,
+        "name": f"{name} - Summary Statistics",
+        "description": f"Summary statistics for dataset: {name}",
+        "keywords": keywords,
+        "datePublished": date_published,
+        "version": version,
+        "dataFormat": "pdf",
+        "generatedBy": [computation_guid],
+        "filepath": summary_statistics_filepath,
+        "cratePath": crate_path
+    }
+    
+    # Add optional fields only if they have values
+    if associated_publication:
+        stats_dataset_params["associatedPublication"] = associated_publication
+    if additional_documentation:
+        stats_dataset_params["additionalDocumentation"] = additional_documentation
+    if schema:
+        stats_dataset_params["schema"] = schema
+    
+    summary_stats_instance = GenerateDataset(**stats_dataset_params)
     
     return summary_stats_guid, summary_stats_instance, computation_instance
 
@@ -218,24 +252,24 @@ def registerOutputs(
     output_instances = []
     for file_path in new_files:
         file_path_str = str(file_path)
-        output_instance = GenerateDataset(
-            guid=None,
-            name=f"Statistics Output - {file_path.name}",
-            author=author,  # Use the original author
-            description=f"Statistical analysis output for {dataset_id}",
-            keywords=["statistics"],
-            datePublished=datetime.now().isoformat(),
-            version="1.0",
-            dataFormat=file_path.suffix[1:],
-            filepath=file_path_str,
-            cratePath=str(file_path.parent),
-            url=None,
-            associatedPublication=None,
-            additionalDocumentation=None,
-            schema=None,
-            derivedFrom=[],
-            usedBy=[],
-            generatedBy=[computation_id]
-        )
+        
+        # Create dataset with only non-empty fields
+        output_params = {
+            "guid": None,
+            "name": f"Statistics Output - {file_path.name}",
+            "author": author,
+            "description": f"Statistical analysis output for {dataset_id}",
+            "keywords": ["statistics"],
+            "datePublished": datetime.now().isoformat(),
+            "version": "1.0",
+            "dataFormat": file_path.suffix[1:] if file_path.suffix else "unknown",
+            "filepath": file_path_str,
+            "cratePath": str(file_path.parent)
+        }
+        
+        if computation_id:
+            output_params["generatedBy"] = [computation_id]
+            
+        output_instance = GenerateDataset(**output_params)
         output_instances.append(output_instance)
     return output_instances
