@@ -1,10 +1,31 @@
 from pathlib import Path
 from typing import Set, Dict, List, Optional, Tuple
 import subprocess
+import pathlib
 
 from pydantic import ValidationError
 
 from fairscape_cli.models.base import FairscapeBaseModel
+
+def setRelativeFilepath(cratePath, filePath):
+    '''Modify the filepath specified in metadata to be relative to the crate'''
+    if filePath is None:
+        return None
+
+    if 'http' in filePath:
+        return filePath
+
+    if 'file:///' in filePath:
+        return filePath
+
+    if 'ro-crate-metadata.json' in str(cratePath):
+        rocratePath = pathlib.Path(cratePath).parent.absolute()
+    else:
+        rocratePath = pathlib.Path(cratePath).absolute()
+            
+    datasetPath = pathlib.Path(filePath).absolute()
+    relativePath = datasetPath.relative_to(rocratePath)
+    return f"file:///{str(relativePath)}"
 
 def InstantiateModel(ctx, metadata: dict, modelInstance):
     try:

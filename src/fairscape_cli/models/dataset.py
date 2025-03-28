@@ -1,163 +1,71 @@
-# Standard library imports
-import pathlib
-from datetime import datetime
-from typing import Optional, List, Union, Dict, Tuple, Set, Any
-
-from pydantic import (
-    BaseModel,
-    constr,
-    Field,
-    AnyUrl,
-    field_serializer
-)
-
-from fairscape_cli.models.base import FairscapeBaseModel
-from fairscape_cli.models.guid_utils import GenerateDatetimeSquid
+from fairscape_models.dataset import Dataset
 from fairscape_cli.config import NAAN
+from fairscape_cli.models.guid_utils import GenerateDatetimeSquid
+from fairscape_cli.models.utils import setRelativeFilepath
+import pathlib
+import datetime
+from typing import Dict, Any, Optional, List, Tuple, Set
 
-class ArkPointer(BaseModel):
-    ark: str = Field(
-        alias="@id",
-        validation_alias="@id"
-    )
 
-
-class Dataset(FairscapeBaseModel):
-    guid: Optional[str] = Field(alias="@id", default=None)
-    metadataType: Optional[str] = Field(alias="@type", default="https://w3id.org/EVI#Dataset")
-    author: str = Field(max_length=64)
-    datePublished: Optional[str] = Field()
-    version: str
-    description: str = Field(min_length=10)
-    keywords: List[str] = Field(...)
-    associatedPublication: Optional[str] = Field(default=None)
-    additionalDocumentation: Optional[str] = Field(default=None)
-    fileFormat: str = Field(alias="format")
-    dataSchema: Optional[ArkPointer] = Field(alias="schema", default=None)
-    generatedBy: Optional[List[ArkPointer]] = Field(default_factory=list)
-    derivedFrom: Optional[List[ArkPointer]] = Field(default_factory=list)
-    usedBy: Optional[List[ArkPointer]] = Field(default_factory=list)
-    contentUrl: Optional[Union[str,List]] = Field(default=None)
-    hasSummaryStatistics: Optional[ArkPointer] = Field(default=None)
-    
-    model_config = {
-        "extra": "allow"
-    }
-
-    #@field_serializer('datePublished')
-    #def serialize_date_published(self, datePublished: datetime):
-    #    return datePublished.timestamp()
 
 
 def GenerateDataset(
-    guid: Optional[str],
-    url: Optional[str],
-    author: str,
-    name: str,
-    description: str,
-    keywords: List[str],
-    datePublished: str,
-    version: str,
-    dataFormat: str,
-    associatedPublication: Optional[str] = None,
-    additionalDocumentation: Optional[str] = None,
-    schema: Optional[str] = None,
-    derivedFrom: Optional[List[str]] = None,
-    usedBy: Optional[List[str]] = None,
-    generatedBy: Optional[List[str]] = None,
+    guid: Optional[str] = None,
+    name: Optional[str] = None,
     filepath: Optional[str] = None,
-    contentUrl: Optional[Union[str,List]] = None,
-    cratePath = None,
-    summary_stats_guid: Optional[str] = None,
-    additional_metadata: Optional[Dict[str, Any]] = None
-    ):
-   
-    if not guid:
+    cratePath: Optional[str] = None,
+    **kwargs
+) -> Dataset:
+    """
+    Generate a Dataset instance with flexible parameters.
+    
+    This function creates a Dataset instance with minimal required parameters and
+    allows for any additional parameters to be passed through to the Dataset model.
+    Validation is handled by the Dataset model itself.
+    
+    Args:
+        guid: Optional identifier. If not provided, one will be generated.
+        name: Optional name for the dataset. Used for GUID generation if provided.
+        filepath: Optional path to the dataset file.
+        cratePath: Optional path to the RO-Crate containing the dataset.
+        **kwargs: Additional parameters to pass to the Dataset model.
+        
+    Returns:
+        A validated Dataset instance
+    """
+    # Generate GUID if not provided
+    if not guid and name:
         sq = GenerateDatetimeSquid()
         guid = f"ark:{NAAN}/dataset-{name.lower().replace(' ', '-')}-{sq}"
+    elif not guid:
+        sq = GenerateDatetimeSquid()
+        guid = f"ark:{NAAN}/dataset-{sq}"
     
-    # Start with required fields
     datasetMetadata = {
         "@id": guid,
-        "@type": "https://w3id.org/EVI#Dataset",
-        "author": author,
         "name": name,
-        "description": description,
-        "keywords": keywords,
-        "datePublished": datePublished,
-        "version": version,
-        "format": dataFormat
+        "@type": "https://w3id.org/EVI#Dataset"
     }
     
-    # Add optional fields only if they have values
-    if url:
-        datasetMetadata["url"] = url
-        
-    if associatedPublication:
-        datasetMetadata["associatedPublication"] = associatedPublication
-        
-    if additionalDocumentation:
-        datasetMetadata["additionalDocumentation"] = additionalDocumentation
-        
-    if schema:
-        datasetMetadata["schema"] = {"@id": schema}
-        
-    if derivedFrom and len(derivedFrom) > 0:
-        datasetMetadata["derivedFrom"] = [{"@id": derived.strip("\n")} for derived in derivedFrom]
-        
-    if usedBy and len(usedBy) > 0:
-        datasetMetadata["usedBy"] = [{"@id": used.strip("\n")} for used in usedBy]
-        
-    if generatedBy and len(generatedBy) > 0:
-        datasetMetadata["generatedBy"] = [{"@id": gen.strip("\n")} for gen in generatedBy]
-        
-    if summary_stats_guid:
-        datasetMetadata["hasSummaryStatistics"] = {"@id": summary_stats_guid}
-    
-    # Handle file path if provided
-    if filepath:
+    if filepath and cratePath:
         datasetMetadata['contentUrl'] = setRelativeFilepath(cratePath, filepath)
-    if contentUrl:
-        datasetMetadata['contentUrl'] = contentUrl
+    elif filepath:
+        datasetMetadata['contentUrl'] = filepath
     
-    if additional_metadata:
-        datasetMetadata.update(additional_metadata)
-        
-    datasetInstance = Dataset.model_validate(datasetMetadata)
-    return datasetInstance
-
-
-def setRelativeFilepath(cratePath, filePath):
-    ''' Modify the filepath specified in metadata s.t. 
-    '''
-
-    if filePath is None:
-        return None
-
-    # if filepath is a url        
-    if 'http' in  filePath:
-        return filePath
-
-    # if a relative file uri to the crate 
-    if 'file:///' in filePath:
-        # TODO: search within crate to determine file is relative to crate
-        # filePath = filePath.replace("file:///", "")
-
-        return filePath
-
-    # set relative filepath
-    # if filepath is a path that exists
-    if 'ro-crate-metadata.json' in str(cratePath):
-        rocratePath = pathlib.Path(cratePath).parent.absolute()
-    else:
-        rocratePath = pathlib.Path(cratePath).absolute()
-
-            
-    # if relative filepath
-    datasetPath = pathlib.Path(filePath).absolute()
-    relativePath = datasetPath.relative_to(rocratePath)
-    return f"file:///{str(relativePath)}"
-
+    for key, value in kwargs.items():
+        if key in ["schema", "dataSchema"] and value:
+            datasetMetadata["schema"] = {"@id": value}
+        elif key == "hasSummaryStatistics" and value:
+            datasetMetadata["hasSummaryStatistics"] = {"@id": value}
+        elif key in ["derivedFrom", "usedBy", "generatedBy"] and value:
+            if isinstance(value, str):
+                datasetMetadata[key] = [{"@id": value.strip("\n")}]
+            elif (isinstance(value, list) or isinstance(value, tuple)) and len(value) > 0:
+                datasetMetadata[key] = [{"@id": item.strip("\n")} for item in value]
+        elif value is not None: 
+            datasetMetadata[key] = value
+    
+    return Dataset.model_validate(datasetMetadata)
 
 from fairscape_cli.models.computation import GenerateComputation, Computation
 def generateSummaryStatsElements(

@@ -9,7 +9,6 @@ from fairscape_cli.models.software import Software, GenerateSoftware
 from fairscape_cli.models.computation import Computation, GenerateComputation
 from fairscape_cli.models.rocrate import (
         ROCrate, 
-        ROCrateMetadata,
         GenerateROCrate,
         ReadROCrateMetadata, 
         AppendCrate, 
