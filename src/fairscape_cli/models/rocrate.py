@@ -310,8 +310,7 @@ def ReadROCrateMetadata(cratePath: pathlib.Path) -> Dict[str, Any]:
 
     with metadata_path.open("r") as metadata_file:
         crate_metadata = json.load(metadata_file)
-        # Validate the structure
-        ROCrateV1_2(**crate_metadata)
+        validated_graph = ROCrateV1_2.validate_metadata_graph(crate_metadata)
         return crate_metadata
 
 def AppendCrate(
@@ -392,3 +391,172 @@ def UpdateCrate(
         rocrate_metadata_file.seek(0)
         rocrate_metadata_file.truncate()
         json.dump(rocrate_metadata, rocrate_metadata_file, indent=2)
+
+def LinkSubcrates(parent_crate_path: pathlib.Path) -> List[str]:
+    parent_metadata_file = parent_crate_path / 'ro-crate-metadata.json'
+    if not parent_metadata_file.is_file():
+        raise FileNotFoundError(f"Parent metadata file not found: {parent_metadata_file}")
+
+    parent_metadata_dict = ReadROCrateMetadata(parent_metadata_file)
+    
+    #find root node sometimes its a dict other times pydantic object?
+    parent_root_id = None
+    for elem in parent_metadata_dict.get('@graph', []):
+        if hasattr(elem, '__class__') and elem.__class__.__name__ == 'ROCrateMetadataFileElem':
+            if hasattr(elem, 'about') and elem.about:
+                target_id = elem.about.guid if hasattr(elem.about, 'guid') else elem.about.get('@id', '')
+                if target_id:
+                    for graph_item in parent_metadata_dict.get('@graph', []):
+                        if (hasattr(graph_item, 'guid') and graph_item.guid == target_id) or \
+                           (isinstance(graph_item, dict) and graph_item.get('@id') == target_id):
+                            parent_root_id = target_id
+                            break
+        elif isinstance(elem, dict) and elem.get('@type') == 'CreativeWork' and 'about' in elem:
+            target_id = elem.get('about', {}).get('@id')
+            if target_id:
+                for graph_item in parent_metadata_dict.get('@graph', []):
+                    if isinstance(graph_item, dict) and graph_item.get('@id') == target_id:
+                        parent_root_id = target_id
+                        break
+    
+    if not parent_root_id:
+        raise ValueError("Could not determine the @id of the parent RO-Crate's root dataset.")
+
+    sub_crate_references = []
+    linked_sub_crate_ids = []
+    processed_subdirs = set()
+
+    #find all subcrates
+    for dir_item in parent_crate_path.iterdir():
+        if dir_item.is_dir() and dir_item.name not in processed_subdirs:
+            subcrate_metadata_file = dir_item / 'ro-crate-metadata.json'
+            if subcrate_metadata_file.is_file():
+                processed_subdirs.add(dir_item.name)
+                subcrate_metadata_dict = ReadROCrateMetadata(subcrate_metadata_file)
+                
+                subcrate_root = None
+                
+                for elem in subcrate_metadata_dict.get('@graph', []):
+                    if hasattr(elem, '__class__') and elem.__class__.__name__ == 'ROCrateMetadataFileElem':
+                        if hasattr(elem, 'about') and elem.about:
+                            target_id = elem.about.guid if hasattr(elem.about, 'guid') else elem.about.get('@id', '')
+                            if target_id:
+                                for graph_item in subcrate_metadata_dict.get('@graph', []):
+                                    if (hasattr(graph_item, 'guid') and graph_item.guid == target_id) or \
+                                       (isinstance(graph_item, dict) and graph_item.get('@id') == target_id):
+                                        subcrate_root = graph_item
+                                        break
+                    elif isinstance(elem, dict) and elem.get('@type') == 'CreativeWork' and 'about' in elem:
+                        target_id = elem.get('about', {}).get('@id')
+                        if target_id:
+                            for graph_item in subcrate_metadata_dict.get('@graph', []):
+                                if isinstance(graph_item, dict) and graph_item.get('@id') == target_id:
+                                    subcrate_root = graph_item
+                                    break
+
+                if not subcrate_root:
+                    continue
+
+                relative_path = (dir_item.relative_to(parent_crate_path) / 'ro-crate-metadata.json').as_posix()
+                
+                if hasattr(subcrate_root, 'model_dump'):
+                    reference_dict = subcrate_root.model_dump(by_alias=True, exclude_none=True)
+                elif hasattr(subcrate_root, 'dict'):
+                    reference_dict = subcrate_root.dict(by_alias=True, exclude_none=True)
+                else:
+                    reference_dict = dict(subcrate_root)
+                
+                reference_dict['ro-crate-metadata'] = relative_path
+
+                sub_crate_references.append(reference_dict)
+                linked_sub_crate_ids.append(reference_dict.get('@id'))
+                
+    #add links
+    if sub_crate_references:
+        with parent_metadata_file.open("r+") as f:
+            parent_metadata_dict = json.load(f)
+
+            parent_root_dataset_dict = None
+            for elem in parent_metadata_dict.get('@graph', []):
+                if elem.get('@id') == parent_root_id:
+                    parent_root_dataset_dict = elem
+                    break
+
+            if not parent_root_dataset_dict:
+                raise ValueError("Could not re-find parent root dataset in metadata file during update.")
+
+            existing_graph_ids = {elem.get('@id') for elem in parent_metadata_dict['@graph']}
+            for ref in sub_crate_references:
+                if ref['@id'] not in existing_graph_ids:
+                    parent_metadata_dict['@graph'].append(ref)
+
+            parent_root_dataset_dict.setdefault('hasPart', [])
+            existing_haspart_ids = {part.get('@id') for part in parent_root_dataset_dict['hasPart'] if isinstance(part, dict)}
+            for sub_id in linked_sub_crate_ids:
+                if sub_id not in existing_haspart_ids:
+                    parent_root_dataset_dict['hasPart'].append({'@id': sub_id})
+
+            f.seek(0)
+            f.truncate()
+            json.dump(parent_metadata_dict, f, indent=2, ensure_ascii=False)
+    else:
+        print("No valid sub-crates found to link.")
+
+    return linked_sub_crate_ids
+
+def collect_subcrate_metadata(parent_crate_path: pathlib.Path) -> dict:
+    """
+    Collects author and keyword metadata from all subcrates in the parent crate.
+    Returns a dictionary with 'authors' (list of unique authors) and 'keywords' (list of unique keywords).
+    """
+    parent_crate_path = pathlib.Path(parent_crate_path)
+    authors = set()
+    keywords = set()
+    processed_files = set()
+    
+    def process_directory(directory):
+        for path in directory.glob('**/ro-crate-metadata.json'):
+            if path.is_file() and str(path) not in processed_files:
+                processed_files.add(str(path))
+                
+                try:
+                    subcrate_metadata = ReadROCrateMetadata(path)
+                    root_dataset = None
+                    print
+                    if '@graph' in subcrate_metadata and len(subcrate_metadata['@graph']) > 1:
+                        root_dataset = subcrate_metadata['@graph'][1]
+                    
+                    
+                    if root_dataset:
+                        if root_dataset.author:
+                            author_value = root_dataset.author
+                            print(author_value)
+                            if isinstance(author_value, str):
+                                for author in [a.strip() for a in author_value.split(',')]:
+                                    if author:
+                                        authors.add(author)
+                            elif isinstance(author_value, tuple) or isinstance(author_value, list):
+                                for author in author_value:
+                                    if isinstance(author, str):
+                                        authors.add(author)
+                        
+                        if root_dataset.keywords:
+                            keyword_values = root_dataset.keywords
+                            if isinstance(keyword_values, list) or isinstance(keyword_values, tuple):
+                                for keyword in keyword_values:
+                                    if keyword:
+                                        keywords.add(keyword)
+                            elif isinstance(keyword_values, str):
+                                for keyword in [k.strip() for k in keyword_values.split(',')]:
+                                    if keyword:
+                                        keywords.add(keyword)
+                except Exception as e:
+                    print(f"Error reading subcrate metadata {path}: {e}")
+                    continue
+    for dir_item in parent_crate_path.iterdir():
+        if dir_item.is_dir():
+            process_directory(dir_item)
+    return {
+        'authors': sorted(list(authors)),
+        'keywords': sorted(list(keywords))
+    }

@@ -13,7 +13,9 @@ from fairscape_cli.models.rocrate import (
         ReadROCrateMetadata, 
         AppendCrate, 
         CopyToROCrate,
-        UpdateCrate
+        UpdateCrate,
+        LinkSubcrates,
+        collect_subcrate_metadata
 )
 from fairscape_cli.models.bagit import BagIt
 from fairscape_cli.models.pep import PEPtoROCrateMapper
@@ -35,5 +37,7 @@ __all__ = [
     'CopyToROCrate',
     'UpdateCrate',
     'BagIt',
-    'PEPtoROCrateMapper'
+    'PEPtoROCrateMapper',
+    'LinkSubcrates',
+    'collect_subcrate_metadata'
 ]
