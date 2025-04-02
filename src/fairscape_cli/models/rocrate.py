@@ -522,7 +522,6 @@ def collect_subcrate_metadata(parent_crate_path: pathlib.Path) -> dict:
                 try:
                     subcrate_metadata = ReadROCrateMetadata(path)
                     root_dataset = None
-                    print
                     if '@graph' in subcrate_metadata and len(subcrate_metadata['@graph']) > 1:
                         root_dataset = subcrate_metadata['@graph'][1]
                     
@@ -530,7 +529,6 @@ def collect_subcrate_metadata(parent_crate_path: pathlib.Path) -> dict:
                     if root_dataset:
                         if root_dataset.author:
                             author_value = root_dataset.author
-                            print(author_value)
                             if isinstance(author_value, str):
                                 for author in [a.strip() for a in author_value.split(',')]:
                                     if author:

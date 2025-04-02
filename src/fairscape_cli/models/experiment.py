@@ -43,7 +43,10 @@ def GenerateExperiment(
             if isinstance(value, str):
                 experimentMetadata[key] = [{"@id": value.strip("\n")}]
             elif (isinstance(value, list) or isinstance(value, tuple)) and len(value) > 0:
-                experimentMetadata[key] = [{"@id": item.strip("\n")} for item in value]
+                if isinstance(value[0], str):
+                    experimentMetadata[key] = [{"@id": item.strip("\n")} for item in value]
+                else: 
+                    experimentMetadata[key] = [item for item in value]
         elif value is not None: 
             experimentMetadata[key] = value
     
