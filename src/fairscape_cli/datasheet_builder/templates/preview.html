@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ title }} - RO-Crate Preview</title>
+    <style>
+      body {
+        font-family: "Helvetica", "Arial", sans-serif;
+        margin: 0;
+        padding: 0;
+        color: #333;
+        line-height: 1.5;
+        background-color: #f5f5f5; /* Match datasheet background */
+      }
+      .container {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: white; /* Match datasheet container */
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Match datasheet shadow */
+      }
+      header {
+        margin-bottom: 20px;
+        border-bottom: 2px solid #2c3e50;
+        padding-bottom: 15px;
+        background-color: #f8f9fa; /* Match datasheet header bg */
+        padding: 20px; /* Match datasheet header padding */
+        border-radius: 5px; /* Match datasheet header radius */
+      }
+      h1 {
+        font-size: 24px;
+        margin-bottom: 5px;
+        color: #2c3e50;
+      }
+      .summary-section {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 4px;
+        margin-bottom: 30px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+        page-break-inside: avoid;
+      }
+      .summary-row {
+        display: flex;
+        margin-bottom: 12px;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 8px;
+      }
+      .summary-label {
+        width: 220px;
+        font-weight: bold;
+        color: #2c3e50;
+      }
+      .summary-value {
+        flex: 1;
+      }
+      .tabs {
+        display: flex;
+        border-bottom: 1px solid #ddd;
+        margin-bottom: 20px;
+        flex-wrap: wrap; /* Allow tabs to wrap */
+      }
+      .tab {
+        padding: 10px 15px; /* Adjust padding slightly */
+        cursor: pointer;
+        border-bottom: 3px solid transparent;
+        font-weight: bold;
+        color: #2c3e50;
+        white-space: nowrap; /* Prevent wrapping within a tab */
+      }
+      .tab.active {
+        border-bottom: 3px solid #2c3e50;
+      }
+      .tab .badge {
+        display: inline-block;
+        background-color: #2c3e50;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 3px;
+        font-size: 12px;
+        margin-left: 5px;
+      }
+      .tab-content {
+        margin-bottom: 30px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+        table-layout: fixed; /* Helps with long descriptions */
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 12px;
+        border-bottom: 1px solid #eaeaea;
+        word-wrap: break-word; /* Break long words */
+      }
+      th {
+        background-color: #f8f9fa;
+        font-weight: bold;
+        color: #2c3e50;
+        border-bottom: 2px solid #ddd;
+      }
+      tr:nth-child(even) {
+        background-color: #f8f9fa;
+      }
+      tr:hover {
+        background-color: #f1f8fe;
+      }
+      td:nth-child(2) {
+        /* Target description column */
+        max-width: 400px; /* Limit description width */
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      td:nth-child(2)[title] {
+        /* Style cells with tooltips */
+        cursor: help;
+      }
+      .publications-list {
+        margin: 5px 0 0 15px; /* Adjusted margin */
+        padding: 0;
+        list-style: disc; /* Use standard disc */
+      }
+      .publications-list li {
+        margin-bottom: 6px; /* Slightly reduced spacing */
+      }
+
+      @media print {
+        body {
+          font-size: 11pt;
+          background-color: white;
+        }
+        .container {
+          max-width: 100%;
+          padding: 10px;
+          box-shadow: none;
+        }
+        table {
+          border: 1px solid #ddd;
+          page-break-inside: auto; /* Allow table rows to break across pages */
+        }
+        tr {
+          page-break-inside: avoid; /* Try to keep rows together */
+        }
+        th,
+        td {
+          border: 1px solid #ddd;
+        }
+        .tab-content {
+          display: block !important; /* Show all content when printing */
+          page-break-before: always; /* Start each section on new page */
+        }
+        .tab-content:first-of-type {
+          page-break-before: avoid; /* Don't break before first table */
+        }
+        .tabs {
+          display: none;
+        }
+        .summary-section {
+          box-shadow: none;
+          border: 1px solid #eee;
+        }
+        header {
+          background-color: white;
+          box-shadow: none;
+        }
+        h1 {
+          font-size: 18pt;
+        }
+      }
+      @media (max-width: 768px) {
+        .summary-row {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+        .summary-label {
+          width: 100%;
+          margin-bottom: 3px;
+        }
+        .summary-value {
+          width: 100%;
+        }
+        td:nth-child(2) {
+          /* Allow description to wrap on mobile */
+          white-space: normal;
+        }
+        .tabs {
+          justify-content: center; /* Center tabs if they wrap */
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>{{ title }}</h1>
+        {% if version %}
+        <div>Version: {{ version }}</div>
+        {% endif %}
+      </header>
+
+      <div class="summary-section">
+        <h2>RO-Crate Summary</h2>
+        <div class="summary-row">
+          <div class="summary-label">ROCrate ID</div>
+          <div class="summary-value" id="accession">{{ id_value }}</div>
+        </div>
+        {% if doi %}
+        <div class="summary-row">
+          <div class="summary-label">DOI</div>
+          <div class="summary-value" id="doi">
+            <a href="{{ doi }}" target="_blank">{{ doi }}</a>
+          </div>
+        </div>
+        {% endif %} {% if release_date %}
+        <div class="summary-row">
+          <div class="summary-label">Release Date</div>
+          <div class="summary-value" id="release-date">{{ release_date }}</div>
+        </div>
+        {% endif %} {% if created_date %}
+        <div class="summary-row">
+          <div class="summary-label">Date Created</div>
+          <div class="summary-value">{{ created_date }}</div>
+        </div>
+        {% endif %} {% if updated_date %}
+        <div class="summary-row">
+          <div class="summary-label">Date Modified</div>
+          <div class="summary-value">{{ updated_date }}</div>
+        </div>
+        {% endif %} {% if description %}
+        <div class="summary-row">
+          <div class="summary-label">Description</div>
+          <div class="summary-value" id="description">{{ description }}</div>
+        </div>
+        {% endif %} {% if authors %}
+        <div class="summary-row">
+          <div class="summary-label">Authors</div>
+          <div class="summary-value" id="authors">{{ authors }}</div>
+        </div>
+        {% endif %} {% if publisher %}
+        <div class="summary-row">
+          <div class="summary-label">Publisher</div>
+          <div class="summary-value" id="publisher">{{ publisher }}</div>
+        </div>
+        {% endif %} {% if principal_investigator %}
+        <div class="summary-row">
+          <div class="summary-label">Principal Investigator</div>
+          <div class="summary-value" id="principal-investigator">
+            {{ principal_investigator }}
+          </div>
+        </div>
+        {% endif %} {% if contact_email %}
+        <div class="summary-row">
+          <div class="summary-label">Contact Email</div>
+          <div class="summary-value" id="contact-email">
+            {{ contact_email }}
+          </div>
+        </div>
+        {% endif %} {% if license_value %}
+        <div class="summary-row">
+          <div class="summary-label">License</div>
+          <div class="summary-value" id="license">
+            <a href="{{ license_value }}" target="_blank"
+              >{{ license_value }}</a
+            >
+          </div>
+        </div>
+        {% endif %} {% if confidentiality_level %}
+        <div class="summary-row">
+          <div class="summary-label">Confidentiality Level</div>
+          <div class="summary-value" id="confidentiality-level">
+            {{ confidentiality_level }}
+          </div>
+        </div>
+        {% endif %} {% if keywords %}
+        <div class="summary-row">
+          <div class="summary-label">Keywords</div>
+          <div class="summary-value" id="keywords">
+            {% if keywords is string %}{{ keywords }}{% else %}{{
+            keywords|join(', ') }}{% endif %}
+          </div>
+        </div>
+        {% endif %} {% if citation %}
+        <div class="summary-row">
+          <div class="summary-label">Citation</div>
+          <div class="summary-value" id="citation">{{ citation }}</div>
+        </div>
+        {% endif %} {% if related_publications %}
+        <div class="summary-row">
+          <div class="summary-label">Related Publications</div>
+          <div class="summary-value" id="related-publications">
+            <ul class="publications-list">
+              {% for pub in related_publications %}
+              <li>{{ pub }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="tabs">
+        {% if datasets %}
+        <div class="tab active" data-tab="datasets">
+          Datasets <span class="badge">{{ datasets|length }}</span>
+        </div>
+        {% endif %} {% if software %}
+        <div
+          class="tab {% if not datasets %}active{% endif %}"
+          data-tab="software"
+        >
+          Software <span class="badge">{{ software|length }}</span>
+        </div>
+        {% endif %} {% if computations %}
+        <div
+          class="tab {% if not datasets and not software %}active{% endif %}"
+          data-tab="computations"
+        >
+          Computations <span class="badge">{{ computations|length }}</span>
+        </div>
+        {% endif %} {% if samples %}
+        <div
+          class="tab {% if not datasets and not software and not computations %}active{% endif %}"
+          data-tab="samples"
+        >
+          Samples <span class="badge">{{ samples|length }}</span>
+        </div>
+        {% endif %} {% if experiments %}
+        <div
+          class="tab {% if not datasets and not software and not computations and not samples %}active{% endif %}"
+          data-tab="experiments"
+        >
+          Experiments <span class="badge">{{ experiments|length }}</span>
+        </div>
+        {% endif %} {% if instruments %}
+        <div
+          class="tab {% if not datasets and not software and not computations and not samples and not experiments %}active{% endif %}"
+          data-tab="instruments"
+        >
+          Instruments <span class="badge">{{ instruments|length }}</span>
+        </div>
+        {% endif %} {% if other_items %}
+        <div
+          class="tab {% if not datasets and not software and not computations and not samples and not experiments and not instruments %}active{% endif %}"
+          data-tab="other"
+        >
+          Other <span class="badge">{{ other_items|length }}</span>
+        </div>
+        {% endif %}
+      </div>
+
+      {% macro render_table(items, tab_id, is_active, headers,
+      date_field='date') %}
+      <div
+        id="{{ tab_id }}-content"
+        class="tab-content"
+        style="display: {% if is_active %}block{% else %}none{% endif %};"
+      >
+        {% if items %}
+        <table id="{{ tab_id }}-table">
+          <thead>
+            <tr>
+              {% for header in headers %}
+              <th>{{ header }}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in items %}
+            <tr>
+              <td>{{ item.name }}</td>
+              <td
+                {%
+                if
+                item.description
+                !="item.description_display"
+                %}title="{{ item.description }}"
+                {%
+                endif
+                %}
+              >
+                {{ item.description_display }}
+              </td>
+              <td>{{ item.content_status | safe }}</td>
+              <td>{{ item[date_field] }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <p>No {{ tab_id }} found in this RO-Crate.</p>
+        {% endif %}
+      </div>
+      {% endmacro %} {{ render_table(datasets, 'datasets', datasets, ['Name',
+      'Description', 'Access', 'Release Date'], 'date') }} {{
+      render_table(software, 'software', not datasets and software, ['Name',
+      'Description', 'Access', 'Release Date'], 'date') }} {{
+      render_table(computations, 'computations', not datasets and not software
+      and computations, ['Name', 'Description', 'Access', 'Date Created'],
+      'date') }} {{ render_table(samples, 'samples', not datasets and not
+      software and not computations and samples, ['Name', 'Description',
+      'Identifier', 'Date Created'], 'date') }} {{ render_table(experiments,
+      'experiments', not datasets and not software and not computations and not
+      samples and experiments, ['Name', 'Description', 'Type', 'Date Created'],
+      'date') }} {{ render_table(instruments, 'instruments', not datasets and
+      not software and not computations and not samples and not experiments and
+      instruments, ['Name', 'Description', 'Manufacturer', 'Date Created'],
+      'date') }} {{ render_table(other_items, 'other', not datasets and not
+      software and not computations and not samples and not experiments and not
+      instruments and other_items, ['Name', 'Description', '@id', 'Type'],
+      'type') }}
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const tabs = document.querySelectorAll(".tab");
+        if (!tabs.length) return; // No tabs to manage
+
+        // Ensure at least one tab is active if logic failed initially
+        const activeTab = document.querySelector(".tab.active");
+        if (!activeTab) {
+          tabs[0].classList.add("active");
+          const firstTabId = tabs[0].getAttribute("data-tab");
+          const firstTabContent = document.getElementById(
+            `${firstTabId}-content`
+          );
+          if (firstTabContent) {
+            firstTabContent.style.display = "block";
+          }
+        }
+
+        tabs.forEach((tab) => {
+          tab.addEventListener("click", function () {
+            tabs.forEach((t) => t.classList.remove("active"));
+            this.classList.add("active");
+
+            document.querySelectorAll(".tab-content").forEach((content) => {
+              content.style.display = "none";
+            });
+
+            const tabId = this.getAttribute("data-tab");
+            const targetContent = document.getElementById(`${tabId}-content`);
+            if (targetContent) {
+              targetContent.style.display = "block";
+            }
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

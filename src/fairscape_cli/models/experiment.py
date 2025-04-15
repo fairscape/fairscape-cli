@@ -39,7 +39,7 @@ def GenerateExperiment(
     }
     
     for key, value in kwargs.items():
-        if key in ["usedInstrument", "usedSample", "generated"] and value:
+        if key in ["usedInstrument", "usedSample", "generated","usedStain","usedTreatment"] and value:
             if isinstance(value, str):
                 experimentMetadata[key] = [{"@id": value.strip("\n")}]
             elif (isinstance(value, list) or isinstance(value, tuple)) and len(value) > 0:

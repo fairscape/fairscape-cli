@@ -4,6 +4,8 @@ import shutil
 import json
 from datetime import datetime
 from typing import List, Optional, Union
+import os
+from pathlib import Path
 
 from pydantic import ValidationError
 
@@ -41,6 +43,7 @@ from fairscape_cli.models import (
     registerOutputs
 )
 
+from fairscape_cli.datasheet_builder.rocrate.datasheet_generator import DatasheetGenerator
 
 
 # Click Commands
@@ -981,9 +984,11 @@ def from_pep(
 @click.option('--intended-use', required=False, type=str, help="Intended use of the release.")
 @click.option('--limitations', required=False, type=str, help="Limitations of the release.")
 @click.option('--prohibited-uses', required=False, type=str, help="Prohibited uses of the release.")
+@click.option('--potential-sources-of-bias', required=False, type=str, help="Prohibited uses of the release.")
 @click.option('--human-subject', required=False, type=str, help="Human subject involvement information.")
 @click.option('--additional-properties', required=False, type=str, help="JSON string with additional property values.")
 @click.option('--custom-properties', required=False, type=str, help='JSON string with additional properties for the parent crate.')
+@click.option('--template-dir', required=False, type=click.Path(exists=False, path_type=pathlib.Path), help="Path to datasheet template directory. Default is 'templates' in current directory.")
 @click.pass_context
 def release(
     ctx,
@@ -1015,9 +1020,11 @@ def release(
     intended_use: Optional[str],
     limitations: Optional[str],
     prohibited_uses: Optional[str],
+    potential_sources_of_bias: Optional[str],
     human_subject: Optional[str],
     additional_properties: Optional[str],
-    custom_properties: Optional[str]
+    custom_properties: Optional[str],
+    template_dir: Optional[pathlib.Path],
 ):
     """
     Create a 'release' RO-Crate in RELEASE_DIRECTORY, scanning for and linking existing sub-RO-Crates.
@@ -1109,6 +1116,12 @@ def release(
             "name": "Prohibited Uses",
             "value": prohibited_uses
         })
+    if potential_sources_of_bias:
+        additional_props.append({
+            "@type": "PropertyValue",
+            "name": "Potential Sources of Bias",
+            "value": potential_sources_of_bias
+        })
     if human_subject:
         additional_props.append({
             "@type": "PropertyValue",
@@ -1159,5 +1172,24 @@ def release(
             click.echo(f"  - {sub_id}")
     else:
         click.echo("No valid sub-crates were found or linked.")
+    
+    try:
+        metadata_path = os.path.join(release_directory, "ro-crate-metadata.json")
+        package_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        template_dir = Path(os.path.join(package_dir, 'datasheet_builder', 'templates'))
+        
+        output_path = os.path.join(release_directory, "ro-crate-datasheet.html")
+        
+        click.echo(f"Generating datasheet using templates from: {template_dir}")
+        generator = DatasheetGenerator(
+            json_path=metadata_path,
+            template_dir=template_dir
+        )
+        generator.process_subcrates()
+        final_output_path = generator.save_datasheet(output_path)
+        click.echo(f"Datasheet generated successfully: {final_output_path}")
+    except Exception as e:
+        click.echo(f"WARNING: Failed to generate datasheet: {str(e)}")
+        ctx.exit(1)
 
     click.echo(f"Release process finished successfully for: {parent_crate_guid}")

@@ -1,0 +1,40 @@
+<div class="section-header">
+  <h2>Distribution Information</h2>
+</div>
+<div class="distribution-section">
+  {% if publisher %}
+  <div class="distribution-item">
+    <div class="distribution-label">Publisher:</div>
+    <div class="distribution-value">{{ publisher }}</div>
+  </div>
+  {% endif %} {% if host %}
+  <div class="distribution-item">
+    <div class="distribution-label">Distribution Host:</div>
+    <div class="distribution-value">{{ host }}</div>
+  </div>
+  {% endif %} {% if license_value %}
+  <div class="distribution-item">
+    <div class="distribution-label">License:</div>
+    <div class="distribution-value">
+      <a href="{{ license_value }}" target="_blank">{{ license_value }}</a>
+    </div>
+  </div>
+  {% endif %} {% if doi %}
+  <div class="distribution-item">
+    <div class="distribution-label">DOI:</div>
+    <div class="distribution-value">
+      <a href="{{ doi }}" target="_blank">{{ doi }}</a>
+    </div>
+  </div>
+  {% endif %} {% if release_date %}
+  <div class="distribution-item">
+    <div class="distribution-label">Release Date:</div>
+    <div class="distribution-value">{{ release_date }}</div>
+  </div>
+  {% endif %} {% if version %}
+  <div class="distribution-item">
+    <div class="distribution-label">Version:</div>
+    <div class="distribution-value">{{ version }}</div>
+  </div>
+  {% endif %}
+</div>
