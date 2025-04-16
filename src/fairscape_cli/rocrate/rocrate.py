@@ -1,10 +1,7 @@
 import click
 import pathlib
-import shutil
 import json
-from datetime import datetime
 from typing import List, Optional, Union
-import os
 from pathlib import Path
 
 from pydantic import ValidationError
@@ -12,10 +9,7 @@ from pydantic import ValidationError
 from fairscape_cli.config import NAAN
 from fairscape_cli.models.guid_utils import GenerateDatetimeSquid
 from fairscape_cli.models.utils import (
-    FileNotInCrateException,
-    getDirectoryContents,
-    getEntityFromCrate,
-    run_command
+    FileNotInCrateException
 )
 from fairscape_cli.models import (
     
@@ -31,20 +25,20 @@ from fairscape_cli.models import (
     ReadROCrateMetadata,
     AppendCrate,
     CopyToROCrate,
-    UpdateCrate,
-    LinkSubcrates,
-    collect_subcrate_metadata,
     
     #Pep
     PEPtoROCrateMapper,
     
     # Additional utilities
-    generateSummaryStatsElements,
-    registerOutputs
+    generateSummaryStatsElements
 )
 
 from fairscape_cli.datasheet_builder.rocrate.datasheet_generator import DatasheetGenerator
 from fairscape_cli.data_fetcher.GenomicData import GenomicData
+from fairscape_cli.publish.publish_tools import (
+    DataCitePublisher,
+    DataversePublisher
+    )
 
 # Click Commands
 # RO Crate 
@@ -875,7 +869,6 @@ def from_pep(
         ctx.exit(code=1)
         
 
-    
 @rocrate.group('pull')
 def pull():
     """Pull external resources and convert them into RO-Crate format."""
@@ -950,3 +943,34 @@ def pull_bioproject(
         import traceback 
         traceback.print_exc()
         ctx.exit(1)
+        
+
+@click.group('publish')
+def publish():
+    """Publish an RO-Crate to external repositories."""
+    pass
+
+@publish.command('dataverse')
+@click.option('--rocrate', required=True, type=click.Path(exists=True, dir_okay=False, path_type=Path), help='Path to the ro-crate-metadata.json file.')
+@click.option('--url', required=True, help='Base URL of the target Dataverse instance (e.g., https://dataverse.example.edu).')
+@click.option('--collection', required=True, help='Alias of the target Dataverse collection to publish into.')
+@click.option('--token', required=True, envvar='DATAVERSE_API_TOKEN', help='Dataverse API token (can also be set via DATAVERSE_API_TOKEN env var).')
+@click.option('--authors-csv', type=click.Path(exists=True, dir_okay=False, path_type=Path), help='Optional CSV file with author details (name, affiliation, orcid). Requires "name" column header.')
+def publish_dataverse(rocrate: Path, url: str, collection: str, token: str, authors_csv: Optional[Path]):
+    """Publish RO-Crate metadata as a new dataset to Dataverse."""
+    publisher = DataversePublisher(base_url=url, collection_alias=collection)
+    publisher.publish(rocrate_path=rocrate, api_token=token, authors_csv_path=str(authors_csv) if authors_csv else None)
+
+
+@publish.command('doi')
+@click.option('--rocrate', required=True, type=click.Path(exists=True, dir_okay=False, path_type=Path), help='Path to the ro-crate-metadata.json file.')
+@click.option('--prefix', required=True, help='Your DataCite DOI prefix (e.g., 10.1234).')
+@click.option('--username', required=True, envvar='DATACITE_USERNAME', help='DataCite API username (repository ID, e.g., MEMBER.REPO) (can use DATACITE_USERNAME env var).')
+@click.option('--password', required=True, envvar='DATACITE_PASSWORD', help='DataCite API password (can use DATACITE_PASSWORD env var).')
+@click.option('--api-url', default='https://api.datacite.org', help='DataCite API URL (default: https://api.datacite.org, use https://api.test.datacite.org for testing).')
+@click.option('--event', type=click.Choice(['publish', 'register', 'hide'], case_sensitive=False), default='publish', help="DOI event type: 'publish' (make public), 'register' (create draft), 'hide' (make findable but hide metadata).")
+def publish_doi(rocrate: Path, prefix: str, username: str, password: str, api_url: str, event: str):
+    """Mint or update a DOI on DataCite using RO-Crate metadata."""
+    repository_id = username
+    publisher = DataCitePublisher(prefix=prefix, repository_id=repository_id, api_url=api_url)
+    publisher.publish(rocrate_path=rocrate, username=username, password=password, event=event)
