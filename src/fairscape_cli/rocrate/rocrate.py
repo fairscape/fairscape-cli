@@ -39,6 +39,8 @@ from fairscape_cli.publish.publish_tools import (
     DataCitePublisher,
     DataversePublisher
     )
+from fairscape_cli.datasheet_builder.evidence_graph.html_builder import generate_evidence_graph_html
+from fairscape_cli.datasheet_builder.evidence_graph.graph_builder import generate_evidence_graph_from_rocrate
 
 # Click Commands
 # RO Crate 
@@ -974,3 +976,69 @@ def publish_doi(rocrate: Path, prefix: str, username: str, password: str, api_ur
     repository_id = username
     publisher = DataCitePublisher(prefix=prefix, repository_id=repository_id, api_url=api_url)
     publisher.publish(rocrate_path=rocrate, username=username, password=password, event=event)
+
+@rocrate.command('evidence-graph')
+@click.argument('rocrate-path', type=click.Path(exists=True, path_type=Path))
+@click.argument('ark-id', type=str)
+@click.option('--output-file', required=False, type=click.Path(path_type=Path), help="Path to save the JSON evidence graph (defaults to provenance-graph.json in the RO-Crate directory)")
+@click.option('--visualize/--no-visualize', default=True, help="Generate HTML visualization (default: True)")
+@click.pass_context
+def generate_evidence_graph(
+    ctx,
+    rocrate_path: Path,
+    ark_id: str,
+    output_file: Optional[Path],
+    visualize: bool
+):
+    """
+    Generate an evidence graph from an RO-Crate for a specific ARK identifier.
+    
+    ROCRATE_PATH can be either a directory containing ro-crate-metadata.json or the metadata file itself.
+    ARK_ID is the ARK identifier for which to build the evidence graph.
+    """
+    # Determine RO-Crate metadata file path
+    if rocrate_path.is_dir():
+        metadata_file = rocrate_path / "ro-crate-metadata.json"
+        if not metadata_file.exists():
+            click.echo(f"ERROR: ro-crate-metadata.json not found in {rocrate_path}")
+            ctx.exit(1)
+    else:
+        metadata_file = rocrate_path
+    
+    # Determine output paths
+    crate_dir = metadata_file.parent
+    if not output_file:
+        output_file = crate_dir / "provenance-graph.json"
+    
+    # Generate the evidence graph
+    try:
+        click.echo(f"Generating evidence graph for {ark_id} from {metadata_file}...")
+        evidence_graph = generate_evidence_graph_from_rocrate(
+            rocrate_path=metadata_file,
+            output_path=output_file,
+            node_id=ark_id
+        )
+        click.echo(f"Evidence graph saved to {output_file}")
+        
+        # Generate visualization if requested
+        if visualize:
+            try:
+                
+                html_output_path = output_file.with_suffix('.html')
+                
+                click.echo("Generating visualization...")
+                result = generate_evidence_graph_html(str(output_file), str(html_output_path))
+                
+                if result:
+                    click.echo(f"Visualization saved to {html_output_path}")
+                else:
+                    click.echo("ERROR: Failed to generate visualization")
+            except ImportError:
+                click.echo("WARNING: generate_evidence_graph_html module not found, skipping visualization")
+                click.echo("To generate visualizations, please install the visualization module.")
+            except Exception as e:
+                click.echo(f"ERROR generating visualization: {str(e)}")
+        
+    except Exception as e:
+        click.echo(f"ERROR: {str(e)}")
+        ctx.exit(1)
