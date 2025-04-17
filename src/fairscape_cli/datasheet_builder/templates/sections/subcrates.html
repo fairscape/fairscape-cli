@@ -5,11 +5,13 @@
     <div class="subcrate-metadata">
       <div class="metadata-item">
         <span class="metadata-label">ROCrate ID:</span>
-        <span class="metadata-value"
-          ><a href="https://fairscape.net/{{ subcrate.id }}"
+        <span class="metadata-value">
+          {% if subcrate.published %}
+          <a href="https://fairscape.net/{{ subcrate.id }}"
             >{{ subcrate.id }}</a
-          ></span
-        >
+          >
+          {% else %} {{ subcrate.id }} {% endif %}
+        </span>
       </div>
       {% if subcrate.evidence %}
       <div class="metadata-item">

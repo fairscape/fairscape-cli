@@ -13,10 +13,10 @@ from .preview_generator import PreviewGenerator
 class DatasheetGenerator:
     """Main class for generating RO-Crate datasheets"""
     
-    def __init__(self, json_data=None, json_path=None, template_dir=None):
+    def __init__(self, json_data=None, json_path=None, template_dir=None, published = False):
         """Initialize with JSON data or a path to a JSON file"""
 
-        self.processor = ROCrateProcessor(json_data=json_data, json_path=json_path)
+        self.processor = ROCrateProcessor(json_data=json_data, json_path=json_path, published=published)
         
         self.template_engine = TemplateEngine(template_dir=template_dir)
         

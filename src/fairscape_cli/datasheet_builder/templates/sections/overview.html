@@ -3,7 +3,9 @@
   <div class="summary-row">
     <div class="summary-label">ROCrate ID</div>
     <div class="summary-value" id="accession">
+      {% if published %}
       <a href="https://fairscape.net/{{ id_value }}">{{ id_value }}</a>
+      {% else %} {{ id_value }} {% endif %}
     </div>
   </div>
   <div class="summary-row">

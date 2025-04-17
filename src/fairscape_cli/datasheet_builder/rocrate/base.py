@@ -7,7 +7,7 @@ from fairscape_cli.datasheet_builder.rocrate import prov
 class ROCrateProcessor:
     """Base class for processing RO-Crate data"""
     
-    def __init__(self, json_data=None, json_path=None):
+    def __init__(self, json_data=None, json_path=None, published=False):
         """Initialize with either JSON data or a path to a JSON file"""
         if json_data:
             self.json_data = json_data
@@ -19,6 +19,7 @@ class ROCrateProcessor:
         
         self.graph = self.json_data.get("@graph", [])
         self.root = self.find_root_node()
+        self.published = published
     
     def find_root_node(self):
         """Find the root node in the RO-Crate graph"""

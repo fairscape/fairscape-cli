@@ -50,7 +50,8 @@ class OverviewSectionGenerator(SectionGenerator):
             'data_governance': self.processor.get_property_value("Data Governance Committee", additional_properties) or "",
             'completeness': self.processor.get_property_value("Completeness", additional_properties),
             'funding': root.get("funder", ""),
-            'keywords': root.get("keywords", [])
+            'keywords': root.get("keywords", []),
+            "published": self.processor.published
         }
         
         related_publications = root.get("associatedPublication", [])
@@ -189,6 +190,7 @@ class SubcratesSectionGenerator(SectionGenerator):
                 subcrate['doi'] = subcrate_processor.root.get("identifier", self.processor.root.get("identifier", ""))
                 subcrate['date'] = subcrate_processor.root.get("datePublished", self.processor.root.get("datePublished", ""))
                 subcrate['contact'] = subcrate_processor.root.get("contactEmail", self.processor.root.get("contactEmail", ""))
+                subcrate['published'] = self.processor.published
                 
                 # Get copyright, license, and terms of use
                 subcrate['copyright'] = subcrate_processor.root.get("copyrightNotice", "Copyright (c) 2025 The Regents of the University of California")
