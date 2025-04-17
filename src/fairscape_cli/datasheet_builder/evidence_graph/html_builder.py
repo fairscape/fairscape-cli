@@ -8,6 +8,7 @@ def generate_evidence_graph_html(rocrate_path, output_path=None):
     Generate a standalone HTML file containing an interactive React
     visualization of the evidence graph extracted from an RO-Crate.
     Includes panning functionality and adjusted node spacing.
+    Automatically expands the first two levels of the graph.
 
     Args:
         rocrate_path: Path to the RO-Crate metadata.json file
@@ -20,13 +21,13 @@ def generate_evidence_graph_html(rocrate_path, output_path=None):
         with open(rocrate_path, 'r', encoding='utf-8') as f:
             rocrate_data = json.load(f)
     except FileNotFoundError:
-        print(f"Error: RO-Crate file not found at {{rocrate_path}}")
+        print(f"Error: RO-Crate file not found at {rocrate_path}")
         return None
     except json.JSONDecodeError:
-        print(f"Error: Could not parse JSON from {{rocrate_path}}")
+        print(f"Error: Could not parse JSON from {rocrate_path}")
         return None
     except Exception as e:
-        print(f"An unexpected error occurred while reading the RO-Crate: {{e}}")
+        print(f"An unexpected error occurred while reading the RO-Crate: {e}")
         return None
 
     if output_path is None:
@@ -37,7 +38,6 @@ def generate_evidence_graph_html(rocrate_path, output_path=None):
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     # Note: Double curly braces {{ }} are used for literal braces in the f-string.
-    # No JavaScript comments are included.
     html_content = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -54,37 +54,36 @@ def generate_evidence_graph_html(rocrate_path, output_path=None):
             font-family: sans-serif;
             width: 100%;
             height: 100%;
-            overflow: hidden; /* Prevent body scroll */
+            overflow: hidden;
         }}
         #root {{
             width: 100%;
             height: 100%;
             position: relative;
-            overflow: hidden; /* Changed from auto to hidden for panning */
+            overflow: hidden;
             background-color: #f8f9fa;
-            cursor: grab; /* Indicate pannable */
+            cursor: grab;
         }}
          #root.dragging {{
             cursor: grabbing;
          }}
-         .graph-viewport {{ /* Added a viewport for panning/zooming */
+         .graph-viewport {{
             width: 100%;
             height: 100%;
             position: absolute;
             top: 0;
             left: 0;
-            will-change: transform; /* Optimize transforms */
+            will-change: transform;
          }}
          .graph-container {{
             position: relative;
-            /* width/height set by JS */
-            min-width: 1500px; /* Retain min size */
+            min-width: 1500px;
             min-height: 1000px;
-            transform-origin: top left; /* Essential for scale/translate */
-            background-color: #f8f9fa; /* Ensure background covers area */
+            transform-origin: top left;
+            background-color: #f8f9fa;
         }}
         .loading-overlay {{
-            position: fixed; /* Changed to fixed to stay relative to viewport */
+            position: fixed;
             inset: 0;
             background-color: rgba(255, 255, 255, 0.8);
             display: flex;
@@ -96,10 +95,10 @@ def generate_evidence_graph_html(rocrate_path, output_path=None):
         }}
         .node-wrapper {{
             position: absolute;
-            cursor: default; /* Default cursor for nodes */
+            cursor: default;
             box-sizing: border-box;
             transition: top 0.3s ease, left 0.3s ease;
-            user-select: none; /* Prevent text selection during drag */
+            user-select: none;
         }}
         .node-container {{
             background: #fff;
@@ -119,7 +118,7 @@ def generate_evidence_graph_html(rocrate_path, output_path=None):
         }}
         .node-container.expandable {{
             border: 2px dashed #333;
-            cursor: pointer; /* Pointer only if expandable */
+            cursor: pointer;
         }}
         .node-header {{
             padding: 8px 6px;
@@ -154,8 +153,8 @@ def generate_evidence_graph_html(rocrate_path, output_path=None):
             left: 0;
             width: 100%;
             height: 100%;
-            pointer-events: none; /* SVG shouldn't block node interactions */
-            overflow: visible; /* Important for markers */
+            pointer-events: none;
+            overflow: visible;
         }}
         .edge-path {{
             stroke: #888;
@@ -174,11 +173,10 @@ def generate_evidence_graph_html(rocrate_path, output_path=None):
             fill: #555;
             text-anchor: middle;
             dominant-baseline: middle;
-            pointer-events: none; /* Ensure labels don't interfere */
+            pointer-events: none;
         }}
-        /* Legend removed */
         .controls-container {{
-            position: absolute; /* Changed from fixed to absolute relative to root */
+            position: absolute;
             top: 10px;
             left: 10px;
             background-color: rgba(255, 255, 255, 0.9);
@@ -319,7 +317,7 @@ def generate_evidence_graph_html(rocrate_path, output_path=None):
     }}
 
 
-    function getInitialGraphState(graphData, initialExpansionDepth = 1) {{
+    function getInitialGraphState(graphData, initialExpansionDepth = 2) {{
         const {{ rootEntityId, entityMap }} = getGraphEntities(graphData);
         if (!rootEntityId || !entityMap.has(rootEntityId)) {{
             console.error("Could not determine root entity or find it in the graph data.");
@@ -351,14 +349,31 @@ def generate_evidence_graph_html(rocrate_path, output_path=None):
             if (currentLevelIds.size === 0) break;
 
             currentLevelIds.forEach(nodeId => {{
-                const node = nodes.find(n => n.id === nodeId);
+                 const nodeIndex = nodes.findIndex(n => n.id === nodeId);
+                 if (nodeIndex === -1) return;
+                 const node = nodes[nodeIndex];
+
                  if (!node || !node.expandable || node._expanded) return;
 
-                const expansionResult = expandNodeInternal(node, nodes, edges, entityMap);
+                 let expansionResult;
+                 if (node.type === "DatasetCollection") {{
+                     expansionResult = expandDatasetCollectionNodeInternal(node, nodes, edges, entityMap);
+                 }} else {{
+                     expansionResult = expandNodeInternal(node, nodes, edges, entityMap);
+                 }}
+                 const {{ newNodes, newEdges, updatedCollectionData }} = expansionResult;
 
-                if (expansionResult.newNodes.length > 0 || expansionResult.newEdges.length > 0) {{
-                     node._expanded = true;
-                     node.expandable = false;
+                if (newNodes.length > 0 || newEdges.length > 0 || updatedCollectionData) {{
+
+                     let updatedNode = {{...node}};
+                     if (updatedCollectionData) {{
+                         updatedNode = {{...updatedNode, ...updatedCollectionData}};
+                     }} else {{
+                         updatedNode._expanded = true;
+                         updatedNode.expandable = false;
+                     }}
+                     nodes[nodeIndex] = updatedNode;
+
 
                      expansionResult.newNodes.forEach(newNode => {{
                         if (!addedNodeIds.has(newNode.id)) {{
@@ -375,25 +390,25 @@ def generate_evidence_graph_html(rocrate_path, output_path=None):
                         }}
                     }});
                  }} else {{
-                    node.expandable = false;
+                    nodes[nodeIndex] = {{...node, expandable: false}};
                  }}
             }});
             currentLevelIds = nextLevelIds;
         }}
 
-        nodes.forEach(node => {{
-            if (nodesToExpand.has(node.id) && !node._expanded && node.type !== 'DatasetCollection') {{
+        nodes.forEach((node, index) => {{
+             if (!node._expanded) {{
                  const checkAgain = createEvidenceNode(node._sourceData);
-                 if (checkAgain) node.expandable = checkAgain.expandable;
-                 else node.expandable = false;
-            }} else if (node.type === 'DatasetCollection' && node._remainingDatasets.length > 0) {{
-                 node.expandable = true;
-            }} else if (!node._expanded) {{
-                 const checkAgain = createEvidenceNode(node._sourceData);
-                 if (checkAgain) node.expandable = checkAgain.expandable;
-                 else node.expandable = false;
-            }}
+                 let stillExpandable = checkAgain ? checkAgain.expandable : false;
+                 if (node.type === 'DatasetCollection') {{
+                    stillExpandable = node._remainingDatasets && node._remainingDatasets.length > 0;
+                 }}
+                 if (nodes[index].expandable !== stillExpandable) {{
+                     nodes[index] = {{...node, expandable: stillExpandable}};
+                 }}
+             }}
         }});
+
 
         return {{ nodes, edges }};
     }}
@@ -566,8 +581,8 @@ def generate_evidence_graph_html(rocrate_path, output_path=None):
         const dagreGraph = new dagre.graphlib.Graph();
         dagreGraph.setDefaultEdgeLabel(() => ({{}}));
 
-        const NODE_SEP = 50; /* Reduced node separation */
-        const RANK_SEP = 80; /* Reduced rank (level) separation */
+        const NODE_SEP = 50;
+        const RANK_SEP = 80;
         const MARGIN_X = 50;
         const MARGIN_Y = 50;
 
@@ -577,7 +592,7 @@ def generate_evidence_graph_html(rocrate_path, output_path=None):
             ranksep: RANK_SEP,
             marginx: MARGIN_X,
             marginy: MARGIN_Y,
-            align: 'DL' /* Align nodes to the top-left in their rank */
+            align: 'DL'
         }});
 
         nodes.forEach(node => {{
@@ -653,7 +668,7 @@ def generate_evidence_graph_html(rocrate_path, output_path=None):
         const nodeColor = getNodeColor(type);
 
         const handleClick = useCallback((event) => {{
-            event.stopPropagation(); // Prevent triggering pan on node click
+            event.stopPropagation();
             if (expandable && onClick) {{
                 onClick(id);
             }}
@@ -673,7 +688,7 @@ def generate_evidence_graph_html(rocrate_path, output_path=None):
 
         return createElement(
             'div',
-            {{ style: style, className: 'node-wrapper', onClick: handleClick, onMouseDown: (e) => e.stopPropagation() /* Prevent pan start on node drag attempt */ }},
+            {{ style: style, className: 'node-wrapper', onClick: handleClick, onMouseDown: (e) => e.stopPropagation() }},
             createElement('div', {{ className: containerClasses.join(' ') }}, [
                 createElement('div', {{ key: 'header', className: 'node-header', style: {{ backgroundColor: nodeColor }} }}, type),
                 createElement('div', {{ key: 'content', className: 'node-content' }},
@@ -698,9 +713,9 @@ def generate_evidence_graph_html(rocrate_path, output_path=None):
         const dist = Math.sqrt(dx * dx + dy * dy);
 
         let pathD;
-        if (dist < 100) {{ // Simple straight line for close nodes
+        if (dist < 100) {{
             pathD = `M ${{sourceX}} ${{sourceY}} L ${{targetX}} ${{targetY}}`;
-        }} else {{ // Basic curved path for longer distances
+        }} else {{
             const midX = (sourceX + targetX) / 2;
             const midY = (sourceY + targetY) / 2;
             const c1X = sourceX + dx * 0.3;
@@ -743,7 +758,6 @@ def generate_evidence_graph_html(rocrate_path, output_path=None):
         );
     }});
 
-    /* Legend component removed */
 
     const GraphRenderer = ({{ graphData }}) => {{
         const [nodes, setNodes] = useState([]);
@@ -756,7 +770,7 @@ def generate_evidence_graph_html(rocrate_path, output_path=None):
         const [translate, setTranslate] = useState({{ x: 0, y: 0 }});
         const [isDragging, setIsDragging] = useState(false);
         const [startDragPos, setStartDragPos] = useState({{ x: 0, y: 0 }});
-        const rootRef = useRef(null); // Ref for the #root element
+        const rootRef = useRef(null);
 
 
         const applyLayout = useCallback((nodesToLayout, edgesToLayout) => {{
@@ -792,7 +806,8 @@ def generate_evidence_graph_html(rocrate_path, output_path=None):
              }}
              entityMapRef.current = entityMap;
 
-            const {{ nodes: initialNodes, edges: initialEdges }} = getInitialGraphState(graphData, 1);
+             // Initial expansion depth is now handled by the default parameter in getInitialGraphState
+             const {{ nodes: initialNodes, edges: initialEdges }} = getInitialGraphState(graphData);
 
              if (initialNodes.length > 0) {{
                 applyLayout(initialNodes, initialEdges);
@@ -837,8 +852,6 @@ def generate_evidence_graph_html(rocrate_path, output_path=None):
                 updatedNodeData.expandable = false;
                 nodeUpdated = true;
              }} else {{
-                 /* Only case left is no new nodes/edges AND not a collection update */
-                 /* which means expandable was true but expansion yielded nothing */
                 updatedNodeData.expandable = false;
                 nodeUpdated = true;
              }}
@@ -868,8 +881,7 @@ def generate_evidence_graph_html(rocrate_path, output_path=None):
         const zoomOut = useCallback(() => setScale(s => Math.max(s / 1.2, 0.2)), []);
 
         const handleMouseDown = useCallback((event) => {{
-            if (event.button !== 0) return; // Only main button
-             /* Prevent starting drag if clicking on controls or nodes */
+            if (event.button !== 0) return;
              if (event.target.closest('.controls-container') || event.target.closest('.node-wrapper')) {{
                  return;
              }}
@@ -903,7 +915,6 @@ def generate_evidence_graph_html(rocrate_path, output_path=None):
         useEffect(() => {{
             const currentRoot = rootRef.current;
             if (currentRoot) {{
-                 /* Add event listeners directly to the root element for panning */
                  currentRoot.addEventListener('mousedown', handleMouseDown);
                  currentRoot.addEventListener('mousemove', handleMouseMove);
                  currentRoot.addEventListener('mouseup', handleMouseUp);
@@ -921,9 +932,8 @@ def generate_evidence_graph_html(rocrate_path, output_path=None):
 
         return React.createElement(
             'div',
-            {{ ref: rootRef, style:{{ width: '100%', height: '100%', overflow: 'hidden', position: 'relative'}} }}, /* Container for controls and viewport */
+            {{ ref: rootRef, style:{{ width: '100%', height: '100%', overflow: 'hidden', position: 'relative'}} }},
             [
-                /* Viewport for Panning and Zooming */
                 createElement('div', {{
                     key: 'viewport',
                     className: 'graph-viewport',
@@ -967,10 +977,7 @@ def generate_evidence_graph_html(rocrate_path, output_path=None):
                         ]
                     )
                 ),
-                /* Controls and Loading are outside the viewport */
                  isLoading && createElement('div', {{ key: 'loading', className: 'loading-overlay' }}, 'Loading...'),
-
-                 /* Legend removed */
 
                  createElement('div', {{key: 'controls', className: 'controls-container'}}, [
                     createElement('button', {{ key: 'zoom-in', className: 'control-button', onClick: zoomIn }}, '+'),
@@ -1018,9 +1025,6 @@ if __name__ == "__main__":
     else:
         output_file = args.output
         if not output_file:
-            # Keep the original default naming convention if desired
-            # output_file = crate_path.with_suffix('.html')
-            # Or use the one from the prompt example:
             output_file = crate_path.parent / f"{crate_path.stem}-evidence-graph.html"
 
 
