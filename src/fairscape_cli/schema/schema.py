@@ -300,22 +300,24 @@ def validate(ctx, schema, data):
         for validation_failure in metadata_error.errors(): 
             click.echo(f"property: {validation_failure.get('loc')} \tmsg: {validation_failure.get('msg')}")
         ctx.exit(1)
-    except Exception as e:
-        click.echo(f"Error during validation: {str(e)}")
-        ctx.exit(1)
 
 @schema.command('infer')
 @click.option('--name', required=True, type=str)
 @click.option('--description', required=True, type=str)
 @click.option('--guid', required=False, type=str, default="", show_default=False)
 @click.argument('input_file', type=click.Path(exists=True))
+@click.option('--rocrate-path', required=False, type=click.Path(exists=True, path_type=pathlib.Path), help='Optional path to an RO-Crate to append the schema to')
 @click.argument('schema_file', type=str)
 @click.pass_context
-def infer_schema(ctx, name, description, guid, input_file, schema_file):
-    """Infer a schema from a file (CSV, TSV, Parquet, or HDF5)."""
+def infer_schema_rocrate(ctx, name, description, guid, input_file, rocrate_path, schema_file):
+    """Infer a schema from a file and optionally append it to an RO-Crate.
+    
+    INPUT_FILE: File to infer schema from (CSV, TSV, Parquet, or HDF5)
+    SCHEMA_FILE: Path to save the schema file
+    """
     try:
+        # Determine schema type and infer schema
         schema_class = determine_schema_type(input_file)
-        
         schema_model = schema_class.infer_from_file(
             input_file, 
             name, 
@@ -323,12 +325,27 @@ def infer_schema(ctx, name, description, guid, input_file, schema_file):
         )
         if guid:
             schema_model.guid = guid
-            
+
         WriteSchema(schema_model, schema_file)
         
         ext = pathlib.Path(input_file).suffix.lower()[1:]
         click.echo(f"Inferred Schema from {ext} file: {str(schema_file)}")
-    
+        
+        # If RO-Crate path is provided, append the schema to it
+        if rocrate_path:
+            from fairscape_cli.models import ReadROCrateMetadata, AppendCrate
+            
+            # Read the RO-Crate to verify it exists and is valid
+            try:
+                ReadROCrateMetadata(rocrate_path)
+            except Exception as exc:
+                click.echo(f"ERROR Reading ROCrate: {str(exc)}")
+                ctx.exit(code=1)
+            
+            # Append to RO-Crate
+            AppendCrate(cratePath=rocrate_path, elements=[schema_model])
+            click.echo(f"Added Schema to RO-Crate with ID: {schema_model.guid}")
+        
     except ValueError as e:
         click.echo(f"Error with file type: {str(e)}")
         ctx.exit(code=1)
