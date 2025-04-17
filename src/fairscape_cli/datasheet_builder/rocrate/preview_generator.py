@@ -56,14 +56,12 @@ class PreviewGenerator:
 
                 content_status = f"<a href='{link_target}'>Access / Download</a>"
 
-
             item_type = item.get("@type", "Unknown")
             if isinstance(item_type, list):
                 specific_types = [t for t in item_type if t and not t.startswith(('http', 'https'))]
                 item_type = specific_types[0] if specific_types else ", ".join(filter(None, item_type))
             elif item_type is None:
                 item_type = "Unknown"
-
 
             manufacturer_raw = item.get("manufacturer")
             manufacturer_name = "N/A"
@@ -72,6 +70,18 @@ class PreviewGenerator:
             elif isinstance(manufacturer_raw, str):
                 manufacturer_name = manufacturer_raw
 
+            schema_properties = None
+            if item_type == "EVI:Schema" or "Schema" in str(item_type):
+                props = item.get("properties", {})
+                if props and isinstance(props, dict):
+                    schema_properties = {}
+                    for prop_name, prop_details in props.items():
+                        if isinstance(prop_details, dict):
+                            schema_properties[prop_name] = {
+                                "type": prop_details.get("type", "Unknown"),
+                                "description": prop_details.get("description", ""),
+                                "index": prop_details.get("index", "N/A")
+                            }
 
             prepared_items.append({
                 "name": name,
@@ -83,7 +93,8 @@ class PreviewGenerator:
                 "type": item_type,
                 "identifier": item.get("identifier", item.get("@id", "")),
                 "experimentType": item.get("experimentType", "N/A"),
-                "manufacturer": manufacturer_name
+                "manufacturer": manufacturer_name,
+                "schema_properties": schema_properties
             })
         return prepared_items
 
@@ -119,14 +130,12 @@ class PreviewGenerator:
         if author_names:
              authors = ", ".join(filter(None, author_names))
 
-
         publisher_raw = root.get("publisher", "")
         publisher = ""
         if isinstance(publisher_raw, dict):
             publisher = publisher_raw.get("name", "")
         elif isinstance(publisher_raw, str):
             publisher = publisher_raw
-
 
         keywords_raw = root.get("keywords", [])
         keywords = []
@@ -171,8 +180,6 @@ class PreviewGenerator:
         schemas_list = schemas if isinstance(schemas, list) else []
         other_list = other if isinstance(other, list) else []
 
-        other_items = schemas_list + other_list
-
         context = {
             'title': title or "Untitled RO-Crate",
             'id_value': id_value or "N/A",
@@ -190,14 +197,15 @@ class PreviewGenerator:
             'confidentiality_level': root.get("confidentialityLevel", ""),
             'keywords': keywords, 
             'citation': root.get("citation", ""),
-            'related_publications': related_publications, #
+            'related_publications': related_publications,
             'datasets': self._prepare_item_data(datasets),
             'software': self._prepare_item_data(software_list),
             'computations': self._prepare_item_data(computations_list),
             'samples': self._prepare_item_data(samples_list),
             'experiments': self._prepare_item_data(experiments_list),
             'instruments': self._prepare_item_data(instruments_list),
-            'other_items': self._prepare_item_data(other_items)
+            'schemas': self._prepare_item_data(schemas_list),
+            'other_items': self._prepare_item_data(other_list)
         }
 
         return self.template_engine.render(self.DEFAULT_TEMPLATE, **context)

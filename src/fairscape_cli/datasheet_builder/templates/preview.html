@@ -11,22 +11,22 @@
         padding: 0;
         color: #333;
         line-height: 1.5;
-        background-color: #f5f5f5; /* Match datasheet background */
+        background-color: #f5f5f5;
       }
       .container {
         max-width: 1100px;
         margin: 0 auto;
         padding: 20px;
-        background-color: white; /* Match datasheet container */
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Match datasheet shadow */
+        background-color: white;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
       }
       header {
         margin-bottom: 20px;
         border-bottom: 2px solid #2c3e50;
         padding-bottom: 15px;
-        background-color: #f8f9fa; /* Match datasheet header bg */
-        padding: 20px; /* Match datasheet header padding */
-        border-radius: 5px; /* Match datasheet header radius */
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 5px;
       }
       h1 {
         font-size: 24px;
@@ -59,15 +59,15 @@
         display: flex;
         border-bottom: 1px solid #ddd;
         margin-bottom: 20px;
-        flex-wrap: wrap; /* Allow tabs to wrap */
+        flex-wrap: wrap;
       }
       .tab {
-        padding: 10px 15px; /* Adjust padding slightly */
+        padding: 10px 15px;
         cursor: pointer;
         border-bottom: 3px solid transparent;
         font-weight: bold;
         color: #2c3e50;
-        white-space: nowrap; /* Prevent wrapping within a tab */
+        white-space: nowrap;
       }
       .tab.active {
         border-bottom: 3px solid #2c3e50;
@@ -89,14 +89,14 @@
         border-collapse: collapse;
         margin-bottom: 20px;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
-        table-layout: fixed; /* Helps with long descriptions */
+        table-layout: fixed;
       }
       th,
       td {
         text-align: left;
         padding: 12px;
         border-bottom: 1px solid #eaeaea;
-        word-wrap: break-word; /* Break long words */
+        word-wrap: break-word;
       }
       th {
         background-color: #f8f9fa;
@@ -111,25 +111,58 @@
         background-color: #f1f8fe;
       }
       td:nth-child(2) {
-        /* Target description column */
-        max-width: 400px; /* Limit description width */
+        max-width: 400px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
       }
       td:nth-child(2)[title] {
-        /* Style cells with tooltips */
         cursor: help;
       }
       .publications-list {
-        margin: 5px 0 0 15px; /* Adjusted margin */
+        margin: 5px 0 0 15px;
         padding: 0;
-        list-style: disc; /* Use standard disc */
+        list-style: disc;
       }
       .publications-list li {
-        margin-bottom: 6px; /* Slightly reduced spacing */
+        margin-bottom: 6px;
       }
-
+      .schema-details {
+        margin: 0;
+        padding: 15px;
+        background-color: #f8f9fa;
+        border-top: 1px solid #ddd;
+        border-bottom: 1px solid #ddd;
+      }
+      .schema-details-container {
+        padding: 0;
+      }
+      .toggle-schema {
+        cursor: pointer;
+        color: #2c3e50;
+        text-decoration: underline;
+      }
+      .properties-table {
+        margin: 0;
+        width: 100%;
+        box-shadow: none;
+        border: 1px solid #eaeaea;
+      }
+      .properties-table th,
+      .properties-table td {
+        padding: 8px 12px;
+        background-color: #fff;
+      }
+      .properties-table th {
+        background-color: #f1f1f1;
+      }
+      .schema-properties-row {
+        background-color: #f8f9fa !important;
+      }
+      tr.schema-row:hover
+        + tr.schema-properties-row:not([style*="display: none"]) {
+        background-color: #f1f8fe !important;
+      }
       @media print {
         body {
           font-size: 11pt;
@@ -142,21 +175,21 @@
         }
         table {
           border: 1px solid #ddd;
-          page-break-inside: auto; /* Allow table rows to break across pages */
+          page-break-inside: auto;
         }
         tr {
-          page-break-inside: avoid; /* Try to keep rows together */
+          page-break-inside: avoid;
         }
         th,
         td {
           border: 1px solid #ddd;
         }
         .tab-content {
-          display: block !important; /* Show all content when printing */
-          page-break-before: always; /* Start each section on new page */
+          display: block !important;
+          page-break-before: always;
         }
         .tab-content:first-of-type {
-          page-break-before: avoid; /* Don't break before first table */
+          page-break-before: avoid;
         }
         .tabs {
           display: none;
@@ -186,11 +219,10 @@
           width: 100%;
         }
         td:nth-child(2) {
-          /* Allow description to wrap on mobile */
           white-space: normal;
         }
         .tabs {
-          justify-content: center; /* Center tabs if they wrap */
+          justify-content: center;
         }
       }
     </style>
@@ -344,9 +376,16 @@
         >
           Instruments <span class="badge">{{ instruments|length }}</span>
         </div>
-        {% endif %} {% if other_items %}
+        {% endif %} {% if schemas %}
         <div
           class="tab {% if not datasets and not software and not computations and not samples and not experiments and not instruments %}active{% endif %}"
+          data-tab="schemas"
+        >
+          Schemas <span class="badge">{{ schemas|length }}</span>
+        </div>
+        {% endif %} {% if other_items %}
+        <div
+          class="tab {% if not datasets and not software and not computations and not samples and not experiments and not instruments and not schemas %}active{% endif %}"
           data-tab="other"
         >
           Other <span class="badge">{{ other_items|length }}</span>
@@ -396,6 +435,131 @@
         <p>No {{ tab_id }} found in this RO-Crate.</p>
         {% endif %}
       </div>
+      {% endmacro %} {% macro render_schema_table(items, tab_id, is_active) %}
+      <div
+        id="{{ tab_id }}-content"
+        class="tab-content"
+        style="display: {% if is_active %}block{% else %}none{% endif %};"
+      >
+        {% if items %}
+        <table id="{{ tab_id }}-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Description</th>
+              <th>Access</th>
+              <th>Properties</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in items %}
+            <tr class="schema-row" id="schema-row-{{ loop.index }}">
+              <td>{{ item.name }}</td>
+              <td
+                {%
+                if
+                item.description
+                !="item.description_display"
+                %}title="{{ item.description }}"
+                {%
+                endif
+                %}
+              >
+                {{ item.description_display }}
+              </td>
+              <td>{{ item.content_status | safe }}</td>
+              <td>
+                {% if item.schema_properties %}
+                <span class="toggle-schema" data-schema-id="{{ loop.index }}"
+                  >Show Properties</span
+                >
+                {% else %} No properties found {% endif %}
+              </td>
+            </tr>
+            {% if item.schema_properties %}
+            <tr
+              class="schema-properties-row"
+              id="schema-details-row-{{ loop.index }}"
+              style="display: none"
+            >
+              <td colspan="4" class="schema-details-container">
+                <div
+                  id="schema-details-{{ loop.index }}"
+                  class="schema-details"
+                >
+                  <table class="properties-table">
+                    <thead>
+                      <tr>
+                        <th>Property</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for prop_name, prop_details in
+                      item.schema_properties.items() %}
+                      <tr>
+                        <td>{{ prop_name }}</td>
+                        <td>{{ prop_details.type }}</td>
+                        <td>
+                          {{ prop_details.description or "No description" }}
+                        </td>
+                      </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </td>
+            </tr>
+            {% endif %} {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <p>No {{ tab_id }} found in this RO-Crate.</p>
+        {% endif %}
+      </div>
+      {% endmacro %} {% macro render_other_table(items, tab_id, is_active) %}
+      <div
+        id="{{ tab_id }}-content"
+        class="tab-content"
+        style="display: {% if is_active %}block{% else %}none{% endif %};"
+      >
+        {% if items %}
+        <table id="{{ tab_id }}-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Description</th>
+              <th>Access</th>
+              <th>@id</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in items %}
+            <tr>
+              <td>{{ item.name }}</td>
+              <td
+                {%
+                if
+                item.description
+                !="item.description_display"
+                %}title="{{ item.description }}"
+                {%
+                endif
+                %}
+              >
+                {{ item.description_display }}
+              </td>
+              <td>{{ item.content_status | safe }}</td>
+              <td>{{ item.id }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <p>No {{ tab_id }} found in this RO-Crate.</p>
+        {% endif %}
+      </div>
       {% endmacro %} {{ render_table(datasets, 'datasets', datasets, ['Name',
       'Description', 'Access', 'Release Date'], 'date') }} {{
       render_table(software, 'software', not datasets and software, ['Name',
@@ -410,18 +574,18 @@
       'date') }} {{ render_table(instruments, 'instruments', not datasets and
       not software and not computations and not samples and not experiments and
       instruments, ['Name', 'Description', 'Manufacturer', 'Date Created'],
-      'date') }} {{ render_table(other_items, 'other', not datasets and not
+      'date') }} {{ render_schema_table(schemas, 'schemas', not datasets and not
       software and not computations and not samples and not experiments and not
-      instruments and other_items, ['Name', 'Description', '@id', 'Type'],
-      'type') }}
+      instruments and schemas) }} {{ render_other_table(other_items, 'other',
+      not datasets and not software and not computations and not samples and not
+      experiments and not instruments and not schemas and other_items) }}
     </div>
 
     <script>
       document.addEventListener("DOMContentLoaded", function () {
         const tabs = document.querySelectorAll(".tab");
-        if (!tabs.length) return; // No tabs to manage
+        if (!tabs.length) return;
 
-        // Ensure at least one tab is active if logic failed initially
         const activeTab = document.querySelector(".tab.active");
         if (!activeTab) {
           tabs[0].classList.add("active");
@@ -447,6 +611,23 @@
             const targetContent = document.getElementById(`${tabId}-content`);
             if (targetContent) {
               targetContent.style.display = "block";
+            }
+          });
+        });
+
+        document.querySelectorAll(".toggle-schema").forEach((button) => {
+          button.addEventListener("click", function () {
+            const schemaId = this.getAttribute("data-schema-id");
+            const detailsRow = document.getElementById(
+              `schema-details-row-${schemaId}`
+            );
+
+            if (detailsRow.style.display === "table-row") {
+              detailsRow.style.display = "none";
+              this.textContent = "Show Properties";
+            } else {
+              detailsRow.style.display = "table-row";
+              this.textContent = "Hide Properties";
             }
           });
         });
