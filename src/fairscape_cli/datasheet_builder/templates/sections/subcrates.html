@@ -14,11 +14,15 @@
       {% if subcrate.evidence %}
       <div class="metadata-item">
         <span class="metadata-label">Provenance ID:</span>
-        <span class="metadata-value"
-          ><a href="https://fairscape.net/{{ subcrate.id  }}"
+        <span class="metadata-value">
+          {% if subcrate.evidence.endswith('.html') %}
+          <a href="{{ subcrate.evidence }}">{{ subcrate.evidence }}</a>
+          {% else %}
+          <a href="https://fairscape.net/{{ subcrate.id }}"
             >{{ subcrate.evidence }}</a
-          ></span
-        >
+          >
+          {% endif %}
+        </span>
       </div>
       {% endif %}
       <div class="metadata-item">

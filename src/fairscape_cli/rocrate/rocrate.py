@@ -981,14 +981,12 @@ def publish_doi(rocrate: Path, prefix: str, username: str, password: str, api_ur
 @click.argument('rocrate-path', type=click.Path(exists=True, path_type=Path))
 @click.argument('ark-id', type=str)
 @click.option('--output-file', required=False, type=click.Path(path_type=Path), help="Path to save the JSON evidence graph (defaults to provenance-graph.json in the RO-Crate directory)")
-@click.option('--visualize/--no-visualize', default=True, help="Generate HTML visualization (default: True)")
 @click.pass_context
 def generate_evidence_graph(
     ctx,
     rocrate_path: Path,
     ark_id: str,
     output_file: Optional[Path],
-    visualize: bool
 ):
     """
     Generate an evidence graph from an RO-Crate for a specific ARK identifier.
@@ -1020,25 +1018,42 @@ def generate_evidence_graph(
         )
         click.echo(f"Evidence graph saved to {output_file}")
         
-        # Generate visualization if requested
-        if visualize:
-            try:
+        try:
+            html_output_path = output_file.with_suffix('.html')
+            click.echo("Generating visualization...")
+            result = generate_evidence_graph_html(str(output_file), str(html_output_path))
+            
+            if result:
+                click.echo(f"Visualization saved to {html_output_path}")
+            else:
+                click.echo("ERROR: Failed to generate visualization")
+        except ImportError:
+            click.echo("WARNING: generate_evidence_graph_html module not found, skipping visualization")
+            click.echo("To generate visualizations, please install the visualization module.")
+        except Exception as e:
+            click.echo(f"ERROR generating visualization: {str(e)}")\
+                    
+        try:
+            with open(metadata_file, 'r') as f:
+                metadata = json.load(f)
+            
+            i = 0
+            for entity in metadata.get('@graph', []):
+                if i == 1:
+                    entity['hasEvidenceGraph'] = {
+                        "@id": str(html_output_path)
+                    }
+                    break
+                i += 1
+            
+            # Write the updated metadata back to the file
+            with open(metadata_file, 'w') as f:
+                json.dump(metadata, f, indent=2)
                 
-                html_output_path = output_file.with_suffix('.html')
-                
-                click.echo("Generating visualization...")
-                result = generate_evidence_graph_html(str(output_file), str(html_output_path))
-                
-                if result:
-                    click.echo(f"Visualization saved to {html_output_path}")
-                else:
-                    click.echo("ERROR: Failed to generate visualization")
-            except ImportError:
-                click.echo("WARNING: generate_evidence_graph_html module not found, skipping visualization")
-                click.echo("To generate visualizations, please install the visualization module.")
-            except Exception as e:
-                click.echo(f"ERROR generating visualization: {str(e)}")
-        
+            click.echo(f"Added hasEvidenceGraph reference to {ark_id} in RO-Crate metadata")
+        except Exception as e:
+            click.echo(f"WARNING: Failed to add hasEvidenceGraph reference: {str(e)}")
+            
     except Exception as e:
         click.echo(f"ERROR: {str(e)}")
         ctx.exit(1)
