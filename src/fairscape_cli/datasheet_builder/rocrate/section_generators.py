@@ -1,5 +1,6 @@
 from .base import ROCrateProcessor
 import os
+import traceback
 
 class SectionGenerator:
     def __init__(self, template_engine, processor=None):
@@ -27,6 +28,7 @@ class OverviewSectionGenerator(SectionGenerator):
             'id_value': root.get("@id", ""),
             'doi': root.get("identifier", ""),
             'license_value': root.get("license", ""),
+            'ethical_review': root.get("ethicalReview", ""),
             'release_date': root.get("datePublished", ""),
             'created_date': root.get("dateCreated", ""),
             'updated_date': root.get("dateModified", ""),
@@ -200,7 +202,7 @@ class SubcratesSectionGenerator(SectionGenerator):
                 subcrate['confidentiality'] = subcrate_processor.root.get("confidentialityLevel", self.processor.root.get("confidentialityLevel", ""))
                 subcrate['funder'] = subcrate_processor.root.get("funder", self.processor.root.get("funder", ""))
                 subcrate['md5'] = subcrate_processor.root.get("MD5", "")
-                subcrate['evidence'] = subcrate_processor.root.get("hasEvidenceGraph", "")["@id"]
+                subcrate['evidence'] = subcrate_processor.root.get("hasEvidenceGraph", {}).get("@id","")
 
                 subcrate['files'] = files
                 subcrate['files_count'] = len(files)
@@ -272,6 +274,7 @@ class SubcratesSectionGenerator(SectionGenerator):
                 
             except Exception as e:
                 print(f"Error processing subcrate {subcrate_info.get('name', 'Unnamed Sub-Crate')}: {e}")
+                traceback.print_exc()
                 continue
         
         context = {

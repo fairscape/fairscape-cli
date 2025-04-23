@@ -121,6 +121,6 @@ class DatasheetGenerator:
             except Exception as e:
                 import traceback
                 print(f"Error processing subcrate {subcrate_info.get('name', '')} at {full_path}: {str(e)}")
-                #traceback.print_exc()
+                traceback.print_exc()
 
         print(f"Finished processing subcrates. Generated {processed_count} preview files.")

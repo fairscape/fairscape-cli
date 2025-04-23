@@ -47,6 +47,11 @@
     <div class="summary-label">Data Governance Committee</div>
     <div class="summary-value" id="data-governance">{{ data_governance }}</div>
   </div>
+  {% endif %} {% if ethical_review %}
+  <div class="summary-row">
+    <div class="summary-label">Ethical Review</div>
+    <div class="summary-value" id="data-governance">{{ ethical_review }}</div>
+  </div>
   {% endif %}
   <div class="summary-row">
     <div class="summary-label">Copyright</div>
