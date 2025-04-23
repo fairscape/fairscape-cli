@@ -72,6 +72,107 @@ class Publisher(ABC):
     def publish(self, rocrate_path: Path, **kwargs):
         pass
 
+class FairscapePublisher(Publisher):
+    def __init__(self, base_url: str = "https://fairscape.net/api"):
+        self.base_url = base_url.rstrip('/')
+
+    def _zip_directory(self, directory_path: Path) -> Path:
+        import tempfile
+        import zipfile
+        import os
+        
+        click.echo(f"Zipping directory '{directory_path}'...")
+        
+        temp_zip_file = tempfile.NamedTemporaryFile(delete=False, suffix='.zip')
+        temp_zip_path = Path(temp_zip_file.name)
+        temp_zip_file.close()
+        
+        with zipfile.ZipFile(temp_zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+            for root, _, files in os.walk(directory_path):
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    arcname = os.path.relpath(file_path, directory_path)
+                    zipf.write(file_path, arcname)
+        
+        click.echo(f"Directory zipped successfully: {temp_zip_path}")
+        return temp_zip_path
+
+    def _get_auth_token(self, username: str, password: str) -> str:
+        url = f"{self.base_url}/login"
+        
+        data = {
+            "username": username,
+            "password": password
+        }
+        
+        try:
+            response = requests.post(url, data=data)
+            response.raise_for_status()
+            
+            token_data = response.json()
+            if "access_token" in token_data:
+                return token_data["access_token"]
+            else:
+                click.echo(f"Error: Authentication response didn't contain access token", err=True)
+                click.echo(f"Response: {response.text}", err=True)
+                sys.exit(1)
+                
+        except requests.exceptions.RequestException as e:
+            click.echo(f"Error authenticating with Fairscape API: {e}", err=True)
+            sys.exit(1)
+
+    def publish(self, rocrate_path: Path, username: str, password: str):
+        click.echo(f"Publishing to Fairscape ({self.base_url})...")
+        
+        # Get authentication token
+        token = self._get_auth_token(username, password)
+        
+        # Check if path is a directory, if so zip it
+        if rocrate_path.is_dir():
+            click.echo(f"Input path is a directory, zipping it first...")
+            zip_path = self._zip_directory(rocrate_path)
+            try:
+                self._upload_zip(zip_path, token)
+            finally:
+                # Clean up temporary zip file
+                if zip_path.exists():
+                    zip_path.unlink()
+        elif rocrate_path.suffix.lower() == '.zip':
+            self._upload_zip(rocrate_path, token)
+        else:
+            click.echo(f"Error: Input path must be a directory or a zip file", err=True)
+            sys.exit(1)
+
+    def _upload_zip(self, zip_path: Path, token: str):
+        url = f"{self.base_url}/rocrate/upload-async"
+        headers = {"Authorization": f"Bearer {token}"}
+        
+        try:
+            with open(zip_path, 'rb') as f:
+                files = {'crate': (zip_path.name, f, 'application/zip')}
+                click.echo(f"Uploading zip file to Fairscape...")
+                
+                response = requests.post(url, headers=headers, files=files)
+                
+                if response.status_code == 200 or response.status_code == 201 or response.status_code == 202:
+                    result = response.json()
+                    transaction_id = result.get('transactionFolder', 'N/A')
+                    click.echo(f"Successfully initiated upload to Fairscape!")
+                    click.echo(f"Transaction ID: {transaction_id}")
+                    click.echo(f"Check Fairscape dashboard for upload status.")
+                    return transaction_id
+                else:
+                    click.echo(f"Error uploading dataset. Status: {response.status_code}", err=True)
+                    click.echo(f"Response: {response.text}", err=True)
+                    sys.exit(1)
+                    
+        except requests.exceptions.RequestException as e:
+            click.echo(f"Error connecting to Fairscape API at {url}: {e}", err=True)
+            sys.exit(1)
+        except Exception as e:
+            click.echo(f"An unexpected error occurred during Fairscape upload: {e}", err=True)
+            sys.exit(1)
+
 class DataversePublisher(Publisher):
     def __init__(self, base_url: str, collection_alias: str):
         self.base_url = base_url.rstrip('/')

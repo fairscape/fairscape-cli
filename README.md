@@ -1,225 +1,366 @@
 # fairscape-cli
+
 A utility for packaging objects and validating metadata for FAIRSCAPE.
 
 ---
-**Documentation**: [https://fairscape.github.io/fairscape-cli/](https://fairscape.github.io/fairscape-cli/)
----
+
+## **Documentation**: [https://fairscape.github.io/fairscape-cli/](https://fairscape.github.io/fairscape-cli/)
 
 ## Features
 
-fairscape-cli provides a Command Line Interface (CLI) that allows the client side to create:
+fairscape-cli provides a Command Line Interface (CLI) that allows the client side to create, manage, and publish scientific data packages:
 
-* [RO-Crate](https://www.researchobject.org/ro-crate/) - a light-weight approach to packaging research data with their metadata. The CLI allows users to:
-    * Create Research Object Crates (RO-Crates)
-    * Add (transfer) digital objects to the RO-Crate
-    * Register metadata of the objects
-    * Describe the schema of tabular dataset objects as metadata and perform validation.
+- **RO-Crate Management:** Create and manipulate [RO-Crate](https://www.researchobject.org/ro-crate/) packages locally.
+  - Initialize RO-Crates in new or existing directories.
+  - Add data, software, and computation metadata.
+  - Copy files into the crate structure alongside metadata registration.
+- **Schema Handling:** Define, infer, and validate data schemas (Tabular, HDF5).
+  - Create schema definition files.
+  - Add properties with constraints.
+  - Infer schemas directly from data files.
+  - Validate data files against specified schemas.
+  - Register schemas within RO-Crates.
+- **Data Import:** Fetch data from external sources and convert them into RO-Crates.
+  - Import NCBI BioProjects.
+  - Convert Portable Encapsulated Projects (PEPs) to RO-Crates.
+- **Build Artifacts:** Generate derived outputs from RO-Crates.
+  - Create detailed HTML datasheets summarizing crate contents.
+  - Generate provenance evidence graphs (JSON and HTML).
+- **Release Management:** Organize multiple related RO-Crates into a cohesive release package.
+  - Initialize a release structure.
+  - Automatically link sub-crates and propagate metadata.
+  - Build a top-level datasheet for the release.
+- **Publishing:** Publish RO-Crate metadata to external repositories.
+  - Upload RO-Crate directories or zip files to Fairscape.
+  - Create datasets on Dataverse instances.
+  - Mint or update DOIs on DataCite.
 
 ## Requirements
 
 Python 3.8+
 
 ## Installation
+
 ```console
 $ pip install fairscape-cli
 ```
 
-## Minimal example 
+## Command Overview
 
-### Basic commands
+The CLI is organized into several top-level commands:
 
-* Show all commands, arguments, and options
+    rocrate: Core local RO-Crate manipulation (create, add files/metadata).
+
+    schema: Operations on data schemas (create, infer, add properties, add to crate).
+
+    validate: Validate data against schemas.
+
+    import: Fetch external data into RO-Crate format (e.g., bioproject, pep).
+
+    build: Generate outputs from RO-Crates (e.g., datasheet, evidence-graph).
+
+    release: Manage multi-part RO-Crate releases (e.g., create, build).
+
+    publish: Publish RO-Crates to repositories (e.g., fairscape, dataverse, doi).
+
+Use --help for details on any command or subcommand:
 
 ```console
 $ fairscape-cli --help
+$ fairscape-cli rocrate --help
+$ fairscape-cli rocrate add --help
+$ fairscape-cli schema create --help
 ```
 
-* Create an RO-Crate in a specified directory
+## Examples
+
+### Creating an RO-Crate
+
+Create an RO-Crate in a specified directory:
 
 ```console
 $ fairscape-cli rocrate create \
-  --name "test rocrate" \
-  --description "Example RO Crate for Tests" \
-  --organization-name "UVA" \
-  --project-name "B2AI"  \
-  --keywords "b2ai" \
-  --keywords "cm4ai" \
-  --keywords "U2OS" \
-  "./test_rocrate"
+    --name "My Analysis Crate" \
+    --description "RO-Crate containing analysis scripts and results" \
+    --organization-name "My Org" \
+    --project-name "My Project" \
+    --keywords "analysis" \
+    --keywords "python" \
+    --author "Jane Doe" \
+    --version "1.1.0" \
+    ./my_analysis_crate
 ```
 
-* Create an RO-Crate in the current working directory
+Initialize an RO-Crate in the current working directory:
 
 ```console
+# Navigate to an empty directory first if desired
+# mkdir my_analysis_crate && cd my_analysis_crate
+
 $ fairscape-cli rocrate init \
-  --name "test rocrate" \
-  --description "Example RO Crate for Tests" \
-  --organization-name "UVA" \
-  --project-name "B2AI"  \
-  --keywords "b2ai" \
-  --keywords "cm4ai" \
-  --keywords "U2OS"
+    --name "My Analysis Crate" \
+    --description "RO-Crate containing analysis scripts and results" \
+    --organization-name "My Org" \
+    --project-name "My Project" \
+    --keywords "analysis" \
+    --keywords "python"
 ```
 
-* Add a dataset to the RO-Crate
+### Adding Content and Metadata to an RO-Crate
+
+These commands support adding both the file and its metadata (add) or just the metadata (register).
+
+Add a dataset file and its metadata:
 
 ```console
 $ fairscape-cli rocrate add dataset \
-  --name "AP-MS embeddings" \
-  --author "Krogan lab (https://kroganlab.ucsf.edu/krogan-lab)" \
-  --version "1.0" \
-  --date-published "2021-04-23" \
-  --description "Affinity purification mass spectrometer (APMS) embeddings for each protein in the study,  generated by node2vec predict." \
-  --keywords "b2ai" \
-  --keywords "cm4ai" \
-  --keywords "U2OS" \
-  --data-format "CSV" \
-  --source-filepath "./tests/data/APMS_embedding_MUSIC.csv" \
-  --destination-filepath "./test_rocrate/APMS_embedding_MUSIC.csv" \
-  "./test_rocrate"
+    --name "Raw Measurements" \
+    --author "John Smith" \
+    --version "1.0" \
+    --date-published "2023-10-27" \
+    --description "Raw sensor measurements from Experiment A." \
+    --keywords "raw-data" \
+    --keywords "sensors" \
+    --data-format "csv" \
+    --source-filepath "./source_data/measurements.csv" \
+    --destination-filepath "data/measurements.csv" \
+    ./my_analysis_crate
 ```
 
-* Add a software to the RO-Crate
+Add a software script file and its metadata:
 
 ```console
 $ fairscape-cli rocrate add software \
-  --name "calibrate pairwise distance" \
-  --author "Qin, Y." \
-  --version "1.0" \
-  --description "script written in python to calibrate pairwise distance." \
-  --keywords "b2ai" \
-  --keywords "cm4ai" \
-  --keywords "U2OS" \
-  --file-format "py" \
-  --source-filepath "./tests/data/calibrate_pairwise_distance.py" \
-  --destination-filepath "./test_rocrate/calibrate_pairwise_distance.py" \
-  --date-modified "2021-04-23" \
-  "./test_rocrate"
+    --name "Analysis Script" \
+    --author "Jane Doe" \
+    --version "1.1.0" \
+    --description "Python script for processing raw measurements." \
+    --keywords "analysis" \
+    --keywords "python" \
+    --file-format "py" \
+    --source-filepath "./scripts/process_data.py" \
+    --destination-filepath "scripts/process_data.py" \
+    ./my_analysis_crate
 ```
 
-* Register a computation to the RO-Crate
+Register computation metadata (metadata only):
 
 ```console
+# Assuming the script and dataset were added previously and have GUIDs:
+# Dataset GUID: ark:59852/dataset-raw-measurements-xxxx
+# Software GUID: ark:59852/software-analysis-script-yyyy
+
 $ fairscape-cli rocrate register computation \
-  --name "calibrate pairwise distance" \
-  --run-by "Qin, Y." \
-  --date-created "2021-05-23" \
-  --description "Average the predicted proximities" \
-  --keywords "b2ai" \
-  --keywords "cm4ai" \
-  --keywords "U2OS" \
-  "./test_rocrate"
+    --name "Data Processing Run" \
+    --run-by "Jane Doe" \
+    --date-created "2023-10-27T14:30:00Z" \
+    --description "Execution of the analysis script on the raw measurements." \
+    --keywords "processing" \
+    --used-dataset "ark:59852/dataset-raw-measurements-xxxx" \
+    --used-software "ark:59852/software-analysis-script-yyyy" \
+    --generated "ark:59852/dataset-processed-results-zzzz" \
+    ./my_analysis_crate
+
+# Note: You would typically register the generated dataset ('processed-results') separately.
 ```
 
-* Create a schema
+Register dataset metadata (metadata only, file assumed present or external):
 
 ```console
-$ fairscape-cli schema create-tabular \
-    --name 'APMS Embedding Schema' \
-    --description 'Tabular format for APMS music embeddings from PPI networks from the music pipeline from the B2AI Cellmaps for AI project' \
+$ fairscape-cli rocrate register dataset \
+    --name "Processed Results" \
+    --guid "ark:59852/dataset-processed-results-zzzz" \
+    --author "Jane Doe" \
+    --version "1.0" \
+    --description "Processed results from the analysis script." \
+    --keywords "results" \
+    --data-format "csv" \
+    --filepath "results/processed.csv" \
+    --generated-by "ark:59852/computation-data-processing-run-wwww" \
+    ./my_analysis_crate
+```
+
+### Schema Management
+
+Create a tabular schema definition file:
+
+```console
+$ fairscape-cli schema create \
+    --name 'Measurement Schema' \
+    --description 'Schema for raw sensor measurements' \
+    --schema-type tabular \
     --separator ',' \
-    --header False \
-    ./schema_apms_music_embedding.json
+    --header true \
+    ./measurement_schema.json
 ```
 
-* Add a string property
+Add properties to the tabular schema file:
 
 ```console
+# Add a string property (column 0)
 $ fairscape-cli schema add-property string \
-    --name 'Experiment Identifier' \
+    --name 'Timestamp' \
     --index 0 \
-    --description 'Identifier for the APMS experiment responsible for generating the raw PPI used to create this embedding vector' \
-    --pattern '^APMS_[0-9]*$' \
-    ./schema_apms_music_embedding.json
-```
+    --description 'Measurement time (ISO8601)' \
+    ./measurement_schema.json
 
-* Add annother string property
-
-```console
-$ fairscape-cli schema add-property string \
-    --name 'Gene Symbol' \
+# Add a number property (column 1)
+$ fairscape-cli schema add-property number \
+    --name 'Value' \
     --index 1 \
-    --description 'Gene Symbol for the APMS bait protien' \
-    --pattern '^[A-Za-z0-9\-]*$' \
-    --value-url 'http://edamontology.org/data_1026' \
-    ./schema_apms_music_embedding.json
+    --description 'Sensor reading' \
+    --minimum 0 \
+    ./measurement_schema.json
 ```
 
-* Add an array property
+Infer a schema from an existing data file:
 
 ```console
-$ fairscape-cli schema add-property array \
-    --name 'MUSIC APMS Embedding' \
-    --index '2::' \
-    --description 'Embedding Vector values for genes determined by running node2vec on APMS PPI networks. Vector has 1024 values for each bait protien' \
-    --items-datatype 'number' \
-    --unique-items False \
-    --min-items 1024 \
-    --max-items 1024 \
-    ./schema_apms_music_embedding.json
+$ fairscape-cli schema infer \
+    --name "Inferred Results Schema" \
+    --description "Schema inferred from processed results" \
+    ./my_analysis_crate/results/processed.csv \
+    ./processed_schema.json
 ```
 
-* Show a successful validation of the schema against the dataset
+Add an existing schema file to an RO-Crate:
 
 ```console
-$ fairscape-cli schema validate \
-    --data ./examples/schemas/MUSIC_embedding/APMS_embedding_MUSIC.csv  \
-    --schema ./examples/schemas/MUSIC_embedding/music_apms_embedding_schema.json
+$ fairscape-cli schema add-to-crate \
+    ./measurement_schema.json \
+    ./my_analysis_crate
 ```
 
-* Show an unsuccessful validation of the schema against the dataset
+### Validation
+
+Validate a data file against a schema file:
 
 ```console
-$ fairscape-cli schema validate \
-    --data examples/schemas/MUSIC_embedding/APMS_embedding_corrupted.csv \
-    --schema examples/schemas/MUSIC_embedding/music_apms_embedding_schema.json
+# Successful validation
+$ fairscape-cli validate schema \
+    --schema-path ./measurement_schema.json \
+    --data-path ./my_analysis_crate/data/measurements.csv
+
+# Example failure
+$ fairscape-cli validate schema \
+    --schema-path ./measurement_schema.json \
+    --data-path ./source_data/measurements_invalid.csv
 ```
 
-* Validate using default schemas
+### Importing Data
+
+Import an NCBI BioProject into a new RO-Crate:
 
 ```console
-# validate imageloader files
-$ fairscape-cli schema validate \
-        --data "examples/schemas/cm4ai-rocrates/imageloader/samplescopy.csv" \
-        --schema "ark:59852/schema-cm4ai-imageloader-samplescopy" 
-    
-$ fairscape-cli schema validate \
-        --data "examples/schemas/cm4ai-rocrates/imageloader/uniquecopy.csv" \
-        --schema "ark:59852/schema-cm4ai-imageloader-uniquecopy"
-       
-# validate image embedding outputs
-$ fairscape-cli schema validate \
-        --data "examples/schemas/cm4ai-rocrates/image_embedding/image_emd.tsv" \
-        --schema "ark:59852/schema-cm4ai-image-embedding-image-emd"
-     
-$ fairscape-cli schema validate \
-        --data "examples/schemas/cm4ai-rocrates/image_embedding/labels_prob.tsv" \
-        --schema "ark:59852/schema-cm4ai-image-embedding-labels-prob"
+$ fairscape-cli import bioproject \
+    --accession PRJNA123456 \
+    --author "Importer Name" \
+    --output-dir ./bioproject_prjna123456_crate \
+    --crate-name "Imported BioProject PRJNA123456"
+```
 
-# validate apsm loader input
-$ fairscape-cli schema validate \
-        --data "examples/schemas/cm4ai-rocrates/apmsloader/ppi_gene_node_attributes.tsv" \
-        --schema "ark:59852/schema-cm4ai-apmsloader-gene-node-attributes"
+Convert a PEP project to an RO-Crate:
 
-$ fairscape-cli schema validate \
-        --data "examples/schemas/cm4ai-rocrates/apmsloader/ppi_edgelist.tsv" \
-        --schema "ark:59852/schema-cm4ai-apmsloader-ppi-edgelist"
+```console
+$ fairscape-cli import pep \
+    ./path/to/my_pep_project \
+    --output-path ./my_pep_rocrate \
+    --crate-name "My PEP Project Crate"
+```
 
-# validate apms embedding 
-$ fairscape-cli schema validate \
-        --data "examples/schemas/cm4ai-rocrates/apms_embedding/ppi_emd.tsv" \
-        --schema "ark:59852/schema-cm4ai-apms-embedding"    
+### Building Outputs
 
-# validate coembedding 
-$ fairscape-cli schema validate \
-        --data "examples/schemas/cm4ai-rocrates/coembedding/coembedding_emd.tsv" \
-        --schema "ark:59852/schema-cm4ai-coembedding"
+Generate an HTML datasheet for an RO-Crate:
+
+```console
+$ fairscape-cli build datasheet ./my_analysis_crate
+# Output will be ./my_analysis_crate/ro-crate-datasheet.html by default
+```
+
+Generate a provenance graph for a specific item within the crate:
+
+```console
+# Assuming 'ark:59852/dataset-processed-results-zzzz' is the item of interest
+$ fairscape-cli build evidence-graph \
+    ./my_analysis_crate \
+    ark:59852/dataset-processed-results-zzzz \
+    --output-json ./my_analysis_crate/prov/results_prov.json \
+    --output-html ./my_analysis_crate/prov/results_prov.html
+```
+
+### Release Management
+
+Create the structure for a multi-part release:
+
+```console
+$ fairscape-cli release create \
+    --name "My Big Release Q4 2023" \
+    --description "Combined release of Experiment A and Experiment B crates" \
+    --organization-name "My Org" \
+    --project-name "Overall Project" \
+    --keywords "release" \
+    --keywords "experiment-a" \
+    --keywords "experiment-b" \
+    --version "2.0" \
+    --author "Release Manager" \
+    --publisher "My Org Publishing" \
+    ./my_big_release
+
+# Manually copy or move your individual RO-Crate directories (e.g., experiment_a_crate, experiment_b_crate)
+# into the ./my_big_release directory now.
+```
+
+Build the release (link sub-crates, update metadata, generate datasheet):
+
+```console
+$ fairscape-cli release build ./my_big_release
+```
+
+### Publishing
+
+Upload an RO-Crate to Fairscape:
+
+```console
+# Ensure FAIRSCAPE_USERNAME and FAIRSCAPE_PASSWORD are set as environment variables or use options
+$ fairscape-cli publish fairscape \
+    --rocrate ./my_analysis_crate \
+    --username <your_username> \
+    --password <your_password>
+
+# Works with either directories or zip files
+$ fairscape-cli publish fairscape \
+    --rocrate ./my_analysis_crate.zip \
+    --username <your_username> \
+    --password <your_password> \
+    --api-url https://fairscape.example.edu/api
+```
+
+Publish RO-Crate metadata to Dataverse:
+
+```console
+# Ensure DATAVERSE_API_TOKEN is set as an environment variable or use --token
+$ fairscape-cli publish dataverse \
+    --rocrate ./my_analysis_crate/ro-crate-metadata.json \
+    --url https://my.dataverse.instance.edu \
+    --collection my_collection_alias \
+    --token <your_api_token>
+```
+
+Mint a DOI using DataCite:
+
+```console
+# Ensure DATACITE_USERNAME and DATACITE_PASSWORD are set or use options
+$ fairscape-cli publish doi \
+    --rocrate ./my_analysis_crate/ro-crate-metadata.json \
+    --prefix 10.1234 \
+    --username MYORG.MYREPO \
+    --password <your_api_password> \
+    --event publish # or 'register' for draft
 ```
 
 ## Contribution
 
-If you'd like to request a feature or report a bug, please create a [GitHub Issue](https://github.com/fairscape/fairscape-cli/issues) using one of the templates provided.
-
+If you'd like to request a feature or report a bug, please create a GitHub Issue using one of the templates provided.
 
 ## License
 

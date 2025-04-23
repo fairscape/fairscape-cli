@@ -10,6 +10,8 @@ from typing import (
     Type
 )
 
+from fairscape_cli.models import ReadROCrateMetadata, AppendCrate
+
 from fairscape_cli.models.schema.tabular import (
     TabularValidationSchema,
     HDF5ValidationSchema,
@@ -333,7 +335,6 @@ def infer_schema_rocrate(ctx, name, description, guid, input_file, rocrate_path,
         
         # If RO-Crate path is provided, append the schema to it
         if rocrate_path:
-            from fairscape_cli.models import ReadROCrateMetadata, AppendCrate
             
             # Read the RO-Crate to verify it exists and is valid
             try:
@@ -351,4 +352,52 @@ def infer_schema_rocrate(ctx, name, description, guid, input_file, rocrate_path,
         ctx.exit(code=1)
     except Exception as e:
         click.echo(f"Error inferring schema: {str(e)}")
+        ctx.exit(code=1)
+
+
+@schema.command('add-to-crate')
+@click.argument('rocrate-path', type=click.Path(exists=True, path_type=pathlib.Path))
+@click.argument('schema-file', type=click.Path(exists=True))
+@click.pass_context
+def register_schema(
+    ctx,
+    rocrate_path: pathlib.Path,
+    schema_file: str,
+):
+    """Register a JSON Schema with the specified RO-Crate.
+    
+    ROCRATE-PATH: Path to the RO-Crate to add the schema to
+    SCHEMA-FILE: Path to the schema JSON file
+    """
+    try:
+        
+        try:
+            ReadROCrateMetadata(rocrate_path)
+        except Exception as exc:
+            click.echo(f"ERROR Reading ROCrate: {str(exc)}")
+            ctx.exit(code=1)
+        
+        # Read schema file
+        with open(schema_file, 'r') as f:
+            schema_data = json.load(f)
+        
+        try:
+            schema_model = TabularValidationSchema.from_dict(schema_data)
+            click.echo(f"Loaded schema as TabularValidationSchema")
+        except Exception as tabular_error:
+            # If that fails, try HDF5ValidationSchema
+            try:
+                schema_model = HDF5ValidationSchema.from_dict(schema_data)
+                click.echo(f"Loaded schema as HDF5ValidationSchema")
+            except Exception as hdf5_error:
+                click.echo(f"ERROR: Could not recognize schema format")
+                click.echo(f"TabularValidationSchema error: {str(tabular_error)}")
+                click.echo(f"HDF5ValidationSchema error: {str(hdf5_error)}")
+                ctx.exit(code=1)
+        
+        AppendCrate(cratePath=rocrate_path, elements=[schema_model])
+        click.echo(f"Schema registered with ID: {schema_model.guid}")
+        
+    except Exception as exc:
+        click.echo(f"ERROR: {str(exc)}")
         ctx.exit(code=1)

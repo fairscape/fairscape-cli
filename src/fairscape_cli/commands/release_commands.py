@@ -14,13 +14,13 @@ from fairscape_cli.models import (
 
 from fairscape_cli.datasheet_builder.rocrate.datasheet_generator import DatasheetGenerator
 
-@click.group('release')
-def release():
+@click.group('release_group')
+def release_group():
     """Invoke operations on Research Object Crate (RO-CRate).
     """
     pass
 
-@release.command('build')
+@release_group.command('build')
 @click.argument('release-directory', type=click.Path(exists=False, path_type=pathlib.Path, file_okay=False, dir_okay=True))
 @click.option('--guid', required=False, type=str, default="", show_default=False, help="GUID for the parent release RO-Crate (generated if not provided).")
 @click.option('--name', required=True, type=str, help="Name for the parent release RO-Crate.")
@@ -51,9 +51,9 @@ def release():
 @click.option('--prohibited-uses', required=False, type=str, help="Prohibited uses of the release.")
 @click.option('--potential-sources-of-bias', required=False, type=str, help="Prohibited uses of the release.")
 @click.option('--human-subject', required=False, type=str, help="Human subject involvement information.")
+@click.option('--ethical-review', required=False, type=str, help="Ethical review information.")
 @click.option('--additional-properties', required=False, type=str, help="JSON string with additional property values.")
 @click.option('--custom-properties', required=False, type=str, help='JSON string with additional properties for the parent crate.')
-@click.option('--template-dir', required=False, type=click.Path(exists=False, path_type=pathlib.Path), help="Path to datasheet template directory. Default is 'templates' in current directory.")
 @click.pass_context
 def build_release(
     ctx,
@@ -87,9 +87,9 @@ def build_release(
     prohibited_uses: Optional[str],
     potential_sources_of_bias: Optional[str],
     human_subject: Optional[str],
+    ethical_review: Optional[str],
     additional_properties: Optional[str],
     custom_properties: Optional[str],
-    template_dir: Optional[pathlib.Path],
 ):
     """
     Create a 'release' RO-Crate in RELEASE_DIRECTORY, scanning for and linking existing sub-RO-Crates.
@@ -149,6 +149,8 @@ def build_release(
         parent_params["usageInfo"] = usage_info
     if content_size:
         parent_params["contentSize"] = content_size
+    if ethical_review:
+        parent_params["ethicalReview"] = ethical_review
     
     additional_props = []
     if completeness:
@@ -237,24 +239,5 @@ def build_release(
             click.echo(f"  - {sub_id}")
     else:
         click.echo("No valid sub-crates were found or linked.")
-    
-    try:
-        metadata_path = os.path.join(release_directory, "ro-crate-metadata.json")
-        package_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        template_dir = Path(os.path.join(package_dir, 'datasheet_builder', 'templates'))
-        
-        output_path = os.path.join(release_directory, "ro-crate-datasheet.html")
-        
-        click.echo(f"Generating datasheet using templates from: {template_dir}")
-        generator = DatasheetGenerator(
-            json_path=metadata_path,
-            template_dir=template_dir
-        )
-        generator.process_subcrates()
-        final_output_path = generator.save_datasheet(output_path)
-        click.echo(f"Datasheet generated successfully: {final_output_path}")
-    except Exception as e:
-        click.echo(f"WARNING: Failed to generate datasheet: {str(e)}")
-        ctx.exit(1)
 
     click.echo(f"Release process finished successfully for: {parent_crate_guid}")
