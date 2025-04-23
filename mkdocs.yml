@@ -14,7 +14,6 @@ copyright: Copyright &copy; 2023 THE RECTOR AND VISITORS OF THE UNIVERSITY OF VI
 nav:
   - Home: index.md
   - Setup: setup.md
-  - Getting Started: getting-started.md
   - Examples:
       - Complete Demo: workflows/complete-demo.md
   - Commands:

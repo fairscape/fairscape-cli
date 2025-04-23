@@ -15,13 +15,13 @@ fairscape-cli rocrate [COMMAND] [OPTIONS]
 - [`create`](#create) - Create a new RO-Crate in a specified directory
 - [`init`](#init) - Initialize an RO-Crate in the current working directory
 - [`register`](#register) - Add metadata to an existing RO-Crate
-  - [`dataset`](#register-dataset) - Register dataset metadata
-  - [`software`](#register-software) - Register software metadata
-  - [`computation`](#register-computation) - Register computation metadata
-  - [`subrocrate`](#register-subrocrate) - Register a new RO-Crate within an existing RO-Crate
+    - [`dataset`](#register-dataset) - Register dataset metadata
+    - [`software`](#register-software) - Register software metadata
+    - [`computation`](#register-computation) - Register computation metadata
+    - [`subrocrate`](#register-subrocrate) - Register a new RO-Crate within an existing RO-Crate
 - [`add`](#add) - Add a file to the RO-Crate and register its metadata
-  - [`dataset`](#add-dataset) - Add a dataset file and its metadata
-  - [`software`](#add-software) - Add a software file and its metadata
+    - [`dataset`](#add-dataset) - Add a dataset file and its metadata
+    - [`software`](#add-software) - Add a software file and its metadata
 
 ## Command Details
 

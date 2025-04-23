@@ -14,11 +14,11 @@ fairscape-cli schema [COMMAND] [OPTIONS]
 
 - [`create-tabular`](#create-tabular) - Create a new tabular schema definition
 - [`add-property`](#add-property) - Add a property to an existing schema
-  - [`string`](#add-property-string) - Add a string property
-  - [`number`](#add-property-number) - Add a number property
-  - [`integer`](#add-property-integer) - Add an integer property
-  - [`boolean`](#add-property-boolean) - Add a boolean property
-  - [`array`](#add-property-array) - Add an array property
+    - [`string`](#add-property-string) - Add a string property
+    - [`number`](#add-property-number) - Add a number property
+    - [`integer`](#add-property-integer) - Add an integer property
+    - [`boolean`](#add-property-boolean) - Add a boolean property
+    - [`array`](#add-property-array) - Add an array property
 - [`infer`](#infer) - Infer a schema from a data file
 - [`add-to-crate`](#add-to-crate) - Add a schema to an RO-Crate
 
