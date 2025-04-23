@@ -1,5 +1,5 @@
 # Project Information
-site_name: FAIRSACPE CLI
+site_name: FAIRSCAPE CLI
 site_description: A utility for packaging objects and validating metadata for FAIRSCAPE.
 site_url: https://github.com/fairscape/fairscape-cli
 
@@ -14,8 +14,16 @@ copyright: Copyright &copy; 2023 THE RECTOR AND VISITORS OF THE UNIVERSITY OF VI
 nav:
   - Home: index.md
   - Setup: setup.md
-  - Getting Started: getting-started.md
-  - Schema Metadata: schema-metadata.md
+  - Examples:
+      - Complete Demo: workflows/complete-demo.md
+  - Commands:
+      - RO-Crate: commands/rocrate.md
+      - Schema: commands/schema.md
+      - Validation: commands/validate.md
+      - Import: commands/import.md
+      - Build: commands/build.md
+      - Release: commands/release.md
+      - Publishing: commands/publish.md
 
 theme:
   name: readthedocs
@@ -31,7 +39,6 @@ markdown_extensions:
   - md_in_html
   - toc:
       permalink: true
-
   # Python Markdown Extensions
   - pymdownx.arithmatex:
       generic: true
@@ -40,8 +47,8 @@ markdown_extensions:
   - pymdownx.caret
   - pymdownx.details
   - pymdownx.emoji:
-      #emoji_index: !!python/name:materialx.emoji.twemoji
-      #emoji_generator: !!python/name:materialx.emoji.to_svg
+  #    emoji_index: !!python/name:materialx.emoji.twemoji
+  #    emoji_generator: !!python/name:materialx.emoji.to_svg
   - pymdownx.highlight
   - pymdownx.inlinehilite
   - pymdownx.keys

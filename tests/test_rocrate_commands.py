@@ -30,6 +30,7 @@ class TestCLICommands(unittest.TestCase):
             '--name', 'Top Level Crate',
             '--organization-name', 'Test Org',
             '--project-name', 'Test Project',
+            '--date-published', '2025-01-22',
             '--description', 'Top level test crate',
             '--keywords', 'test,top-level',
             '.'

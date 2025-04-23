@@ -1,98 +1,62 @@
-import pathlib
-from datetime import datetime
-from typing import Optional, Union, Dict, List
-
-from pydantic import Field, AnyUrl, ConfigDict
-
+from fairscape_models.software import Software
 from fairscape_cli.config import NAAN
-from fairscape_cli.models.base import FairscapeBaseModel
 from fairscape_cli.models.guid_utils import GenerateDatetimeSquid
+from typing import Dict, Any, Optional, List
+import pathlib
+from fairscape_cli.models.utils import setRelativeFilepath
+from fairscape_cli.models.utils import FileNotInCrateException
 
-
-class Software(FairscapeBaseModel): 
-    guid: Optional[str] = Field( alias='@id', default=None)
-    metadataType: Optional[str] = Field(alias="@type", default="https://w3id.org/EVI#Software")
-    author: str = Field(min_length=4, max_length=64)
-    dateModified: str
-    version: str
-    description: str =  Field(min_length=10)
-    associatedPublication: Optional[str] = Field(default=None)
-    additionalDocumentation: Optional[str] = Field(default=None)
-    fileFormat: str = Field(title="fileFormat", alias="format")
-    usedByComputation: Optional[List[str]]
-    contentUrl: Optional[str] = Field(default=None)
- 
-
-def GenerateSoftware(    
-    guid,
-    name,
-    author,
-    version,
-    description, 
-    keywords,
-    fileFormat,
-    url,
-    dateModified,
-    filepath,
-    usedByComputation,
-    associatedPublication,
-    additionalDocumentation,
-    cratePath
+def GenerateSoftware(
+    guid: Optional[str] = None,
+    name: Optional[str] = None,
+    filepath: Optional[str] = None,
+    cratePath: Optional[str] = None,
+    **kwargs
 ) -> Software:
-    """ Generate a Software Model Class
     """
-
-    sq = GenerateDatetimeSquid()
-    guid = f"ark:{NAAN}/software-{name.lower().replace(' ', '-')}-{sq}"
-
+    Generate a Software instance with flexible parameters.
+    
+    This function creates a Software instance with minimal required parameters and
+    allows for any additional parameters to be passed through to the Software model.
+    Validation is handled by the Software model itself.
+    
+    Args:
+        guid: Optional identifier. If not provided, one will be generated.
+        name: Optional name for the software. Used for GUID generation if provided.
+        filepath: Optional path to the software file.
+        cratePath: Optional path to the RO-Crate containing the software.
+        **kwargs: Additional parameters to pass to the Software model.
+        
+    Returns:
+        A validated Software instance
+    """
+    if not guid and name:
+        sq = GenerateDatetimeSquid()
+        guid = f"ark:{NAAN}/software-{name.lower().replace(' ', '-')}-{sq}"
+    elif not guid:
+        sq = GenerateDatetimeSquid()
+        guid = f"ark:{NAAN}/software-{sq}"
+    
     softwareMetadata = {
-            "@id": guid,
-            "@type": "https://w3id.org/EVI#Software",
-            "url": url,
-            "name": name,
-            "author": author,
-            "dateModified": dateModified,
-            "description": description,
-            "keywords": keywords,
-            "version": version,
-            "associatedPublication": associatedPublication,
-            "additionalDocumentation": additionalDocumentation,
-            "format": fileFormat,
-            # sanitize new line characters for multiple inputs
-            "usedByComputation": [
-                {"@id":computation.strip("\n")} for computation in usedByComputation
-            ],
-        }
-
-    if filepath is not None:
-
-        # if filepath is a url        
-        if 'http' in  filepath:
-            softwareMetadata['contentUrl'] = filepath
-
-        # if filepath is a path that exists
-        else:
-            if 'ro-crate-metadata.json' in str(cratePath):
-                rocratePath = pathlib.Path(cratePath).parent.absolute()
-            else:
-                rocratePath = pathlib.Path(cratePath).absolute()
-
-            softwarePath = pathlib.Path(filepath).absolute()
-
-            if softwarePath.exists():
-                try:
-                    relativePath = softwarePath.relative_to(rocratePath)
-                    softwareMetadata['contentUrl'] = f"file:///{str(relativePath)}"
-                except:
-                    raise FileNotInCrateException(cratePath=cratePath, filePath=softwarePath)
-            else:
-                raise Exception(f"Software File Does Not Exist: {str(softwarePath)}")
-
-
-    # validate metadata
-    softwareModel = Software.model_validate(softwareMetadata)
-
-
-    return softwareModel
-
-
+        "@id": guid,
+        "name" : name,
+        "@type": "https://w3id.org/EVI#Software"
+    }
+    
+    if filepath and cratePath:
+        softwareMetadata['contentUrl'] = setRelativeFilepath(cratePath, filepath)
+    elif filepath:
+        softwareMetadata['contentUrl'] = filepath
+    
+    for key, value in kwargs.items():
+        if key == "usedByComputation" and value:
+            if isinstance(value, str):
+                softwareMetadata[key] = [{"@id": value.strip("\n")}]
+            elif (isinstance(value, list) or isinstance(value, tuple)) and len(value) > 0:
+                softwareMetadata[key] = [{"@id": item.strip("\n")} for item in value]
+        elif key == "fileFormat":
+            softwareMetadata["format"] = value
+        elif value is not None: 
+            softwareMetadata[key] = value
+    
+    return Software.model_validate(softwareMetadata)

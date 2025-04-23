@@ -5,17 +5,20 @@ from fairscape_cli.models.dataset import (
     registerOutputs
 )
 from fairscape_cli.models.software import Software, GenerateSoftware
+
 from fairscape_cli.models.computation import Computation, GenerateComputation
 from fairscape_cli.models.rocrate import (
         ROCrate, 
-        ROCrateMetadata,
         GenerateROCrate,
         ReadROCrateMetadata, 
         AppendCrate, 
         CopyToROCrate,
-        UpdateCrate
+        UpdateCrate,
+        LinkSubcrates,
+        collect_subcrate_metadata
 )
 from fairscape_cli.models.bagit import BagIt
+from fairscape_cli.models.pep import PEPtoROCrateMapper
 
 __all__ = [
     'Dataset',
@@ -33,5 +36,8 @@ __all__ = [
     'AppendCrate',
     'CopyToROCrate',
     'UpdateCrate',
-    'BagIt'
+    'BagIt',
+    'PEPtoROCrateMapper',
+    'LinkSubcrates',
+    'collect_subcrate_metadata'
 ]

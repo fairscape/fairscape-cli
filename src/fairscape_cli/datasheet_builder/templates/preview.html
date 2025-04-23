@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ title }} - RO-Crate Preview</title>
+    <style>
+      body {
+        font-family: "Helvetica", "Arial", sans-serif;
+        margin: 0;
+        padding: 0;
+        color: #333;
+        line-height: 1.5;
+        background-color: #f5f5f5;
+      }
+      .container {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: white;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+      header {
+        margin-bottom: 20px;
+        border-bottom: 2px solid #2c3e50;
+        padding-bottom: 15px;
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 5px;
+      }
+      h1 {
+        font-size: 24px;
+        margin-bottom: 5px;
+        color: #2c3e50;
+      }
+      .summary-section {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 4px;
+        margin-bottom: 30px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+        page-break-inside: avoid;
+      }
+      .summary-row {
+        display: flex;
+        margin-bottom: 12px;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 8px;
+      }
+      .summary-label {
+        width: 220px;
+        font-weight: bold;
+        color: #2c3e50;
+      }
+      .summary-value {
+        flex: 1;
+      }
+      .tabs {
+        display: flex;
+        border-bottom: 1px solid #ddd;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+      }
+      .tab {
+        padding: 10px 15px;
+        cursor: pointer;
+        border-bottom: 3px solid transparent;
+        font-weight: bold;
+        color: #2c3e50;
+        white-space: nowrap;
+      }
+      .tab.active {
+        border-bottom: 3px solid #2c3e50;
+      }
+      .tab .badge {
+        display: inline-block;
+        background-color: #2c3e50;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 3px;
+        font-size: 12px;
+        margin-left: 5px;
+      }
+      .tab-content {
+        margin-bottom: 30px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+        table-layout: fixed;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 12px;
+        border-bottom: 1px solid #eaeaea;
+        word-wrap: break-word;
+      }
+      th {
+        background-color: #f8f9fa;
+        font-weight: bold;
+        color: #2c3e50;
+        border-bottom: 2px solid #ddd;
+      }
+      tr:nth-child(even) {
+        background-color: #f8f9fa;
+      }
+      tr:hover {
+        background-color: #f1f8fe;
+      }
+      td:nth-child(2) {
+        max-width: 400px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      td:nth-child(2)[title] {
+        cursor: help;
+      }
+      .publications-list {
+        margin: 5px 0 0 15px;
+        padding: 0;
+        list-style: disc;
+      }
+      .publications-list li {
+        margin-bottom: 6px;
+      }
+      .schema-details {
+        margin: 0;
+        padding: 15px;
+        background-color: #f8f9fa;
+        border-top: 1px solid #ddd;
+        border-bottom: 1px solid #ddd;
+      }
+      .schema-details-container {
+        padding: 0;
+      }
+      .toggle-schema {
+        cursor: pointer;
+        color: #2c3e50;
+        text-decoration: underline;
+      }
+      .properties-table {
+        margin: 0;
+        width: 100%;
+        box-shadow: none;
+        border: 1px solid #eaeaea;
+      }
+      .properties-table th,
+      .properties-table td {
+        padding: 8px 12px;
+        background-color: #fff;
+      }
+      .properties-table th {
+        background-color: #f1f1f1;
+      }
+      .schema-properties-row {
+        background-color: #f8f9fa !important;
+      }
+      tr.schema-row:hover
+        + tr.schema-properties-row:not([style*="display: none"]) {
+        background-color: #f1f8fe !important;
+      }
+      @media print {
+        body {
+          font-size: 11pt;
+          background-color: white;
+        }
+        .container {
+          max-width: 100%;
+          padding: 10px;
+          box-shadow: none;
+        }
+        table {
+          border: 1px solid #ddd;
+          page-break-inside: auto;
+        }
+        tr {
+          page-break-inside: avoid;
+        }
+        th,
+        td {
+          border: 1px solid #ddd;
+        }
+        .tab-content {
+          display: block !important;
+          page-break-before: always;
+        }
+        .tab-content:first-of-type {
+          page-break-before: avoid;
+        }
+        .tabs {
+          display: none;
+        }
+        .summary-section {
+          box-shadow: none;
+          border: 1px solid #eee;
+        }
+        header {
+          background-color: white;
+          box-shadow: none;
+        }
+        h1 {
+          font-size: 18pt;
+        }
+      }
+      @media (max-width: 768px) {
+        .summary-row {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+        .summary-label {
+          width: 100%;
+          margin-bottom: 3px;
+        }
+        .summary-value {
+          width: 100%;
+        }
+        td:nth-child(2) {
+          white-space: normal;
+        }
+        .tabs {
+          justify-content: center;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>{{ title }}</h1>
+        {% if version %}
+        <div>Version: {{ version }}</div>
+        {% endif %}
+      </header>
+
+      <div class="summary-section">
+        <h2>RO-Crate Summary</h2>
+        <div class="summary-row">
+          <div class="summary-label">ROCrate ID</div>
+          <div class="summary-value" id="accession">{{ id_value }}</div>
+        </div>
+        {% if doi %}
+        <div class="summary-row">
+          <div class="summary-label">DOI</div>
+          <div class="summary-value" id="doi">
+            <a href="{{ doi }}" target="_blank">{{ doi }}</a>
+          </div>
+        </div>
+        {% endif %} {% if release_date %}
+        <div class="summary-row">
+          <div class="summary-label">Release Date</div>
+          <div class="summary-value" id="release-date">{{ release_date }}</div>
+        </div>
+        {% endif %} {% if created_date %}
+        <div class="summary-row">
+          <div class="summary-label">Date Created</div>
+          <div class="summary-value">{{ created_date }}</div>
+        </div>
+        {% endif %} {% if updated_date %}
+        <div class="summary-row">
+          <div class="summary-label">Date Modified</div>
+          <div class="summary-value">{{ updated_date }}</div>
+        </div>
+        {% endif %} {% if description %}
+        <div class="summary-row">
+          <div class="summary-label">Description</div>
+          <div class="summary-value" id="description">{{ description }}</div>
+        </div>
+        {% endif %} {% if authors %}
+        <div class="summary-row">
+          <div class="summary-label">Authors</div>
+          <div class="summary-value" id="authors">{{ authors }}</div>
+        </div>
+        {% endif %} {% if publisher %}
+        <div class="summary-row">
+          <div class="summary-label">Publisher</div>
+          <div class="summary-value" id="publisher">{{ publisher }}</div>
+        </div>
+        {% endif %} {% if principal_investigator %}
+        <div class="summary-row">
+          <div class="summary-label">Principal Investigator</div>
+          <div class="summary-value" id="principal-investigator">
+            {{ principal_investigator }}
+          </div>
+        </div>
+        {% endif %} {% if contact_email %}
+        <div class="summary-row">
+          <div class="summary-label">Contact Email</div>
+          <div class="summary-value" id="contact-email">
+            {{ contact_email }}
+          </div>
+        </div>
+        {% endif %} {% if license_value %}
+        <div class="summary-row">
+          <div class="summary-label">License</div>
+          <div class="summary-value" id="license">
+            <a href="{{ license_value }}" target="_blank"
+              >{{ license_value }}</a
+            >
+          </div>
+        </div>
+        {% endif %} {% if confidentiality_level %}
+        <div class="summary-row">
+          <div class="summary-label">Confidentiality Level</div>
+          <div class="summary-value" id="confidentiality-level">
+            {{ confidentiality_level }}
+          </div>
+        </div>
+        {% endif %} {% if keywords %}
+        <div class="summary-row">
+          <div class="summary-label">Keywords</div>
+          <div class="summary-value" id="keywords">
+            {% if keywords is string %}{{ keywords }}{% else %}{{
+            keywords|join(', ') }}{% endif %}
+          </div>
+        </div>
+        {% endif %} {% if citation %}
+        <div class="summary-row">
+          <div class="summary-label">Citation</div>
+          <div class="summary-value" id="citation">{{ citation }}</div>
+        </div>
+        {% endif %} {% if related_publications %}
+        <div class="summary-row">
+          <div class="summary-label">Related Publications</div>
+          <div class="summary-value" id="related-publications">
+            <ul class="publications-list">
+              {% for pub in related_publications %}
+              <li>{{ pub }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="tabs">
+        {% if datasets %}
+        <div class="tab active" data-tab="datasets">
+          Datasets <span class="badge">{{ datasets|length }}</span>
+        </div>
+        {% endif %} {% if software %}
+        <div
+          class="tab {% if not datasets %}active{% endif %}"
+          data-tab="software"
+        >
+          Software <span class="badge">{{ software|length }}</span>
+        </div>
+        {% endif %} {% if computations %}
+        <div
+          class="tab {% if not datasets and not software %}active{% endif %}"
+          data-tab="computations"
+        >
+          Computations <span class="badge">{{ computations|length }}</span>
+        </div>
+        {% endif %} {% if samples %}
+        <div
+          class="tab {% if not datasets and not software and not computations %}active{% endif %}"
+          data-tab="samples"
+        >
+          Samples <span class="badge">{{ samples|length }}</span>
+        </div>
+        {% endif %} {% if experiments %}
+        <div
+          class="tab {% if not datasets and not software and not computations and not samples %}active{% endif %}"
+          data-tab="experiments"
+        >
+          Experiments <span class="badge">{{ experiments|length }}</span>
+        </div>
+        {% endif %} {% if instruments %}
+        <div
+          class="tab {% if not datasets and not software and not computations and not samples and not experiments %}active{% endif %}"
+          data-tab="instruments"
+        >
+          Instruments <span class="badge">{{ instruments|length }}</span>
+        </div>
+        {% endif %} {% if schemas %}
+        <div
+          class="tab {% if not datasets and not software and not computations and not samples and not experiments and not instruments %}active{% endif %}"
+          data-tab="schemas"
+        >
+          Schemas <span class="badge">{{ schemas|length }}</span>
+        </div>
+        {% endif %} {% if other_items %}
+        <div
+          class="tab {% if not datasets and not software and not computations and not samples and not experiments and not instruments and not schemas %}active{% endif %}"
+          data-tab="other"
+        >
+          Other <span class="badge">{{ other_items|length }}</span>
+        </div>
+        {% endif %}
+      </div>
+
+      {% macro render_table(items, tab_id, is_active, headers,
+      date_field='date') %}
+      <div
+        id="{{ tab_id }}-content"
+        class="tab-content"
+        style="display: {% if is_active %}block{% else %}none{% endif %};"
+      >
+        {% if items %}
+        <table id="{{ tab_id }}-table">
+          <thead>
+            <tr>
+              {% for header in headers %}
+              <th>{{ header }}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in items %}
+            <tr>
+              <td>{{ item.name }}</td>
+              <td
+                {%
+                if
+                item.description
+                !="item.description_display"
+                %}title="{{ item.description }}"
+                {%
+                endif
+                %}
+              >
+                {{ item.description_display }}
+              </td>
+              <td>{{ item.content_status | safe }}</td>
+              <td>{{ item[date_field] }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <p>No {{ tab_id }} found in this RO-Crate.</p>
+        {% endif %}
+      </div>
+      {% endmacro %} {% macro render_schema_table(items, tab_id, is_active) %}
+      <div
+        id="{{ tab_id }}-content"
+        class="tab-content"
+        style="display: {% if is_active %}block{% else %}none{% endif %};"
+      >
+        {% if items %}
+        <table id="{{ tab_id }}-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Description</th>
+              <th>Access</th>
+              <th>Properties</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in items %}
+            <tr class="schema-row" id="schema-row-{{ loop.index }}">
+              <td>{{ item.name }}</td>
+              <td
+                {%
+                if
+                item.description
+                !="item.description_display"
+                %}title="{{ item.description }}"
+                {%
+                endif
+                %}
+              >
+                {{ item.description_display }}
+              </td>
+              <td>{{ item.content_status | safe }}</td>
+              <td>
+                {% if item.schema_properties %}
+                <span class="toggle-schema" data-schema-id="{{ loop.index }}"
+                  >Show Properties</span
+                >
+                {% else %} No properties found {% endif %}
+              </td>
+            </tr>
+            {% if item.schema_properties %}
+            <tr
+              class="schema-properties-row"
+              id="schema-details-row-{{ loop.index }}"
+              style="display: none"
+            >
+              <td colspan="4" class="schema-details-container">
+                <div
+                  id="schema-details-{{ loop.index }}"
+                  class="schema-details"
+                >
+                  <table class="properties-table">
+                    <thead>
+                      <tr>
+                        <th>Property</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for prop_name, prop_details in
+                      item.schema_properties.items() %}
+                      <tr>
+                        <td>{{ prop_name }}</td>
+                        <td>{{ prop_details.type }}</td>
+                        <td>
+                          {{ prop_details.description or "No description" }}
+                        </td>
+                      </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </td>
+            </tr>
+            {% endif %} {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <p>No {{ tab_id }} found in this RO-Crate.</p>
+        {% endif %}
+      </div>
+      {% endmacro %} {% macro render_other_table(items, tab_id, is_active) %}
+      <div
+        id="{{ tab_id }}-content"
+        class="tab-content"
+        style="display: {% if is_active %}block{% else %}none{% endif %};"
+      >
+        {% if items %}
+        <table id="{{ tab_id }}-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Description</th>
+              <th>Access</th>
+              <th>@id</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in items %}
+            <tr>
+              <td>{{ item.name }}</td>
+              <td
+                {%
+                if
+                item.description
+                !="item.description_display"
+                %}title="{{ item.description }}"
+                {%
+                endif
+                %}
+              >
+                {{ item.description_display }}
+              </td>
+              <td>{{ item.content_status | safe }}</td>
+              <td>{{ item.id }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <p>No {{ tab_id }} found in this RO-Crate.</p>
+        {% endif %}
+      </div>
+      {% endmacro %} {{ render_table(datasets, 'datasets', datasets, ['Name',
+      'Description', 'Access', 'Release Date'], 'date') }} {{
+      render_table(software, 'software', not datasets and software, ['Name',
+      'Description', 'Access', 'Release Date'], 'date') }} {{
+      render_table(computations, 'computations', not datasets and not software
+      and computations, ['Name', 'Description', 'Access', 'Date Created'],
+      'date') }} {{ render_table(samples, 'samples', not datasets and not
+      software and not computations and samples, ['Name', 'Description',
+      'Identifier', 'Date Created'], 'date') }} {{ render_table(experiments,
+      'experiments', not datasets and not software and not computations and not
+      samples and experiments, ['Name', 'Description', 'Type', 'Date Created'],
+      'date') }} {{ render_table(instruments, 'instruments', not datasets and
+      not software and not computations and not samples and not experiments and
+      instruments, ['Name', 'Description', 'Manufacturer', 'Date Created'],
+      'date') }} {{ render_schema_table(schemas, 'schemas', not datasets and not
+      software and not computations and not samples and not experiments and not
+      instruments and schemas) }} {{ render_other_table(other_items, 'other',
+      not datasets and not software and not computations and not samples and not
+      experiments and not instruments and not schemas and other_items) }}
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const tabs = document.querySelectorAll(".tab");
+        if (!tabs.length) return;
+
+        const activeTab = document.querySelector(".tab.active");
+        if (!activeTab) {
+          tabs[0].classList.add("active");
+          const firstTabId = tabs[0].getAttribute("data-tab");
+          const firstTabContent = document.getElementById(
+            `${firstTabId}-content`
+          );
+          if (firstTabContent) {
+            firstTabContent.style.display = "block";
+          }
+        }
+
+        tabs.forEach((tab) => {
+          tab.addEventListener("click", function () {
+            tabs.forEach((t) => t.classList.remove("active"));
+            this.classList.add("active");
+
+            document.querySelectorAll(".tab-content").forEach((content) => {
+              content.style.display = "none";
+            });
+
+            const tabId = this.getAttribute("data-tab");
+            const targetContent = document.getElementById(`${tabId}-content`);
+            if (targetContent) {
+              targetContent.style.display = "block";
+            }
+          });
+        });
+
+        document.querySelectorAll(".toggle-schema").forEach((button) => {
+          button.addEventListener("click", function () {
+            const schemaId = this.getAttribute("data-schema-id");
+            const detailsRow = document.getElementById(
+              `schema-details-row-${schemaId}`
+            );
+
+            if (detailsRow.style.display === "table-row") {
+              detailsRow.style.display = "none";
+              this.textContent = "Show Properties";
+            } else {
+              detailsRow.style.display = "table-row";
+              this.textContent = "Hide Properties";
+            }
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

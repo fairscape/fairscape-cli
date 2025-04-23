@@ -1,0 +1,31 @@
+<div class="section-header">
+  <h2>Use Cases and Limitations</h2>
+</div>
+<div class="use-cases-section">
+  {% if intended_uses %}
+  <div class="use-cases-item">
+    <div class="use-cases-label">Intended Uses:</div>
+    <div class="use-cases-value">{{ intended_uses }}</div>
+  </div>
+  {% endif %} {% if limitations %}
+  <div class="use-cases-item">
+    <div class="use-cases-label">Limitations:</div>
+    <div class="use-cases-value">{{ limitations }}</div>
+  </div>
+  {% endif %} {% if prohibited_uses %}
+  <div class="use-cases-item">
+    <div class="use-cases-label">Prohibited Uses:</div>
+    <div class="use-cases-value">{{ prohibited_uses }}</div>
+  </div>
+  {% endif %} {% if potential_bias %}
+  <div class="use-cases-item">
+    <div class="use-cases-label">Potential Sources of Bias:</div>
+    <div class="use-cases-value">{{ potential_bias }}</div>
+  </div>
+  {% endif %} {% if maintenance_plan %}
+  <div class="use-cases-item">
+    <div class="use-cases-label">Maintenance Plan:</div>
+    <div class="use-cases-value">{{ maintenance_plan }}</div>
+  </div>
+  {% endif %}
+</div>
