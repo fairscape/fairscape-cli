@@ -332,8 +332,6 @@ Once you've created your RO-Crates and assembled them into a release, you can pu
 
 ### 4 Publish to Fairscape
 
-For repositories supporting the Fairscape API:
-
 ```bash
 fairscape-cli publish fairscape \
     --rocrate "./" \

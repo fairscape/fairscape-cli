@@ -52,7 +52,7 @@ The CLI is organized into several top-level commands:
 | **import**   | Fetch external data into RO-Crate format (e.g., bioproject, pep).         |
 | **build**    | Generate outputs from RO-Crates (e.g., datasheet, evidence-graph).        |
 | **release**  | Manage multi-part RO-Crate releases (e.g., create, build).                |
-| **publish**  | Publish RO-Crates to repositories (e.g., fairscape, dataverse, doi).      |
+| **publish**  | Publish RO-Crates to repositories (e.g., fairscape, dataverse, mint dois).      |
 
 Use `--help` for details on any command or subcommand:
 

@@ -39,7 +39,8 @@ dependencies = [
         "pydantic>=2.5.1",
         "prettytable>=3.9.0",
         "jsonschema>=4.20.0",
-        "sqids>=0.4.1"
+        "sqids>=0.4.1",
+        "fairscape-models"
 ]
 
 [tool.setuptools]
