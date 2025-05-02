@@ -12,6 +12,9 @@ from fairscape_cli.models.rocrate import (
 from fairscape_cli.models.dataset import GenerateDataset
 from fairscape_cli.models.software import GenerateSoftware
 from fairscape_cli.models.computation import GenerateComputation
+from fairscape_cli.models.sample import GenerateSample
+from fairscape_cli.models.instrument import GenerateInstrument
+from fairscape_cli.models.experiment import GenerateExperiment
 
 from fairscape_cli.models.utils import FileNotInCrateException
 from fairscape_cli.config import NAAN
@@ -414,6 +417,209 @@ def computation(
         click.echo(f"ERROR: {exc}", err=True)
         ctx.exit(code=1)
 
+@register.command('sample')
+@click.argument('rocrate-path', type=click.Path(exists=True, path_type=pathlib.Path))
+@click.option('--guid', type=str, required=False, default=None, help='Identifier for the sample (generated if not provided)')
+@click.option('--name', required=True, help='Name of the sample')
+@click.option('--author', required=True, help='Author or creator of the sample')
+@click.option('--description', required=True, help='Description of the sample')
+@click.option('--keywords', required=True, multiple=True, help='Keywords for the sample')
+@click.option('--filepath', required=False, help='Path to the sample documentation file')
+@click.option('--cell-line-reference', required=False, help='Reference to the cell line used')
+@click.option('--custom-properties', required=False, type=str, help='JSON string with additional properties to include')
+@click.pass_context
+def registerSample(
+    ctx,
+    rocrate_path: pathlib.Path,
+    guid: Optional[str],
+    name: str,
+    author: str,
+    description: str,
+    keywords: List[str],
+    filepath: Optional[str],
+    cell_line_reference: Optional[str],
+    custom_properties: Optional[str],
+):
+    """Register Sample metadata with the specified RO-Crate."""
+    try:
+        ReadROCrateMetadata(rocrate_path)
+    except Exception as exc:
+        click.echo(f"ERROR Reading ROCrate: {exc}", err=True)
+        ctx.exit(code=1)
+
+    params = {
+        "guid": guid, "name": name, "author": author, "description": description,
+        "keywords": list(keywords), "filepath": filepath, "cellLineReference": cell_line_reference,
+        "cratePath": rocrate_path
+    }
+
+    if custom_properties:
+        try:
+            custom_props = json.loads(custom_properties)
+            if not isinstance(custom_props, dict): raise ValueError("Custom properties must be a JSON object")
+            params.update(custom_props)
+        except Exception as e:
+            click.echo(f"ERROR processing custom properties: {e}", err=True)
+            ctx.exit(code=1)
+
+    # Filter None values before passing
+    filtered_params = {k: v for k, v in params.items() if v is not None}
+
+    try:
+        sample_instance = GenerateSample(**filtered_params)
+        AppendCrate(cratePath=rocrate_path, elements=[sample_instance])
+        click.echo(sample_instance.guid)
+    except ValidationError as e:
+        click.echo(f"ERROR: Sample Validation Failure\n{e}", err=True)
+        ctx.exit(code=1)
+    except Exception as exc:
+        click.echo(f"ERROR: {exc}", err=True)
+        ctx.exit(code=1)
+
+
+@register.command('instrument')
+@click.argument('rocrate-path', type=click.Path(exists=True, path_type=pathlib.Path))
+@click.option('--guid', type=str, required=False, default=None, help='Identifier for the instrument (generated if not provided)')
+@click.option('--name', required=True, help='Name of the instrument')
+@click.option('--manufacturer', required=True, help='Manufacturer of the instrument')
+@click.option('--model', required=True, help='Model number/name of the instrument')
+@click.option('--description', required=True, help='Description of the instrument')
+@click.option('--filepath', required=False, help='Path to instrument documentation file')
+@click.option('--used-by-experiment', required=False, multiple=True, help='Identifiers of experiments using this instrument')
+@click.option('--associated-publication', required=False, help='Associated publication identifier')
+@click.option('--additional-documentation', required=False, help='Additional documentation')
+@click.option('--custom-properties', required=False, type=str, help='JSON string with additional properties to include')
+@click.pass_context
+def registerInstrument(
+    ctx,
+    rocrate_path: pathlib.Path,
+    guid: Optional[str],
+    name: str,
+    manufacturer: str,
+    model: str,
+    description: str,
+    filepath: Optional[str],
+    used_by_experiment: Optional[List[str]],
+    associated_publication: Optional[str],
+    additional_documentation: Optional[str],
+    custom_properties: Optional[str],
+):
+    """Register Instrument metadata with the specified RO-Crate."""
+    try:
+        ReadROCrateMetadata(rocrate_path)
+    except Exception as exc:
+        click.echo(f"ERROR Reading ROCrate: {exc}", err=True)
+        ctx.exit(code=1)
+
+    params = {
+        "guid": guid, "name": name, "manufacturer": manufacturer, "model": model,
+        "description": description, "filepath": filepath,
+        "usedByExperiment": list(used_by_experiment) if used_by_experiment else [],
+        "associatedPublication": associated_publication,
+        "additionalDocumentation": additional_documentation,
+        "cratePath": rocrate_path
+    }
+
+    if custom_properties:
+        try:
+            custom_props = json.loads(custom_properties)
+            if not isinstance(custom_props, dict): raise ValueError("Custom properties must be a JSON object")
+            params.update(custom_props)
+        except Exception as e:
+            click.echo(f"ERROR processing custom properties: {e}", err=True)
+            ctx.exit(code=1)
+
+    # Filter None values before passing
+    filtered_params = {k: v for k, v in params.items() if v is not None}
+
+    try:
+        instrument_instance = GenerateInstrument(**filtered_params)
+        AppendCrate(cratePath=rocrate_path, elements=[instrument_instance])
+        click.echo(instrument_instance.guid)
+    except ValidationError as e:
+        click.echo(f"ERROR: Instrument Validation Failure\n{e}", err=True)
+        ctx.exit(code=1)
+    except Exception as exc:
+        click.echo(f"ERROR: {exc}", err=True)
+        ctx.exit(code=1)
+
+
+@register.command('experiment')
+@click.argument('rocrate-path', type=click.Path(exists=True, path_type=pathlib.Path))
+@click.option('--guid', type=str, required=False, default=None, help='Identifier for the experiment (generated if not provided)')
+@click.option('--name', required=True, help='Name of the experiment')
+@click.option('--experiment-type', required=True, help='Type of experiment conducted')
+@click.option('--run-by', required=True, help='Person or entity that ran the experiment')
+@click.option('--description', required=True, help='Description of the experiment')
+@click.option('--date-performed', required=True, help='Date the experiment was performed (ISO format)')
+@click.option('--used-instrument', required=False, multiple=True, help='Instrument identifiers used in this experiment')
+@click.option('--used-sample', required=False, multiple=True, help='Sample identifiers used in this experiment')
+@click.option('--used-treatment', required=False, multiple=True, help='Treatment identifiers used in this experiment')
+@click.option('--used-stain', required=False, multiple=True, help='Stain identifiers used in this experiment')
+@click.option('--generated', required=False, multiple=True, help='Identifiers of entities generated by this experiment')
+@click.option('--protocol', required=False, help='Protocol identifier or description')
+@click.option('--associated-publication', required=False, help='Associated publication identifier')
+@click.option('--custom-properties', required=False, type=str, help='JSON string with additional properties to include')
+@click.pass_context
+def registerExperiment(
+    ctx,
+    rocrate_path: pathlib.Path,
+    guid: Optional[str],
+    name: str,
+    experiment_type: str,
+    run_by: str,
+    description: str,
+    date_performed: str,
+    used_instrument: Optional[List[str]],
+    used_sample: Optional[List[str]],
+    used_treatment: Optional[List[str]],
+    used_stain: Optional[List[str]],
+    generated: Optional[List[str]],
+    protocol: Optional[str],
+    associated_publication: Optional[str],
+    custom_properties: Optional[str],
+):
+    """Register Experiment metadata with the specified RO-Crate."""
+    try:
+        ReadROCrateMetadata(rocrate_path)
+    except Exception as exc:
+        click.echo(f"ERROR Reading ROCrate: {exc}", err=True)
+        ctx.exit(code=1)
+
+    params = {
+        "guid": guid, "name": name, "experimentType": experiment_type, "runBy": run_by,
+        "description": description, "datePerformed": date_performed,
+        "usedInstrument": list(used_instrument) if used_instrument else [],
+        "usedSample": list(used_sample) if used_sample else [],
+        "usedTreatment": list(used_treatment) if used_treatment else [],
+        "usedStain": list(used_stain) if used_stain else [],
+        "generated": list(generated) if generated else [],
+        "protocol": protocol,
+        "associatedPublication": associated_publication,
+    }
+
+    if custom_properties:
+        try:
+            custom_props = json.loads(custom_properties)
+            if not isinstance(custom_props, dict): raise ValueError("Custom properties must be a JSON object")
+            params.update(custom_props)
+        except Exception as e:
+            click.echo(f"ERROR processing custom properties: {e}", err=True)
+            ctx.exit(code=1)
+
+    # Filter None values before passing
+    filtered_params = {k: v for k, v in params.items() if v is not None}
+
+    try:
+        experiment_instance = GenerateExperiment(**filtered_params)
+        AppendCrate(cratePath=rocrate_path, elements=[experiment_instance])
+        click.echo(experiment_instance.guid)
+    except ValidationError as e:
+        click.echo(f"ERROR: Experiment Validation Failure\n{e}", err=True)
+        ctx.exit(code=1)
+    except Exception as exc:
+        click.echo(f"ERROR: {exc}", err=True)
+        ctx.exit(code=1)
 
 @register.command('subrocrate')
 @click.argument('rocrate-path', type=click.Path(exists=True, path_type=pathlib.Path))
