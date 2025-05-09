@@ -162,7 +162,7 @@ fairscape-cli schema add-property boolean \
     --name 'IsValid' \
     --index 4 \
     --description 'Whether the observation is valid' \
-    ./schema_validation_data.json
+    ./schema_apms_music_embedding.json
 ```
 
 #### `add-property array`
