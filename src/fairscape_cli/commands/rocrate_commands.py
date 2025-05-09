@@ -701,195 +701,255 @@ def add():
 
 @add.command('software')
 @click.argument('rocrate-path', type=click.Path(exists=True, path_type=pathlib.Path))
-@click.option('--guid', type=str, required=False, default=None)
-@click.option('--name',    required=True) 
-@click.option('--author',  required=True) 
-@click.option('--version', required=True) 
-@click.option('--description', required = True) 
-@click.option('--keywords', required=True, multiple=True)
-@click.option('--file-format', required = True)
-@click.option('--url',     required = False)
-@click.option('--source-filepath', required=True)
-@click.option('--destination-filepath', required=True)
-@click.option('--date-modified', required=True)
-@click.option('--used-by-computation', required=False, multiple=True)
-@click.option('--associated-publication', required=False)
-@click.option('--additional-documentation', required=False)
+@click.option('--guid', type=str, required=False, default=None, help='Identifier for the software (generated if not provided)')
+@click.option('--name',    required=True, help='Name of the software')
+@click.option('--author',  required=True, help='Author of the software')
+@click.option('--version', required=True, help='Version of the software')
+@click.option('--description', required = True, help='Description of the software')
+@click.option('--keywords', required=True, multiple=True, help='Keywords for the software')
+@click.option('--file-format', required = True, help='Format of the software (e.g., py, js)')
+@click.option('--url',     required = False, help='URL reference for the software')
+@click.option('--source-filepath', required=True, type=click.Path(exists=True, path_type=pathlib.Path), help='Path to the source software file on your local filesystem')
+@click.option('--destination-filepath', required=True, type=click.Path(path_type=pathlib.Path), help='Desired path for the software file relative to the RO-Crate root')
+@click.option('--date-modified', required=False, help='Last modification date of the software (ISO format)')
+@click.option('--used-by-computation', required=False, multiple=True, help='Identifiers of computations that use this software')
+@click.option('--associated-publication', required=False, help='Associated publication identifier')
+@click.option('--additional-documentation', required=False, help='Additional documentation')
+@click.option('--custom-properties', required=False, type=str, help='JSON string with additional properties.')
 @click.pass_context
-def software(
+def addSoftware(
     ctx,
     rocrate_path: pathlib.Path,
-    guid,
-    name,
-    author,
-    version,
-    description, 
-    keywords,
-    file_format,
-    url,
-    source_filepath,
-    destination_filepath,
-    date_modified,
-    used_by_computation,
-    associated_publication,
-    additional_documentation
+    guid: Optional[str],
+    name: str,
+    author: str,
+    version: str,
+    description: str,
+    keywords: List[str],
+    file_format: str,
+    url: Optional[str],
+    source_filepath: pathlib.Path,
+    destination_filepath: pathlib.Path,
+    date_modified: Optional[str],
+    used_by_computation: Optional[List[str]],
+    associated_publication: Optional[str],
+    additional_documentation: Optional[str],
+    custom_properties: Optional[str],
 ):
-    """Add a Software and its corresponding metadata.
-    """
+    """Copy a Software file into the RO-Crate and register its metadata."""
     try:
-        crateInstance = ReadROCrateMetadata(rocrate_path)
+        ReadROCrateMetadata(rocrate_path)
     except Exception as exc:
-        click.echo(f"ERROR Reading ROCrate: {str(exc)}")
+        click.echo(f"ERROR Reading ROCrate: {str(exc)}", err=True)
         ctx.exit(code=1)
 
-    
+    if destination_filepath.is_absolute():
+        click.echo(f"ERROR: --destination-filepath must be a relative path within the RO-Crate: {destination_filepath}", err=True)
+        ctx.exit(code=1)
+
     try:
         CopyToROCrate(source_filepath, destination_filepath)
+    except Exception as exc:
+        click.echo(f"ERROR copying file to RO-Crate: {str(exc)}", err=True)
+        ctx.exit(code=1)
 
-        software_instance = GenerateSoftware(
-                guid=guid,
-                url= url,
-                name=name,
-                version=version,
-                keywords=keywords,
-                fileFormat=file_format,
-                description=description,
-                author= author,
-                associatedPublication=associated_publication,
-                additionalDocumentation=additional_documentation,
-                dateModified=date_modified,
-                usedByComputation=used_by_computation,
-                filepath=destination_filepath,
-                cratePath =rocrate_path 
-        )
-    
-        AppendCrate(cratePath = rocrate_path, elements=[software_instance])
-        # copy file to rocrate
+    params = {
+        "guid": guid,
+        "name": name,
+        "author": author,
+        "version": version,
+        "description": description,
+        "keywords": list(keywords), 
+        "fileFormat": file_format,
+        "url": url, 
+        "dateModified": date_modified, 
+        "filepath": str(destination_filepath), 
+        "usedByComputation": list(used_by_computation) if used_by_computation else [],
+        "associatedPublication": associated_publication, 
+        "additionalDocumentation": additional_documentation, 
+        "cratePath": rocrate_path 
+    }
+
+    if custom_properties:
+        try:
+            custom_props = json.loads(custom_properties)
+            if not isinstance(custom_props, dict): raise ValueError("Custom properties must be a JSON object")
+            params.update(custom_props)
+        except Exception as e:
+            click.echo(f"ERROR processing custom properties: {e}", err=True)
+            ctx.exit(code=1)
+
+    filtered_params = {k: v for k, v in params.items() if v is not None}
+
+    try:
+        software_instance = GenerateSoftware(**filtered_params)
+        AppendCrate(cratePath=rocrate_path, elements=[software_instance])
         click.echo(software_instance.guid)
 
     except ValidationError as e:
-        click.echo("Software Validation Error")
-        click.echo(e)
+        click.echo("Software Validation Error", err=True)
+        click.echo(e, err=True)
         ctx.exit(code=1)
-
-    # TODO add to cache
+    except FileNotInCrateException as e:
+        click.echo(f"ERROR: File not found in crate after copying? {str(e)}", err=True)
+        ctx.exit(code=1)
+    except Exception as exc:
+        click.echo(f"ERROR: {str(exc)}", err=True)
+        ctx.exit(code=1)
 
 
 @add.command('dataset')
 @click.argument('rocrate-path', type=click.Path(exists=True, path_type=pathlib.Path))
-@click.option('--guid', type=str, required=False, default=None)
-@click.option('--name', required=True) 
-@click.option('--url', required=False)
-@click.option('--author', required=True)
-@click.option('--version', required=True) 
-@click.option('--date-published', required=True) 
-@click.option('--description', required=True) 
-@click.option('--keywords', required=True, multiple=True)
-@click.option('--data-format', required=True) 
-@click.option('--source-filepath', required=True)
-@click.option('--destination-filepath', required=True)
-@click.option('--summary-statistics-source', required=False, type=click.Path(exists=True))
-@click.option('--summary-statistics-destination', required=False, type=click.Path())
-@click.option('--used-by', required=False, multiple=True)
-@click.option('--derived-from', required=False, multiple=True)
-@click.option('--generated-by', required=False, multiple=True)
-@click.option('--schema', required=False, type=str)
-@click.option('--associated-publication', required=False)
-@click.option('--additional-documentation', required=False)
+@click.option('--guid', type=str, required=False, default=None, help='Identifier for the dataset (generated if not provided)')
+@click.option('--name', required=True, help='Name of the dataset')
+@click.option('--author', required=True, help='Author of the dataset')
+@click.option('--version', required=False, default="1.0", help='Version of the dataset')
+@click.option('--description', required=True, help='Description of the dataset')
+@click.option('--keywords', required=True, multiple=True, help='Keywords for the dataset')
+@click.option('--data-format', required=True, help='Format of the dataset (e.g., csv, json)')
+@click.option('--source-filepath', required=True, type=click.Path(exists=True, path_type=pathlib.Path), help='Path to the source dataset file on your local filesystem')
+@click.option('--destination-filepath', required=True, type=click.Path(path_type=pathlib.Path), help='Desired path for the dataset file relative to the RO-Crate root')
+@click.option('--url', required=False, help='URL reference for the dataset')
+@click.option('--date-published', required=False, help='Publication date of the dataset (ISO format)') 
+@click.option('--schema', required=False, help='Schema identifier for the dataset')
+@click.option('--used-by', required=False, multiple=True, help='Identifiers of computations that use this dataset')
+@click.option('--derived-from', required=False, multiple=True, help='Identifiers of datasets this one is derived from')
+@click.option('--generated-by', required=False, multiple=True, help='Identifiers of computations that generated this dataset')
+@click.option('--summary-statistics-source', required=False, type=click.Path(exists=True, path_type=pathlib.Path), help='Path to the source summary statistics file on your local filesystem')
+@click.option('--summary-statistics-destination', required=False, type=click.Path(path_type=pathlib.Path), help='Desired path for the summary statistics file relative to the RO-Crate root')
+@click.option('--associated-publication', required=False, help='Associated publication identifier')
+@click.option('--additional-documentation', required=False, help='Additional documentation')
+@click.option('--custom-properties', required=False, type=str, help='JSON string with additional properties to include')
 @click.pass_context
-def dataset(
+def addDataset(
     ctx,
     rocrate_path: pathlib.Path,
-    guid,
-    name,
-    url,
-    author,
-    version,
-    date_published,
-    description,
-    keywords,
-    data_format,
-    source_filepath,
-    destination_filepath,
-    summary_statistics_source,
-    summary_statistics_destination,
-    used_by,
-    derived_from,
-    generated_by,
-    schema,
-    associated_publication,
-    additional_documentation,
+    guid: Optional[str],
+    name: str,
+    author: str,
+    version: str,
+    description: str,
+    keywords: List[str],
+    data_format: str,
+    source_filepath: pathlib.Path,
+    destination_filepath: pathlib.Path,
+    url: Optional[str] = None,
+    date_published: Optional[str] = None,
+    schema: Optional[str] = None,
+    used_by: Optional[List[str]] = None,
+    derived_from: Optional[List[str]] = None,
+    generated_by: Optional[List[str]] = None,
+    summary_statistics_source: Optional[pathlib.Path] = None,
+    summary_statistics_destination: Optional[pathlib.Path] = None,
+    associated_publication: Optional[str] = None,
+    additional_documentation: Optional[str] = None,
+    custom_properties: Optional[str] = None,
 ):
-    """Add a Dataset file and its metadata to the RO-Crate."""
+    """Copy a Dataset file into the RO-Crate and register its metadata.
+
+    Copies the dataset file from SOURCE_FILEPATH to DESTINATION_FILEPATH
+    within the RO-Crate and registers its metadata. Optionally copies
+    a summary statistics file and registers associated metadata (Computation
+    and another Dataset).
+
+    Examples:
+        fairscape rocrate add dataset ./my-crate --name "My Data" --author "J. Doe" ... --source-filepath /local/data.csv --destination-filepath data/data.csv
+
+        # With summary statistics:
+        fairscape rocrate add dataset ./my-crate --name "My Data" ... --source-filepath /local/data.csv --destination-filepath data/data.csv --summary-statistics-source /local/data_summary.json --summary-statistics-destination data/data_summary.json
+    """
+
     try:
-        crateInstance = ReadROCrateMetadata(rocrate_path)
+        ReadROCrateMetadata(rocrate_path)
     except Exception as exc:
-        click.echo(f"ERROR Reading ROCrate: {str(exc)}")
+        click.echo(f"ERROR Reading ROCrate: {str(exc)}", err=True)
         ctx.exit(code=1)
 
+    if destination_filepath.is_absolute():
+        click.echo(f"ERROR: --destination-filepath must be a relative path within the RO-Crate: {destination_filepath}", err=True)
+        ctx.exit(code=1)
+
+    if summary_statistics_destination and summary_statistics_destination.is_absolute():
+         click.echo(f"ERROR: --summary-statistics-destination must be a relative path within the RO-Crate: {summary_statistics_destination}", err=True)
+         ctx.exit(code=1)
+
     try:
-        # Copy main dataset file
         CopyToROCrate(source_filepath, destination_filepath)
-        
-        # Generate main dataset GUID
-        sq_dataset = GenerateDatetimeSquid()
-        dataset_guid = guid if guid else f"ark:{NAAN}/dataset-{name.lower().replace(' ', '-')}-{sq_dataset}"
 
+        elements_to_append = []
         summary_stats_guid = None
-        elements = []
-        
-        # Handle summary statistics if provided
-        if summary_statistics_source and summary_statistics_destination:
-            # Copy summary statistics file
-            CopyToROCrate(summary_statistics_source, summary_statistics_destination)
-            
-            # Generate summary statistics elements
-            summary_stats_guid, summary_stats_instance, computation_instance = generateSummaryStatsElements(
-                name=name,
-                author=author,
-                keywords=keywords,
-                date_published=date_published,
-                version=version,
-                associated_publication=associated_publication,
-                additional_documentation=additional_documentation,
-                schema=schema,
-                dataset_guid=dataset_guid,
-                summary_statistics_filepath=summary_statistics_destination,
-                crate_path=rocrate_path
-            )
-            elements.extend([computation_instance, summary_stats_instance])
 
-        # Generate main dataset
-        dataset_instance = GenerateDataset(
-            guid=dataset_guid,
-            url=url,
-            author=author,
-            name=name,
-            description=description,
-            keywords=keywords,
-            datePublished=date_published,
-            version=version,
-            associatedPublication=associated_publication,
-            additionalDocumentation=additional_documentation,
-            dataFormat=data_format,
-            schema=schema,
-            derivedFrom=derived_from,
-            generatedBy=generated_by,
-            usedBy=used_by,
-            filepath=destination_filepath,
-            cratePath=rocrate_path,
-            summary_stats_guid=summary_stats_guid
-        )
-        
-        elements.insert(0, dataset_instance)
-        AppendCrate(cratePath=rocrate_path, elements=elements)
+        if summary_statistics_source and summary_statistics_destination:
+            try:
+                copied_summary_stats_filepath = CopyToROCrate(summary_statistics_source, summary_statistics_destination, rocrate_path)
+                click.echo(f"Copied '{summary_statistics_source}' to '{copied_summary_stats_filepath}' inside the crate.")
+
+                summary_stats_guid, summary_stats_instance, computation_instance = generateSummaryStatsElements(
+                    name=name, 
+                    author=author,
+                    keywords=list(keywords),
+                    date_published=date_published, 
+                    version=version, 
+                    associated_publication=associated_publication,
+                    additional_documentation=additional_documentation, 
+                    schema=schema, 
+                    dataset_guid=guid, 
+                    summary_statistics_filepath=str(summary_statistics_destination), 
+                    crate_path=rocrate_path
+                )
+                elements_to_append.extend([computation_instance, summary_stats_instance])
+
+            except Exception as exc:
+                 click.echo(f"ERROR handling summary statistics files: {str(exc)}", err=True)
+                 ctx.exit(code=1)
+
+
+        params = {
+            "guid": guid, 
+            "name": name,
+            "author": author,
+            "description": description,
+            "keywords": list(keywords), 
+            "version": version, 
+            "format": data_format,
+            "filepath": str(destination_filepath), 
+            "cratePath": rocrate_path, 
+            "url": url, 
+            "datePublished": date_published, 
+            "schema": schema, 
+            "usedBy": list(used_by) if used_by else [], 
+            "derivedFrom": list(derived_from) if derived_from else [], 
+            "generatedBy": list(generated_by) if generated_by else [], 
+            "associatedPublication": associated_publication, 
+            "additionalDocumentation": additional_documentation, 
+        }
+
+        if summary_stats_guid:
+            params["summary_stats_guid"] = summary_stats_guid
+
+
+        if custom_properties:
+            try:
+                custom_props = json.loads(custom_properties)
+                if not isinstance(custom_props, dict): raise ValueError("Custom properties must be a JSON object")
+                params.update(custom_props)
+            except Exception as e:
+                click.echo(f"ERROR processing custom properties: {e}", err=True)
+                ctx.exit(code=1)
+
+        # Filter None values before passing
+        filtered_params = {k: v for k, v in params.items() if v is not None}
+
+        dataset_instance = GenerateDataset(**filtered_params)
+        elements_to_append.insert(0, dataset_instance)
+        AppendCrate(cratePath=rocrate_path, elements=elements_to_append)
+
         click.echo(dataset_instance.guid)
 
     except ValidationError as e:
-        click.echo("Dataset Validation Error")
-        click.echo(e)
+        click.echo("Dataset Validation Error", err=True)
+        click.echo(e, err=True)
         ctx.exit(code=1)
-
     except Exception as exc:
-        click.echo(f"ERROR: {str(exc)}")
+        click.echo(f"ERROR: {str(exc)}", err=True)
         ctx.exit(code=1)
