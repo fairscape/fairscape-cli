@@ -33,7 +33,7 @@ fairscape-cli validate schema [OPTIONS]
 
 ```bash
 fairscape-cli validate schema \
-    --schema ./schema_apms_music_embedding.json \
+    --schema ./music_apms_embedding_schema.json \
     --data ./APMS_embedding_MUSIC.csv
 ```
 
@@ -76,13 +76,3 @@ The validation command automatically detects the file type based on its extensio
 - **CSV/TSV files**: Tabular validation with field separators
 - **Parquet files**: Tabular validation with columnar storage
 - **HDF5 files**: Hierarchical validation with nested structures
-
-## Using ARK Identifiers for Schemas
-
-Instead of providing a file path, you can reference a schema by its ARK identifier if it's registered in a FAIRSCAPE repository:
-
-```bash
-fairscape-cli validate schema \
-    --schema "ark:59852/schema-cm4ai-image-embedding-image-emd" \
-    --data "examples/schemas/cm4ai-rocrates/image_embedding/image_emd.tsv"
-```

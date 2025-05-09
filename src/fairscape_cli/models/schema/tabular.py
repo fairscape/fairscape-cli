@@ -19,7 +19,7 @@ from typing import (
     Literal,
     Union
 )
-from frictionless import Schema, Resource, describe, fields
+from frictionless import Schema, Resource, fields, Dialect, Report, describe, formats
 
 
 from fairscape_cli.models.schema.utils import (
@@ -229,83 +229,121 @@ class TabularValidationSchema(BaseModel):
         return schema
 
     def validate_file(self, filepath: str) -> List[ValidationError]:
-        """Validate a file against the schema using Frictionless"""
         if not self._frictionless_schema:
-            raise ValueError("Schema not properly initialized")
+            raise ValueError("Frictionless schema not properly initialized. Call from_dict or infer_from_file.")
+
+        file_dialect = Dialect()
+
+        file_dialect.header = self.header
+
+        if self.separator:
+            csv_control = formats.csv.CsvControl(delimiter=self.separator)
+            file_dialect.add_control(csv_control)
         
         resource = Resource(
-            path=os.path.basename(filepath), 
-            basepath=os.path.dirname(filepath), 
-            schema=self._frictionless_schema
+            path=filepath, 
+            schema=self._frictionless_schema,
+            dialect=file_dialect
         )
-        report = resource.validate()
         
-        errors = []
-        for task in report.tasks:
-            for error in task.errors:
-                if isinstance(error, TypeError):
-                    validation_error = ValidationError(
-                        message=str(error),
-                        type="ValidationError",
-                        failed_keyword="type"
+        report: Report = resource.validate() 
+        
+        errors_list = [] 
+        if not report.valid:
+            for task_error in report.errors: 
+                for error_detail in task_error.errors: 
+                    validation_error_model = ValidationError( 
+                        message=error_detail.message,
+                        row=error_detail.row_number if hasattr(error_detail, 'row_number') else None,
+                        field=error_detail.field_name if hasattr(error_detail, 'field_name') else None,
+                        failed_keyword=error_detail.code if hasattr(error_detail, 'code') else "error"
                     )
-                else:
-                    validation_error = ValidationError(
-                        message=error.message,
-                        row=error.row_number if hasattr(error, 'row_number') else None,
-                        field=error.field_name if hasattr(error, 'field_name') else None,
-                        failed_keyword=error.code if hasattr(error, 'code') else "error"
-                    )
-                errors.append(validation_error)
+                    errors_list.append(validation_error_model)
                 
-        return errors
-
-    def to_dict(self) -> dict:
-        """Convert the schema to a dictionary format"""
-        return self.model_dump(by_alias=True, exclude={'_frictionless_schema'})
+        return errors_list
 
     @classmethod
     def from_dict(cls, data: dict) -> 'TabularValidationSchema':
         """Create a schema instance from a dictionary"""
-        properties = data.pop('properties', {})
-        required_fields = data.pop('required', [])
-        
-        frictionless_schema = Schema()
-        
-        type_to_field = {
+
+        properties_input = data.get('properties', {})
+        required_fields_input = data.get('required', [])
+        header_setting = data.get('header', True) 
+        separator_setting = data.get('separator', ',') 
+
+        frictionless_schema_obj = Schema()
+
+        type_to_frictionless_field = {
             'string': fields.StringField,
             'integer': fields.IntegerField,
             'number': fields.NumberField,
             'boolean': fields.BooleanField,
-            'array': fields.ArrayField
         }
         
-        for name, prop in properties.items():
-            field_type = type_to_field.get(prop.get('type', 'string'), fields.StringField)
-            field = field_type(
-                name=name,
-                description=prop.get('description', ''),
-                constraints={}
-            )
+        sorted_prop_items = []
+        spanning_array_prop_name = None
+        spanning_array_prop_details = None
+
+        for name, prop_details in properties_input.items():
+            index_val = prop_details.get("index")
+            if prop_details.get("type") == "array" and isinstance(index_val, str) and "::" in index_val:
+                if spanning_array_prop_name is not None:
+                    raise ValueError("Multiple spanning array properties (index: 'X::') are not supported.")
+                spanning_array_prop_name = name
+                spanning_array_prop_details = prop_details
+            elif isinstance(index_val, int): 
+                sorted_prop_items.append((name, prop_details, index_val))
+            else: 
+                sorted_prop_items.append((name, prop_details, float('inf'))) 
+
+        sorted_prop_items.sort(key=lambda x: x[2]) 
+
+        for name, prop_details, _ in sorted_prop_items:
+            if name == spanning_array_prop_name:
+                continue
+
+            field_class = type_to_frictionless_field.get(prop_details.get('type', 'string'), fields.StringField)
             
-            # Add constraints if they exist
-            if 'minimum' in prop:
-                field.constraints['minimum'] = prop['minimum']
-            if 'maximum' in prop:
-                field.constraints['maximum'] = prop['maximum']
-            if 'pattern' in prop:
-                field.constraints['pattern'] = prop['pattern']
-            if 'minLength' in prop:
-                field.constraints['minLength'] = prop['minLength']
-            if 'maxLength' in prop:
-                field.constraints['maxLength'] = prop['maxLength']
-                
-            frictionless_schema.add_field(field)
+            constraints = {}
+            if 'minimum' in prop_details: constraints['minimum'] = prop_details['minimum']
+            if 'maximum' in prop_details: constraints['maximum'] = prop_details['maximum']
+            if 'pattern' in prop_details: constraints['pattern'] = prop_details['pattern']
+            if 'minLength' in prop_details: constraints['minLength'] = prop_details['minLength']
+            if 'maxLength' in prop_details: constraints['maxLength'] = prop_details['maxLength']
+            
+            if prop_details.get('type') == 'array': 
+                field = fields.ArrayField(name=name, description=prop_details.get('description', ''), constraints=constraints)
+            else:
+                field = field_class(name=name, description=prop_details.get('description', ''), constraints=constraints)
+            frictionless_schema_obj.add_field(field)
+
+        if spanning_array_prop_name and spanning_array_prop_details:
+            prop_name_original = spanning_array_prop_name
+            details = spanning_array_prop_details
+            item_details = details.get('items', {})
+            item_type = item_details.get('type', 'number') 
+            item_field_class = type_to_frictionless_field.get(item_type, fields.NumberField)
+
+            num_items = details.get('minItems')
+            if num_items is None or num_items != details.get('maxItems'):
+                raise ValueError(f"Spanning array '{prop_name_original}' must have equal and defined minItems and maxItems.")
+
+            for i in range(num_items):
+                field_name_for_frictionless = f"{prop_name_original}_{i}" # e.g., embed_0, embed_1, ...
+                field = item_field_class(name=field_name_for_frictionless, description=f"Element {i} of {prop_name_original}")
+                frictionless_schema_obj.add_field(field)
         
-        # Create our schema instance
-        schema = cls(**data, properties=properties, required=required_fields)
-        schema._frictionless_schema = frictionless_schema
-        return schema
+        schema_instance_data = {k: v for k, v in data.items() if k not in ['properties', 'required', 'header', 'separator']}
+
+        schema_instance = cls(
+            **schema_instance_data,
+            properties=properties_input, 
+            required=required_fields_input, 
+            header=header_setting, 
+            separator=separator_setting 
+        )
+        schema_instance._frictionless_schema = frictionless_schema_obj
+        return schema_instance
 
 class HDF5ValidationSchema(BaseModel):
     guid: Optional[str] = Field(alias="@id", default=None)
