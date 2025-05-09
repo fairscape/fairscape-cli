@@ -109,7 +109,7 @@ fairscape-cli schema add-property number \
     --description 'Sensor reading in units of X' \
     --minimum 0.0 \
     --maximum 100.0 \
-    ./schema_sensor_data.json
+    ./schema_apms_music_embedding.json
 ```
 
 #### `add-property integer`
@@ -137,7 +137,7 @@ fairscape-cli schema add-property integer \
     --index 3 \
     --description 'Count of observations' \
     --minimum 0 \
-    ./schema_count_data.json
+    ./schema_apms_music_embedding.json
 ```
 
 #### `add-property boolean`
