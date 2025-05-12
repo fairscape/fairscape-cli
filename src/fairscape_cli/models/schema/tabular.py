@@ -262,6 +262,10 @@ class TabularValidationSchema(BaseModel):
                 
         return errors_list
 
+    def to_dict(self) -> dict:
+        """Convert the schema to a dictionary format"""
+        return self.model_dump(by_alias=True, exclude={'_frictionless_schema'})
+
     @classmethod
     def from_dict(cls, data: dict) -> 'TabularValidationSchema':
         """Create a schema instance from a dictionary"""
