@@ -4,6 +4,7 @@ from typing import List, Optional
 
 from fairscape_cli.data_fetcher.GenomicData import GenomicData
 from fairscape_cli.models.pep import PEPtoROCrateMapper
+from fairscape_cli.data_fetcher.PhysioNetImporter import PhysioNetImporter
 
 
 @click.group('import')
@@ -132,3 +133,107 @@ def from_pep(
     except Exception as exc:
         click.echo(f"ERROR: {str(exc)}")
         ctx.exit(code=1)
+        
+
+@import_group.command('physionet')
+@click.argument('physionet-url', type=str)
+@click.option('--output-dir', required=True, type=click.Path(file_okay=False, dir_okay=True, writable=True, path_type=pathlib.Path), help='Directory to create the RO-Crate in.')
+@click.option('--author', required=True, type=str, help='Author name to associate with generated metadata. PhysioNet authors are extracted but overridden by this.')
+@click.option('--name', required=False, type=str, help='Override the default RO-Crate name (extracted from PhysioNet title).')
+@click.option('--description', required=False, type=str, help='Override the default RO-Crate description (extracted from PhysioNet abstract).')
+@click.option('--keywords', required=False, multiple=True, type=str, help='Override the default RO-Crate keywords (extracted from PhysioNet topics). Can be used multiple times.')
+@click.option('--license', required=False, type=str, help='Override the default RO-Crate license URL (extracted from PhysioNet license).')
+@click.option('--version', required=False, type=str, help='Override the default RO-Crate version (extracted from PhysioNet version).')
+@click.option('--organization-name', required=False, type=str, help='Set the organization name for the RO-Crate.', default="PhysioNet")
+@click.option('--project-name', required=False, type=str, help='Set the project name for the RO-Crate.', default="PhysioNet Project")
+@click.option('--associated-publication', required=False, multiple=True, type=str, help='Override/add associated publication URLs (extracted from PhysioNet citation). Can be used multiple times.')
+@click.option('--usage-info', required=False, type=str, help='Override the usage information (extracted from PhysioNet usage notes).')
+@click.option('--ethical-review', required=False, type=str, help='Override the ethical review information (extracted from PhysioNet ethics).')
+@click.option('--doi', required=False, type=str, help='Override/set the DOI identifier.')
+@click.option('--additional-property', required=False, multiple=True, type=(str, str), help='Add custom additional properties as key=value pairs (e.g., --additional-property "Method=Description of methods").')
+@click.pass_context
+def pull_physionet(
+    ctx: click.Context,
+    physionet_url: str,
+    output_dir: pathlib.Path,
+    author: str,
+    name: Optional[str],
+    description: Optional[str],
+    keywords: Optional[List[str]],
+    license: Optional[str],
+    version: Optional[str],
+    organization_name: Optional[str],
+    project_name: Optional[str],
+    associated_publication: Optional[List[str]],
+    usage_info: Optional[str],
+    ethical_review: Optional[str],
+    doi: Optional[str],
+    additional_property: Optional[List[tuple[str, str]]],
+):
+    """Pulls PhysioNet project data (metadata and file structure) and converts it into an RO-Crate.
+
+    PHYSiONET_URL: The URL of the PhysioNet project page (e.g., https://physionet.org/content/bigp3bci/1.0.0/).
+    """
+
+    click.echo(f"Pulling PhysioNet project from {physionet_url}...")
+
+    try:
+        # Step 1: Initialize the importer
+        importer = PhysioNetImporter(physionet_url=physionet_url, output_dir=output_dir)
+        click.echo(f"PhysioNet project ID: {importer.project_id}, Version: {importer.version}")
+
+        # Prepare additional properties from command line input
+        extra_properties_list = []
+        if additional_property:
+            for key, value in additional_property:
+                 extra_properties_list.append({
+                     "@type": "PropertyValue",
+                     "name": key,
+                     "value": value
+                 })
+
+        # Prepare associated publications from command line input
+        # This format expects just URLs for simplicity in CLI
+        assoc_pubs_list = None
+        if associated_publication:
+             assoc_pubs_list = [{"@type": "CreativeWork", "url": url} for url in associated_publication]
+
+
+        # Step 2: Generate the RO-Crate
+        guid = importer.to_rocrate(
+            output_dir=output_dir,
+            author=author,
+            crate_name=name,
+            crate_description=description,
+            crate_keywords=list(keywords) if keywords else None,
+            crate_license=license,
+            crate_version=version,
+            organization_name=organization_name,
+            project_name=project_name,
+            associated_publication=assoc_pubs_list, # Use prepared list
+            usage_info=usage_info,
+            ethical_review=ethical_review,
+            identifier=doi,
+            additional_properties=extra_properties_list # Use prepared list
+        )
+
+        click.echo(f"Successfully created RO-Crate.")
+        click.echo(f"{guid}")
+
+    except ValueError as e:
+        click.echo(f"ERROR: Invalid input or URL format - {e}", err=True)
+        ctx.exit(1)
+    except ConnectionError as e:
+        click.echo(f"ERROR: Failed to fetch data from PhysioNet - {e}", err=True)
+        ctx.exit(1)
+    except RuntimeError as e:
+         click.echo(f"ERROR: Failed to parse PhysioNet page - {e}", err=True)
+         ctx.exit(1)
+    except FileNotFoundError as e:
+            click.echo(f"ERROR: File not found during RO-Crate generation - {e}", err=True)
+            ctx.exit(1)
+    except Exception as e:
+        click.echo(f"An unexpected error occurred: {e}", err=True)
+        import traceback
+        traceback.print_exc()
+        ctx.exit(1)
