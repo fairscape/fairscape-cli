@@ -489,6 +489,8 @@ class PhysioNetImporter:
 
 
             try:
+                if 'Directory' in item_data['relative_path']:
+                    continue
                 dataset_entity = GenerateDataset(**dataset_params)
                 crate_elements_to_add.append(dataset_entity)
             except Exception as e:
