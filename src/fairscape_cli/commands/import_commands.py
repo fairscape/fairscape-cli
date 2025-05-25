@@ -138,7 +138,7 @@ def from_pep(
 @import_group.command('physionet')
 @click.argument('physionet-url', type=str)
 @click.option('--output-dir', required=True, type=click.Path(file_okay=False, dir_okay=True, writable=True, path_type=pathlib.Path), help='Directory to create the RO-Crate in.')
-@click.option('--author', required=True, type=str, help='Author name to associate with generated metadata. PhysioNet authors are extracted but overridden by this.')
+@click.option('--author', required=False, type=str, help='Author name to associate with generated metadata. PhysioNet authors are extracted but overridden by this.')
 @click.option('--name', required=False, type=str, help='Override the default RO-Crate name (extracted from PhysioNet title).')
 @click.option('--description', required=False, type=str, help='Override the default RO-Crate description (extracted from PhysioNet abstract).')
 @click.option('--keywords', required=False, multiple=True, type=str, help='Override the default RO-Crate keywords (extracted from PhysioNet topics). Can be used multiple times.')

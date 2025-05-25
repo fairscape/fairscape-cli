@@ -101,7 +101,7 @@ class PhysioNetImporter:
         author_tags = soup.select('p strong a.author')
         if author_tags:
              authors = [a.get_text(strip=True) for a in author_tags]
-             metadata['extracted_authors'] = ", ".join(authors) 
+             metadata['author'] = ", ".join(authors) 
 
         published_p_tag = soup.find('p', string=lambda text: text and text.strip().startswith('Published:'))
         if published_p_tag:
@@ -346,7 +346,7 @@ class PhysioNetImporter:
 
         final_name = crate_name if crate_name is not None else extracted_metadata.get('name', f"PhysioNet Project {self.project_id}")
         final_description = crate_description if crate_description is not None else extracted_metadata.get('description', f"Data from PhysioNet project {self.project_id} v{physionet_dataset_version}")
-        final_author = author
+        final_author = author if author else extracted_metadata.get('author', "Unknown Author")
         final_date_published = crate_default_date_published
         final_license = crate_license if crate_license is not None else extracted_metadata.get('extracted_license', "https://creativecommons.org/licenses/by/4.0/")
         final_version = crate_effective_version
