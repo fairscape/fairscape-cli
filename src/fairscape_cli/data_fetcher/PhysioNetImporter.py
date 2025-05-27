@@ -49,6 +49,7 @@ class PhysioNetImporter:
             content_index = parts.index('content')
             if len(parts) > content_index + 2:
                 project_id = parts[content_index + 1]
+                # Handle URLs that might have /files-panel/ in them for specific version pages
                 if len(parts) > content_index + 3 and parts[content_index + 2] == 'files-panel':
                      version_str = parts[content_index + 3]
                 else:
@@ -57,8 +58,18 @@ class PhysioNetImporter:
             if project_id and version_str:
                  return project_id, version_str
         except ValueError:
-            print(f"'content' not found in URL path: {url}", file=sys.stderr)
-            pass
+            # 'content' not found, try parsing for /files/project_id/version_str/ structure
+            # This might happen if the URL is a direct file listing, though less common for initial input
+            try:
+                files_index = parts.index('files')
+                if len(parts) > files_index + 2:
+                    project_id = parts[files_index + 1]
+                    version_str = parts[files_index + 2]
+                    if project_id and version_str:
+                        return project_id, version_str
+            except ValueError:
+                print(f"'content' or 'files' not found in URL path for project/version parsing: {url}", file=sys.stderr)
+                pass # Fall through to return None, None
         return None, None
 
 
@@ -84,6 +95,7 @@ class PhysioNetImporter:
     def _extract_metadata(self, soup: BeautifulSoup) -> Dict[str, Any]:
         """Pulls metadata from the HTML soup."""
         metadata: Dict[str, Any] = {}
+        all_publications_found: List[str] = []  # Accumulator for all publications
         
         title_tag = soup.find('h1', class_='form-signin-heading')
         if title_tag:
@@ -130,9 +142,9 @@ class PhysioNetImporter:
             if date_part_str:
                 try:
                     parsed_date = None
-                    for fmt in ["%B %d, %Y", "%b. %d, %Y", "%b %d, %Y", "%Y-%m-%d", "%Y-%m-%dT%H:%M:%S.%fZ"]:
+                    for fmt in ["%B %d, %Y", "%b. %d, %Y", "%b %d, %Y", "%Y-%m-%d", "%Y-%m-%dT%H:%M:%S.%fZ", "%B %d, %Y."]: # Added format with trailing period
                         try:
-                            parsed_date = datetime.strptime(date_part_str, fmt)
+                            parsed_date = datetime.strptime(date_part_str.strip(), fmt)
                             break
                         except ValueError:
                             continue
@@ -144,62 +156,122 @@ class PhysioNetImporter:
                     print(f"Error parsing date from '{full_text}': {e}", file=sys.stderr)
 
         if 'dataset_version' not in metadata:
+            # Try to find version in WFDB comment
             wfdb_comment = soup.find(string=lambda text: isinstance(text, str) and "wfdb-python:" in text)
             if wfdb_comment:
                 comment_text = str(wfdb_comment)
                 version_match = re.search(r'Version:\s*([^<\n]+)', comment_text)
                 if version_match:
                     metadata['dataset_version'] = version_match.group(1).strip()
-            elif self.version: 
+            elif self.version: # Fallback to version from URL
                 metadata['dataset_version'] = self.version
 
+        # Extract from citation alert box
         citation_alert = soup.find('div', class_='alert alert-secondary')
         if citation_alert:
-             citation_entries_strings: List[str] = [] 
-
+             current_citation_block_pubs: List[str] = []
              cite_p = citation_alert.find('p', string=lambda text: text and 'When using this resource, please cite:' in text)
-             if not cite_p: cite_p = citation_alert.find('p')
+             if not cite_p: cite_p = citation_alert.find('p') # Fallback
 
              if cite_p:
+                  # Try to get a primary DOI link first
                   doi_link_tag = cite_p.find('a', href=lambda href: href and 'doi.org' in href)
                   if doi_link_tag and doi_link_tag.get('href'):
-                      citation_entries_strings.append(doi_link_tag['href'])
-                  else:
-                       other_link_tag = cite_p.find('a', href=True)
-                       if other_link_tag and other_link_tag.get('href'):
-                            if other_link_tag.get_text(strip=True) != "(show more options)":
-                                citation_entries_strings.append(other_link_tag['href'])
-
+                      current_citation_block_pubs.append(doi_link_tag['href'])
+                  
+                  # Get other links, avoiding duplicates and modal links
+                  other_link_tags = cite_p.find_all('a', href=True)
+                  for link_tag in other_link_tags:
+                      link_href = link_tag.get('href')
+                      link_text = link_tag.get_text(strip=True)
+                      if link_href and link_text != "(show more options)" and link_href not in current_citation_block_pubs:
+                          # Ensure not to re-add the main DOI if it was already found by doi_link_tag
+                          if not (doi_link_tag and link_tag['href'] == doi_link_tag['href']):
+                            current_citation_block_pubs.append(link_href)
+                  
+                  # Extract the full textual citation
                   citation_text_elements = []
                   for elem in cite_p.contents:
                       if isinstance(elem, Tag):
                           if elem.name == 'a' and elem.get_text(strip=True) == "(show more options)":
-                              continue
-                          if doi_link_tag and elem == doi_link_tag:
-                               continue
+                              continue # Skip the modal link's text
                           citation_text_elements.append(elem.get_text(strip=True))
-                      elif isinstance(elem, str):
+                      elif isinstance(elem, str): # NavigableString
                           citation_text_elements.append(elem.strip())
-
-                  citation_text = " ".join(citation_text_elements).strip()
+                  
+                  citation_text = " ".join(filter(None, citation_text_elements)).strip()
                   if citation_text.lower().startswith('when using this resource, please cite:'):
                       citation_text = citation_text[len('when using this resource, please cite:'):].strip()
-                  citation_text = citation_text.replace('(show more options)', '').strip()
-                  citation_text = ' '.join(citation_text.split())
+                  citation_text = citation_text.replace('(show more options)', '').strip() # Defensive
+                  citation_text = ' '.join(citation_text.split()) # Normalize spaces
 
-                  existing_strings = set(citation_entries_strings)
-                  if citation_text and citation_text not in existing_strings:
-                      citation_entries_strings.append(citation_text)
+                  if citation_text and citation_text not in current_citation_block_pubs:
+                      is_redundant_text = False
+                      for pub_url in current_citation_block_pubs:
+                          if pub_url == citation_text: # Exact match to an already found URL
+                              is_redundant_text = True
+                              break
+                          # Heuristic: if text is just the URL with minimal additions
+                          if pub_url in citation_text and len(citation_text) < len(pub_url) + 10:
+                              is_redundant_text = True
+                              break
+                      if not is_redundant_text:
+                          current_citation_block_pubs.append(citation_text)
+            
+             all_publications_found.extend(current_citation_block_pubs)
 
-             if citation_entries_strings:
-                  metadata['associatedPublication'] = list(set(citation_entries_strings))
+        # Extract from "References" section (h2 id="references")
+        references_header = soup.find('h2', id='references')
+        if references_header:
+            references_list_tag = references_header.find_next_sibling(['ol', 'ul'])
+            if references_list_tag:
+                extracted_references_section_pubs: List[str] = []
+                for item_li in references_list_tag.find_all('li'):
+                    link_tag = item_li.find('a', href=True)
+                    if link_tag and link_tag.get('href'):
+                        extracted_references_section_pubs.append(link_tag['href'])
+                    else:
+                        full_text = item_li.get_text(strip=True)
+                        full_text = re.sub(r"^\d+\.\s*", "", full_text) # Remove "1. "
+                        full_text = re.sub(r"^\[\d+\]\s*", "", full_text) # Remove "[1] "
+                        if full_text:
+                            extracted_references_section_pubs.append(full_text)
+                all_publications_found.extend(extracted_references_section_pubs)
+            else:
+                print("Warning: Found 'References' header but no subsequent 'ol' or 'ul' list.", file=sys.stderr)
+        # else: # Commenting out to reduce noise if section isn't there
+        #     print("Warning: 'References' section (h2 id='references') not found.", file=sys.stderr)
+
+        if all_publications_found:
+            unique_publications = []
+            seen_publications_normalized = set()
+            for pub_item in all_publications_found:
+                normalized_item_for_seen_set = pub_item
+                if pub_item.startswith("http"):
+                    try:
+                        parsed_url = urllib.parse.urlparse(pub_item)
+                        # Normalize by ensuring https and removing trailing slash for comparison
+                        normalized_item_for_seen_set = urllib.parse.urlunparse(
+                            parsed_url._replace(scheme='https', path=parsed_url.path.rstrip('/'))
+                        )
+                    except Exception: # pragma: no cover
+                        pass # Keep original if parsing fails
+                else: # For textual citations, normalize whitespace and case
+                    normalized_item_for_seen_set = ' '.join(pub_item.lower().split())
+
+                if normalized_item_for_seen_set not in seen_publications_normalized:
+                    unique_publications.append(pub_item) # Add original item
+                    seen_publications_normalized.add(normalized_item_for_seen_set)
+            if unique_publications:
+                 metadata['associatedPublication'] = unique_publications
+
 
         def extract_section_html(section_id: str) -> Optional[str]:
             header_tag = soup.find('h2', id=section_id)
             if header_tag:
                 content_html = ""
                 for sibling in header_tag.find_next_siblings():
-                    if sibling.name in ['h2', 'hr']: break
+                    if sibling.name in ['h2', 'hr']: break # Stop at next section or horizontal rule
                     content_html += str(sibling)
                 return content_html.strip() if content_html.strip() else None
             return None
@@ -207,6 +279,8 @@ class PhysioNetImporter:
         for section_id, prop_name, is_additional in [
             ('background', "Background", True),
             ('methods', "Methods", True),
+            ('data-description', "Data Description", True), # Added Data Description as additionalProperty
+            ('release-notes', "Release Notes", True),       # Added Release Notes as additionalProperty
             ('usage-notes', "usageInfo", False),
             ('ethics', "ethicalReview", False),
             ('acknowledgements', "Acknowledgements", True),
@@ -221,16 +295,33 @@ class PhysioNetImporter:
                         {"@type": "PropertyValue", "name": prop_name, "value": html_content}
                     )
 
+        # Discovery Card processing
         discovery_card_body = None
         discovery_header = soup.find('h5', class_='card-header', string='Discovery')
-        if discovery_header: discovery_card_body = discovery_header.find_next_sibling('div', class_='card-body')
+        if discovery_header: 
+            discovery_card_body = discovery_header.find_next_sibling('div', class_='card-body')
         
         if discovery_card_body:
-            topics_p = discovery_card_body.find('p', string=lambda text: text and text.strip().startswith('Topics:'))
-            if topics_p:
-                keywords = [span.get_text(strip=True) for span in topics_p.select('a span.badge-pn')]
+            # Robust keyword/topic extraction
+            topics_p_tag = None
+            strong_topics_tag = discovery_card_body.find('strong', string=lambda text: text and text.strip() == 'Topics:')
+            if strong_topics_tag:
+                topics_p_tag = strong_topics_tag.find_parent('p')
+
+            if topics_p_tag:
+                keywords = [span.get_text(strip=True) for span in topics_p_tag.select('a span.badge-pn')]
                 if keywords: 
                     metadata['extracted_keywords'] = keywords 
+            else:
+                # Fallback if the structure is <p>Topics: <a... (without <strong>)
+                topics_p_tag_alt = discovery_card_body.find('p', string=lambda text: text and text.strip().startswith('Topics:'))
+                if topics_p_tag_alt:
+                    keywords = [span.get_text(strip=True) for span in topics_p_tag_alt.select('a span.badge-pn')]
+                    if keywords:
+                        metadata['extracted_keywords'] = keywords
+                # else: # Commenting out to reduce noise if not found
+                #    print("Warning: Could not find 'Topics:' paragraph in Discovery card for keyword extraction.", file=sys.stderr)
+
 
             doi_version_p = discovery_card_body.find('p', string=lambda text: text and text.strip().startswith('DOI (version'))
             if doi_version_p:
@@ -244,9 +335,11 @@ class PhysioNetImporter:
                  if latest_doi_link and latest_doi_link.get('href'):
                      metadata['dataset_identifier'] = latest_doi_link['href']
 
+        # Access Card processing
         access_card_body = None
         access_header = soup.find('h5', class_='card-header', string='Access')
-        if access_header: access_card_body = access_header.find_next_sibling('div', class_='card-body')
+        if access_header: 
+            access_card_body = access_header.find_next_sibling('div', class_='card-body')
         if access_card_body:
             license_p = access_card_body.find('p', string=lambda text: text and text.strip().startswith('License (for files):'))
             if license_p:
@@ -278,12 +371,17 @@ class PhysioNetImporter:
             
             item_relative_path: str = ""
             if is_directory:
-                # For directories, the data-dfp-dir attribute provides the path relative to the file panel root
                 item_relative_path = name_cell_a_tag.get('data-dfp-dir')
-                if not item_relative_path:
-                     continue
-                print(f"DEBUG: Found directory: {name} (data-dfp-dir: {item_relative_path}) in {current_subdir_path or '<root>'}. Adding to queue.", file=sys.stderr)
-                subdirs_to_explore.append(item_relative_path) # Add to queue
+                if not item_relative_path: # Should not happen for valid subdir rows
+                     # Fallback if data-dfp-dir is missing, construct from name
+                     item_relative_path = os.path.join(current_subdir_path, name).replace('\\', '/')
+                     print(f"Warning: Directory '{name}' in '{current_subdir_path}' missing 'data-dfp-dir'. Using constructed path: '{item_relative_path}'.", file=sys.stderr)
+
+                # Ensure it's not already added or scheduled, which can happen with ".." links if not careful
+                # However, PhysioNet seems to use absolute paths in data-dfp-dir from the project root.
+                if item_relative_path not in subdirs_to_explore and item_relative_path != current_subdir_path : # Check against current path too
+                    print(f"DEBUG: Found directory: {name} (data-dfp-dir: {item_relative_path}) in {current_subdir_path or '<root>'}. Adding to queue.", file=sys.stderr)
+                    subdirs_to_explore.append(item_relative_path) 
             else: 
                 item_relative_path = os.path.join(current_subdir_path, name).replace('\\', '/') 
 
@@ -293,7 +391,7 @@ class PhysioNetImporter:
                     'name': name,
                     'relative_path': item_relative_path,
                     'datePublished': crate_default_date_published,
-                    'is_directory': is_directory 
+                    'is_directory': is_directory # This will be False here
                 }
                 
                 size_cell = row.select_one('td:nth-of-type(2)')
@@ -319,7 +417,7 @@ class PhysioNetImporter:
         crate_version: Optional[str] = None, 
         organization_name: Optional[str] = None,
         project_name: Optional[str] = None,
-        associated_publication: Optional[List[Dict[str, Any]]] = None,
+        associated_publication: Optional[List[Any]] = None, # Can be List[str] or List[Dict] from CLI
         usage_info: Optional[str] = None, 
         ethical_review: Optional[str] = None, 
         additional_properties: Optional[List[Dict[str, Any]]] = None, 
@@ -330,11 +428,9 @@ class PhysioNetImporter:
             output_dir.mkdir(parents=True, exist_ok=True)
         metadata_path = output_dir / 'ro-crate-metadata.json'
 
-        # Step 1: Fetch the initial project page URL
         print(f"Fetching initial project page from: {self.physionet_url}", file=sys.stderr)
         initial_soup = self._fetch_and_parse_html(self.physionet_url)
         
-        # Step 2: Extract metadata from the main page content
         extracted_metadata = self._extract_metadata(initial_soup)
         print("Metadata extraction complete.", file=sys.stderr)
         
@@ -348,7 +444,7 @@ class PhysioNetImporter:
         final_description = crate_description if crate_description is not None else extracted_metadata.get('description', f"Data from PhysioNet project {self.project_id} v{physionet_dataset_version}")
         final_author = author if author else extracted_metadata.get('author', "Unknown Author")
         final_date_published = crate_default_date_published
-        final_license = crate_license if crate_license is not None else extracted_metadata.get('extracted_license', "https://creativecommons.org/licenses/by/4.0/")
+        final_license = crate_license if crate_license is not None else extracted_metadata.get('extracted_license', "https://creativecommons.org/licenses/by/4.0/") # Default if not found
         final_version = crate_effective_version
         final_organization_name = organization_name
         final_project_name = project_name
@@ -358,17 +454,12 @@ class PhysioNetImporter:
         extracted_keywords_list = extracted_metadata.get('extracted_keywords', [])
         final_keywords = list(set(cli_keywords_list + extracted_keywords_list))
 
-        final_associated_publication: List[str] = []
-        if associated_publication is not None:
-             for pub_dict in associated_publication:
-                  if isinstance(pub_dict, dict):
-                       if 'identifier' in pub_dict and pub_dict['identifier']: final_associated_publication.append(str(pub_dict['identifier']))
-                       elif 'url' in pub_dict and pub_dict['url']: final_associated_publication.append(str(pub_dict['url']))
-                       elif 'description' in pub_dict and pub_dict['description']: final_associated_publication.append(str(pub_dict['description']))
-                  elif isinstance(pub_dict, str):
-                       final_associated_publication.append(pub_dict)
-        elif extracted_metadata.get('associatedPublication') is not None:
-             final_associated_publication = extracted_metadata['associatedPublication']
+        # Handle associated_publication: CLI takes precedence, then extracted
+        final_pubs_for_crate: List[Any] = []
+        if associated_publication is not None: # From CLI (already processed into List[Dict] by click command)
+            final_pubs_for_crate = associated_publication
+        elif extracted_metadata.get('associatedPublication') is not None: # From extraction (List[str])
+            final_pubs_for_crate = extracted_metadata['associatedPublication']
 
         cli_props = additional_properties or []
         extracted_props = extracted_metadata.get('additionalProperty', [])
@@ -377,7 +468,7 @@ class PhysioNetImporter:
         cli_prop_names = {prop.get('name') for prop in cli_props if isinstance(prop, dict) and prop.get('name')}
         for prop in cli_props:
              if isinstance(prop, dict): merged_additional_properties.append(prop)
-        for prop in extracted_props:
+        for prop in extracted_props: # Add extracted props if their names aren't in CLI-provided props
              if isinstance(prop, dict) and prop.get('name') and prop.get('name') not in cli_prop_names:
                   merged_additional_properties.append(prop)
 
@@ -396,79 +487,105 @@ class PhysioNetImporter:
             "organizationName": final_organization_name,
             "projectName": final_project_name,
             "path": output_dir,
-            "associatedPublication": final_associated_publication if final_associated_publication else None,
+            "associatedPublication": final_pubs_for_crate if final_pubs_for_crate else None,
             "usageInfo": final_usage_info,
             "ethicalReview": final_ethical_review,
             "additionalProperty": merged_additional_properties if merged_additional_properties else None,
             "identifier": final_identifier ,
             "url": self.physionet_url.rstrip('/'),
+            "publisher": "PhysioNet"
         }
 
-        root_metadata_params.setdefault("additionalProperty", [])
 
         try:
              root_crate_dict = GenerateROCrate(**root_metadata_params) 
-        except Exception as e:
+        except Exception as e: # pragma: no cover
              print("ERROR: Failed to validate root RO-Crate metadata.", file=sys.stderr)
              print(f"Pydantic errors: {e}", file=sys.stderr)
+             # For debugging, print the params that failed:
+             # import json
+             # print("Problematic params:", json.dumps(root_metadata_params, indent=2, default=str), file=sys.stderr)
              raise
 
         root_crate_guid = root_crate_dict['@id']
         print(f"Root RO-Crate GUID: {root_crate_guid}", file=sys.stderr)
 
-        # Step 3: Find the root file panel table on the initial page
+        # File processing
         files_panel_div = initial_soup.select_one('#files-panel')
         if not files_panel_div:
             print("Warning: '#files-panel' div not found on the initial page. Cannot list files.", file=sys.stderr)
+            # Still write the metadata-only crate
+            AppendCrate(metadata_path, []) # This ensures the root crate metadata is written by GenerateROCrate
             return root_crate_guid
 
         root_table_body = files_panel_div.select_one('table.files-panel tbody')
         if not root_table_body:
+            print("Warning: File table body not found in '#files-panel'. No files will be listed.", file=sys.stderr)
+            AppendCrate(metadata_path, [])
             return root_crate_guid
         
-        # Step 4: Initialize lists and process the root file table
         all_file_entries: List[Dict[str, Any]] = []
-        subdirs_to_explore: List[str] = []
+        subdirs_to_explore: List[str] = [] # Stores relative paths from project root
+        processed_subdirs = set() # Keep track of visited/queued subdirectories to avoid loops or redundant processing
+
         self._process_file_table_rows(root_table_body, "", all_file_entries, subdirs_to_explore, crate_default_date_published)
+        processed_subdirs.add("") # Mark root as processed for queueing logic
 
-        # Step 5: Iteratively explore subdirectories from the queue
-        if subdirs_to_explore:
-             print(f"Starting iterative exploration of {len(subdirs_to_explore)} subdirectories...", file=sys.stderr)
-             
-             while subdirs_to_explore:
-                  current_subdir = subdirs_to_explore.pop(0) # Breadth-first traversal
-
-                  subdir_url_to_fetch = urllib.parse.urljoin(self.base_content_url, current_subdir.strip('/') + '/#files-panel')
-
-                  try:
-                      subdir_soup = self._fetch_and_parse_html(subdir_url_to_fetch)
-                  except (ConnectionError, RuntimeError) as e:
-                       print(f"ERROR: Skipping subdirectory {current_subdir} due to fetch/parse error: {e}", file=sys.stderr)
-                       continue
-
-                  files_panel_div = subdir_soup.select_one('#files-panel')
-                  if not files_panel_div:
-                      continue
-
-                  subdir_table_body = files_panel_div.select_one('table.files-panel tbody')
-                  if not subdir_table_body:
-                      continue
-                  
-                  self._process_file_table_rows(subdir_table_body, current_subdir, all_file_entries, subdirs_to_explore, crate_default_date_published)
-
-        else:
-             print("No subdirectories found to explore from the root.", file=sys.stderr)
-
-
-        print(f"Total files found: {len(all_file_entries)}", file=sys.stderr)
-
-        # Step 6: Create Dataset entities for all found files
-        crate_elements_to_add = []
+        # Iteratively explore subdirectories
+        # The subdirs_to_explore list now contains paths relative to the project root.
+        # We need to manage a queue and a set of visited directories.
+        queue = [subdir for subdir in subdirs_to_explore if subdir not in processed_subdirs]
+        for subdir in queue: # Add initial finds to processed set
+            processed_subdirs.add(subdir)
         
+        # print(f"Initial queue: {queue}", file=sys.stderr)
+
+        head = 0
+        while head < len(queue):
+            current_subdir_relative_path = queue[head]
+            head += 1
+            
+            # Construct the URL to fetch the HTML for this subdirectory's file panel
+            # Ensure no leading slash for joining with base_content_url, and add trailing slash for #files-panel
+            subdir_url_segment = current_subdir_relative_path.strip('/')
+            subdir_page_url = urllib.parse.urljoin(self.base_content_url, subdir_url_segment + ('/' if subdir_url_segment else '') + '#files-panel')
+            
+            # print(f"Fetching subdir page: {subdir_page_url} for relative path: {current_subdir_relative_path}", file=sys.stderr)
+
+            try:
+                subdir_soup = self._fetch_and_parse_html(subdir_page_url)
+            except (ConnectionError, RuntimeError) as e:
+                print(f"ERROR: Skipping subdirectory {current_subdir_relative_path} due to fetch/parse error: {e}", file=sys.stderr)
+                continue
+
+            subdir_files_panel_div = subdir_soup.select_one('#files-panel')
+            if not subdir_files_panel_div:
+                print(f"Warning: '#files-panel' not found on page for subdirectory {current_subdir_relative_path}. Skipping.", file=sys.stderr)
+                continue
+
+            subdir_table_body = subdir_files_panel_div.select_one('table.files-panel tbody')
+            if not subdir_table_body:
+                print(f"Warning: File table body not found for subdirectory {current_subdir_relative_path}. Skipping.", file=sys.stderr)
+                continue
+            
+            # This will add new subdirectories found within this table to subdirs_to_explore (which is not directly used by the loop anymore)
+            # and files to all_file_entries. We need to add new subdirs to *our* queue if not processed.
+            temp_new_subdirs_from_table: List[str] = []
+            self._process_file_table_rows(subdir_table_body, current_subdir_relative_path, all_file_entries, temp_new_subdirs_from_table, crate_default_date_published)
+            
+            for new_subdir in temp_new_subdirs_from_table:
+                if new_subdir not in processed_subdirs:
+                    # print(f"Adding new subdir to queue: {new_subdir}", file=sys.stderr)
+                    processed_subdirs.add(new_subdir)
+                    queue.append(new_subdir)
+        
+        print(f"Total files found after exploring subdirectories: {len(all_file_entries)}", file=sys.stderr)
+
+        crate_elements_to_add = []
         for item_data in all_file_entries:
+            # GUID generation for file datasets
             item_path_guid_segment = item_data['relative_path'].replace('/', '_').replace('.', '_').replace(' ', '_').lower()
             item_path_guid_segment = clean_guid(item_path_guid_segment)
-            
             sq = GenerateDatetimeSquid()
             guid = f"ark:{NAAN}/file-{clean_guid(self.project_id)}-{clean_guid(physionet_dataset_version)}-{item_path_guid_segment}-{sq}"
 
@@ -476,29 +593,35 @@ class PhysioNetImporter:
                 "guid": guid,
                 "name": item_data['relative_path'], 
                 "description": f"File '{item_data['name']}' at path '{item_data['relative_path']}' from PhysioNet dataset {self.project_id} v{physionet_dataset_version}",
-                "author": final_author,
-                "version": physionet_dataset_version, 
+                "author": final_author, # Inherit from root crate
+                "version": physionet_dataset_version, # Dataset version
                 "isPartOf": [{"@id": root_crate_guid}],
-                "@type": "Dataset",
-                "keywords": final_keywords, 
-                "datePublished": item_data['datePublished'],
+                "@type": "Dataset", # Files are represented as Datasets in RO-Crate
+                "keywords": final_keywords, # Inherit
+                "datePublished": item_data['datePublished'], # Could be file's own date if available, else crate's
                 "format": item_data.get('format', "application/octet-stream") 
             }
             if 'contentSize' in item_data: dataset_params['contentSize'] = item_data['contentSize']
             if 'contentUrl' in item_data: dataset_params['contentUrl'] = item_data['contentUrl']
 
-
             try:
-                if 'Directory' in item_data['relative_path']:
-                    continue
+                # PhysioNet sometimes lists directories like "DirectoryName/" as files.
+                # The is_directory flag from _process_file_table_rows should be false for actual files.
+                # We already skip adding directories to all_file_entries.
                 dataset_entity = GenerateDataset(**dataset_params)
                 crate_elements_to_add.append(dataset_entity)
-            except Exception as e:
+            except Exception as e: # pragma: no cover
                 print(f"ERROR: Failed to generate Dataset Pydantic model for item path: {item_data.get('relative_path')}", file=sys.stderr)
                 print(f"Pydantic error: {e}", file=sys.stderr)
+                # For debugging:
+                # import json
+                # print("Problematic dataset_params:", json.dumps(dataset_params, indent=2, default=str), file=sys.stderr)
+
                 continue
 
         if crate_elements_to_add:
              AppendCrate(metadata_path, crate_elements_to_add) 
+        else: # If no files were added, still ensure the root crate metadata is written
+             AppendCrate(metadata_path, [])
         
         return root_crate_guid
