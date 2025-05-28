@@ -33,7 +33,7 @@ def GenerateSoftware(
     if not guid and name:
         sq = GenerateDatetimeSquid()
         seg = clean_guid({name.lower().replace(' ', '-')}-{sq})
-        guid = f"ark:{NAAN}/software-{seg}/"
+        guid = f"ark:{NAAN}/software-{seg}"
     elif not guid:
         sq = GenerateDatetimeSquid()
         guid = f"ark:{NAAN}/software-{sq}"
