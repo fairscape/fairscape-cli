@@ -1,6 +1,9 @@
 from .base import ROCrateProcessor
 import os
 import traceback
+from collections import Counter
+import json
+
 
 class SectionGenerator:
     def __init__(self, template_engine, processor=None):
@@ -194,7 +197,6 @@ class SubcratesSectionGenerator(SectionGenerator):
                 subcrate['contact'] = subcrate_processor.root.get("contactEmail", self.processor.root.get("contactEmail", ""))
                 subcrate['published'] = self.processor.published
                 
-                # Get copyright, license, and terms of use
                 subcrate['copyright'] = subcrate_processor.root.get("copyrightNotice", "Copyright (c) 2025 The Regents of the University of California")
                 subcrate['license'] = subcrate_processor.root.get("license", "https://creativecommons.org/licenses/by-nc-sa/4.0/")
                 subcrate['terms_of_use'] = subcrate_processor.root.get("conditionsOfAccess", "Attribution is required to the copyright holders and the authors. Any publications referencing this data or derived products should cite the related article as well as directly citing this data collection.")
@@ -227,6 +229,9 @@ class SubcratesSectionGenerator(SectionGenerator):
                 subcrate['software_access'] = subcrate_processor.get_access_summary(software)
                 
                 patterns, external_datasets = self.extract_computation_patterns(subcrate_processor, computations, subcrate_processors)
+                internal_inputs = self.internal_inputs(subcrate_processor)
+                external_datasets.extend(internal_inputs)
+
                 subcrate['computation_patterns'] = patterns
                 
                 external_datasets_by_format = {}
@@ -240,6 +245,13 @@ class SubcratesSectionGenerator(SectionGenerator):
                             external_datasets_by_format[key] += 1
                         else:
                             external_datasets_by_format[key] = 1
+                    else: # Internal datasets have blank subcrate name
+                         if fmt in external_datasets_by_format:
+                            external_datasets_by_format[fmt] += 1
+                         else:
+                            external_datasets_by_format[fmt] = 1
+
+
                 
                 subcrate['input_datasets'] = external_datasets_by_format
                 subcrate['input_datasets_count'] = len(external_datasets)
@@ -247,7 +259,6 @@ class SubcratesSectionGenerator(SectionGenerator):
                 
                 subcrate['experiment_patterns'] = self.extract_experiment_patterns(subcrate_processor, experiments)
                 
-                # Extract cell line information including CVCL identifier
                 subcrate['cell_lines'] = subcrate_processor.extract_cell_line_info(samples)
                 subcrate['species'] = subcrate_processor.extract_sample_species(samples)
                 subcrate['experiment_types'] = subcrate_processor.extract_experiment_types(experiments)
@@ -324,7 +335,6 @@ class SubcratesSectionGenerator(SectionGenerator):
             input_formats = []
             output_formats = []
             
-            # Process inputs
             input_datasets_raw = computation.get("usedDataset", [])
             if input_datasets_raw:
                 if isinstance(input_datasets_raw, list):
@@ -390,7 +400,6 @@ class SubcratesSectionGenerator(SectionGenerator):
                     if format_value != "unknown":
                         output_formats.append(format_value)
             
-            # Create a pattern string
             if input_formats and output_formats:
                 input_str = ", ".join(sorted(input_formats))
                 output_str = ", ".join(sorted(output_formats))
@@ -402,3 +411,27 @@ class SubcratesSectionGenerator(SectionGenerator):
                     patterns[pattern] = 1
         
         return list(patterns.keys()), external_datasets
+    
+    def internal_inputs(self, processor):
+        internal_inputs_list = []
+        
+        for item in processor.graph:
+            item_type = item.get("@type", [])
+            if isinstance(item_type, list):
+                continue
+            
+            is_dataset = False
+            if "Dataset" == item_type or "EVI:Dataset" == item_type or "https://w3id.org/EVI#Dataset" == item_type :
+                is_dataset = True
+
+            if is_dataset:
+                generated_by = item.get("generatedBy")
+                
+                if not generated_by:
+                    internal_inputs_list.append({
+                        "id": item.get("@id", ""),
+                        "format": item.get("format", "unknown"),
+                        "subcrate": ""
+                    })
+        
+        return internal_inputs_list
