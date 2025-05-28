@@ -1,10 +1,12 @@
 import click
 import pathlib
-from typing import List, Optional
+from typing import List, Optional, Tuple
+import traceback 
 
 from fairscape_cli.data_fetcher.GenomicData import GenomicData
 from fairscape_cli.models.pep import PEPtoROCrateMapper
 from fairscape_cli.data_fetcher.PhysioNetImporter import PhysioNetImporter
+from fairscape_cli.data_fetcher.generic_data import ResearchData
 
 
 @click.group('import')
@@ -235,5 +237,160 @@ def pull_physionet(
     except Exception as e:
         click.echo(f"An unexpected error occurred: {e}", err=True)
         import traceback
+        traceback.print_exc()
+        ctx.exit(1)
+        
+def generic_importer_options(f):
+    f = click.option('--output-dir', required=True, type=click.Path(file_okay=False, dir_okay=True, writable=True, path_type=pathlib.Path), help='Directory to create the RO-Crate in.')(f)
+    f = click.option('--name', required=False, type=str, help='Override the default RO-Crate name (extracted from repository).')(f)
+    f = click.option('--description', required=False, type=str, help='Override the default RO-Crate description (extracted from repository).')(f)
+    f = click.option('--author', required=False, multiple=True, type=str, help='Override authors (extracted from repository). Can be used multiple times. If not provided, repository authors are used.')(f)
+    f = click.option('--keywords', required=False, multiple=True, type=str, help='Override keywords (extracted from repository). Can be used multiple times.')(f)
+    f = click.option('--license', required=False, type=str, help='Override the default RO-Crate license URL (extracted from repository).')(f)
+    f = click.option('--publication-date', required=False, type=str, help='Override publication date (ISO format, extracted from repository).')(f)
+    f = click.option('--doi', required=False, type=str, help='Override DOI (extracted from repository).')(f)
+    f = click.option('--crate-version', required=False, type=str, default="1.0", help='Set the version for the RO-Crate itself.')(f)
+    f = click.option('--organization-name', required=False, type=str, help='Set the organization name for the RO-Crate.')(f)
+    f = click.option('--project-name', required=False, type=str, help='Set the project name for the RO-Crate.')(f)
+    f = click.option('--include-files/--exclude-files', default=True, help='Whether to include metadata for files (default: include).')(f)
+    return f
+
+@import_group.command('figshare')
+@click.argument('article-id', type=str)
+@click.option('--token', required=False, type=str, help='Figshare API token (optional, for private articles).')
+@generic_importer_options
+@click.pass_context
+def import_figshare(
+    ctx: click.Context,
+    article_id: str,
+    output_dir: pathlib.Path,
+    name: Optional[str],
+    description: Optional[str],
+    author: Optional[Tuple[str]],
+    keywords: Optional[Tuple[str]],
+    license: Optional[str],
+    publication_date: Optional[str],
+    doi: Optional[str],
+    crate_version: str,
+    organization_name: Optional[str],
+    project_name: Optional[str],
+    include_files: bool,
+    token: Optional[str]
+):
+    """Pulls Figshare article data and converts it into an RO-Crate.
+
+    ARTICLE_ID: The Figshare article ID (e.g., 1234567).
+    """
+    click.echo(f"Importing Figshare article {article_id}...")
+
+    try:
+        research_data_instance = ResearchData.from_repository(
+            repository_type='figshare',
+            identifier=article_id,
+            token=token,
+            include_files=include_files
+        )
+        click.echo(f"Successfully fetched data for Figshare article: {research_data_instance.title}")
+
+        # Override attributes if CLI options are provided
+        if name: research_data_instance.title = name
+        if description: research_data_instance.description = description
+        if author: research_data_instance.authors = list(author)
+        if keywords: research_data_instance.keywords = list(keywords)
+        if license: research_data_instance.license = license
+        if publication_date: research_data_instance.publication_date = publication_date
+        if doi: research_data_instance.doi = doi
+
+        # Call to_rocrate with crate-specific options
+        rocrate_guid = research_data_instance.to_rocrate(
+            output_dir=str(output_dir),
+            crate_version=crate_version,
+            organization_name=organization_name,
+            project_name=project_name
+        )
+
+        click.echo(f"Successfully created RO-Crate for Figshare article {article_id}.")
+        click.echo(f"RO-Crate Root GUID: {rocrate_guid}")
+        click.echo(f"RO-Crate saved to: {output_dir.resolve()}")
+
+    except ValueError as e:
+        click.echo(f"ERROR: {e}", err=True)
+        ctx.exit(1)
+    except Exception as e:
+        click.echo(f"An unexpected error occurred: {e}", err=True)
+        traceback.print_exc()
+        ctx.exit(1)
+
+
+@import_group.command('dataverse')
+@click.argument('dataset-doi', type=str)
+@click.option('--server-url', default='https://dataverse.harvard.edu', show_default=True, help='Dataverse server URL.')
+@click.option('--token', required=False, type=str, help='Dataverse API token (optional, for restricted datasets).')
+@generic_importer_options
+@click.pass_context
+def import_dataverse(
+    ctx: click.Context,
+    dataset_doi: str,
+    output_dir: pathlib.Path,
+    name: Optional[str],
+    description: Optional[str],
+    author: Optional[Tuple[str]],
+    keywords: Optional[Tuple[str]],
+    license: Optional[str],
+    publication_date: Optional[str],
+    doi: Optional[str], 
+    crate_version: str,
+    organization_name: Optional[str],
+    project_name: Optional[str],
+    include_files: bool,
+    server_url: str,
+    token: Optional[str]
+):
+    """Pulls Dataverse dataset and converts it into an RO-Crate.
+
+    DATASET_DOI: The DOI or persistent identifier of the Dataverse dataset (e.g., doi:10.7910/DVN/XXXXX).
+    """
+    click.echo(f"Importing Dataverse dataset {dataset_doi} from {server_url}...")
+
+    try:
+        research_data_instance = ResearchData.from_repository(
+            repository_type='dataverse',
+            identifier=dataset_doi,
+            server_url=server_url,
+            token=token,
+            include_files=include_files
+        )
+        click.echo(f"Successfully fetched data for Dataverse dataset: {research_data_instance.title}")
+
+        # Override attributes if CLI options are provided
+        if name: research_data_instance.title = name
+        if description: research_data_instance.description = description
+        if author: research_data_instance.authors = list(author)
+        if keywords: research_data_instance.keywords = list(keywords)
+        if license: research_data_instance.license = license
+        if publication_date: research_data_instance.publication_date = publication_date
+        if doi: 
+            research_data_instance.doi = doi
+        elif not research_data_instance.doi: 
+            research_data_instance.doi = dataset_doi
+
+
+        # Call to_rocrate with crate-specific options
+        rocrate_guid = research_data_instance.to_rocrate(
+            output_dir=str(output_dir),
+            crate_version=crate_version,
+            organization_name=organization_name,
+            project_name=project_name
+        )
+
+        click.echo(f"Successfully created RO-Crate for Dataverse dataset {dataset_doi}.")
+        click.echo(f"RO-Crate Root GUID: {rocrate_guid}")
+        click.echo(f"RO-Crate saved to: {output_dir.resolve()}")
+
+    except ValueError as e:
+        click.echo(f"ERROR: {e}", err=True)
+        ctx.exit(1)
+    except Exception as e:
+        click.echo(f"An unexpected error occurred: {e}", err=True)
         traceback.print_exc()
         ctx.exit(1)
