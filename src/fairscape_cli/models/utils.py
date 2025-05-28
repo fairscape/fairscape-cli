@@ -17,6 +17,9 @@ def setRelativeFilepath(cratePath, filePath):
 
     if 'file:///' in filePath:
         return filePath
+    
+    if "Embargoed" in filePath:
+        return filePath
 
     if 'ro-crate-metadata.json' in str(cratePath):
         rocratePath = pathlib.Path(cratePath).parent.absolute()

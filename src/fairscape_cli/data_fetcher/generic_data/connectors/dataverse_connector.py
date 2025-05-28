@@ -163,7 +163,8 @@ class DataverseConnector:
             dataset_id = dataset_metadata_full.get("id") 
             if dataset_id:
                 file_metadata_list = self.fetch_files(dataset_id)
-                dataset_landing_url = f"{self.server_url}/dataset.xhtml?persistentId={doi}"
+                
+                
                 
                 for file_entry in file_metadata_list:
                     data_file_info = file_entry.get("dataFile", {})
@@ -174,9 +175,10 @@ class DataverseConnector:
                     
                     software_extensions = ['.py', '.r', '.sh', '.exe', '.java', '.cpp', '.js', '.jsx', '.css'] # TODO: Make configurable
                     is_software = file_extension in software_extensions
-                                        
+                                       
                     file_db_id = data_file_info.get("id")
                     download_url = f"{self.server_url}/api/access/datafile/{file_db_id}"
+                    dataset_landing_url = f"{self.server_url}/file.xhtml?fileId={dataset_id}"
                     
                     file_description = file_entry.get("description", "") 
                     if not file_description and data_file_info.get("description"):
@@ -230,8 +232,9 @@ class DataverseConnector:
             files=files_data,
             software=software_data,
             metadata={
-                "url": f"{self.server_url}/dataset.xhtml?persistentId={doi}",
-                "dataverse_publisher": dataset_metadata_full.get("publisher", ""),
+                "url": f"{self.server_url}/dataset.xhtml?persistentId=doi:{doi}",
+                "contentUrl": f"{self.server_url}/dataset.xhtml?persistentId=doi:{doi}",
+                "publisher": dataset_metadata_full.get("publisher", ""),
                 "version": latest_version_info.get("versionNumber"),
             }
         )

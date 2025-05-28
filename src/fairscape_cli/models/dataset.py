@@ -33,7 +33,7 @@ def GenerateDataset(
     # Generate GUID if not provided
     if not guid and name:
         sq = GenerateDatetimeSquid()
-        seg = clean_guid({name.lower().replace(' ', '-')}-{sq})
+        seg = clean_guid(f"{name.lower().replace(' ', '-')}-{sq}")
         guid = f"ark:{NAAN}/dataset-{seg}"
     elif not guid:
         sq = GenerateDatetimeSquid()

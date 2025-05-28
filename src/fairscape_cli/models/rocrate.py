@@ -28,7 +28,7 @@ def GenerateROCrate(
 ):
    if not guid:
        sq = GenerateDatetimeSquid()
-       seg = clean_guid({name.lower().replace(' ', '-')}-{sq})
+       seg = clean_guid(f"{name.lower().replace(' ', '-')}-{sq}")
        guid = f"ark:{NAAN}/rocrate-{seg}/"
 
    metadata_descriptor = ROCrateMetadataFileElem.model_validate({
