@@ -1,6 +1,6 @@
 from fairscape_models.software import Software
 from fairscape_cli.config import NAAN
-from fairscape_cli.models.guid_utils import GenerateDatetimeSquid
+from fairscape_cli.models.guid_utils import GenerateDatetimeSquid, clean_guid
 from typing import Dict, Any, Optional, List
 import pathlib
 from fairscape_cli.models.utils import setRelativeFilepath
@@ -32,7 +32,8 @@ def GenerateSoftware(
     """
     if not guid and name:
         sq = GenerateDatetimeSquid()
-        guid = f"ark:{NAAN}/software-{name.lower().replace(' ', '-')}-{sq}"
+        seg = clean_guid({name.lower().replace(' ', '-')}-{sq})
+        guid = f"ark:{NAAN}/software-{seg}/"
     elif not guid:
         sq = GenerateDatetimeSquid()
         guid = f"ark:{NAAN}/software-{sq}"

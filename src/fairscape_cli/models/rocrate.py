@@ -17,7 +17,7 @@ import json
 from typing import List, Optional, Dict, Any
 
 from fairscape_cli.config import NAAN, DEFAULT_CONTEXT
-from fairscape_cli.models.guid_utils import GenerateDatetimeSquid
+from fairscape_cli.models.guid_utils import GenerateDatetimeSquid, clean_guid
 from fairscape_models.rocrate import ROCrateV1_2, ROCrateMetadataElem, ROCrateMetadataFileElem
 
 def GenerateROCrate(
@@ -28,7 +28,8 @@ def GenerateROCrate(
 ):
    if not guid:
        sq = GenerateDatetimeSquid()
-       guid = f"ark:{NAAN}/rocrate-{name.lower().replace(' ', '-')}-{sq}/"
+       seg = clean_guid({name.lower().replace(' ', '-')}-{sq})
+       guid = f"ark:{NAAN}/rocrate-{seg}/"
 
    metadata_descriptor = ROCrateMetadataFileElem.model_validate({
         "@id": "ro-crate-metadata.json",
