@@ -485,8 +485,6 @@ class GenomicData(BaseModel):
                 size=run.get("size", 0),
                 published=run.get("published", ""),
                 files=output_files,
-                nreads=run.get("nreads", 0),
-                nspots=run.get("nspots", 0),
                 a_count=base_composition.get("A", 0),
                 c_count=base_composition.get("C", 0),
                 g_count=base_composition.get("G", 0),
