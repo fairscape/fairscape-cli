@@ -178,7 +178,7 @@ class DataverseConnector:
                                        
                     file_db_id = data_file_info.get("id")
                     download_url = f"{self.server_url}/api/access/datafile/{file_db_id}"
-                    dataset_landing_url = f"{self.server_url}/file.xhtml?fileId={dataset_id}"
+                    dataset_landing_url = f"{self.server_url}/file.xhtml?fileId={file_db_id}"
                     
                     file_description = file_entry.get("description", "") 
                     if not file_description and data_file_info.get("description"):
