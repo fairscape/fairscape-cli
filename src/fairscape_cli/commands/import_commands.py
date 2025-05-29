@@ -18,7 +18,7 @@ def import_group():
 @click.option('--accession', required=True, type=str, help='NCBI BioProject accession (e.g., PRJNA12345).')
 @click.option('--output-dir', required=True, type=click.Path(file_okay=False, dir_okay=True, writable=True, path_type=pathlib.Path), help='Directory to create the RO-Crate in.')
 @click.option('--author', required=True, type=str, help='Author name to associate with generated metadata.')
-@click.option('--api-key', required=False, type=str, default=None, help='NCBI API key (optional).')
+@click.option('--api-key', required=True, type=str, default=None, help='NCBI API key (optional).')
 @click.option('--name', required=False, type=str, help='Override the default RO-Crate name.')
 @click.option('--description', required=False, type=str, help='Override the default RO-Crate description.')
 @click.option('--keywords', required=False, multiple=True, type=str, help='Override the default RO-Crate keywords (can be used multiple times).')
