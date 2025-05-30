@@ -180,7 +180,7 @@ class PreviewGenerator:
                     break
             
             if summary_entity:
-                summary_name = summary_entity.get("name", "Quality Control Report") # Default name
+                summary_name = summary_entity.get("name", "Quality Control Report") 
                 raw_content_url = summary_entity.get("contentUrl")
                 
                 if raw_content_url:
@@ -191,13 +191,12 @@ class PreviewGenerator:
                         link_target = link_target[len("file://"):]
                     
 
-                    final_url = link_target # Initialize with potentially stripped URL
-                    if not final_url.startswith(('http:', 'https:', 'ftp:', '/')): # if not absolute web url or root-relative web url
-                        if self.base_dir and final_url: # if base_dir and the path string are valid
+                    final_url = link_target 
+                    if not final_url.startswith(('http:', 'https:', 'ftp:', '/')): 
+                        if self.base_dir and final_url: 
                             try:
                                 abs_link_path = os.path.normpath(os.path.join(self.base_dir, final_url))
                                 final_url = os.path.relpath(abs_link_path, self.base_dir)
-                                # Ensure web-friendly slashes for the link
                                 final_url = final_url.replace(os.sep, '/')
                             except ValueError:
                                 pass
@@ -206,7 +205,6 @@ class PreviewGenerator:
                         'name': summary_name,
                         'url': final_url
                     }
-        # END: New code
 
         files, software, instruments, samples, experiments, computations, schemas, other = self.processor.categorize_items()
 

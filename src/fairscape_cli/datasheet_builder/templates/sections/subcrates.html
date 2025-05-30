@@ -63,8 +63,7 @@
         <span class="metadata-label">MD5:</span>
         <span class="metadata-value">{{ subcrate.md5 }}</span>
       </div>
-      {% endif %} {# START: New HTML block for Statistical Summary / QC Report
-      #} {% if subcrate.statistical_summary_info %}
+      {% endif %} {% if subcrate.statistical_summary_info %}
       <div class="metadata-item">
         <span class="metadata-label">Quality Control Report:</span>
         <span class="metadata-value">
@@ -73,7 +72,7 @@
           >
         </span>
       </div>
-      {% endif %} {# END: New HTML block #}
+      {% endif %}
 
       <div class="metadata-item">
         <span class="metadata-label">Copyright:</span>

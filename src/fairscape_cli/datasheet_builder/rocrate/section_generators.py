@@ -207,7 +207,6 @@ class SubcratesSectionGenerator(SectionGenerator):
                 subcrate['md5'] = subcrate_processor.root.get("MD5", "")
                 subcrate['evidence'] = subcrate_processor.root.get("hasEvidenceGraph", {}).get("@id","")
 
-                # START: New code to extract statistical summary / QC report
                 summary_stats_ref = subcrate_processor.root.get("hasSummaryStatistics")
                 if summary_stats_ref and isinstance(summary_stats_ref, dict) and "@id" in summary_stats_ref:
                     summary_stats_id = summary_stats_ref["@id"]
@@ -249,7 +248,6 @@ class SubcratesSectionGenerator(SectionGenerator):
                                 'name': summary_name,
                                 'url': final_url
                                 }
-                # END: New code
 
                 subcrate['files'] = files
                 subcrate['files_count'] = len(files)

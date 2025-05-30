@@ -317,8 +317,7 @@
             keywords|join(', ') }}{% endif %}
           </div>
         </div>
-        {% endif %} {# START: New HTML block for Statistical Summary / QC Report
-        #} {% if statistical_summary_info %}
+        {% endif %} {% if statistical_summary_info %}
         <div class="summary-row">
           <div class="summary-label">Quality Control Report</div>
           <div class="summary-value">
@@ -327,7 +326,7 @@
             >
           </div>
         </div>
-        {% endif %} {# END: New HTML block #} {% if citation %}
+        {% endif %} {% if citation %}
         <div class="summary-row">
           <div class="summary-label">Citation</div>
           <div class="summary-value" id="citation">{{ citation }}</div>
