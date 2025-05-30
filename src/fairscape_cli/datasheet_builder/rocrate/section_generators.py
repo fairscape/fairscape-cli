@@ -179,6 +179,7 @@ class SubcratesSectionGenerator(SectionGenerator):
                     'authors': authors,
                     'keywords': subcrate_processor.root.get("keywords", []),
                     'metadata_path': metadata_path,
+                    'statistical_summary_info': None
                 }
                 
                 
@@ -205,6 +206,50 @@ class SubcratesSectionGenerator(SectionGenerator):
                 subcrate['funder'] = subcrate_processor.root.get("funder", self.processor.root.get("funder", ""))
                 subcrate['md5'] = subcrate_processor.root.get("MD5", "")
                 subcrate['evidence'] = subcrate_processor.root.get("hasEvidenceGraph", {}).get("@id","")
+
+                # START: New code to extract statistical summary / QC report
+                summary_stats_ref = subcrate_processor.root.get("hasSummaryStatistics")
+                if summary_stats_ref and isinstance(summary_stats_ref, dict) and "@id" in summary_stats_ref:
+                    summary_stats_id = summary_stats_ref["@id"]
+                    summary_entity = None
+                    
+                    for entity_in_graph in getattr(subcrate_processor, 'graph', []):
+                        if entity_in_graph.get("@id") == summary_stats_id:
+                            summary_entity = entity_in_graph
+                            break
+                    
+                    if summary_entity:
+                        summary_name = summary_entity.get("name", "Statistical Summary")
+                        content_url = summary_entity.get("contentUrl")
+                        
+                        if content_url:
+                            final_url = ""
+
+                            subcrate_path_prefix = os.path.dirname(metadata_path) 
+                            
+                            path_in_subcrate = content_url
+                            if path_in_subcrate.startswith("file:///"):
+                                path_in_subcrate = path_in_subcrate[len("file:///"):]
+                            elif path_in_subcrate.startswith("file://"):
+                                path_in_subcrate = path_in_subcrate[len("file://"):]
+                            
+                            if path_in_subcrate.startswith("/"):
+                                path_in_subcrate = path_in_subcrate[1:]
+
+
+                            if subcrate_path_prefix:
+                                final_url_os_path = os.path.join(subcrate_path_prefix, path_in_subcrate)
+                            else: 
+                                final_url_os_path = path_in_subcrate
+                            
+                            final_url = final_url_os_path.replace(os.sep, '/') 
+                        
+                        if final_url:
+                            subcrate['statistical_summary_info'] = {
+                                'name': summary_name,
+                                'url': final_url
+                                }
+                # END: New code
 
                 subcrate['files'] = files
                 subcrate['files_count'] = len(files)

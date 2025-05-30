@@ -317,7 +317,17 @@
             keywords|join(', ') }}{% endif %}
           </div>
         </div>
-        {% endif %} {% if citation %}
+        {% endif %} {# START: New HTML block for Statistical Summary / QC Report
+        #} {% if statistical_summary_info %}
+        <div class="summary-row">
+          <div class="summary-label">Quality Control Report</div>
+          <div class="summary-value">
+            <a href="{{ statistical_summary_info.url }}" target="_blank"
+              >{{ statistical_summary_info.name }}</a
+            >
+          </div>
+        </div>
+        {% endif %} {# END: New HTML block #} {% if citation %}
         <div class="summary-row">
           <div class="summary-label">Citation</div>
           <div class="summary-value" id="citation">{{ citation }}</div>
@@ -588,13 +598,40 @@
 
         const activeTab = document.querySelector(".tab.active");
         if (!activeTab) {
-          tabs[0].classList.add("active");
-          const firstTabId = tabs[0].getAttribute("data-tab");
-          const firstTabContent = document.getElementById(
-            `${firstTabId}-content`
-          );
-          if (firstTabContent) {
-            firstTabContent.style.display = "block";
+          // Ensure first tab with content is active if none are pre-set
+          let firstContentTab = null;
+          for (let i = 0; i < tabs.length; i++) {
+            const tabId = tabs[i].getAttribute("data-tab");
+            const content = document.getElementById(`${tabId}-content`);
+            // Check if the tab content exists and has items or is not a "No items found" paragraph
+            if (
+              content &&
+              (content.querySelector("table") ||
+                !content.querySelector("p:only-child"))
+            ) {
+              firstContentTab = tabs[i];
+              break;
+            }
+          }
+          if (firstContentTab) {
+            firstContentTab.classList.add("active");
+            const firstTabId = firstContentTab.getAttribute("data-tab");
+            const firstTabContent = document.getElementById(
+              `${firstTabId}-content`
+            );
+            if (firstTabContent) {
+              firstTabContent.style.display = "block";
+            }
+          } else if (tabs.length > 0) {
+            // Fallback: if all tabs are empty, activate the first one anyway
+            tabs[0].classList.add("active");
+            const firstTabId = tabs[0].getAttribute("data-tab");
+            const firstTabContent = document.getElementById(
+              `${firstTabId}-content`
+            );
+            if (firstTabContent) {
+              firstTabContent.style.display = "block";
+            }
           }
         }
 
