@@ -6,6 +6,16 @@ from datetime import datetime
 
 from fairscape_cli.data_fetcher.generic_data.research_data import ResearchData
 
+def format_file_size(size_bytes):
+    if size_bytes == 0:
+        return "0 B"
+    size_names = ["B", "KB", "MB", "GB", "TB"]
+    i = 0
+    while size_bytes >= 1024 and i < len(size_names) - 1:
+        size_bytes /= 1024.0
+        i += 1
+    return f"{size_bytes:.1f} {size_names[i]}"
+
 class DataverseConnector:
     """
     Connector for fetching data from Dataverse repositories.
@@ -171,6 +181,8 @@ class DataverseConnector:
                     if not data_file_info: continue 
 
                     file_name = data_file_info.get("filename", "unnamed_file")
+                    file_md5 = data_file_info.get("md5", "")
+                    file_size = format_file_size(data_file_info.get("filesize", 0))
                     file_extension = os.path.splitext(file_name)[1].lower()
                     
                     software_extensions = ['.py', '.r', '.sh', '.exe', '.java', '.cpp', '.js', '.jsx', '.css'] # TODO: Make configurable
@@ -194,6 +206,8 @@ class DataverseConnector:
                         "url": dataset_landing_url,
                         "dateModified": data_file_info.get("creationDate", publication_date), 
                         "format": file_extension.lstrip(".") or "application/octet-stream",
+                        "contentSize": file_size,
+                        "md5": file_md5,
                     }
 
                     if is_software:
