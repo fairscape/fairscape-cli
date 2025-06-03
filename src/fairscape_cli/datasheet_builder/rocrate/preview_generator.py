@@ -169,6 +169,43 @@ class PreviewGenerator:
                  related_publications.append(pub_text)
                  seen_pubs.add(pub_text)
 
+        statistical_summary_info = None
+        summary_stats_ref = root.get("hasSummaryStatistics")
+        if summary_stats_ref and isinstance(summary_stats_ref, dict) and "@id" in summary_stats_ref:
+            summary_stats_id = summary_stats_ref["@id"]
+            summary_entity = None
+            for entity_in_graph in self.processor.graph:
+                if entity_in_graph.get("@id") == summary_stats_id:
+                    summary_entity = entity_in_graph
+                    break
+            
+            if summary_entity:
+                summary_name = summary_entity.get("name", "Quality Control Report") 
+                raw_content_url = summary_entity.get("contentUrl")
+                
+                if raw_content_url:
+                    link_target = raw_content_url
+                    if link_target.startswith("file:///"):
+                        link_target = link_target[len("file:///"):]
+                    elif link_target.startswith("file://"):
+                        link_target = link_target[len("file://"):]
+                    
+
+                    final_url = link_target 
+                    if not final_url.startswith(('http:', 'https:', 'ftp:', '/')): 
+                        if self.base_dir and final_url: 
+                            try:
+                                abs_link_path = os.path.normpath(os.path.join(self.base_dir, final_url))
+                                final_url = os.path.relpath(abs_link_path, self.base_dir)
+                                final_url = final_url.replace(os.sep, '/')
+                            except ValueError:
+                                pass
+
+                    statistical_summary_info = {
+                        'name': summary_name,
+                        'url': final_url
+                    }
+
         files, software, instruments, samples, experiments, computations, schemas, other = self.processor.categorize_items()
 
         datasets = files if isinstance(files, list) else []
@@ -198,6 +235,7 @@ class PreviewGenerator:
             'keywords': keywords, 
             'citation': root.get("citation", ""),
             'related_publications': related_publications,
+            'statistical_summary_info': statistical_summary_info, 
             'datasets': self._prepare_item_data(datasets),
             'software': self._prepare_item_data(software_list),
             'computations': self._prepare_item_data(computations_list),
@@ -214,7 +252,11 @@ class PreviewGenerator:
         if output_path is None:
             output_path = os.path.join(self.base_dir, "ro-crate-preview.html")
 
-        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        # Ensure the output directory exists
+        output_dir = os.path.dirname(output_path)
+        if output_dir: # Check if output_dir is not an empty string (e.g. if output_path is just a filename)
+            os.makedirs(output_dir, exist_ok=True)
+
 
         html_content = self.generate_preview_html()
 

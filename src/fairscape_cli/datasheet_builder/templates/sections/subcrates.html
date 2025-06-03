@@ -20,10 +20,11 @@
           {% if subcrate.evidence.endswith('.html') %}
           <a href="{{ subcrate.evidence }}">{{ subcrate.evidence }}</a>
           {% else %}
-          <a href="https://fairscape.net/{{ subcrate.id }}"
+          <a href="https://fairscape.net/{{ subcrate.evidence }}"
             >{{ subcrate.evidence }}</a
           >
-          {% endif %}
+          {# Corrected potential issue: link should use subcrate.evidence as ID
+          if not an html path #} {% endif %}
         </span>
       </div>
       {% endif %}
@@ -62,7 +63,17 @@
         <span class="metadata-label">MD5:</span>
         <span class="metadata-value">{{ subcrate.md5 }}</span>
       </div>
+      {% endif %} {% if subcrate.statistical_summary_info %}
+      <div class="metadata-item">
+        <span class="metadata-label">Statistics/Quality Control:</span>
+        <span class="metadata-value">
+          <a href="{{ subcrate.statistical_summary_info.url }}" target="_blank"
+            >{{ subcrate.statistical_summary_info.name }}</a
+          >
+        </span>
+      </div>
       {% endif %}
+
       <div class="metadata-item">
         <span class="metadata-label">Copyright:</span>
         <span class="metadata-value">{{ subcrate.copyright }}</span>
