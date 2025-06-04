@@ -91,6 +91,8 @@ class ResearchData(BaseModel):
             }
             if file_info.get("md5"):
                 dataset_params["md5"] = file_info["md5"]
+            if file_info.get("contentSize"):
+                dataset_params["contentSize"] = file_info["contentSize"]
             
             dataset = GenerateDataset(**dataset_params)
             elements_to_append.append(dataset)
