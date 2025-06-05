@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fairscape-cli"
-version = "1.1.01"
+version = "1.1.02"
 description = "A utility for packaging objects and validating metadata for FAIRSCAPE"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -14,7 +14,6 @@ authors = [
         { name = "Tim Clark",       email = "twc8q@virginia.edu"}
 ]
 license = {file= "LICENSE"}
-# For a list of valid classifiers, see https://pypi.org/classifiers/
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
@@ -45,14 +44,19 @@ dependencies = [
         "h5py",
         "frictionless",
         "beautifulsoup4",
-        "pandas"
+        "pandas",
+        "rdflib"
 ]
 
 [tool.setuptools]
 include-package-data = true
 
 [tool.setuptools.package-data]
-"fairscape_cli" = ["datasheet_builder/templates/**/*", "datasheet_builder/templates/**/*.html"]
+"fairscape_cli" = [
+    "datasheet_builder/templates/**/*", 
+    "datasheet_builder/templates/**/*.html",
+    "entailments/*.xml"
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]
