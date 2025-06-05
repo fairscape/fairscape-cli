@@ -4,6 +4,8 @@ import json
 from datetime import datetime
 from typing import Optional, Union, List, Literal, Dict, Any
 from pydantic import BaseModel, Field, ConfigDict, model_validator
+import uuid 
+import mongomock
 
 from fairscape_cli.config import NAAN, DEFAULT_CONTEXT
 from fairscape_cli.models.software import Software
@@ -14,7 +16,7 @@ from fairscape_cli.models.guid_utils import GenerateDatetimeSquid
 from datetime import datetime
 import pathlib
 import json
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Tuple
 
 from fairscape_cli.config import NAAN, DEFAULT_CONTEXT
 from fairscape_cli.models.guid_utils import GenerateDatetimeSquid, clean_guid
@@ -573,3 +575,100 @@ def collect_subcrate_metadata(parent_crate_path: pathlib.Path) -> dict:
         'authors': sorted(list(authors)),
         'keywords': sorted(list(keywords))
     }
+    
+################################
+#
+# Mongomock update tests
+#
+#################################
+
+def _transform_entities_for_mongo(entities: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Transforms RO-Crate entities for MongoDB compatibility (adds _id)."""
+    transformed = []
+    for entity in entities:
+        if not isinstance(entity, dict):
+            continue
+        mongo_entity = entity.copy()
+        mongo_entity['_id'] = entity.get('@id', str(uuid.uuid4()))
+        transformed.append(mongo_entity)
+    return transformed
+
+def _transform_entities_from_mongo(mongo_entities: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Transforms entities back from MongoDB representation (removes temporary _id if needed)."""
+    original_entities = []
+    for mongo_entity in mongo_entities:
+        original_entity = mongo_entity.copy()
+        if '_id' in original_entity and original_entity.get('@id'):
+            del original_entity['_id']
+        original_entities.append(original_entity)
+    return original_entities
+
+def UpdateEntitiesInGraph(
+    cratePath: pathlib.Path,
+    query_dict: Dict[str, Any],
+    update_dict: Dict[str, Any]
+) -> Tuple[bool, str]:
+    """
+    Updates entities in the RO-Crate's @graph using MongoDB-like operations.
+
+    Args:
+        cratePath: Path to the RO-Crate directory or ro-crate-metadata.json file.
+        query_dict: A MongoDB-style query dictionary to select entities.
+        update_dict: A MongoDB-style update dictionary defining modifications.
+
+    Returns:
+        A tuple (success_status, message_string).
+    """
+    try:
+        if cratePath.is_dir():
+            metadata_filepath = cratePath / 'ro-crate-metadata.json'
+        else:
+            metadata_filepath = cratePath
+
+        crate_data = ReadROCrateMetadata(metadata_filepath)
+        original_graph_entities = [entity.model_dump(by_alias=True) for entity in crate_data.get('@graph', [])]
+
+        if not original_graph_entities:
+            return True, "RO-Crate @graph is empty. No entities to update."
+
+        collection = mongomock.MongoClient().db.collection
+
+        entities_for_mongo = _transform_entities_for_mongo(original_graph_entities)
+        
+        if entities_for_mongo:
+            try:
+                collection.insert_many(entities_for_mongo, ordered=False)
+            except Exception as e: 
+                print(f"Warning: mongomock bulk insert failed during update: {e}. This might indicate issues with source data like non-unique @ids.")
+                return False, f"MongoDB-style operation failed: {e}"
+            
+
+        try:
+            result = collection.update_many(query_dict, update_dict)
+            modified_count = result.modified_count
+            matched_count = result.matched_count
+        except Exception as e:
+            return False, f"MongoDB-style operation failed: {e}"
+
+        if modified_count == 0:
+            return True, f"No entities were modified. Matched: {matched_count}, Modified: {modified_count}."
+
+        updated_mongo_entities = list(collection.find({}))
+
+        final_graph_entities = _transform_entities_from_mongo(updated_mongo_entities)
+        crate_data['@graph'] = final_graph_entities
+        
+        try:
+            validated_crate = ROCrateV1_2.model_validate(crate_data)
+        except Exception as e:
+            return False, f"RO-Crate became invalid after update operations. Details: {e}"
+
+        with metadata_filepath.open(mode="w") as metadataFile:
+            json.dump(validated_crate.model_dump(by_alias=True), metadataFile, indent=2, ensure_ascii=False)
+
+        return True, f"Successfully processed entities. Matched: {matched_count}, Modified: {modified_count}."
+    
+    except Exception as e:
+        import traceback
+        print(f"DEBUG: Unexpected error in UpdateEntitiesInGraph: {traceback.format_exc()}")
+        return False, f"An unexpected error occurred: {type(e).__name__} - {e}"
