@@ -21,7 +21,10 @@ class PhysioNetImporter:
         self.output_dir = output_dir
         self.project_id, self.version = self._parse_physionet_url(self.physionet_url)
         
-        if not self.project_id or not self.version:
+        if not self.version:
+            self.version = "1.0.0"
+        
+        if not self.project_id and not self.version:
              raise ValueError(f"Could not parse PhysioNet project ID and version from URL: {physionet_url}. Ensure the URL points to a project version page (e.g., https://physionet.org/content/bigp3bci/1.0.0/).")
 
         self.base_file_download_url = f"https://physionet.org/files/{self.project_id}/{self.version}/"
@@ -106,7 +109,7 @@ class PhysioNetImporter:
              content_html = ""
              for sibling in abstract_tag.find_next_siblings():
                  if sibling.name in ['h2', 'hr']: break
-                 content_html += str(sibling)
+                 content_html += sibling.get_text(strip=True) + " "
              if content_html.strip():
                  metadata['description'] = content_html.strip()
 
