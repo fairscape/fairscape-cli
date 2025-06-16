@@ -239,8 +239,6 @@ class PhysioNetImporter:
                 all_publications_found.extend(extracted_references_section_pubs)
             else:
                 print("Warning: Found 'References' header but no subsequent 'ol' or 'ul' list.", file=sys.stderr)
-        # else: # Commenting out to reduce noise if section isn't there
-        #     print("Warning: 'References' section (h2 id='references') not found.", file=sys.stderr)
 
         if all_publications_found:
             unique_publications = []
@@ -254,13 +252,13 @@ class PhysioNetImporter:
                         normalized_item_for_seen_set = urllib.parse.urlunparse(
                             parsed_url._replace(scheme='https', path=parsed_url.path.rstrip('/'))
                         )
-                    except Exception: # pragma: no cover
-                        pass # Keep original if parsing fails
-                else: # For textual citations, normalize whitespace and case
+                    except Exception: 
+                        pass 
+                else: 
                     normalized_item_for_seen_set = ' '.join(pub_item.lower().split())
 
                 if normalized_item_for_seen_set not in seen_publications_normalized:
-                    unique_publications.append(pub_item) # Add original item
+                    unique_publications.append(pub_item)
                     seen_publications_normalized.add(normalized_item_for_seen_set)
             if unique_publications:
                  metadata['associatedPublication'] = unique_publications
@@ -279,8 +277,8 @@ class PhysioNetImporter:
         for section_id, prop_name, is_additional in [
             ('background', "Background", True),
             ('methods', "Methods", True),
-            ('data-description', "Data Description", True), # Added Data Description as additionalProperty
-            ('release-notes', "Release Notes", True),       # Added Release Notes as additionalProperty
+            ('data-description', "Data Description", True),
+            ('release-notes', "Release Notes", True),       
             ('usage-notes', "usageInfo", False),
             ('ethics', "ethicalReview", False),
             ('acknowledgements', "Acknowledgements", True),
@@ -313,14 +311,11 @@ class PhysioNetImporter:
                 if keywords: 
                     metadata['extracted_keywords'] = keywords 
             else:
-                # Fallback if the structure is <p>Topics: <a... (without <strong>)
                 topics_p_tag_alt = discovery_card_body.find('p', string=lambda text: text and text.strip().startswith('Topics:'))
                 if topics_p_tag_alt:
                     keywords = [span.get_text(strip=True) for span in topics_p_tag_alt.select('a span.badge-pn')]
                     if keywords:
                         metadata['extracted_keywords'] = keywords
-                # else: # Commenting out to reduce noise if not found
-                #    print("Warning: Could not find 'Topics:' paragraph in Discovery card for keyword extraction.", file=sys.stderr)
 
 
             doi_version_p = discovery_card_body.find('p', string=lambda text: text and text.strip().startswith('DOI (version'))
@@ -372,8 +367,7 @@ class PhysioNetImporter:
             item_relative_path: str = ""
             if is_directory:
                 item_relative_path = name_cell_a_tag.get('data-dfp-dir')
-                if not item_relative_path: # Should not happen for valid subdir rows
-                     # Fallback if data-dfp-dir is missing, construct from name
+                if not item_relative_path:
                      item_relative_path = os.path.join(current_subdir_path, name).replace('\\', '/')
                      print(f"Warning: Directory '{name}' in '{current_subdir_path}' missing 'data-dfp-dir'. Using constructed path: '{item_relative_path}'.", file=sys.stderr)
 
@@ -391,7 +385,7 @@ class PhysioNetImporter:
                     'name': name,
                     'relative_path': item_relative_path,
                     'datePublished': crate_default_date_published,
-                    'is_directory': is_directory # This will be False here
+                    'is_directory': is_directory
                 }
                 
                 size_cell = row.select_one('td:nth-of-type(2)')
@@ -417,7 +411,7 @@ class PhysioNetImporter:
         crate_version: Optional[str] = None, 
         organization_name: Optional[str] = None,
         project_name: Optional[str] = None,
-        associated_publication: Optional[List[Any]] = None, # Can be List[str] or List[Dict] from CLI
+        associated_publication: Optional[List[Any]] = None, 
         usage_info: Optional[str] = None, 
         ethical_review: Optional[str] = None, 
         additional_properties: Optional[List[Dict[str, Any]]] = None, 
@@ -502,7 +496,6 @@ class PhysioNetImporter:
         except Exception as e: # pragma: no cover
              print("ERROR: Failed to validate root RO-Crate metadata.", file=sys.stderr)
              print(f"Pydantic errors: {e}", file=sys.stderr)
-             # For debugging, print the params that failed:
              # import json
              # print("Problematic params:", json.dumps(root_metadata_params, indent=2, default=str), file=sys.stderr)
              raise
@@ -514,8 +507,7 @@ class PhysioNetImporter:
         files_panel_div = initial_soup.select_one('#files-panel')
         if not files_panel_div:
             print("Warning: '#files-panel' div not found on the initial page. Cannot list files.", file=sys.stderr)
-            # Still write the metadata-only crate
-            AppendCrate(metadata_path, []) # This ensures the root crate metadata is written by GenerateROCrate
+            AppendCrate(metadata_path, []) 
             return root_crate_guid
 
         root_table_body = files_panel_div.select_one('table.files-panel tbody')
@@ -525,20 +517,17 @@ class PhysioNetImporter:
             return root_crate_guid
         
         all_file_entries: List[Dict[str, Any]] = []
-        subdirs_to_explore: List[str] = [] # Stores relative paths from project root
-        processed_subdirs = set() # Keep track of visited/queued subdirectories to avoid loops or redundant processing
+        subdirs_to_explore: List[str] = [] 
+        processed_subdirs = set() 
 
         self._process_file_table_rows(root_table_body, "", all_file_entries, subdirs_to_explore, crate_default_date_published)
-        processed_subdirs.add("") # Mark root as processed for queueing logic
+        processed_subdirs.add("")
 
         # Iteratively explore subdirectories
-        # The subdirs_to_explore list now contains paths relative to the project root.
-        # We need to manage a queue and a set of visited directories.
         queue = [subdir for subdir in subdirs_to_explore if subdir not in processed_subdirs]
-        for subdir in queue: # Add initial finds to processed set
+        for subdir in queue:
             processed_subdirs.add(subdir)
         
-        # print(f"Initial queue: {queue}", file=sys.stderr)
 
         head = 0
         while head < len(queue):
@@ -546,11 +535,8 @@ class PhysioNetImporter:
             head += 1
             
             # Construct the URL to fetch the HTML for this subdirectory's file panel
-            # Ensure no leading slash for joining with base_content_url, and add trailing slash for #files-panel
             subdir_url_segment = current_subdir_relative_path.strip('/')
             subdir_page_url = urllib.parse.urljoin(self.base_content_url, subdir_url_segment + ('/' if subdir_url_segment else '') + '#files-panel')
-            
-            # print(f"Fetching subdir page: {subdir_page_url} for relative path: {current_subdir_relative_path}", file=sys.stderr)
 
             try:
                 subdir_soup = self._fetch_and_parse_html(subdir_page_url)
@@ -568,14 +554,11 @@ class PhysioNetImporter:
                 print(f"Warning: File table body not found for subdirectory {current_subdir_relative_path}. Skipping.", file=sys.stderr)
                 continue
             
-            # This will add new subdirectories found within this table to subdirs_to_explore (which is not directly used by the loop anymore)
-            # and files to all_file_entries. We need to add new subdirs to *our* queue if not processed.
             temp_new_subdirs_from_table: List[str] = []
             self._process_file_table_rows(subdir_table_body, current_subdir_relative_path, all_file_entries, temp_new_subdirs_from_table, crate_default_date_published)
             
             for new_subdir in temp_new_subdirs_from_table:
                 if new_subdir not in processed_subdirs:
-                    # print(f"Adding new subdir to queue: {new_subdir}", file=sys.stderr)
                     processed_subdirs.add(new_subdir)
                     queue.append(new_subdir)
         
@@ -593,21 +576,18 @@ class PhysioNetImporter:
                 "guid": guid,
                 "name": item_data['relative_path'], 
                 "description": f"File '{item_data['name']}' at path '{item_data['relative_path']}' from PhysioNet dataset {self.project_id} v{physionet_dataset_version}",
-                "author": final_author, # Inherit from root crate
-                "version": physionet_dataset_version, # Dataset version
+                "author": final_author, 
+                "version": physionet_dataset_version, 
                 "isPartOf": [{"@id": root_crate_guid}],
-                "@type": "Dataset", # Files are represented as Datasets in RO-Crate
-                "keywords": final_keywords, # Inherit
-                "datePublished": item_data['datePublished'], # Could be file's own date if available, else crate's
+                "@type": "EVI:Dataset",
+                "keywords": final_keywords,
+                "datePublished": item_data['datePublished'], 
                 "format": item_data.get('format', "application/octet-stream") 
             }
             if 'contentSize' in item_data: dataset_params['contentSize'] = item_data['contentSize']
             if 'contentUrl' in item_data: dataset_params['contentUrl'] = item_data['contentUrl']
 
             try:
-                # PhysioNet sometimes lists directories like "DirectoryName/" as files.
-                # The is_directory flag from _process_file_table_rows should be false for actual files.
-                # We already skip adding directories to all_file_entries.
                 dataset_entity = GenerateDataset(**dataset_params)
                 crate_elements_to_add.append(dataset_entity)
             except Exception as e: # pragma: no cover
@@ -621,7 +601,7 @@ class PhysioNetImporter:
 
         if crate_elements_to_add:
              AppendCrate(metadata_path, crate_elements_to_add) 
-        else: # If no files were added, still ensure the root crate metadata is written
+        else:
              AppendCrate(metadata_path, [])
         
         return root_crate_guid
