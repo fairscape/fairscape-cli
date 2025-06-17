@@ -46,7 +46,7 @@ def generate_evidence_graph_html(rocrate_path, output_path=None):
     <title>Evidence Graph Visualization</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@dagrejs/dagre@1.0.2/dist/dagre.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@dagrejs/dagre@1.0.2/dist/dagre.min.js"></script>
     <style>
         body, html {{
             margin: 0;
