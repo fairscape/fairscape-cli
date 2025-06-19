@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import Set, Dict, List, Optional, Tuple
 import subprocess
 import pathlib
-
+import hashlib
 from pydantic import ValidationError
 
 from fairscape_cli.models.base import FairscapeBaseModel
@@ -67,3 +67,11 @@ def getEntityFromCrate(crate_instance, entity_id: str) -> Optional[FairscapeBase
         if entity.guid == entity_id:
             return entity.dict()
     return None
+
+def calculate_md5(filepath: str) -> str:
+    """Calculate MD5 hash of a file"""
+    hash_md5 = hashlib.md5()
+    with open(filepath, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash_md5.update(chunk)
+    return hash_md5.hexdigest()

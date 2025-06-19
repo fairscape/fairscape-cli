@@ -2,8 +2,8 @@ from fairscape_models.software import Software
 from fairscape_cli.config import NAAN
 from fairscape_cli.models.guid_utils import GenerateDatetimeSquid, clean_guid
 from typing import Dict, Any, Optional, List
-import pathlib
-from fairscape_cli.models.utils import setRelativeFilepath
+from urllib.parse import urlparse
+from fairscape_cli.models.utils import setRelativeFilepath, calculate_md5
 from fairscape_cli.models.utils import FileNotInCrateException
 
 def GenerateSoftware(
@@ -44,10 +44,23 @@ def GenerateSoftware(
         "@type": "https://w3id.org/EVI#Software"
     }
     
+    content_url = None
     if filepath and cratePath:
-        softwareMetadata['contentUrl'] = setRelativeFilepath(cratePath, filepath)
+        content_url = setRelativeFilepath(cratePath, filepath)
     elif filepath:
-        softwareMetadata['contentUrl'] = filepath
+        content_url = filepath
+    
+    if content_url:
+        softwareMetadata['contentUrl'] = content_url
+        
+        if content_url.startswith('file:///'):
+            parsed_url = urlparse(content_url)
+            local_path = parsed_url.path
+            try:
+                md5_hash = calculate_md5(local_path)
+                softwareMetadata['md5'] = md5_hash
+            except (FileNotFoundError, PermissionError, OSError):
+                pass
     
     for key, value in kwargs.items():
         if key == "usedByComputation" and value:

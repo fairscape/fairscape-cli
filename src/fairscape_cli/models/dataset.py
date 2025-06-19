@@ -1,10 +1,11 @@
 from fairscape_models.dataset import Dataset
 from fairscape_cli.config import NAAN
 from fairscape_cli.models.guid_utils import GenerateDatetimeSquid, clean_guid
-from fairscape_cli.models.utils import setRelativeFilepath
+from fairscape_cli.models.utils import setRelativeFilepath, calculate_md5
 import pathlib
 import datetime
 from typing import Dict, Any, Optional, List, Tuple, Set
+from urllib.parse import urlparse
 
 def GenerateDataset(
     guid: Optional[str] = None,
@@ -30,7 +31,6 @@ def GenerateDataset(
     Returns:
         A validated Dataset instance
     """
-    # Generate GUID if not provided
     if not guid and name:
         sq = GenerateDatetimeSquid()
         seg = clean_guid(f"{name.lower().replace(' ', '-')}-{sq}")
@@ -45,10 +45,23 @@ def GenerateDataset(
         "@type": "https://w3id.org/EVI#Dataset"
     }
     
+    content_url = None
     if filepath and cratePath:
-        datasetMetadata['contentUrl'] = setRelativeFilepath(cratePath, filepath)
+        content_url = setRelativeFilepath(cratePath, filepath)
     elif filepath:
-        datasetMetadata['contentUrl'] = filepath
+        content_url = filepath
+    
+    if content_url:
+        datasetMetadata['contentUrl'] = content_url
+        
+        if content_url.startswith('file:///'):
+            parsed_url = urlparse(content_url)
+            local_path = parsed_url.path
+            try:
+                md5_hash = calculate_md5(local_path)
+                datasetMetadata['md5'] = md5_hash
+            except (FileNotFoundError, PermissionError, OSError):
+                pass
     
     for key, value in kwargs.items():
         if key in ["schema", "dataSchema"] and value:
@@ -100,14 +113,12 @@ def generateSummaryStatsElements(
         - Summary statistics Dataset instance
         - Computation instance that generated the summary statistics
     """
-    # Generate GUIDs
     sq_stats = GenerateDatetimeSquid()
     summary_stats_guid = f"ark:{NAAN}/dataset-{name.lower().replace(' ', '-')}-stats-{sq_stats}"
     
     sq_comp = GenerateDatetimeSquid()
     computation_guid = f"ark:{NAAN}/computation-{name.lower().replace(' ', '-')}-stats-{sq_comp}"
     
-    # Create computation instance
     computation_instance = GenerateComputation(
         guid=computation_guid,
         name=f"Summary Statistics Computation for {name}",
@@ -121,7 +132,6 @@ def generateSummaryStatsElements(
         generated=[summary_stats_guid]
     )
 
-    # Create summary statistics dataset with only non-empty fields
     stats_dataset_params = {
         "guid": summary_stats_guid,
         "author": author,
@@ -136,7 +146,6 @@ def generateSummaryStatsElements(
         "cratePath": crate_path
     }
     
-    # Add optional fields only if they have values
     if associated_publication:
         stats_dataset_params["associatedPublication"] = associated_publication
     if additional_documentation:
@@ -159,7 +168,6 @@ def registerOutputs(
     for file_path in new_files:
         file_path_str = str(file_path)
         
-        # Create dataset with only non-empty fields
         output_params = {
             "guid": None,
             "name": f"Statistics Output - {file_path.name}",

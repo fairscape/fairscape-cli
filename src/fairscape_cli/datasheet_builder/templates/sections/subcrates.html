@@ -23,8 +23,7 @@
           <a href="https://fairscape.net/{{ subcrate.evidence }}"
             >{{ subcrate.evidence }}</a
           >
-          {# Corrected potential issue: link should use subcrate.evidence as ID
-          if not an html path #} {% endif %}
+          {% endif %}
         </span>
       </div>
       {% endif %}
@@ -48,15 +47,28 @@
       </div>
       <div class="metadata-item">
         <span class="metadata-label">DOI:</span>
-        <span class="metadata-value"
-          >{{ subcrate.doi if subcrate.doi else "None" }}</span
-        >
+        <span class="metadata-value">
+          {% if subcrate.doi and subcrate.doi != "None" %}
+          <a href="https://doi.org/{{ subcrate.doi }}" target="_blank"
+            >{{ subcrate.doi }}</a
+          >
+          {% else %} None {% endif %}
+        </span>
       </div>
       <div class="metadata-item">
         <span class="metadata-label">Contact:</span>
-        <span class="metadata-value"
-          >{{ subcrate.contact if subcrate.contact else "Not specified" }}</span
-        >
+        <span class="metadata-value">
+          {% if subcrate.contact and subcrate.contact != "Not specified" %} {%
+          if subcrate.contact.startswith('http://') or
+          subcrate.contact.startswith('https://') %}
+          <a href="{{ subcrate.contact }}" target="_blank"
+            >{{ subcrate.contact }}</a
+          >
+          {% elif '@' in subcrate.contact %}
+          <a href="mailto:{{ subcrate.contact }}">{{ subcrate.contact }}</a>
+          {% else %} {{ subcrate.contact }} {% endif %} {% else %} Not specified
+          {% endif %}
+        </span>
       </div>
       {% if subcrate.md5 %}
       <div class="metadata-item">
@@ -90,7 +102,15 @@
       </div>
       <div class="metadata-item">
         <span class="metadata-label">Terms of Use:</span>
-        <span class="metadata-value">{{ subcrate.terms_of_use }}</span>
+        <span class="metadata-value">
+          {% if subcrate.terms_of_use and
+          (subcrate.terms_of_use.startswith('http://') or
+          subcrate.terms_of_use.startswith('https://')) %}
+          <a href="{{ subcrate.terms_of_use }}" target="_blank"
+            >{{ subcrate.terms_of_use }}</a
+          >
+          {% else %} {{ subcrate.terms_of_use }} {% endif %}
+        </span>
       </div>
       <div class="metadata-item">
         <span class="metadata-label">Keywords:</span>
@@ -101,7 +121,14 @@
       </div>
       <div class="metadata-item">
         <span class="metadata-label">Funding:</span>
-        <span class="metadata-value">{{ subcrate.funder }}</span>
+        <span class="metadata-value">
+          {% if subcrate.funder and (subcrate.funder.startswith('http://') or
+          subcrate.funder.startswith('https://')) %}
+          <a href="{{ subcrate.funder }}" target="_blank"
+            >{{ subcrate.funder }}</a
+          >
+          {% else %} {{ subcrate.funder }} {% endif %}
+        </span>
       </div>
       {% if subcrate.related_publications %}
       <div class="metadata-item">
@@ -109,7 +136,17 @@
         <span class="metadata-value">
           <ul class="compact-list">
             {% for pub in subcrate.related_publications %}
-            <li>{{ pub }}</li>
+            <li>
+              {% if pub.startswith('http://') or pub.startswith('https://') %}
+              <a href="{{ pub }}" target="_blank">{{ pub }}</a>
+              {% elif pub.startswith('doi:') or pub.startswith('DOI:') %}
+              <a href="https://doi.org/{{ pub[4:] }}" target="_blank"
+                >{{ pub }}</a
+              >
+              {% elif pub.startswith('10.') %}
+              <a href="https://doi.org/{{ pub }}" target="_blank">{{ pub }}</a>
+              {% else %} {{ pub }} {% endif %}
+            </li>
             {% endfor %}
           </ul>
         </span>
