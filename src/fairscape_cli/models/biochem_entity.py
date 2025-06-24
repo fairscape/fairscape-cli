@@ -72,6 +72,12 @@ def GenerateBioChemEntity(
 	# add identifiers to metadata
 	entityMetadata['identifier'] = identifierList
 
+	if usedBy:
+		if isinstance(usedBy, list):
+			entityMetadata['usedBy'] = [ {"@id": usedElem.strip('\n') } for usedElem in usedBy]
+		if isinstance(usedBy, str):
+			entityMetadata['usedBy'] = [ {"@id": usedBy.strip('\n')}]
+
 	for key, value in kwargs.items():
 		if key in ["derivedFrom", "usedBy", "generatedBy"] and value:
 			if isinstance(value, str):

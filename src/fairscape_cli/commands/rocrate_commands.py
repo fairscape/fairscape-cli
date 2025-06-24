@@ -628,7 +628,7 @@ def registerExperiment(
 @click.option('--guid', type=str, required=False, default=None, help='Identifier for the sample (generated if not provided)')
 @click.option('--name', required=True, help='Name of the sample')
 @click.option('--description', required=True, help='Description of the sample')
-@click.option('--usedBy', required=False, multiple=True, help="Identifiers of Experiments/Samples/Datasets that used this entity")
+@click.option('--usedby', required=False, multiple=True, help="Identifiers of Experiments/Samples/Datasets that used this entity")
 @click.option('--identifier', required=False, multiple=True, help="Other known identifiers for this biochem entity formatted as '<propertyName>:<propertyValue>' ")
 @click.option('--custom-properties', required=False, type=str, help='JSON string with additional properties to include')
 @click.pass_context
@@ -638,7 +638,7 @@ def registerBioChemEntity(
     guid: Optional[str],
     name: str,
     description: str,
-    usedBy: Optional[List[str]],
+    usedby: Optional[List[str]],
     identifier: Optional[List[str]],
     custom_properties: Optional[str],
 ):
@@ -654,8 +654,8 @@ def registerBioChemEntity(
         "cratePath": rocrate_path
     }
 
-    if usedBy:
-        params['usedBy'] = list(usedBy)
+    if usedby:
+        params['usedBy'] = list(usedby)
     if identifier:
         params['identifier'] = list(identifier)
 
