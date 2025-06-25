@@ -240,7 +240,13 @@
         <h2>RO-Crate Summary</h2>
         <div class="summary-row">
           <div class="summary-label">ROCrate ID</div>
-          <div class="summary-value" id="accession">{{ id_value }}</div>
+          <div class="summary-value" id="accession">
+            {% if published %}
+            <a href="https://fairscape.net/view/{{ id_value }}" target="_blank" rel="noopener"
+              >{{ id_value }}</a
+            >
+            {% else %} {{ id_value }} {% endif %}
+          </div>
         </div>
         {% if doi %}
         <div class="summary-row">
