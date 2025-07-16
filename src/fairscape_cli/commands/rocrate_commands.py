@@ -211,7 +211,7 @@ def registerSoftware(
 @click.option('--data-format', required=True, help='Format of the dataset (e.g., csv, json)')
 @click.option('--filepath', required=True, help='Path to the dataset file')
 @click.option('--url', required=False, help='URL reference for the dataset')
-@click.option('--date-published', required=False, help='Publication date of the dataset (ISO format)')
+@click.option('--date-published', required=True, help='Publication date of the dataset (ISO format)')
 @click.option('--schema', required=False, help='Schema identifier for the dataset')
 @click.option('--used-by', required=False, multiple=True, help='Identifiers of computations that use this dataset')
 @click.option('--derived-from', required=False, multiple=True, help='Identifiers of datasets this one is derived from')
