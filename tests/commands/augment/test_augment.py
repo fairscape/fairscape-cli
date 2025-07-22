@@ -227,6 +227,25 @@ class TestAugmentCommands:
         assert result.exit_code == 0
         assert "No entities were modified" in result.output
 
+    def test_update_entities_fails_with_dollar_schema_field(self, runner, mass_spec_crate: pathlib.Path):
+        """
+        Test that adding a $schema field fails due to MongoDB restrictions on $ prefixed fields.
+        """
+        # Query to match the third element in @graph (index 2)
+        query = '{"@id": "ark:59852/cell-line-MDA-MB-468"}'
+        update = '{"$set": {"$schema": "https://example.org/schema.json"}}'
+        
+        result = runner.invoke(
+            fairscape_cli_app,
+            [
+                "augment", "update-entities", str(mass_spec_crate),
+                "--query", query,
+                "--update", update
+            ]
+        )
+        
+        assert result.exit_code == 1
+
     def test_link_inverses_success(self, runner, mass_spec_crate: pathlib.Path):
         """
         Test successful execution of link-inverses command.
