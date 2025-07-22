@@ -204,7 +204,7 @@
       "identifier": [
         {
           "@type": "PropertyValue",
-          "@value": "RRID:CVCL_0419",
+          "value": "RRID:CVCL_0419",
           "name": "RRID"
         }
       ],
@@ -1784,7 +1784,6 @@
         "EVI": "https://w3id.org/EVI#"
       },
       "@type": "EVI:Schema",
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "name": "Control Experiment 1 SEC-MS Report Data Schema",
       "description": "Schema for SEC-MS report data of MDA-MB468 cells, control experiment 1.",
       "type": "object",
@@ -2269,7 +2268,6 @@
         "EVI": "https://w3id.org/EVI#"
       },
       "@type": "EVI:Schema",
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "name": "Control Experiment 2 SEC-MS Report Data Schema",
       "description": "Schema for SEC-MS report data of MDA-MB468 cells, control experiment 2.",
       "type": "object",
@@ -2754,7 +2752,6 @@
         "EVI": "https://w3id.org/EVI#"
       },
       "@type": "EVI:Schema",
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "name": "Control Experiment 4 SEC-MS Report Data Schema",
       "description": "Schema for SEC-MS report data of MDA-MB468 cells, control experiment 4.",
       "type": "object",
@@ -3232,7 +3229,6 @@
         "EVI": "https://w3id.org/EVI#"
       },
       "@type": "EVI:Schema",
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "name": "Paclitaxel Experiment 1 SEC-MS Report Data Schema",
       "description": "Schema for SEC-MS report data of MDA-MB468 cells, paclitaxel experiment 1.",
       "type": "object",
@@ -3723,7 +3719,6 @@
         "EVI": "https://w3id.org/EVI#"
       },
       "@type": "EVI:Schema",
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "name": "Paclitaxel Experiment 2 SEC-MS Report Data Schema",
       "description": "Schema for SEC-MS report data of MDA-MB468 cells, paclitaxel experiment 2.",
       "type": "object",
@@ -4208,7 +4203,6 @@
         "EVI": "https://w3id.org/EVI#"
       },
       "@type": "EVI:Schema",
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "name": "Paclitaxel Experiment 3 SEC-MS Report Data Schema",
       "description": "Schema for SEC-MS report data of MDA-MB468 cells, paclitaxel experiment 3.",
       "type": "object",
@@ -4685,7 +4679,6 @@
         "EVI": "https://w3id.org/EVI#"
       },
       "@type": "EVI:Schema",
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "name": "Vorinostat Experiment 1 SEC-MS Report Data Schema",
       "description": "Schema for SEC-MS report data of MDA-MB468 cells, vorinostat experiment 1.",
       "type": "object",
@@ -5170,7 +5163,6 @@
         "EVI": "https://w3id.org/EVI#"
       },
       "@type": "EVI:Schema",
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "name": "Vorinostat Experiment 2 SEC-MS Report Data Schema",
       "description": "Schema for SEC-MS report data of MDA-MB468 cells, vorinostat experiment 2.",
       "type": "object",
@@ -5647,7 +5639,6 @@
         "EVI": "https://w3id.org/EVI#"
       },
       "@type": "EVI:Schema",
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "name": "Vorinostat Experiment 3 SEC-MS Report Data Schema",
       "description": "Schema for SEC-MS report data of MDA-MB468 cells, vorinostat experiment 3.",
       "type": "object",

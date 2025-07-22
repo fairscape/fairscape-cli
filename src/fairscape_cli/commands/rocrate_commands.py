@@ -881,7 +881,7 @@ def addDataset(
 
         if summary_statistics_source and summary_statistics_destination:
             try:
-                copied_summary_stats_filepath = CopyToROCrate(summary_statistics_source, summary_statistics_destination, rocrate_path)
+                copied_summary_stats_filepath = CopyToROCrate(summary_statistics_source, summary_statistics_destination)
                 click.echo(f"Copied '{summary_statistics_source}' to '{copied_summary_stats_filepath}' inside the crate.")
 
                 summary_stats_guid, summary_stats_instance, computation_instance = generateSummaryStatsElements(
