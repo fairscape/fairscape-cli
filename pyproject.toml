@@ -71,3 +71,9 @@ Citation = "https://github.com/fairscape/fairscape-cli/blob/main/CITATION.cff"
 
 [project.scripts]
 fairscape-cli = "fairscape_cli.__main__:cli"
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+    "pytest-cov"
+]

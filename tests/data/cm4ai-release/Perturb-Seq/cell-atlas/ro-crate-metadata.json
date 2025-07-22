@@ -1,0 +1,994 @@
+{
+  "@context": {
+    "@vocab": "https://schema.org/",
+    "EVI": "https://w3id.org/EVI#"
+  },
+  "@graph": [
+    {
+      "@id": "ro-crate-metadata.json",
+      "@type": "CreativeWork",
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.2-DRAFT"
+      },
+      "about": {
+        "@id": "ark:59852/rocrate-a-perturbation-cell-atlas-of-human-induced-pluripotent-stem-cells-Cmx85JJSgWm/"
+      }
+    },
+    {
+      "@id": "ark:59852/rocrate-a-perturbation-cell-atlas-of-human-induced-pluripotent-stem-cells-Cmx85JJSgWm/",
+      "@type": ["Dataset", "https://w3id.org/EVI#ROCrate"],
+      "name": "Perturbation Cell Atlas of Human Induced Pluripotent Stem Cells - Perturb Seq",
+      "description": "This dataset represents an expressed genome-scale CRISPRi Perturbation Cell Atlas in KOLF2.1J human induced pluripotent stem cells (hiPSCs) mapping transcriptional and fitness phenotypes associated with 11,739 targeted genes, as part of the Cell Maps for Artificial Intelligence (CM4AI) Functional Genomics Grand Challenge, a component of the U.S. National Institute of Health's (NIH) Bridge2AI program. We validated these findings via phenotypic, protein-interaction, and metabolic tracing assays.",
+      "publisher": "FigShare",
+      "keywords": [
+        "AI",
+        "Artificial intelligence",
+        "Cell maps",
+        "CM4AI",
+        "CRISPR perturbation",
+        "IPSC",
+        "KOLF2.1J",
+        "Machine learning",
+        "Perturb-seq",
+        "scRNAseq",
+        "single-cell RNA sequencing"
+      ],
+      "isPartOf": [
+        {
+          "@id": "ark:59852/organization-university-of-california-san-diego"
+        },
+        {
+          "@id": "ark:59852/project-cm4ai"
+        }
+      ],
+      "version": "1.0",
+      "license": "https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en",
+      "associatedPublication": "Nourreddine S, Doctor Y, Dailamy A, et al. (2024) \"A Perturbation Cell Atlas of Human Induced Pluripotent Stem Cells\" bioRxiv 2024.11.03.621734; doi: https://doi.org/10.1101/2024.11.03.621734",
+      "author": "Doctor Y; Dailamy A; Forget A; Lee YH; Chinn B; Khaliq H; Polacco B; Muralidharan, M; Pan E; Zhang Y; Sigaeva A; Hansen JN; Gao J; Parker JA; Obernier K; Clark T; Chen JY; Metallo C; Lundberg E; Idkeker T; Krogan N; Mali P",
+      "conditionsOfAccess": "Attribution is required to the copyright holders and the authors. Any publications referencing this data or derived products should cite the related article as well as directly citing this data collection.",
+      "copyrightNotice": "Copyright (c) 2024 by The Regents of the University of California",
+      "hasPart": [
+        {
+          "@id": "ark:59852/dataset-kolf-pan-genome-aggregated-data-B9Fd0uujkz"
+        },
+        {
+          "@id": "ark:59852/dataset-protospacer-calls-per-cell-B9Fd0u2jQx"
+        },
+        {
+          "@id": "ark:59852/dataset-aggregation-data-fULJ7Eh9Al"
+        },
+        {
+          "@id": "ark:59852/computation-perturbation-cell-atlas-data-processing-Cmx85JtSguG"
+        },
+        {
+          "@id": "ark:59852/rocrate-data-analysis-pipeline-qT1jYXZ3sf/"
+        },
+        {
+          "@id": "ark:59852/software-perturb-seq-heuristic-pipeline-uhBWMDz215T"
+        },
+        {
+          "@id": "ark:59852/software-pan-genome-heatmap-analysis-317wEbnWTKW"
+        },
+        {
+          "@id": "ark:59852/software-pan-genome-umap-analysis-YjwTqN2ECNl"
+        },
+        {
+          "@id": "ark:59852/software-pan-genome-analysis-qT1jYXq3vb"
+        },
+        {
+          "@id": "ark:59852/software-pan-genome-ml-analysis-wGUO1YwfpBP"
+        },
+        {
+          "@id": "ark:59852/software-pan-genome-mde-coloring-QRexSpsAccG"
+        },
+        {
+          "@id": "ark:59852/dataset-analysis-pipeline-documentation-Pu2MVozN9K"
+        },
+        {
+          "@id": "ark:59852/dataset-analysis-pipeline-demo-fULJ7hG9ii6"
+        }
+      ],
+      "contentSize": "195.97 GB",
+      "contactEmail": "pmali@ucsd.edu",
+      "funder": "National Institutes of Health: 1OT2OD032742-01, R01HG012351, R01NS131560, U54CA274502, #S10 OD026929. Department of Defense: W81XWH-22-1-0401. CIRM training: EDUC4-12804. Dutch Research Council: NWO, 019.231EN.013. National Cancer Institute: P30CA023100",
+      "hasEvidenceGraph": {
+        "@id": "Perturb-Seq/cell-atlas/provenance-graph.html"
+      },
+      "MD5": "1cafefa32a897998e3e2ba0a29a3ef5c"
+    },
+    {
+      "@id": "ark:59852/dataset-kolf-pan-genome-aggregated-data-B9Fd0uujkz",
+      "name": "KOLF Pan Genome Aggregated Data",
+      "@type": "https://w3id.org/EVI#Dataset",
+      "additionalType": "Dataset",
+      "author": "Doctor Y; Dailamy A; Forget A; Lee YH; Chinn B; Khaliq H; Polacco B; Muralidharan, M; Pan E; Zhang Y; Sigaeva A; Hansen JN; Gao J; Parker JA; Obernier K; Clark T; Chen JY; Metallo C; Lundberg E; Idkeker T; Krogan N; Mali P",
+      "datePublished": "2024-12-18",
+      "version": "1.0",
+      "description": "Aggregated single-cell data in h5mu format",
+      "keywords": [
+        "AI",
+        "Artificial intelligence",
+        "Cell maps",
+        "CM4AI",
+        "CRISPR perturbation",
+        "IPSC",
+        "KOLF2.1J",
+        "Machine learning",
+        "Perturb-seq",
+        "scRNAseq",
+        "single-cell RNA sequencing"
+      ],
+      "associatedPublication": null,
+      "additionalDocumentation": null,
+      "format": "h5mu",
+      "EVI:Schema": {
+        "@id": "ark:59852/schema-kolf-pan-genome-aggregate-20250529-143000"
+      },
+      "generatedBy": [
+        {
+          "@id": "ark:59852/computation-perturbation-cell-atlas-data-processing-Cmx85JtSguG"
+        }
+      ],
+      "derivedFrom": [],
+      "usedByComputation": [],
+      "contentUrl": "Embargoed",
+      "md5": "150a0656ae75eef6edd7e1c4513b680b"
+    },
+    {
+      "@id": "ark:59852/schema-kolf-pan-genome-aggregate-20250529-143000",
+      "@type": "EVI:Schema",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "name": "KOLF Pan Genome Aggregate Schema",
+      "description": "Schema for a KOLF Pan-Genome Aggregate H5MU file.",
+      "url": null,
+      "license": "https://creativecommons.org/licenses/by/4.0/",
+      "keywords": [
+        "AI",
+        "Artificial intelligence",
+        "Cell maps",
+        "CM4AI",
+        "CRISPR perturbation",
+        "IPSC",
+        "KOLF2.1J",
+        "Machine learning",
+        "Perturb-seq",
+        "scRNAseq",
+        "single-cell RNA sequencing",
+        "multi-modal",
+        "h5mu"
+      ],
+      "published": true,
+      "type": "object",
+      "properties": {
+        "rna": {
+          "type": "object",
+          "index": 0,
+          "description": "Gene expression data.",
+          "properties": {
+            "obs": {
+              "type": "string",
+              "index": 0,
+              "description": "Cell barcodes (comma-separated)."
+            },
+            "var": {
+              "type": "string",
+              "index": 1,
+              "description": "ENSEMBL gene IDs (comma-separated)."
+            }
+          },
+          "required": ["obs", "var"]
+        },
+        "crispr": {
+          "type": "object",
+          "index": 1,
+          "description": "CRISPR read data.",
+          "properties": {
+            "obs": {
+              "type": "string",
+              "index": 0,
+              "description": "Cell barcodes (comma-separated, matching RNA obs)."
+            },
+            "var": {
+              "type": "string",
+              "index": 1,
+              "description": "CRISPR gene targets (comma-separated)."
+            }
+          },
+          "required": ["obs", "var"]
+        }
+      },
+      "required": ["rna", "crispr"],
+      "additionalProperties": true,
+      "separator": ",",
+      "header": true,
+      "examples": []
+    },
+    {
+      "@id": "ark:59852/dataset-protospacer-calls-per-cell-B9Fd0u2jQx",
+      "name": "Protospacer Calls Per Cell",
+      "@type": "https://w3id.org/EVI#Dataset",
+      "additionalType": "Dataset",
+      "author": "Doctor Y; Dailamy A; Forget A; Lee YH; Chinn B; Khaliq H; Polacco B; Muralidharan, M; Pan E; Zhang Y; Sigaeva A; Hansen JN; Gao J; Parker JA; Obernier K; Clark T; Chen JY; Metallo C; Lundberg E; Idkeker T; Krogan N; Mali P",
+      "datePublished": "2024-12-18",
+      "version": "1.0",
+      "description": "CSV file containing protospacer calls per cell",
+      "keywords": [
+        "AI",
+        "Artificial intelligence",
+        "Cell maps",
+        "CM4AI",
+        "CRISPR perturbation",
+        "IPSC",
+        "KOLF2.1J",
+        "Machine learning",
+        "Perturb-seq",
+        "scRNAseq",
+        "single-cell RNA sequencing"
+      ],
+      "associatedPublication": null,
+      "additionalDocumentation": null,
+      "format": "csv",
+      "EVI:Schema": {
+        "@id": "ark:59852/schema-protospacer_calls-20250131-093344"
+      },
+      "generatedBy": [
+        {
+          "@id": "ark:59852/computation-perturbation-cell-atlas-data-processing-Cmx85JtSguG"
+        }
+      ],
+      "derivedFrom": [],
+      "usedByComputation": [],
+      "contentUrl": "Embargoed",
+      "md5": "a4358b244fdc8457e254a3debd506802"
+    },
+    {
+      "@id": "ark:59852/dataset-aggregation-data-fULJ7Eh9Al",
+      "name": "Aggregation Data",
+      "@type": "https://w3id.org/EVI#Dataset",
+      "additionalType": "Dataset",
+      "author": "Doctor Y; Dailamy A; Forget A; Lee YH; Chinn B; Khaliq H; Polacco B; Muralidharan, M; Pan E; Zhang Y; Sigaeva A; Hansen JN; Gao J; Parker JA; Obernier K; Clark T; Chen JY; Metallo C; Lundberg E; Idkeker T; Krogan N; Mali P",
+      "datePublished": "2024-12-18",
+      "version": "1.0",
+      "description": "Aggregated data in CSV format",
+      "keywords": [
+        "AI",
+        "Artificial intelligence",
+        "Cell maps",
+        "CM4AI",
+        "CRISPR perturbation",
+        "IPSC",
+        "KOLF2.1J",
+        "Machine learning",
+        "Perturb-seq",
+        "scRNAseq",
+        "single-cell RNA sequencing"
+      ],
+      "associatedPublication": null,
+      "additionalDocumentation": null,
+      "format": "csv",
+      "EVI:Schema": {
+        "@id": "ark:59852/schema-aggregation_data-20250131-093345"
+      },
+      "generatedBy": [
+        {
+          "@id": "ark:59852/computation-perturbation-cell-atlas-data-processing-Cmx85JtSguG"
+        }
+      ],
+      "derivedFrom": [],
+      "usedByComputation": [],
+      "contentUrl": "Embargoed",
+      "md5": "2355e6482e8ed0573524e65cc40a585b"
+    },
+    {
+      "@id": "ark:59852/computation-perturbation-cell-atlas-data-processing-Cmx85JtSguG",
+      "name": "Perturbation Cell Atlas Data Processing",
+      "@type": "https://w3id.org/EVI#Computation",
+      "additionalType": "Computation",
+      "runBy": "Doctor Y; Dailamy A; Forget A; Lee YH; Chinn B; Khaliq H; Polacco B; Muralidharan, M; Pan E; Zhang Y; Sigaeva A; Hansen JN; Gao J; Parker JA; Obernier K; Clark T; Chen JY; Metallo C; Lundberg E; Idkeker T; Krogan N; Mali P",
+      "description": "Computation processing SRA data to generate the Perturbation Cell Atlas",
+      "dateCreated": "2024-12-18",
+      "associatedPublication": null,
+      "additionalDocumentation": null,
+      "command": "cellranger aggr --id $ID --csv $AGGREGATION_CSV --nosecondary",
+      "usedSoftware": [
+        {
+          "@id": "ark:59852/software-10x-genomics-cell-ranger"
+        }
+      ],
+      "usedDataset": [
+        {
+          "@id": "ark:59852/dataset-molecule-data-alpha-chip-1-channel-1"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-alpha-chip-1-channel-2"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-alpha-chip-1-channel-3"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-alpha-chip-1-channel-4"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-alpha-chip-1-channel-5"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-alpha-chip-1-channel-6"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-alpha-chip-1-channel-7"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-alpha-chip-1-channel-8"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-alpha-chip-1-channel-9"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-alpha-chip-1-channel-10"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-alpha-chip-1-channel-11"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-alpha-chip-1-channel-12"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-alpha-chip-1-channel-13"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-alpha-chip-1-channel-14"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-alpha-chip-1-channel-15"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-alpha-chip-1-channel-16"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-alpha-chip-2-channel-1"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-alpha-chip-2-channel-2"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-alpha-chip-2-channel-4"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-alpha-chip-2-channel-5"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-alpha-chip-2-channel-6"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-alpha-chip-2-channel-7"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-alpha-chip-2-channel-8"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-alpha-chip-2-channel-9"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-alpha-chip-2-channel-10"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-alpha-chip-2-channel-11"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-alpha-chip-2-channel-12"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-alpha-chip-2-channel-13"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-alpha-chip-2-channel-15"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-alpha-chip-2-channel-16"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-beta-chip-1-channel-2"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-beta-chip-1-channel-3"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-beta-chip-1-channel-4"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-beta-chip-1-channel-5"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-beta-chip-1-channel-6"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-beta-chip-1-channel-7"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-beta-chip-1-channel-8"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-beta-chip-1-channel-9"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-beta-chip-1-channel-10"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-beta-chip-1-channel-11"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-beta-chip-1-channel-12"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-beta-chip-1-channel-13"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-beta-chip-1-channel-14"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-beta-chip-1-channel-15"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-beta-chip-1-channel-16"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-beta-chip-2-channel-1"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-beta-chip-2-channel-2"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-beta-chip-2-channel-3"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-beta-chip-2-channel-4"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-beta-chip-2-channel-5"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-beta-chip-2-channel-6"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-beta-chip-2-channel-7"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-beta-chip-2-channel-8"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-beta-chip-2-channel-9"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-beta-chip-2-channel-10"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-beta-chip-2-channel-11"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-beta-chip-2-channel-12"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-beta-chip-2-channel-13"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-beta-chip-2-channel-14"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-beta-chip-2-channel-15"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-beta-chip-2-channel-16"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-gamma-chip-1-channel-1"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-gamma-chip-1-channel-2"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-gamma-chip-1-channel-3"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-gamma-chip-1-channel-4"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-gamma-chip-1-channel-5"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-gamma-chip-1-channel-6"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-gamma-chip-1-channel-7"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-gamma-chip-1-channel-8"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-gamma-chip-1-channel-9"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-gamma-chip-1-channel-10"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-gamma-chip-1-channel-11"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-gamma-chip-1-channel-12"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-gamma-chip-1-channel-13"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-gamma-chip-1-channel-14"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-gamma-chip-1-channel-15"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-gamma-chip-1-channel-16"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-gamma-chip-2-channel-1"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-gamma-chip-2-channel-2"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-gamma-chip-2-channel-3"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-gamma-chip-2-channel-4"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-gamma-chip-2-channel-5"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-gamma-chip-2-channel-6"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-gamma-chip-2-channel-9"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-gamma-chip-2-channel-10"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-gamma-chip-2-channel-11"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-gamma-chip-2-channel-12"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-gamma-chip-2-channel-13"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-gamma-chip-2-channel-15"
+        },
+        {
+          "@id": "ark:59852/dataset-molecule-data-gamma-chip-2-channel-16"
+        }
+      ],
+      "generated": [
+        {
+          "@id": "ark:59852/dataset-kolf-pan-genome-aggregated-data-B9Fd0uujkz"
+        },
+        {
+          "@id": "ark:59852/dataset-protospacer-calls-per-cell-B9Fd0u2jQx"
+        },
+        {
+          "@id": "ark:59852/dataset-aggregation-data-fULJ7Eh9Al"
+        }
+      ],
+      "keywords": [
+        "AI",
+        "Artificial intelligence",
+        "Cell maps",
+        "CM4AI",
+        "CRISPR perturbation",
+        "IPSC",
+        "KOLF2.1J",
+        "Machine learning",
+        "Perturb-seq",
+        "scRNAseq",
+        "single-cell RNA sequencing"
+      ]
+    },
+    {
+      "@id": "ark:59852/software-10x-genomics-cell-ranger",
+      "name": "Cell Ranger",
+      "@type": "https://w3id.org/EVI#Software",
+      "additionalType": "Software",
+      "author": "10x Genomics",
+      "dateModified": "2024-01-15",
+      "version": "7.2.0",
+      "description": "Cell Ranger is a set of analysis pipelines that process Chromium single-cell RNA-seq output to align reads, generate feature-barcode matrices, and perform clustering and other secondary analyses. It's widely used for Perturb-seq data processing and analysis.",
+      "associatedPublication": "",
+      "additionalDocumentation": "https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/what-is-cell-ranger",
+      "format": "executable",
+      "usedByComputation": [],
+      "contentUrl": "https://support.10xgenomics.com/single-cell-gene-expression/software/downloads/latest",
+      "keywords": [
+        "AI",
+        "Artificial intelligence",
+        "Cell maps",
+        "CM4AI",
+        "CRISPR perturbation",
+        "IPSC",
+        "KOLF2.1J",
+        "Machine learning",
+        "Perturb-seq",
+        "scRNAseq",
+        "single-cell RNA sequencing"
+      ]
+    },
+    {
+      "@id": "ark:59852/software-perturb-seq-heuristic-pipeline-uhBWMDz215T",
+      "name": "Perturb-seq Heuristic Pipeline",
+      "@type": "https://w3id.org/EVI#Software",
+      "additionalType": "Software",
+      "author": "Doctor Y; Dailamy A; Forget A; Lee YH; Chinn B; Khaliq H; Polacco B; Muralidharan, M; Pan E; Zhang Y; Sigaeva A; Hansen JN; Gao J; Parker JA; Obernier K; Clark T; Chen JY; Metallo C; Lundberg E; Idkeker T; Krogan N; Mali P",
+      "dateModified": "2024-12-18",
+      "version": "1.0",
+      "description": "Python script implementing the heuristic pipeline for Perturb-seq analysis",
+      "associatedPublication": null,
+      "additionalDocumentation": null,
+      "format": "py",
+      "usedByComputation": [],
+      "contentUrl": "Embargoed",
+      "keywords": [
+        "AI",
+        "Artificial intelligence",
+        "Cell maps",
+        "CM4AI",
+        "CRISPR perturbation",
+        "IPSC",
+        "KOLF2.1J",
+        "Machine learning",
+        "Perturb-seq",
+        "scRNAseq",
+        "single-cell RNA sequencing"
+      ]
+    },
+    {
+      "@id": "ark:59852/software-pan-genome-heatmap-analysis-317wEbnWTKW",
+      "name": "Pan Genome Heatmap Analysis",
+      "@type": "https://w3id.org/EVI#Software",
+      "additionalType": "Software",
+      "author": "Doctor Y; Dailamy A; Forget A; Lee YH; Chinn B; Khaliq H; Polacco B; Muralidharan, M; Pan E; Zhang Y; Sigaeva A; Hansen JN; Gao J; Parker JA; Obernier K; Clark T; Chen JY; Metallo C; Lundberg E; Idkeker T; Krogan N; Mali P",
+      "dateModified": "2024-12-18",
+      "version": "1.0",
+      "description": "Jupyter notebook for generating and analyzing genome-wide heatmaps",
+      "associatedPublication": null,
+      "additionalDocumentation": null,
+      "format": "ipynb",
+      "usedByComputation": [],
+      "contentUrl": "Embargoed",
+      "keywords": [
+        "AI",
+        "Artificial intelligence",
+        "Cell maps",
+        "CM4AI",
+        "CRISPR perturbation",
+        "IPSC",
+        "KOLF2.1J",
+        "Machine learning",
+        "Perturb-seq",
+        "scRNAseq",
+        "single-cell RNA sequencing"
+      ]
+    },
+    {
+      "@id": "ark:59852/software-pan-genome-umap-analysis-YjwTqN2ECNl",
+      "name": "Pan Genome UMAP Analysis",
+      "@type": "https://w3id.org/EVI#Software",
+      "additionalType": "Software",
+      "author": "Doctor Y; Dailamy A; Forget A; Lee YH; Chinn B; Khaliq H; Polacco B; Muralidharan, M; Pan E; Zhang Y; Sigaeva A; Hansen JN; Gao J; Parker JA; Obernier K; Clark T; Chen JY; Metallo C; Lundberg E; Idkeker T; Krogan N; Mali P",
+      "dateModified": "2024-12-18",
+      "version": "1.0",
+      "description": "Jupyter notebook for UMAP dimensionality reduction and visualization",
+      "associatedPublication": null,
+      "additionalDocumentation": null,
+      "format": "ipynb",
+      "usedByComputation": [],
+      "contentUrl": "Embargoed",
+      "keywords": [
+        "AI",
+        "Artificial intelligence",
+        "Cell maps",
+        "CM4AI",
+        "CRISPR perturbation",
+        "IPSC",
+        "KOLF2.1J",
+        "Machine learning",
+        "Perturb-seq",
+        "scRNAseq",
+        "single-cell RNA sequencing"
+      ],
+      "md5": "e1f9195f929ad71f2db9c2143b433c3c"
+    },
+    {
+      "@id": "ark:59852/software-pan-genome-analysis-qT1jYXq3vb",
+      "name": "Pan Genome Analysis",
+      "@type": "https://w3id.org/EVI#Software",
+      "additionalType": "Software",
+      "author": "Doctor Y; Dailamy A; Forget A; Lee YH; Chinn B; Khaliq H; Polacco B; Muralidharan, M; Pan E; Zhang Y; Sigaeva A; Hansen JN; Gao J; Parker JA; Obernier K; Clark T; Chen JY; Metallo C; Lundberg E; Idkeker T; Krogan N; Mali P",
+      "dateModified": "2024-12-18",
+      "version": "1.0",
+      "description": "Main analysis notebook for pan-genome data processing",
+      "associatedPublication": null,
+      "additionalDocumentation": null,
+      "format": "ipynb",
+      "usedByComputation": [],
+      "contentUrl": "Embargoed",
+      "keywords": [
+        "AI",
+        "Artificial intelligence",
+        "Cell maps",
+        "CM4AI",
+        "CRISPR perturbation",
+        "IPSC",
+        "KOLF2.1J",
+        "Machine learning",
+        "Perturb-seq",
+        "scRNAseq",
+        "single-cell RNA sequencing"
+      ],
+      "md5": "e1f9195f929ad71f2db9c2143b433c3c"
+    },
+    {
+      "@id": "ark:59852/software-pan-genome-ml-analysis-wGUO1YwfpBP",
+      "name": "Pan Genome ML Analysis",
+      "@type": "https://w3id.org/EVI#Software",
+      "additionalType": "Software",
+      "author": "Doctor Y; Dailamy A; Forget A; Lee YH; Chinn B; Khaliq H; Polacco B; Muralidharan, M; Pan E; Zhang Y; Sigaeva A; Hansen JN; Gao J; Parker JA; Obernier K; Clark T; Chen JY; Metallo C; Lundberg E; Idkeker T; Krogan N; Mali P",
+      "dateModified": "2024-12-18",
+      "version": "1.0",
+      "description": "Machine learning analysis notebook for pan-genome data",
+      "associatedPublication": null,
+      "additionalDocumentation": null,
+      "format": "ipynb",
+      "usedByComputation": [],
+      "contentUrl": "Embargoed",
+      "keywords": [
+        "AI",
+        "Artificial intelligence",
+        "Cell maps",
+        "CM4AI",
+        "CRISPR perturbation",
+        "IPSC",
+        "KOLF2.1J",
+        "Machine learning",
+        "Perturb-seq",
+        "scRNAseq",
+        "single-cell RNA sequencing"
+      ],
+      "md5": "e1f9195f929ad71f2db9c2143b433c3c"
+    },
+    {
+      "@id": "ark:59852/software-pan-genome-mde-coloring-QRexSpsAccG",
+      "name": "Pan Genome MDE Coloring",
+      "@type": "https://w3id.org/EVI#Software",
+      "additionalType": "Software",
+      "author": "Doctor Y; Dailamy A; Forget A; Lee YH; Chinn B; Khaliq H; Polacco B; Muralidharan, M; Pan E; Zhang Y; Sigaeva A; Hansen JN; Gao J; Parker JA; Obernier K; Clark T; Chen JY; Metallo C; Lundberg E; Idkeker T; Krogan N; Mali P",
+      "dateModified": "2024-12-18",
+      "version": "1.0",
+      "description": "Notebook for MDE-based coloring analysis",
+      "associatedPublication": null,
+      "additionalDocumentation": null,
+      "format": "ipynb",
+      "usedByComputation": [],
+      "contentUrl": "Embargoed",
+      "keywords": [
+        "AI",
+        "Artificial intelligence",
+        "Cell maps",
+        "CM4AI",
+        "CRISPR perturbation",
+        "IPSC",
+        "KOLF2.1J",
+        "Machine learning",
+        "Perturb-seq",
+        "scRNAseq",
+        "single-cell RNA sequencing"
+      ],
+      "md5": "e1f9195f929ad71f2db9c2143b433c3c"
+    },
+    {
+      "@id": "ark:59852/dataset-analysis-pipeline-documentation-Pu2MVozN9K",
+      "name": "Analysis Pipeline Documentation",
+      "@type": "https://w3id.org/EVI#Dataset",
+      "additionalType": "Dataset",
+      "author": "Doctor Y; Dailamy A; Forget A; Lee YH; Chinn B; Khaliq H; Polacco B; Muralidharan, M; Pan E; Zhang Y; Sigaeva A; Hansen JN; Gao J; Parker JA; Obernier K; Clark T; Chen JY; Metallo C; Lundberg E; Idkeker T; Krogan N; Mali P",
+      "datePublished": "2024-12-18",
+      "version": "1.0",
+      "description": "Documentation and usage instructions for the analysis pipeline",
+      "keywords": [
+        "AI",
+        "Artificial intelligence",
+        "Cell maps",
+        "CM4AI",
+        "CRISPR perturbation",
+        "IPSC",
+        "KOLF2.1J",
+        "Machine learning",
+        "Perturb-seq",
+        "scRNAseq",
+        "single-cell RNA sequencing"
+      ],
+      "associatedPublication": null,
+      "additionalDocumentation": null,
+      "format": "md",
+      "EVI:Schema": null,
+      "generatedBy": [],
+      "derivedFrom": [],
+      "usedByComputation": [],
+      "contentUrl": "Embargoed"
+    },
+    {
+      "@id": "ark:59852/dataset-analysis-pipeline-demo-fULJ7hG9ii6",
+      "name": "Analysis Pipeline Demo",
+      "@type": "https://w3id.org/EVI#Dataset",
+      "additionalType": "Dataset",
+      "author": "Doctor Y; Dailamy A; Forget A; Lee YH; Chinn B; Khaliq H; Polacco B; Muralidharan, M; Pan E; Zhang Y; Sigaeva A; Hansen JN; Gao J; Parker JA; Obernier K; Clark T; Chen JY; Metallo C; Lundberg E; Idkeker T; Krogan N; Mali P",
+      "datePublished": "2024-12-18",
+      "version": "1.0",
+      "description": "Demo files for testing and demonstrating the analysis pipeline",
+      "keywords": [
+        "AI",
+        "Artificial intelligence",
+        "Cell maps",
+        "CM4AI",
+        "CRISPR perturbation",
+        "IPSC",
+        "KOLF2.1J",
+        "Machine learning",
+        "Perturb-seq",
+        "scRNAseq",
+        "single-cell RNA sequencing"
+      ],
+      "associatedPublication": null,
+      "additionalDocumentation": null,
+      "format": "zip",
+      "EVI:Schema": null,
+      "generatedBy": [],
+      "derivedFrom": [],
+      "usedByComputation": [],
+      "contentUrl": "Embargoed"
+    },
+    {
+      "@id": "ark:59852/schema-aggregation_data-20250131-093345",
+      "@type": "EVI:Schema",
+      "name": "aggregation_data",
+      "@context": {
+        "@vocab": "https://schema.org/",
+        "evi": "https://w3id.org/EVI#"
+      },
+      "url": null,
+      "description": "Aggregated analysis data",
+      "license": "https://creativecommons.org/licenses/by/4.0/",
+      "keywords": [
+        "AI",
+        "Artificial intelligence",
+        "Cell maps",
+        "CM4AI",
+        "CRISPR perturbation",
+        "IPSC",
+        "KOLF2.1J",
+        "Machine learning",
+        "Perturb-seq",
+        "scRNAseq",
+        "single-cell RNA sequencing"
+      ],
+      "published": true,
+      "properties": {
+        "sample_id": {
+          "description": "Sample ID",
+          "index": 0,
+          "type": "string",
+          "value-url": null,
+          "pattern": null,
+          "items": null,
+          "min-items": null,
+          "max-items": null,
+          "unique-items": null
+        },
+        "molecule_h5": {
+          "description": "molecule_h5 file for sample",
+          "index": 1,
+          "type": "string",
+          "value-url": null,
+          "pattern": null,
+          "items": null,
+          "min-items": null,
+          "max-items": null,
+          "unique-items": null
+        }
+      },
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["sample_id", "molecule_h5"],
+      "separator": ",",
+      "header": true,
+      "examples": [],
+      "$schema": "https://json-schema.org/draft/2020-12/schema"
+    },
+    {
+      "@id": "ark:59852/schema-protospacer_calls-20250131-093344",
+      "@type": "EVI:Schema",
+      "name": "protospacer_calls",
+      "@context": {
+        "@vocab": "https://schema.org/",
+        "evi": "https://w3id.org/EVI#"
+      },
+      "url": null,
+      "description": "Per-cell protospacer calls data",
+      "license": "https://creativecommons.org/licenses/by/4.0/",
+      "keywords": [
+        "AI",
+        "Artificial intelligence",
+        "Cell maps",
+        "CM4AI",
+        "CRISPR perturbation",
+        "IPSC",
+        "KOLF2.1J",
+        "Machine learning",
+        "Perturb-seq",
+        "scRNAseq",
+        "single-cell RNA sequencing"
+      ],
+      "published": true,
+      "properties": {
+        "cell_barcode": {
+          "description": "Unique identifier barcode for individual cells",
+          "index": 0,
+          "type": "string",
+          "value-url": null,
+          "pattern": null,
+          "items": null,
+          "min-items": null,
+          "max-items": null,
+          "unique-items": null
+        },
+        "num_features": {
+          "description": "Number of distinct features detected in this cell",
+          "index": 1,
+          "type": "integer",
+          "value-url": null,
+          "pattern": null,
+          "items": null,
+          "min-items": null,
+          "max-items": null,
+          "unique-items": null
+        },
+        "feature_call": {
+          "description": "Called protospacer sequence or feature ID for this cell",
+          "index": 2,
+          "type": "string",
+          "value-url": null,
+          "pattern": null,
+          "items": null,
+          "min-items": null,
+          "max-items": null,
+          "unique-items": null
+        },
+        "num_umis": {
+          "description": "Number of unique molecular identifiers (UMIs) supporting this feature call",
+          "index": 3,
+          "type": "string",
+          "value-url": null,
+          "pattern": null,
+          "items": null,
+          "min-items": null,
+          "max-items": null,
+          "unique-items": null
+        }
+      },
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["cell_barcode", "num_features", "feature_call", "num_umis"],
+      "separator": ",",
+      "header": true,
+      "examples": [],
+      "$schema": "https://json-schema.org/draft/2020-12/schema"
+    }
+  ]
+}
