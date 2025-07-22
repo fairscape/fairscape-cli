@@ -37,7 +37,7 @@ def schema():
 @click.option('--description', required=True, type=str)
 @click.option('--guid', required=False, type=str, default=None, show_default=False)
 @click.option('--separator', type=str, required=True)
-@click.option('--header', required=False, type=bool, default=False)
+@click.option('--header', required=False, type=bool, default=True)
 @click.argument('schema_file', type=str)
 @click.pass_context
 def create_tabular_schema(
