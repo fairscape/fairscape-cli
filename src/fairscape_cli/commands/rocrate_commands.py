@@ -15,6 +15,7 @@ from fairscape_cli.models.computation import GenerateComputation
 from fairscape_cli.models.sample import GenerateSample
 from fairscape_cli.models.instrument import GenerateInstrument
 from fairscape_cli.models.experiment import GenerateExperiment
+from fairscape_cli.models.biochem_entity import GenerateBioChemEntity
 
 from fairscape_cli.models.utils import FileNotInCrateException
 from fairscape_cli.config import NAAN
@@ -649,6 +650,67 @@ def registerExperiment(
     except Exception as exc:
         click.echo(f"ERROR: {exc}", err=True)
         ctx.exit(code=1)
+
+
+@register.command('biochementity')
+@click.argument('rocrate-path', type=click.Path(exists=True, path_type=pathlib.Path))
+@click.option('--guid', type=str, required=False, default=None, help='Identifier for the sample (generated if not provided)')
+@click.option('--name', required=True, help='Name of the sample')
+@click.option('--description', required=True, help='Description of the sample')
+@click.option('--usedby', required=False, multiple=True, help="Identifiers of Experiments/Samples/Datasets that used this entity")
+@click.option('--identifier', required=False, multiple=True, help="Other known identifiers for this biochem entity formatted as '<propertyName>:<propertyValue>' ")
+@click.option('--custom-properties', required=False, type=str, help='JSON string with additional properties to include')
+@click.pass_context
+def registerBioChemEntity(
+    ctx,
+    rocrate_path: pathlib.Path,
+    guid: Optional[str],
+    name: str,
+    description: str,
+    usedby: Optional[List[str]],
+    identifier: Optional[List[str]],
+    custom_properties: Optional[str],
+):
+    """Register BioChemEntity metadata with the specified RO-Crate."""
+    try:
+        ReadROCrateMetadata(rocrate_path)
+    except Exception as exc:
+        click.echo(f"ERROR Reading ROCrate: {exc}", err=True)
+        ctx.exit(code=1)
+
+    params = {
+        "guid": guid, "name": name, "description": description,
+        "cratePath": rocrate_path
+    }
+
+    if usedby:
+        params['usedBy'] = list(usedby)
+    if identifier:
+        params['identifier'] = list(identifier)
+
+    if custom_properties:
+        try:
+            custom_props = json.loads(custom_properties)
+            if not isinstance(custom_props, dict): raise ValueError("Custom properties must be a JSON object")
+            params.update(custom_props)
+        except Exception as e:
+            click.echo(f"ERROR processing custom properties: {e}", err=True)
+            ctx.exit(code=1)
+
+    # Filter None values before passing
+    filtered_params = {k: v for k, v in params.items() if v is not None}
+
+    try:
+        bioChemEntityInstance = GenerateBioChemEntity(**filtered_params)
+        AppendCrate(cratePath=rocrate_path, elements=[bioChemEntityInstance])
+        click.echo(bioChemEntityInstance.guid)
+    except ValidationError as e:
+        click.echo(f"ERROR: Sample Validation Failure\n{e}", err=True)
+        ctx.exit(code=1)
+    except Exception as exc:
+        click.echo(f"ERROR: {exc}", err=True)
+        ctx.exit(code=1)
+
 
 @register.command('subrocrate')
 @click.argument('rocrate-path', type=click.Path(exists=True, path_type=pathlib.Path))

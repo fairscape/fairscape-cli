@@ -10,10 +10,14 @@ readme = "README.md"
 requires-python = ">=3.8"
 authors = [
         { name = "Max Levinson",    email = "mal8ch@virginia.edu"},
+        { name = "Justin Niestroy", email = "jniestroy@gmail.com"},
         { name = "Sadnan Al Manir", email = "sadnanalmanir@gmail.com"},
         { name = "Tim Clark",       email = "twc8q@virginia.edu"}
 ]
-license = {file= "LICENSE"}
+license = "MIT"
+license-files = [
+    "LICENSE",
+]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
@@ -21,7 +25,6 @@ classifiers = [
     "Topic :: Software Development :: Build Tools",
     "Environment :: Console",
     "Framework :: Pydantic :: 2",
-    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
@@ -45,7 +48,8 @@ dependencies = [
         "frictionless",
         "beautifulsoup4",
         "pandas",
-        "rdflib"
+        "rdflib",
+        "mongomock"
 ]
 
 [tool.setuptools]
