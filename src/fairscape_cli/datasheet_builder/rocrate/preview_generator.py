@@ -8,10 +8,11 @@ class PreviewGenerator:
     DEFAULT_TEMPLATE = 'preview.html'
     DESCRIPTION_TRUNCATE_LENGTH = 100
 
-    def __init__(self, processor: ROCrateProcessor, template_engine: TemplateEngine, base_dir: str):
+    def __init__(self, processor: ROCrateProcessor, template_engine: TemplateEngine, base_dir: str, published: bool = False):
         self.processor = processor
         self.template_engine = template_engine
         self.base_dir = base_dir
+        self.published = published
 
     def _prepare_item_data(self, items):
         prepared_items = []
@@ -220,6 +221,7 @@ class PreviewGenerator:
         context = {
             'title': title or "Untitled RO-Crate",
             'id_value': id_value or "N/A",
+            'published': self.published,
             'version': version or "N/A",
             'description': description or "No description provided.",
             'doi': doi or "", 

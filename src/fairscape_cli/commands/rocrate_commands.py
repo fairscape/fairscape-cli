@@ -133,7 +133,12 @@ def register():
 @click.option('--file-format', required=True, help='Format of the software (e.g., py, js)')
 @click.option('--url', required=False, help='URL reference for the software')
 @click.option('--date-modified', required=False, help='Last modification date of the software (ISO format)')
+
+#File location options. If more than one is provided, the file_path is defaulted to.
 @click.option('--filepath', required=False, help='Path to the software file (relative to crate root)')
+@click.option('--content-url', required=False, help='Url to the software file (if hosted externally)')
+@click.option('--embargoed', required=False, is_flag=True, default=False)
+
 @click.option('--used-by-computation', required=False, multiple=True, help='Identifiers of computations that use this software')
 @click.option('--associated-publication', required=False, help='Associated publication identifier')
 @click.option('--additional-documentation', required=False, help='Additional documentation')
@@ -148,10 +153,12 @@ def registerSoftware(
     version: str,
     description: str,
     keywords: List[str],
-    file_format: str,
+    file_format: Optional[str],
     url: Optional[str],
     date_modified: Optional[str],
     filepath: Optional[str],
+    content_url: Optional[str],
+    embargoed: bool,
     used_by_computation: Optional[List[str]],
     associated_publication: Optional[str],
     additional_documentation: Optional[str],
@@ -163,6 +170,15 @@ def registerSoftware(
     except Exception as exc:
         click.echo(f"ERROR Reading ROCrate: {exc}", err=True)
         ctx.exit(code=1)
+    
+    #Logic to determine the file_path/location
+    if not filepath and not content_url and not embargoed:
+        click.echo("ERROR: Either 'filepath', 'content-url', or 'embargoed' must be provided for software registration.", err=True)
+        ctx.exit(code=1)
+    if not filepath and not content_url and embargoed:
+        filepath = "Embargoed"
+    if not filepath and content_url:
+        filepath = content_url
 
     params = {
         "guid": guid, "name": name, "author": author, "version": version,
@@ -210,9 +226,11 @@ def registerSoftware(
 @click.option('--description', required=True, help='Description of the dataset')
 @click.option('--keywords', required=True, multiple=True, help='Keywords for the dataset')
 @click.option('--data-format', required=True, help='Format of the dataset (e.g., csv, json)')
-@click.option('--filepath', required=True, help='Path to the dataset file')
+@click.option('--filepath', required=False, help='Path to the dataset file')
+@click.option('--content-url', required=False, help='Url to the software file (if hosted externally)')
+@click.option('--embargoed', required=False, is_flag=True, default=False)
 @click.option('--url', required=False, help='URL reference for the dataset')
-@click.option('--date-published', required=False, help='Publication date of the dataset (ISO format)')
+@click.option('--date-published', required=True, help='Publication date of the dataset (ISO format)')
 @click.option('--schema', required=False, help='Schema identifier for the dataset')
 @click.option('--used-by', required=False, multiple=True, help='Identifiers of computations that use this dataset')
 @click.option('--derived-from', required=False, multiple=True, help='Identifiers of datasets this one is derived from')
@@ -232,7 +250,9 @@ def registerDataset(
     description: str,
     keywords: List[str],
     data_format: str,
-    filepath: str,
+    filepath: Optional[str],
+    content_url: Optional[str],
+    embargoed: bool,
     url: Optional[str] = None,
     date_published: Optional[str] = None,
     schema: Optional[str] = None,
@@ -262,6 +282,15 @@ def registerDataset(
     except Exception as exc:
         click.echo(f"ERROR Reading ROCrate: {str(exc)}")
         ctx.exit(code=1)
+        
+    #Logic to determine the file_path/location
+    if not filepath and not content_url and not embargoed:
+        click.echo("ERROR: Either 'filepath', 'content-url', or 'embargoed' must be provided for dataset registration.", err=True)
+        ctx.exit(code=1)
+    if not filepath and not content_url and embargoed:
+        filepath = "Embargoed"
+    if not filepath and content_url:
+        filepath = content_url
     
     try:
         custom_props = {}
@@ -943,7 +972,7 @@ def addDataset(
 
         if summary_statistics_source and summary_statistics_destination:
             try:
-                copied_summary_stats_filepath = CopyToROCrate(summary_statistics_source, summary_statistics_destination, rocrate_path)
+                copied_summary_stats_filepath = CopyToROCrate(summary_statistics_source, summary_statistics_destination)
                 click.echo(f"Copied '{summary_statistics_source}' to '{copied_summary_stats_filepath}' inside the crate.")
 
                 summary_stats_guid, summary_stats_instance, computation_instance = generateSummaryStatsElements(

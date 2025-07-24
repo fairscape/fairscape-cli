@@ -113,7 +113,8 @@ class DatasheetGenerator:
                 preview_gen = PreviewGenerator(
                     processor=subcrate_processor,
                     template_engine=self.template_engine,
-                    base_dir=subcrate_dir
+                    base_dir=subcrate_dir,
+                    published=self.processor.published
                 )
                 saved_path = preview_gen.save_preview_html(output_path)
 

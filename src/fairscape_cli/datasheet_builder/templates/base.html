@@ -12,6 +12,8 @@
         color: #333;
         line-height: 1.5;
         background-color: #f5f5f5;
+        /* Added for smooth transition */
+        transition: margin-left 0.3s ease-in-out;
       }
       .container {
         max-width: 1100px;
@@ -19,6 +21,8 @@
         padding: 20px;
         background-color: white;
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        /* Added for smooth transition */
+        transition: margin-left 0.3s ease-in-out;
       }
       header {
         margin-bottom: 20px;
@@ -349,36 +353,6 @@
       footer a:hover {
         text-decoration: underline;
       }
-
-      @media print {
-        body {
-          background-color: white;
-        }
-        .container {
-          box-shadow: none;
-          max-width: 100%;
-          padding: 10px;
-        }
-        .view-full-link {
-          display: none;
-        }
-        details {
-          margin-bottom: 20px;
-        }
-        details > summary {
-          list-style: none;
-        }
-        details > summary::marker,
-        details > summary::-webkit-details-marker {
-          display: none;
-        }
-      }
-
-      @media (max-width: 768px) {
-        .compact-grid {
-          grid-template-columns: 1fr;
-        }
-      }
       .regulatory-section {
         margin-top: 20px;
         margin-bottom: 20px;
@@ -412,23 +386,143 @@
         margin-right: 5px;
       }
 
+      /* START: New styles for sidebar navigation */
+      #sidebar {
+        height: 100%;
+        width: 250px;
+        position: fixed;
+        z-index: 1000;
+        top: 0;
+        left: 0;
+        background-color: #2c3e50;
+        overflow-x: hidden;
+        transition: transform 0.3s ease-in-out;
+        padding-top: 60px;
+        transform: translateX(-100%); /* Hidden by default */
+      }
+
+      #sidebar.active {
+        transform: translateX(0); /* Shown */
+      }
+
+      #sidebar a {
+        padding: 12px 15px;
+        text-decoration: none;
+        font-size: 18px;
+        color: #f1f1f1;
+        display: block;
+        transition: 0.2s;
+      }
+
+      #sidebar a:hover {
+        background-color: #1a252f;
+      }
+
+      #sidebar .sidebar-title {
+        padding: 10px 15px;
+        font-size: 22px;
+        color: white;
+        font-weight: bold;
+        border-bottom: 1px solid #4a627a;
+        margin-bottom: 10px;
+      }
+
+      #sidebar-toggle {
+        position: fixed;
+        top: 15px;
+        left: 15px;
+        z-index: 1001;
+        background-color: #2c3e50;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        cursor: pointer;
+        font-size: 20px;
+        border-radius: 4px;
+        transition: left 0.3s ease-in-out;
+      }
+
+      /* When sidebar is active, push content and toggle button to the right */
+      body.sidebar-active {
+        margin-left: 250px;
+      }
+
+      body.sidebar-active #sidebar-toggle {
+        left: 265px; /* 250px sidebar width + 15px margin */
+      }
+      /* END: New styles for sidebar navigation */
+
+      @media print {
+        body {
+          background-color: white;
+          margin-left: 0 !important; /* Reset margin for printing */
+        }
+        .container {
+          box-shadow: none;
+          max-width: 100%;
+          padding: 10px;
+        }
+        .view-full-link,
+        #sidebar,
+        #sidebar-toggle {
+          display: none; /* Hide interactive elements on print */
+        }
+        details {
+          margin-bottom: 20px;
+        }
+        details > summary {
+          list-style: none;
+        }
+        details > summary::marker,
+        details > summary::-webkit-details-marker {
+          display: none;
+        }
+      }
+
       @media (max-width: 768px) {
+        .compact-grid,
         .regulatory-grid {
           grid-template-columns: 1fr;
+        }
+
+        /* On small screens, let the sidebar overlay the content instead of pushing it */
+        body.sidebar-active {
+          margin-left: 0;
+        }
+
+        body.sidebar-active #sidebar-toggle {
+          left: 15px; /* Keep toggle button in place */
         }
       }
     </style>
   </head>
   <body>
+    <!-- START: New HTML for Sidebar and Toggle Button -->
+    <button id="sidebar-toggle">☰</button>
+    <!-- Hamburger Icon -->
+
+    <nav id="sidebar">
+      <div class="sidebar-title">Navigation</div>
+      <a href="#dataset-details">Dataset Details</a>
+      <a href="#ai-readiness">AI Ready Information</a>
+      <a href="#composition">Composition</a>
+    </nav>
+    <!-- END: New HTML for Sidebar and Toggle Button -->
+
     <div class="container">
       <header>
         <h1 id="project-title">{{ title }}</h1>
         <div>Version: {{ version }}</div>
       </header>
 
-      {{ overview_section | safe }} {{ use_cases_section | safe }}
+      <!-- Added id="dataset-details" to link to the section -->
+      <div id="dataset-details">{{ overview_section | safe }}</div>
 
-      <div class="section-header">
+      <!-- Added id="ai-readiness" to link to the section -->
+      <div id="ai-readiness">{{ use_cases_section | safe }}</div>
+
+      <!-- Added id="composition" to link to the section -->
+      <div id="composition" class="section-header">
         <h2>Composition (Datasets {{ subcrate_count }})</h2>
       </div>
 
@@ -442,5 +536,19 @@
         >https://doi.org/10.1101/2024.12.23.629818</a
       >).
     </footer>
+
+    <!-- START: New JavaScript for Sidebar functionality -->
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const toggleBtn = document.getElementById("sidebar-toggle");
+        const sidebar = document.getElementById("sidebar");
+        const body = document.body;
+
+        toggleBtn.addEventListener("click", function () {
+          sidebar.classList.toggle("active");
+          body.classList.toggle("sidebar-active");
+        });
+      });
+    </script>
   </body>
 </html>

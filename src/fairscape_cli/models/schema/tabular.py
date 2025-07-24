@@ -247,16 +247,15 @@ class TabularValidationSchema(BaseModel):
         )
         
         report: Report = resource.validate() 
-        
         errors_list = [] 
         if not report.valid:
-            for task_error in report.errors: 
-                for error_detail in task_error.errors: 
+            for task in report.tasks:  # Changed from report.errors
+                for error_detail in task.errors: 
                     validation_error_model = ValidationError( 
                         message=error_detail.message,
                         row=error_detail.row_number if hasattr(error_detail, 'row_number') else None,
                         field=error_detail.field_name if hasattr(error_detail, 'field_name') else None,
-                        failed_keyword=error_detail.code if hasattr(error_detail, 'code') else "error"
+                        failed_keyword=error_detail.type if hasattr(error_detail, 'type') else 'error'
                     )
                     errors_list.append(validation_error_model)
                 

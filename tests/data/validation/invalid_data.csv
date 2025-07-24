@@ -1,0 +1,4 @@
+name,age,is_member
+David,twenty,1
+Eve,40,TRUE
+Frank,invalid_age,false

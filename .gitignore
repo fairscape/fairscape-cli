@@ -1,4 +1,4 @@
-tests/data/*
+#tests/data/*
 
 tests/test_generated/*
 *.DS_STORE
