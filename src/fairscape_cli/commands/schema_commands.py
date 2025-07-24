@@ -37,7 +37,7 @@ def schema():
 @click.option('--description', required=True, type=str)
 @click.option('--guid', required=False, type=str, default=None, show_default=False)
 @click.option('--separator', type=str, required=True)
-@click.option('--header', required=False, type=bool, default=True)
+@click.option('--header', required=False, is_flag=True, default=True)
 @click.argument('schema_file', type=str)
 @click.pass_context
 def create_tabular_schema(
@@ -199,7 +199,7 @@ def add_property_integer(ctx, name, index, description, maximum, minimum, value_
 @click.option('--items-datatype', type=str, required=True)
 @click.option('--min-items', type=int, required=False)
 @click.option('--max-items', type=int, required=False)
-@click.option('--unique-items', type=bool, required=False)
+@click.option('--unique-items', is_flag=True, required=False)
 @click.argument('schema_file', type=click.Path(exists=True))
 @click.pass_context
 def add_property_array(ctx, name, index, description, value_url, items_datatype, min_items, max_items, unique_items, schema_file):

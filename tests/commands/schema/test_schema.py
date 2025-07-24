@@ -24,7 +24,6 @@ class TestSchemaValidateCommands:
                 "--name", "Test People Schema",
                 "--description", "A comprehensive schema for testing people data validation",
                 "--separator", ",",
-                "--header", "true",
                 str(schema_path)
             ]
         )
@@ -154,7 +153,6 @@ class TestSchemaValidateCommands:
                 "--name", "Strict People Schema",
                 "--description", "A strict schema for validating people data with specific constraints",
                 "--separator", ",",
-                "--header", "true",
                 str(schema_path)
             ]
         )
@@ -295,7 +293,6 @@ class TestSchemaValidateCommands:
             "--name", "Comprehensive Workflow Schema",
             "--description", "A complete schema for testing the entire validation workflow",
             "--separator", ",",
-            "--header", "true",
             str(schema_path)
         ])
         assert create_result.exit_code == 0

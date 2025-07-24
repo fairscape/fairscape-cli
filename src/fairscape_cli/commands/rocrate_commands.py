@@ -136,7 +136,7 @@ def register():
 #File location options. If more than one is provided, the file_path is defaulted to.
 @click.option('--filepath', required=False, help='Path to the software file (relative to crate root)')
 @click.option('--content-url', required=False, help='Url to the software file (if hosted externally)')
-@click.option('--embargoed', required=False, type=bool, default=False)
+@click.option('--embargoed', required=False, is_flag=True, default=False)
 
 @click.option('--used-by-computation', required=False, multiple=True, help='Identifiers of computations that use this software')
 @click.option('--associated-publication', required=False, help='Associated publication identifier')
@@ -227,7 +227,7 @@ def registerSoftware(
 @click.option('--data-format', required=True, help='Format of the dataset (e.g., csv, json)')
 @click.option('--filepath', required=False, help='Path to the dataset file')
 @click.option('--content-url', required=False, help='Url to the software file (if hosted externally)')
-@click.option('--embargoed', required=False, type=bool, default=False)
+@click.option('--embargoed', required=False, is_flag=True, default=False)
 @click.option('--url', required=False, help='URL reference for the dataset')
 @click.option('--date-published', required=True, help='Publication date of the dataset (ISO format)')
 @click.option('--schema', required=False, help='Schema identifier for the dataset')
