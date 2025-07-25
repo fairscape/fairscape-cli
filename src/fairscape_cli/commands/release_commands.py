@@ -14,7 +14,7 @@ from fairscape_cli.models import (
 
 from fairscape_cli.datasheet_builder.rocrate.datasheet_generator import DatasheetGenerator
 
-@click.group('release_group')
+@click.group('release')
 def release_group():
     """Invoke operations on Research Object Crate (RO-CRate).
     """

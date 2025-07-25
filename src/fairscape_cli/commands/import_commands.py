@@ -170,7 +170,7 @@ def pull_physionet(
     usage_info: Optional[str],
     ethical_review: Optional[str],
     doi: Optional[str],
-    additional_property: Optional[List[tuple[str, str]]],
+    additional_property: Optional[List[Tuple[str, str]]],
 ):
     """Pulls PhysioNet project data (metadata and file structure) and converts it into an RO-Crate.
 
