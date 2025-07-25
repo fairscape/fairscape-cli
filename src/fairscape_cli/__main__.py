@@ -10,12 +10,15 @@ from fairscape_cli.commands.schema_commands import schema
 from fairscape_cli.commands.validate_commands import validate_group
 from fairscape_cli.commands.augment_commands import augment_group
 
-@click.group()
-def cli():
+@click.group(invoke_without_command=True)
+@click.pass_context
+def cli(ctx):
     """FAIRSCAPE CLI
-    A utility for packaging objects and validating metadata for FAIRSCAPE
-    """
-    pass
+     A utility for packaging objects and validating metadata for FAIRSCAPE
+     """
+    if ctx.invoked_subcommand is None:
+        ctx.info_name = ctx.find_root().info_name or 'cli'
+        click.echo(ctx.get_help())
 
 # Add the new top-level command groups
 cli.add_command(rocrate_group, name='rocrate')
