@@ -31,7 +31,7 @@ def GenerateROCrate(
    if not guid:
        sq = GenerateDatetimeSquid()
        seg = clean_guid(f"{name.lower().replace(' ', '-')}-{sq}")
-       guid = f"ark:{NAAN}/rocrate-{seg}/"
+       guid = f"ark:{NAAN}/rocrate-{seg}"
 
    metadata_descriptor = ROCrateMetadataFileElem.model_validate({
         "@id": "ro-crate-metadata.json",
@@ -112,7 +112,7 @@ class ROCrate(ROCrateMetadataElem):
     def generate_guid(self) -> str:
         if self.guid is None:
             sq = GenerateDatetimeSquid()
-            self.guid = f"ark:{NAAN}/rocrate-{self.name.replace(' ', '-').lower()}-{sq}/"
+            self.guid = f"ark:{NAAN}/rocrate-{self.name.replace(' ', '-').lower()}-{sq}"
         return self.guid
 
     def createCrateFolder(self):
