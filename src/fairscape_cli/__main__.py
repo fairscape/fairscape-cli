@@ -6,7 +6,6 @@ from fairscape_cli.commands.import_commands import import_group
 from fairscape_cli.commands.build_commands import build_group
 from fairscape_cli.commands.publish_commands import publish_group
 from fairscape_cli.commands.schema_commands import schema
-from fairscape_cli.commands.validate_commands import validate_group
 from fairscape_cli.commands.augment_commands import augment_group
 
 @click.group(invoke_without_command=True)
