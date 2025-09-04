@@ -24,7 +24,6 @@ cli.add_command(import_group, name='import')
 cli.add_command(build_group, name='build')
 cli.add_command(publish_group, name='publish')
 cli.add_command(schema, name='schema')
-cli.add_command(validate_group, name='validate')
 cli.add_command(augment_group, name='augment')
 
 if __name__ == "__main__":
