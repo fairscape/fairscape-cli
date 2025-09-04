@@ -27,7 +27,7 @@ def build_group():
     """Build derived artifacts from RO-Crates (datasheets, previews, graphs, Croissants)."""
     pass
 
-@build_group.command('build')
+@build_group.command('release')
 @click.argument('release-directory', type=click.Path(exists=False, path_type=pathlib.Path, file_okay=False, dir_okay=True))
 # Standard Crate Properties
 @click.option('--guid', required=False, type=str, default="", show_default=False, help="GUID for the parent release RO-Crate (generated if not provided).")
