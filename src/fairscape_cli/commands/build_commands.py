@@ -195,10 +195,7 @@ def build_release(
 
     # Existing RAI properties
     if limitations:
-        limitations_text = limitations
-        if prohibited_uses:
-            limitations_text += f"\n\nProhibited Uses: {prohibited_uses}"
-        rai_properties["rai:dataLimitations"] = limitations_text
+        rai_properties["rai:dataLimitations"] = limitations
     if potential_sources_of_bias:
         rai_properties["rai:dataBiases"] = potential_sources_of_bias
     if intended_use:
@@ -236,6 +233,8 @@ def build_release(
         additional_props.append({"@type": "PropertyValue", "name": "Completeness", "value": completeness})
     if human_subject:
         additional_props.append({"@type": "PropertyValue", "name": "Human Subject", "value": human_subject})
+    if prohibited_uses:
+        additional_props.append({"@type": "PropertyValue", "name": "Prohibited Uses", "value": prohibited_uses})
     
     if additional_properties:
         try:
