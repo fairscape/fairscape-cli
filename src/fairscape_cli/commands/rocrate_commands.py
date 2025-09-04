@@ -42,11 +42,39 @@ def rocrate_group():
 @click.option('--associated-publication', required=False, type=str)
 @click.option('--conditions-of-access', required=False, type=str)
 @click.option('--copyright-notice', required=False, type=str)
+@click.option('--maintenance-plan', required=False, type=str, help="RAI: Versioning, maintainers, and deprecation policies.")
+@click.option('--intended-use', required=False, type=str, help="RAI: Recommended dataset uses (e.g., training, validation).")
+@click.option('--limitations', required=False, type=str, help="RAI: Known limitations and non-recommended uses.")
+@click.option('--potential-sources-of-bias', required=False, type=str, help="RAI: Description of known biases in the dataset.")
+@click.option('--prohibited-uses', required=False, type=str, help="Prohibited uses of the release (appended to Limitations).")
+@click.option('--rai-data-collection', required=False, type=str, help="RAI: Description of the data collection process.")
+@click.option('--rai-data-collection-type', required=False, multiple=True, type=str, help="RAI: Type of data collection (e.g., 'Web Scraping', 'Surveys').")
+@click.option('--rai-missing-data-desc', required=False, type=str, help="RAI: Description of missing data in the dataset.")
+@click.option('--rai-raw-data-source', required=False, type=str, help="RAI: Description of the raw data source.")
+@click.option('--rai-collection-start-date', required=False, type=str, help="RAI: Start date of the data collection process (ISO format).")
+@click.option('--rai-collection-end-date', required=False, type=str, help="RAI: End date of the data collection process (ISO format).")
+@click.option('--rai-imputation-protocol', required=False, type=str, help="RAI: Description of the data imputation process.")
+@click.option('--rai-manipulation-protocol', required=False, type=str, help="RAI: Description of the data manipulation process.")
+@click.option('--rai-preprocessing-protocol', required=False, multiple=True, type=str, help="RAI: Steps taken to preprocess the data for ML use.")
+@click.option('--rai-annotation-protocol', required=False, type=str, help="RAI: Description of the annotation process (e.g., workforce, tasks).")
+@click.option('--rai-annotation-platform', required=False, multiple=True, type=str, help="RAI: Platform or tool used for human annotation.")
+@click.option('--rai-annotation-analysis', required=False, multiple=True, type=str, help="RAI: Analysis of annotations (e.g., disagreement resolution).")
+@click.option('--rai-sensitive-info', required=False, multiple=True, type=str, help="RAI: Description of any personal or sensitive information.")
+@click.option('--rai-social-impact', required=False, type=str, help="RAI: Discussion of the dataset's potential social impact.")
+@click.option('--rai-annotations-per-item', required=False, type=str, help="RAI: Number of human labels per dataset item.")
+@click.option('--rai-annotator-demographics', required=False, multiple=True, type=str, help="RAI: Demographic specifications about the annotators.")
+@click.option('--rai-machine-annotation-tools', required=False, multiple=True, type=str, help="RAI: Software used for automated data annotation.")
 @click.option('--custom-properties', required=False, type=str, help='JSON string with additional properties to include')
 def init(
     guid, name, organization_name, project_name, description, keywords, license,
     date_published, author, version, associated_publication, conditions_of_access,
-    copyright_notice, custom_properties
+    copyright_notice, maintenance_plan, intended_use, limitations, potential_sources_of_bias,
+    prohibited_uses, rai_data_collection, rai_data_collection_type, rai_missing_data_desc,
+    rai_raw_data_source, rai_collection_start_date, rai_collection_end_date,
+    rai_imputation_protocol, rai_manipulation_protocol, rai_preprocessing_protocol,
+    rai_annotation_protocol, rai_annotation_platform, rai_annotation_analysis,
+    rai_sensitive_info, rai_social_impact, rai_annotations_per_item,
+    rai_annotator_demographics, rai_machine_annotation_tools, custom_properties
 ):
     """Initialize an RO-Crate in the current working directory."""
     params = {
@@ -57,6 +85,60 @@ def init(
         "conditionsOfAccess": conditions_of_access, "copyrightNotice": copyright_notice,
         "path": pathlib.Path.cwd()
     }
+    
+    rai_properties = {}
+    if limitations:
+        limitations_text = limitations
+        if prohibited_uses:
+            limitations_text += f"\n\nProhibited Uses: {prohibited_uses}"
+        rai_properties["rai:dataLimitations"] = limitations_text
+    if potential_sources_of_bias:
+        rai_properties["rai:dataBiases"] = potential_sources_of_bias
+    if intended_use:
+        rai_properties["rai:dataUseCases"] = intended_use
+    if maintenance_plan:
+        rai_properties["rai:dataReleaseMaintenancePlan"] = maintenance_plan
+    if rai_data_collection:
+        rai_properties["rai:dataCollection"] = rai_data_collection
+    if rai_data_collection_type:
+        rai_properties["rai:dataCollectionType"] = list(rai_data_collection_type)
+    if rai_missing_data_desc:
+        rai_properties["rai:dataCollectionMissingData"] = rai_missing_data_desc
+    if rai_raw_data_source:
+        rai_properties["rai:dataCollectionRawData"] = rai_raw_data_source
+    if rai_imputation_protocol:
+        rai_properties["rai:dataImputationProtocol"] = rai_imputation_protocol
+    if rai_manipulation_protocol:
+        rai_properties["rai:dataManipulationProtocol"] = rai_manipulation_protocol
+    if rai_preprocessing_protocol:
+        rai_properties["rai:dataPreprocessingProtocol"] = list(rai_preprocessing_protocol)
+    if rai_annotation_protocol:
+        rai_properties["rai:dataAnnotationProtocol"] = rai_annotation_protocol
+    if rai_annotation_platform:
+        rai_properties["rai:dataAnnotationPlatform"] = list(rai_annotation_platform)
+    if rai_annotation_analysis:
+        rai_properties["rai:dataAnnotationAnalysis"] = list(rai_annotation_analysis)
+    if rai_sensitive_info:
+        rai_properties["rai:personalSensitiveInformation"] = list(rai_sensitive_info)
+    if rai_social_impact:
+        rai_properties["rai:dataSocialImpact"] = rai_social_impact
+    if rai_annotations_per_item:
+        rai_properties["rai:annotationsPerItem"] = rai_annotations_per_item
+    if rai_annotator_demographics:
+        rai_properties["rai:annotatorDemographics"] = list(rai_annotator_demographics)
+    if rai_machine_annotation_tools:
+        rai_properties["rai:machineAnnotationTools"] = list(rai_machine_annotation_tools)
+    
+    timeframe = []
+    if rai_collection_start_date:
+        timeframe.append(rai_collection_start_date)
+    if rai_collection_end_date:
+        timeframe.append(rai_collection_end_date)
+    if timeframe:
+        rai_properties["rai:dataCollectionTimeframe"] = timeframe
+    
+    params.update(rai_properties)
+    
     if custom_properties:
         try:
             custom_props = json.loads(custom_properties)
@@ -66,7 +148,6 @@ def init(
             click.echo(f"ERROR processing custom properties: {e}", err=True)
             return
 
-    # Filter None values before passing
     filtered_params = {k: v for k, v in params.items() if v is not None}
     passed_crate = GenerateROCrate(**filtered_params)
     click.echo(passed_crate.get("@id"))
@@ -87,11 +168,40 @@ def init(
 @click.option('--associated-publication', required=False, type=str)
 @click.option('--conditions-of-access', required=False, type=str)
 @click.option('--copyright-notice', required=False, type=str)
+@click.option('--maintenance-plan', required=False, type=str, help="RAI: Versioning, maintainers, and deprecation policies.")
+@click.option('--intended-use', required=False, type=str, help="RAI: Recommended dataset uses (e.g., training, validation).")
+@click.option('--limitations', required=False, type=str, help="RAI: Known limitations and non-recommended uses.")
+@click.option('--potential-sources-of-bias', required=False, type=str, help="RAI: Description of known biases in the dataset.")
+@click.option('--prohibited-uses', required=False, type=str, help="Prohibited uses of the release (appended to Limitations).")
+@click.option('--rai-data-collection', required=False, type=str, help="RAI: Description of the data collection process.")
+@click.option('--rai-data-collection-type', required=False, multiple=True, type=str, help="RAI: Type of data collection (e.g., 'Web Scraping', 'Surveys').")
+@click.option('--rai-missing-data-desc', required=False, type=str, help="RAI: Description of missing data in the dataset.")
+@click.option('--rai-raw-data-source', required=False, type=str, help="RAI: Description of the raw data source.")
+@click.option('--rai-collection-start-date', required=False, type=str, help="RAI: Start date of the data collection process (ISO format).")
+@click.option('--rai-collection-end-date', required=False, type=str, help="RAI: End date of the data collection process (ISO format).")
+@click.option('--rai-imputation-protocol', required=False, type=str, help="RAI: Description of the data imputation process.")
+@click.option('--rai-manipulation-protocol', required=False, type=str, help="RAI: Description of the data manipulation process.")
+@click.option('--rai-preprocessing-protocol', required=False, multiple=True, type=str, help="RAI: Steps taken to preprocess the data for ML use.")
+@click.option('--rai-annotation-protocol', required=False, type=str, help="RAI: Description of the annotation process (e.g., workforce, tasks).")
+@click.option('--rai-annotation-platform', required=False, multiple=True, type=str, help="RAI: Platform or tool used for human annotation.")
+@click.option('--rai-annotation-analysis', required=False, multiple=True, type=str, help="RAI: Analysis of annotations (e.g., disagreement resolution).")
+@click.option('--rai-sensitive-info', required=False, multiple=True, type=str, help="RAI: Description of any personal or sensitive information.")
+@click.option('--rai-social-impact', required=False, type=str, help="RAI: Discussion of the dataset's potential social impact.")
+@click.option('--rai-annotations-per-item', required=False, type=str, help="RAI: Number of human labels per dataset item.")
+@click.option('--rai-annotator-demographics', required=False, multiple=True, type=str, help="RAI: Demographic specifications about the annotators.")
+@click.option('--rai-machine-annotation-tools', required=False, multiple=True, type=str, help="RAI: Software used for automated data annotation.")
 @click.option('--custom-properties', required=False, type=str, help='JSON string with additional properties to include')
 def create(
     rocrate_path, guid, name, organization_name, project_name, description, keywords,
     license, date_published, author, version, associated_publication,
-    conditions_of_access, copyright_notice, custom_properties
+    conditions_of_access, copyright_notice, maintenance_plan, intended_use, limitations,
+    potential_sources_of_bias, prohibited_uses, rai_data_collection, rai_data_collection_type,
+    rai_missing_data_desc, rai_raw_data_source, rai_collection_start_date,
+    rai_collection_end_date, rai_imputation_protocol, rai_manipulation_protocol,
+    rai_preprocessing_protocol, rai_annotation_protocol, rai_annotation_platform,
+    rai_annotation_analysis, rai_sensitive_info, rai_social_impact,
+    rai_annotations_per_item, rai_annotator_demographics, rai_machine_annotation_tools,
+    custom_properties
 ):
     """Create an RO-Crate in the specified path."""
     params = {
@@ -102,6 +212,60 @@ def create(
         "conditionsOfAccess": conditions_of_access, "copyrightNotice": copyright_notice,
         "path": rocrate_path
     }
+    
+    rai_properties = {}
+    if limitations:
+        limitations_text = limitations
+        if prohibited_uses:
+            limitations_text += f"\n\nProhibited Uses: {prohibited_uses}"
+        rai_properties["rai:dataLimitations"] = limitations_text
+    if potential_sources_of_bias:
+        rai_properties["rai:dataBiases"] = potential_sources_of_bias
+    if intended_use:
+        rai_properties["rai:dataUseCases"] = intended_use
+    if maintenance_plan:
+        rai_properties["rai:dataReleaseMaintenancePlan"] = maintenance_plan
+    if rai_data_collection:
+        rai_properties["rai:dataCollection"] = rai_data_collection
+    if rai_data_collection_type:
+        rai_properties["rai:dataCollectionType"] = list(rai_data_collection_type)
+    if rai_missing_data_desc:
+        rai_properties["rai:dataCollectionMissingData"] = rai_missing_data_desc
+    if rai_raw_data_source:
+        rai_properties["rai:dataCollectionRawData"] = rai_raw_data_source
+    if rai_imputation_protocol:
+        rai_properties["rai:dataImputationProtocol"] = rai_imputation_protocol
+    if rai_manipulation_protocol:
+        rai_properties["rai:dataManipulationProtocol"] = rai_manipulation_protocol
+    if rai_preprocessing_protocol:
+        rai_properties["rai:dataPreprocessingProtocol"] = list(rai_preprocessing_protocol)
+    if rai_annotation_protocol:
+        rai_properties["rai:dataAnnotationProtocol"] = rai_annotation_protocol
+    if rai_annotation_platform:
+        rai_properties["rai:dataAnnotationPlatform"] = list(rai_annotation_platform)
+    if rai_annotation_analysis:
+        rai_properties["rai:dataAnnotationAnalysis"] = list(rai_annotation_analysis)
+    if rai_sensitive_info:
+        rai_properties["rai:personalSensitiveInformation"] = list(rai_sensitive_info)
+    if rai_social_impact:
+        rai_properties["rai:dataSocialImpact"] = rai_social_impact
+    if rai_annotations_per_item:
+        rai_properties["rai:annotationsPerItem"] = rai_annotations_per_item
+    if rai_annotator_demographics:
+        rai_properties["rai:annotatorDemographics"] = list(rai_annotator_demographics)
+    if rai_machine_annotation_tools:
+        rai_properties["rai:machineAnnotationTools"] = list(rai_machine_annotation_tools)
+    
+    timeframe = []
+    if rai_collection_start_date:
+        timeframe.append(rai_collection_start_date)
+    if rai_collection_end_date:
+        timeframe.append(rai_collection_end_date)
+    if timeframe:
+        rai_properties["rai:dataCollectionTimeframe"] = timeframe
+    
+    params.update(rai_properties)
+    
     if custom_properties:
         try:
             custom_props = json.loads(custom_properties)
@@ -111,7 +275,6 @@ def create(
             click.echo(f"ERROR processing custom properties: {e}", err=True)
             return
 
-    # Filter None values before passing
     filtered_params = {k: v for k, v in params.items() if v is not None}
     passed_crate = GenerateROCrate(**filtered_params)
     click.echo(passed_crate.get("@id"))
