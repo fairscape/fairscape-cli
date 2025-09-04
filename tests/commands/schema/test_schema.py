@@ -24,7 +24,6 @@ class TestSchemaValidateCommands:
                 "--name", "Test People Schema",
                 "--description", "A comprehensive schema for testing people data validation",
                 "--separator", ",",
-                "--header", "true",
                 str(schema_path)
             ]
         )
@@ -131,7 +130,7 @@ class TestSchemaValidateCommands:
         result = runner.invoke(
             fairscape_cli_app,
             [
-                "validate", "schema",
+                "schema", "validate",
                 "--schema", str(schema_path),
                 "--data", "tests/data/validation/valid_data.csv"
             ]
@@ -154,7 +153,6 @@ class TestSchemaValidateCommands:
                 "--name", "Strict People Schema",
                 "--description", "A strict schema for validating people data with specific constraints",
                 "--separator", ",",
-                "--header", "true",
                 str(schema_path)
             ]
         )
@@ -189,7 +187,7 @@ class TestSchemaValidateCommands:
         result = runner.invoke(
             fairscape_cli_app,
             [
-                "validate", "schema",
+                "schema", "validate",
                 "--schema", str(schema_path),
                 "--data", "tests/data/validation/invalid_data.csv"
             ]
@@ -216,7 +214,7 @@ class TestSchemaValidateCommands:
         result = runner.invoke(
             fairscape_cli_app,
             [
-                "validate", "schema", 
+                "schema", "validate",
                 "--schema", str(schema_path),
                 "--data", "tests/data/validation/invalid_data.csv"
             ]
@@ -295,7 +293,6 @@ class TestSchemaValidateCommands:
             "--name", "Comprehensive Workflow Schema",
             "--description", "A complete schema for testing the entire validation workflow",
             "--separator", ",",
-            "--header", "true",
             str(schema_path)
         ])
         assert create_result.exit_code == 0
@@ -317,14 +314,14 @@ class TestSchemaValidateCommands:
             assert result.exit_code == 0, f"Failed to add {prop_type} property: {result.output}"
         
         valid_result = runner.invoke(fairscape_cli_app, [
-            "validate", "schema",
+            "schema", "validate",
             "--schema", str(schema_path),
             "--data", "tests/data/validation/valid_data.csv"
         ])
         assert valid_result.exit_code == 0
         
         invalid_result = runner.invoke(fairscape_cli_app, [
-            "validate", "schema", 
+            "schema", "validate",
             "--schema", str(schema_path),
             "--data", "tests/data/validation/invalid_data.csv"
         ])

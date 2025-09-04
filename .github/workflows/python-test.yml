@@ -1,18 +1,15 @@
 name: Test Against Multiple Python Versions
-
-on: 
+on:
+  push:
+    branches:
+      - main
   pull_request:
-    types: 
-      opened
-
 jobs:
   build:
-
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: ["3.8", "3.9", "3.10", "3.11"]
-
     steps:
       - uses: actions/checkout@v4
         with:
@@ -21,10 +18,11 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
-      # You can test your matrix by printing the current Python version
       - name: Upgrade Pip
         run: pip install --upgrade pip
-      - name: Install Local Code
-        run: pip install .
-      - name: Run local Tests
-        run: cd /home/runner/work/fairscape-cli/fairscape-cli && ./tests/bats/bin/bats tests/test.bats
+      - name: Install dependencies
+        run: |
+          pip install pytest pytest-cov
+          pip install .
+      - name: Run tests with coverage
+        run: pytest --cov=fairscape_models --cov-report=term-missing

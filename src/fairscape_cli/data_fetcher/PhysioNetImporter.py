@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup, Tag
 import pathlib
 from datetime import datetime
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Tuple
 import sys
 import urllib.parse
 import os
@@ -50,8 +50,7 @@ class PhysioNetImporter:
             path += '/'
         return urllib.parse.urlunparse(parsed._replace(path=path))
 
-    def _parse_physionet_url(self, url: str) -> tuple[Optional[str], Optional[str]]:
-        """Find version and project ID in the URL path."""
+    def _parse_physionet_url(self, url: str) -> Tuple[Optional[str], Optional[str]]:
         parsed = urllib.parse.urlparse(url)
         parts = [part for part in parsed.path.split('/') if part]
         
@@ -66,7 +65,6 @@ class PhysioNetImporter:
 
 
     def _fetch_and_parse_html(self, url: str) -> BeautifulSoup:
-        """"Fetches HTML content from a URL and parses it with BeautifulSoup."""
         try:
             response = requests.get(url)
             response.raise_for_status()
@@ -85,7 +83,6 @@ class PhysioNetImporter:
              raise RuntimeError(f"Error parsing HTML from {url}: {e}")
 
     def _extract_metadata(self, soup: BeautifulSoup) -> Dict[str, Any]:
-        """Pulls metadata from the HTML soup."""
         metadata: Dict[str, Any] = {}
         all_publications_found: List[str] = []
         
@@ -325,10 +322,6 @@ class PhysioNetImporter:
 
 
     def _process_file_table_rows(self, table_body_soup: BeautifulSoup, current_subdir_path: str, all_files_list: List[Dict[str, Any]], subdirs_to_explore: List[str], crate_default_date_published: str):
-        """
-        Processes rows from a single file table body soup, adding files to the list
-        and subdirectories to the exploration queue.
-        """
         
         rows_to_process = list(table_body_soup.select('tr'))
 

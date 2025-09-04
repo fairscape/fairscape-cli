@@ -15,6 +15,7 @@ from fairscape_cli.models.computation import GenerateComputation
 from fairscape_cli.models.sample import GenerateSample
 from fairscape_cli.models.instrument import GenerateInstrument
 from fairscape_cli.models.experiment import GenerateExperiment
+from fairscape_cli.models.biochem_entity import GenerateBioChemEntity
 
 from fairscape_cli.models.utils import FileNotInCrateException
 from fairscape_cli.config import NAAN
@@ -132,7 +133,12 @@ def register():
 @click.option('--file-format', required=True, help='Format of the software (e.g., py, js)')
 @click.option('--url', required=False, help='URL reference for the software')
 @click.option('--date-modified', required=False, help='Last modification date of the software (ISO format)')
+
+#File location options. If more than one is provided, the file_path is defaulted to.
 @click.option('--filepath', required=False, help='Path to the software file (relative to crate root)')
+@click.option('--content-url', required=False, help='Url to the software file (if hosted externally)')
+@click.option('--embargoed', required=False, is_flag=True, default=False)
+
 @click.option('--used-by-computation', required=False, multiple=True, help='Identifiers of computations that use this software')
 @click.option('--associated-publication', required=False, help='Associated publication identifier')
 @click.option('--additional-documentation', required=False, help='Additional documentation')
@@ -147,10 +153,12 @@ def registerSoftware(
     version: str,
     description: str,
     keywords: List[str],
-    file_format: str,
+    file_format: Optional[str],
     url: Optional[str],
     date_modified: Optional[str],
     filepath: Optional[str],
+    content_url: Optional[str],
+    embargoed: bool,
     used_by_computation: Optional[List[str]],
     associated_publication: Optional[str],
     additional_documentation: Optional[str],
@@ -162,6 +170,15 @@ def registerSoftware(
     except Exception as exc:
         click.echo(f"ERROR Reading ROCrate: {exc}", err=True)
         ctx.exit(code=1)
+    
+    #Logic to determine the file_path/location
+    if not filepath and not content_url and not embargoed:
+        click.echo("ERROR: Either 'filepath', 'content-url', or 'embargoed' must be provided for software registration.", err=True)
+        ctx.exit(code=1)
+    if not filepath and not content_url and embargoed:
+        filepath = "Embargoed"
+    if not filepath and content_url:
+        filepath = content_url
 
     params = {
         "guid": guid, "name": name, "author": author, "version": version,
@@ -209,7 +226,9 @@ def registerSoftware(
 @click.option('--description', required=True, help='Description of the dataset')
 @click.option('--keywords', required=True, multiple=True, help='Keywords for the dataset')
 @click.option('--data-format', required=True, help='Format of the dataset (e.g., csv, json)')
-@click.option('--filepath', required=True, help='Path to the dataset file')
+@click.option('--filepath', required=False, help='Path to the dataset file')
+@click.option('--content-url', required=False, help='Url to the software file (if hosted externally)')
+@click.option('--embargoed', required=False, is_flag=True, default=False)
 @click.option('--url', required=False, help='URL reference for the dataset')
 @click.option('--date-published', required=True, help='Publication date of the dataset (ISO format)')
 @click.option('--schema', required=False, help='Schema identifier for the dataset')
@@ -231,7 +250,9 @@ def registerDataset(
     description: str,
     keywords: List[str],
     data_format: str,
-    filepath: str,
+    filepath: Optional[str],
+    content_url: Optional[str],
+    embargoed: bool,
     url: Optional[str] = None,
     date_published: Optional[str] = None,
     schema: Optional[str] = None,
@@ -261,6 +282,15 @@ def registerDataset(
     except Exception as exc:
         click.echo(f"ERROR Reading ROCrate: {str(exc)}")
         ctx.exit(code=1)
+        
+    #Logic to determine the file_path/location
+    if not filepath and not content_url and not embargoed:
+        click.echo("ERROR: Either 'filepath', 'content-url', or 'embargoed' must be provided for dataset registration.", err=True)
+        ctx.exit(code=1)
+    if not filepath and not content_url and embargoed:
+        filepath = "Embargoed"
+    if not filepath and content_url:
+        filepath = content_url
     
     try:
         custom_props = {}
@@ -620,6 +650,67 @@ def registerExperiment(
     except Exception as exc:
         click.echo(f"ERROR: {exc}", err=True)
         ctx.exit(code=1)
+
+
+@register.command('biochementity')
+@click.argument('rocrate-path', type=click.Path(exists=True, path_type=pathlib.Path))
+@click.option('--guid', type=str, required=False, default=None, help='Identifier for the sample (generated if not provided)')
+@click.option('--name', required=True, help='Name of the sample')
+@click.option('--description', required=True, help='Description of the sample')
+@click.option('--usedby', required=False, multiple=True, help="Identifiers of Experiments/Samples/Datasets that used this entity")
+@click.option('--identifier', required=False, multiple=True, help="Other known identifiers for this biochem entity formatted as '<propertyName>:<propertyValue>' ")
+@click.option('--custom-properties', required=False, type=str, help='JSON string with additional properties to include')
+@click.pass_context
+def registerBioChemEntity(
+    ctx,
+    rocrate_path: pathlib.Path,
+    guid: Optional[str],
+    name: str,
+    description: str,
+    usedby: Optional[List[str]],
+    identifier: Optional[List[str]],
+    custom_properties: Optional[str],
+):
+    """Register BioChemEntity metadata with the specified RO-Crate."""
+    try:
+        ReadROCrateMetadata(rocrate_path)
+    except Exception as exc:
+        click.echo(f"ERROR Reading ROCrate: {exc}", err=True)
+        ctx.exit(code=1)
+
+    params = {
+        "guid": guid, "name": name, "description": description,
+        "cratePath": rocrate_path
+    }
+
+    if usedby:
+        params['usedBy'] = list(usedby)
+    if identifier:
+        params['identifier'] = list(identifier)
+
+    if custom_properties:
+        try:
+            custom_props = json.loads(custom_properties)
+            if not isinstance(custom_props, dict): raise ValueError("Custom properties must be a JSON object")
+            params.update(custom_props)
+        except Exception as e:
+            click.echo(f"ERROR processing custom properties: {e}", err=True)
+            ctx.exit(code=1)
+
+    # Filter None values before passing
+    filtered_params = {k: v for k, v in params.items() if v is not None}
+
+    try:
+        bioChemEntityInstance = GenerateBioChemEntity(**filtered_params)
+        AppendCrate(cratePath=rocrate_path, elements=[bioChemEntityInstance])
+        click.echo(bioChemEntityInstance.guid)
+    except ValidationError as e:
+        click.echo(f"ERROR: Sample Validation Failure\n{e}", err=True)
+        ctx.exit(code=1)
+    except Exception as exc:
+        click.echo(f"ERROR: {exc}", err=True)
+        ctx.exit(code=1)
+
 
 @register.command('subrocrate')
 @click.argument('rocrate-path', type=click.Path(exists=True, path_type=pathlib.Path))

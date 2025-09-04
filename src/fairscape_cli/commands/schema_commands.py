@@ -37,7 +37,7 @@ def schema():
 @click.option('--description', required=True, type=str)
 @click.option('--guid', required=False, type=str, default=None, show_default=False)
 @click.option('--separator', type=str, required=True)
-@click.option('--header', required=False, type=bool, default=True)
+@click.option('--header', required=False, is_flag=True, default=True)
 @click.argument('schema_file', type=str)
 @click.pass_context
 def create_tabular_schema(
@@ -199,7 +199,7 @@ def add_property_integer(ctx, name, index, description, maximum, minimum, value_
 @click.option('--items-datatype', type=str, required=True)
 @click.option('--min-items', type=int, required=False)
 @click.option('--max-items', type=int, required=False)
-@click.option('--unique-items', type=bool, required=False)
+@click.option('--unique-items', is_flag=True, required=False)
 @click.argument('schema_file', type=click.Path(exists=True))
 @click.pass_context
 def add_property_array(ctx, name, index, description, value_url, items_datatype, min_items, max_items, unique_items, schema_file):
@@ -401,3 +401,73 @@ def register_schema(
     except Exception as exc:
         click.echo(f"ERROR: {str(exc)}")
         ctx.exit(code=1)
+
+@schema.command('validate')
+@click.option('--schema', type=str, required=True)
+@click.option('--data', type=str, required=True)
+@click.pass_context
+def validate(ctx, schema, data): 
+    """Execute validation of a Schema against the provided data."""
+    if 'ark' not in schema:
+        schema_path = pathlib.Path(schema)
+        if not schema_path.exists():
+            click.echo(f"ERROR: Schema file at path {schema} does not exist")
+            ctx.exit(1)
+    
+    data_path = pathlib.Path(data)
+    if not data_path.exists():
+        click.echo(f"ERROR: Data file at path {data} does not exist")
+        ctx.exit(1)
+
+    try:
+        with open(schema) as f:
+            schema_json = json.load(f)
+        
+        schema_class = determine_schema_type(data)
+        validation_schema = schema_class.from_dict(schema_json)
+        
+        validation_errors = validation_schema.validate_file(data)
+
+        if len(validation_errors) != 0:
+            error_table = PrettyTable()
+            if isinstance(validation_schema, HDF5ValidationSchema):
+                error_table.field_names = ['path', 'error_type', 'failed_keyword', 'message']
+            else:
+                error_table.field_names = ['row', 'error_type', 'failed_keyword', 'message']
+
+            for err in validation_errors:
+                if isinstance(validation_schema, HDF5ValidationSchema):
+                    error_table.add_row([
+                        err.path,
+                        err.type,
+                        err.failed_keyword,
+                        str(err.message)
+                    ])
+                else:
+                    error_table.add_row([
+                        err.row,
+                        err.type, 
+                        err.failed_keyword,
+                        str(err.message)
+                    ])
+
+            print(error_table)
+            ctx.exit(1)
+        else:
+            print('Validation Success')
+            ctx.exit(0)
+
+    except ValidationError as metadata_error:
+        click.echo("Error with schema definition")
+        for validation_failure in metadata_error.errors(): 
+            click.echo(f"property: {validation_failure.get('loc')} \tmsg: {validation_failure.get('msg')}")
+        ctx.exit(1)
+
+# Placeholder for future RO-Crate structural validation
+# @validate_group.command('crate')
+# @click.argument('rocrate-path', type=click.Path(exists=True, path_type=pathlib.Path))
+# def validate_crate(ctx, rocrate_path):
+#     """Validate the structure and metadata of an RO-Crate."""
+#     # Implementation using RO-Crate-py or custom checks
+#     click.echo(f"Validating RO-Crate at {rocrate_path} (Not implemented yet)")
+#     pass
