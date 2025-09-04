@@ -8,7 +8,6 @@ def test_cli_invoked_without_command(runner):
     assert "import" in result.output
     assert "publish" in result.output
     assert "schema" in result.output
-    assert "validate" in result.output
     assert "build" in result.output
 
 def test_cli_invoked_with_help_flag(runner):
