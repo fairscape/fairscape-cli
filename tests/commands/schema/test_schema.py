@@ -130,7 +130,7 @@ class TestSchemaValidateCommands:
         result = runner.invoke(
             fairscape_cli_app,
             [
-                "validate", "schema",
+                "schema", "validate",
                 "--schema", str(schema_path),
                 "--data", "tests/data/validation/valid_data.csv"
             ]
@@ -187,7 +187,7 @@ class TestSchemaValidateCommands:
         result = runner.invoke(
             fairscape_cli_app,
             [
-                "validate", "schema",
+                "schema", "validate",
                 "--schema", str(schema_path),
                 "--data", "tests/data/validation/invalid_data.csv"
             ]
@@ -214,7 +214,7 @@ class TestSchemaValidateCommands:
         result = runner.invoke(
             fairscape_cli_app,
             [
-                "validate", "schema", 
+                "schema", "validate",
                 "--schema", str(schema_path),
                 "--data", "tests/data/validation/invalid_data.csv"
             ]
@@ -314,14 +314,14 @@ class TestSchemaValidateCommands:
             assert result.exit_code == 0, f"Failed to add {prop_type} property: {result.output}"
         
         valid_result = runner.invoke(fairscape_cli_app, [
-            "validate", "schema",
+            "schema", "validate",
             "--schema", str(schema_path),
             "--data", "tests/data/validation/valid_data.csv"
         ])
         assert valid_result.exit_code == 0
         
         invalid_result = runner.invoke(fairscape_cli_app, [
-            "validate", "schema", 
+            "schema", "validate",
             "--schema", str(schema_path),
             "--data", "tests/data/validation/invalid_data.csv"
         ])
