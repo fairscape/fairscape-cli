@@ -17,10 +17,14 @@ from fairscape_cli.models import (
     collect_subcrate_metadata
 )
 
+from fairscape_models.rocrate import ROCrateV1_2
+from fairscape_models.conversion.converter import ROCToTargetConverter
+from fairscape_models.conversion.mapping.croissant import MAPPING_CONFIGURATION as CROISSANT_MAPPING
+
 
 @click.group('build')
 def build_group():
-    """Build derived artifacts from RO-Crates (datasheets, previews, graphs)."""
+    """Build derived artifacts from RO-Crates (datasheets, previews, graphs, Croissants)."""
     pass
 
 @build_group.command('release')
@@ -371,6 +375,49 @@ def generate_evidence_graph(
             
     except Exception as e:
         click.echo(f"ERROR: {str(e)}")
+        ctx.exit(1)
+        
+@build_group.command('croissant')
+@click.argument('rocrate-path', type=click.Path(exists=True, path_type=pathlib.Path))
+@click.option('--output', required=False, type=click.Path(path_type=pathlib.Path), help="Output Croissant JSON file path (defaults to croissant.json in crate dir).")
+@click.pass_context
+def build_croissant(ctx, rocrate_path, output):
+    """Convert an RO-Crate to Croissant JSON-LD format."""
+
+    if rocrate_path.is_dir():
+        metadata_file = rocrate_path / "ro-crate-metadata.json"
+        crate_dir = rocrate_path
+    elif rocrate_path.name == "ro-crate-metadata.json":
+        metadata_file = rocrate_path
+        crate_dir = rocrate_path.parent
+    else:
+        click.echo(f"ERROR: Input path must be an RO-Crate directory or a ro-crate-metadata.json file.", err=True)
+        ctx.exit(1)
+
+    if not metadata_file.exists():
+        click.echo(f"ERROR: Metadata file not found: {metadata_file}", err=True)
+        ctx.exit(1)
+
+    output_path = output if output else crate_dir / "croissant.json"
+
+    click.echo(f"Converting RO-Crate to Croissant: {metadata_file}")
+    click.echo(f"Outputting to: {output_path}")
+
+    try:
+        with open(metadata_file, 'r') as f:
+            metadata = json.load(f)
+        
+        source_crate = ROCrateV1_2(**metadata)
+        croissant_converter = ROCToTargetConverter(source_crate, CROISSANT_MAPPING)
+        croissant_result = croissant_converter.convert()
+        
+        with open(output_path, 'w') as f:
+            json.dump(croissant_result.model_dump(by_alias=True, exclude_none=True), f, indent=2)
+        
+        click.echo(f"Croissant conversion completed successfully: {output_path}")
+    except Exception as e:
+        click.echo(f"ERROR: Failed to convert RO-Crate to Croissant: {e}", err=True)
+        traceback.print_exc()
         ctx.exit(1)
         
 # Placeholder for explicit preview generation
