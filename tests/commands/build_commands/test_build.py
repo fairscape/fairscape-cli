@@ -239,8 +239,8 @@ class TestBuildCommands:
             metadata = json.load(f)
         
         root_dataset = metadata['@graph'][1] 
-        assert "hasEvidenceGraph" in root_dataset
-        assert root_dataset["hasEvidenceGraph"]["@id"] == str(evidence_html_path)
+        assert "localEvidenceGraph" in root_dataset
+        assert root_dataset["localEvidenceGraph"]["@id"] == str(evidence_html_path)
 
     def test_build_evidence_graph_with_directory(self, runner, test_release_crate: pathlib.Path):
         """Test evidence graph generation with directory path"""
