@@ -392,7 +392,7 @@ def generate_evidence_graph(
             i = 0
             for entity in metadata.get('@graph', []):
                 if i == 1:
-                    entity['hasEvidenceGraph'] = {
+                    entity['localEvidenceGraph'] = {
                         "@id": str(html_output_path)
                     }
                     break
