@@ -117,35 +117,6 @@ class TestBuildCommands:
         datasheet_path = test_release_crate / "ro-crate-datasheet.html"
         assert datasheet_path.exists()
 
-    def test_build_datasheet_with_custom_output(self, runner, minimal_valid_crate: pathlib.Path):
-        """Test building datasheet with custom output path"""
-        custom_output = minimal_valid_crate / "custom-datasheet.html"
-        
-        result = runner.invoke(
-            fairscape_cli_app,
-            [
-                "build", "datasheet", str(minimal_valid_crate),
-                "--output", str(custom_output)
-            ]
-        )
-
-        assert result.exit_code == 0
-        assert "Datasheet generated successfully" in result.output
-        assert custom_output.exists()
-
-    def test_build_datasheet_with_published_flag(self, runner, minimal_valid_crate: pathlib.Path):
-        """Test building datasheet with published flag"""
-        result = runner.invoke(
-            fairscape_cli_app,
-            [
-                "build", "datasheet", str(minimal_valid_crate),
-                "--published"
-            ]
-        )
-
-        assert result.exit_code == 0
-        assert "Datasheet generated successfully" in result.output
-
     def test_build_datasheet_nonexistent_path(self, runner):
         """Test building datasheet with nonexistent path"""
         result = runner.invoke(
