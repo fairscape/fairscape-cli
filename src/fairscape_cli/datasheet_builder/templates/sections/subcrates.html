@@ -216,20 +216,21 @@
             <span class="card-title">Inputs ({{ subcrate.inputs_count }})</span>
           </div>
           <div class="card-content">
-            {% if subcrate.samples_count > 0 %}
+            {% if subcrate.samples_count > 0 %} {% if subcrate.cell_lines %}
             <div class="stat-row">
               <span class="stat-label">Derived From: </span>
-              {% if subcrate.cell_lines %} {% for line_id, cell_info in
-              subcrate.cell_lines.items() %}
+              {% for line_id, cell_info in subcrate.cell_lines.items() %}
               <span class="stat-value"
-                >{{ cell_info.name }}. {{ cell_info.organism_name }}. ({{
-                cell_info.identifier }})</span
+                >{{ cell_info.name }}. {{ cell_info.organism_name }}.</span
               >
-              {% endfor %} {% else %}
-              <span class="stat-value">Not specified</span>
-              {% endif %}
+              {% if not loop.last %}, {% endif %} {% endfor %}
             </div>
-            {% endif %} {% if subcrate.input_datasets %}
+            {% else %}
+            <div class="stat-row">
+              <span class="stat-label">Derived From: </span>
+              <span class="stat-value">Not specified</span>
+            </div>
+            {% endif %} {% endif %} {% if subcrate.input_datasets %}
             <div class="stat-row">
               <span class="stat-label">Datasets: </span>
               <span class="stat-value"
@@ -297,9 +298,7 @@
       </div>
     </div>
     <div class="view-full-link">
-      <a href="{{ subcrate.metadata_path.split('/')[0] }}/ro-crate-preview.html"
-        >View Full Dataset Details</a
-      >
+      <a href="{{ subcrate.preview_url }}">View Full Dataset Details</a>
     </div>
   </div>
   {% endfor %} {% else %}
