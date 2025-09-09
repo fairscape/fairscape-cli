@@ -125,7 +125,7 @@ fairscape-cli schema add-to-crate \
     './simple-computation/input_schema.json'
 
 # Validate the input data against the schema
-fairscape-cli validate schema \
+fairscape-cli schema validate \
     --schema './simple-computation/input_schema.json' \
     --data './simple-computation/input.csv'
 ```
@@ -182,7 +182,7 @@ fairscape-cli schema infer \
     './simple-computation/output_schema.json'
 
 # Validate the output data against the inferred schema
-fairscape-cli validate schema \
+fairscape-cli schema validate \
     --schema './simple-computation/output_schema.json' \
     --data './simple-computation/output.csv'
 ```
@@ -288,7 +288,7 @@ Now, let's build a release crate that combines our local computation and the ext
 
 ```bash
 # Create a release RO-Crate
-fairscape-cli release build ./ \
+fairscape-cli build release ./ \
     --guid "ark:59852/example-release-for-demo" \
     --name "SRA Genomic Data Example Release - 2025" \
     --organization-name "Example Research Institute" \

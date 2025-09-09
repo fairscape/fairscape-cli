@@ -19,10 +19,8 @@ nav:
   - Commands:
       - RO-Crate: commands/rocrate.md
       - Schema: commands/schema.md
-      - Validation: commands/validate.md
       - Import: commands/import.md
       - Build: commands/build.md
-      - Release: commands/release.md
       - Publishing: commands/publish.md
 
 theme:

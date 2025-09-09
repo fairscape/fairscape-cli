@@ -146,6 +146,23 @@ fairscape-cli build release [OPTIONS] RELEASE_DIRECTORY
 - `--potential-sources-of-bias TEXT` - Potential sources of bias in the release
 - `--human-subject TEXT` - Human subject involvement information
 - `--ethical-review TEXT` - Ethical review information
+- `--rai-data-collection TEXT` - RAI: Description of the data collection process
+- `--rai-data-collection-type TEXT` - RAI: Type of data collection (e.g., 'Web Scraping', 'Surveys') (can be used multiple times)
+- `--rai-missing-data-desc TEXT` - RAI: Description of missing data in the dataset
+- `--rai-raw-data-source TEXT` - RAI: Description of the raw data source
+- `--rai-collection-start-date TEXT` - RAI: Start date of the data collection process (ISO format)
+- `--rai-collection-end-date TEXT` - RAI: End date of the data collection process (ISO format)
+- `--rai-imputation-protocol TEXT` - RAI: Description of the data imputation process
+- `--rai-manipulation-protocol TEXT` - RAI: Description of the data manipulation process
+- `--rai-preprocessing-protocol TEXT` - RAI: Steps taken to preprocess the data for ML use (can be used multiple times)
+- `--rai-annotation-protocol TEXT` - RAI: Description of the annotation process (e.g., workforce, tasks)
+- `--rai-annotation-platform TEXT` - RAI: Platform or tool used for human annotation (can be used multiple times)
+- `--rai-annotation-analysis TEXT` - RAI: Analysis of annotations (e.g., disagreement resolution) (can be used multiple times)
+- `--rai-sensitive-info TEXT` - RAI: Description of any personal or sensitive information (can be used multiple times)
+- `--rai-social-impact TEXT` - RAI: Discussion of the dataset's potential social impact
+- `--rai-annotations-per-item TEXT` - RAI: Number of human labels per dataset item
+- `--rai-annotator-demographics TEXT` - RAI: Demographic specifications about the annotators (can be used multiple times)
+- `--rai-machine-annotation-tools TEXT` - RAI: Software used for automated data annotation (can be used multiple times)
 - `--additional-properties TEXT` - JSON string with additional property values
 - `--custom-properties TEXT` - JSON string with additional properties for the parent crate
 
@@ -167,7 +184,14 @@ fairscape-cli build release ./my_release \
     --contact-email "example@example.org" \
     --confidentiality-level "HL7 Unrestricted" \
     --funder "Example Agency" \
-    --citation "Example Research Institute (2023). Genomic Data Example Release."
+    --citation "Example Research Institute (2023). Genomic Data Example Release." \
+    --rai-data-collection "Data collected via automated web scraping of public repositories" \
+    --rai-data-collection-type "Web Scraping" \
+    --rai-data-collection-type "API Access" \
+    --rai-collection-start-date "2023-01-01T00:00:00Z" \
+    --rai-collection-end-date "2023-12-31T23:59:59Z" \
+    --rai-preprocessing-protocol "Quality filtering removed low-quality sequences" \
+    --rai-preprocessing-protocol "Normalization applied to expression values"
 ```
 
 This command:
@@ -190,6 +214,55 @@ A typical release workflow involves:
 
 The parent release RO-Crate provides context and relationships between the individual RO-Crates, making it easier to understand and work with complex datasets that span multiple files, processes, and research objects.
 
+## RAI (Responsible AI) Metadata
+
+The release command supports extensive RAI metadata properties following the Croissant RAI Specification v1.0 (http://mlcommons.org/croissant/RAI/1.0). These properties enable comprehensive documentation of dataset lifecycle, annotation processes, and responsible use considerations.
+
+### Data Lifecycle Properties
+
+**Collection Process:**
+
+- `--rai-data-collection` - Description of the data collection process
+- `--rai-data-collection-type` - Collection method types (multiple values). Recommended values: Surveys, Secondary Data analysis, Physical data collection, Direct measurement, Document analysis, Manual Human Curator, Software Collection, Experiments, Web Scraping, Web API, Focus groups, Self-reporting, Customer feedback data, User-generated content data, Passive Data Collection, Others
+- `--rai-missing-data-desc` - Description of missing data in structured/unstructured form
+- `--rai-raw-data-source` - Description of the raw data source
+- `--rai-collection-start-date` / `--rai-collection-end-date` - Timeframe in terms of start and end date of the collection process (ISO format)
+
+**Data Processing:**
+
+- `--rai-imputation-protocol` - Description of data imputation process if applicable
+- `--rai-manipulation-protocol` - Description of data manipulation process if applicable
+- `--rai-preprocessing-protocol` - Description of steps required to bring collected data to a state processable by ML models/algorithms (multiple values)
+
+### Annotation and Labeling Properties
+
+**Annotation Process:**
+
+- `--rai-annotation-protocol` - Description of annotations (labels, ratings) produced, including creation process - Annotation Workforce Type, Characteristics, Descriptions, Tasks, Distributions
+- `--rai-annotation-platform` - Platform, tool, or library used to collect annotations by human annotators (multiple values)
+- `--rai-annotation-analysis` - Considerations for converting "raw" annotations into final dataset labels, including uncertainty/disagreement analysis, systematic differences between annotator groups (multiple values)
+- `--rai-annotations-per-item` - Number of human labels per dataset item
+- `--rai-annotator-demographics` - List of demographic specifications about the annotators (multiple values)
+- `--rai-machine-annotation-tools` - List of software used for data annotation (e.g., concept extraction, NER) to enable replication or extension (multiple values)
+
+### Safety and Fairness Properties
+
+**Responsible Use:**
+
+- `--rai-social-impact` - Discussion of social impact, if applicable
+- `--potential-sources-of-bias` - Description of biases in dataset, if applicable (multiple values)
+- `--limitations` - Known limitations - Data generalization limits and non-recommended uses (multiple values)
+- `--intended-use` - Dataset uses - Training, Testing, Validation, Development, Production, Fine Tuning, Others. Usage Guidelines and recommended uses (multiple values)
+- `--rai-sensitive-info` - Sensitive Human Attributes - Gender, Socio-economic status, Geography, Language, Age, Culture, Experience or Seniority, Others (multiple values)
+
+### Compliance and Maintenance Properties
+
+**Dataset Management:**
+
+- `--maintenance-plan` - Versioning information including updating timeframe, maintainers, and deprecation policies (multiple values)
+
+These RAI properties align with use cases including data lifecycle documentation, annotation transparency, participatory data practices, AI safety evaluation, and regulatory compliance requirements.
+
 ## Metadata Inheritance
 
 When building a release, metadata is handled in the following ways:
@@ -199,5 +272,6 @@ When building a release, metadata is handled in the following ways:
 - **Version** defaults to "1.0" unless specified
 - **License** defaults to CC-BY 4.0 unless specified
 - **Publication date** defaults to the current date unless specified
+- **RAI properties** are only included when explicitly provided
 
 All other metadata must be explicitly provided through the command options.

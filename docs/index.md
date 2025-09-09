@@ -48,10 +48,8 @@ The CLI is organized into several top-level commands:
 | ------------ | ------------------------------------------------------------------------- |
 | **rocrate**  | Core local RO-Crate manipulation (create, add files/metadata).            |
 | **schema**   | Operations on data schemas (create, infer, add properties, add to crate). |
-| **validate** | Validate data against schemas.                                            |
 | **import**   | Fetch external data into RO-Crate format (e.g., bioproject, pep).         |
-| **build**    | Generate outputs from RO-Crates (e.g., datasheet, evidence-graph).        |
-| **release**  | Manage multi-part RO-Crate releases (e.g., create, build).                |
+| **build**    | Generate outputs from RO-Crates (e.g., datasheet, evidence-graph, release).        |
 | **publish**  | Publish RO-Crates to repositories (e.g., fairscape, dataverse, mint dois).      |
 
 Use `--help` for details on any command or subcommand:
