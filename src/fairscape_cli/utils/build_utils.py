@@ -31,12 +31,11 @@ def process_link_inverses(subcrate_path: Path, ontology_path: Optional[Path] = N
             return False
     
     try:
-        success = True
-        # success = augment_rocrate_with_inverses(
-        #     rocrate_path=subcrate_path,
-        #     ontology_path=ontology_path,
-        #     default_namespace_prefix=EVI_NAMESPACE
-        # )
+        success = augment_rocrate_with_inverses(
+            rocrate_path=subcrate_path,
+            ontology_path=ontology_path,
+            default_namespace_prefix=EVI_NAMESPACE
+        )
         return success
     except Exception as e:
         click.echo(f"  ERROR linking inverses for {subcrate_path.name}: {e}")
@@ -46,8 +45,7 @@ def process_add_io(subcrate_path: Path) -> bool:
     from fairscape_cli.entailments.find_outputs import add_inputs_outputs_to_rocrate
     
     try:
-        success = True
-        #success, message = add_inputs_outputs_to_rocrate(subcrate_path)
+        success, message = add_inputs_outputs_to_rocrate(subcrate_path)
         if not success:
             click.echo(f"  ERROR adding I/O for {subcrate_path.name}: {message}")
         return success
@@ -81,10 +79,31 @@ def find_first_evi_output(subcrate_path: Path) -> Optional[str]:
         return None
     except Exception:
         return None
+    
+def has_local_evidence_graph(subcrate_path: Path) -> bool:
+    metadata_file = subcrate_path / "ro-crate-metadata.json"
+    
+    try:
+        with open(metadata_file, 'r') as f:
+            metadata = json.load(f)
+        
+        graph = metadata.get('@graph', [])
+        if len(graph) > 1:
+            root_entity = graph[1]
+            local_graph = root_entity.get('localEvidenceGraph')
+            if local_graph and isinstance(local_graph, dict) and '@id' in local_graph:
+                return True
+        
+        return False
+    except Exception:
+        return False
 
 def process_evidence_graph(subcrate_path: Path, release_directory: Optional[Path] = None) -> bool:
     from fairscape_cli.datasheet_builder.evidence_graph.graph_builder import generate_evidence_graph_from_rocrate
     from fairscape_cli.datasheet_builder.evidence_graph.html_builder import generate_evidence_graph_html
+    
+    if has_local_evidence_graph(subcrate_path):
+        return True
     
     first_output = find_first_evi_output(subcrate_path)
     if not first_output:
