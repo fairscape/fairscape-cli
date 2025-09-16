@@ -400,21 +400,17 @@ def LinkSubcrates(parent_crate_path: pathlib.Path) -> List[str]:
     if not parent_metadata_file.is_file():
         raise FileNotFoundError(f"Parent metadata file not found: {parent_metadata_file}")
 
-    # Always load as JSON
     with parent_metadata_file.open('r') as f:
         parent_metadata = json.load(f)
     
-    # Find parent root dataset
     parent_root_id = None
     parent_root_dataset = None
     
-    # First find the ID from the metadata descriptor
     for item in parent_metadata.get('@graph', []):
         if item.get('@id') == 'ro-crate-metadata.json' and 'about' in item:
             parent_root_id = item['about'].get('@id')
             break
     
-    # Then find the root dataset with that ID
     if parent_root_id:
         for item in parent_metadata.get('@graph', []):
             if item.get('@id') == parent_root_id:
@@ -424,19 +420,27 @@ def LinkSubcrates(parent_crate_path: pathlib.Path) -> List[str]:
     if not parent_root_dataset:
         raise ValueError("Could not determine the root dataset of the parent RO-Crate")
 
-    # Fields that can be propagated from parent to subcrates
     transferable_fields = [
-        "publisher", "principalInvestigator", "copyrightNotice", 
+        "principalInvestigator", "copyrightNotice", 
         "conditionsOfAccess", "contactEmail", "confidentialityLevel",
-        "citation", "funder", "usageInfo", "contentSize", "additionalProperty"
+        "citation", "usageInfo", "additionalProperty",
+        "license", "author", "version",
+        "rai:dataLimitations", "rai:dataBiases", "rai:dataUseCases",
+        "rai:dataReleaseMaintenancePlan", "rai:dataCollection",
+        "rai:dataCollectionType", "rai:dataCollectionMissingData",
+        "rai:dataCollectionRawData", "rai:dataImputationProtocol",
+        "rai:dataManipulationProtocol", "rai:dataPreprocessingProtocol",
+        "rai:dataAnnotationProtocol", "rai:dataAnnotationPlatform",
+        "rai:dataAnnotationAnalysis", "rai:personalSensitiveInformation",
+        "rai:dataSocialImpact", "rai:annotationsPerItem",
+        "rai:annotatorDemographics", "rai:machineAnnotationTools",
+        "rai:dataCollectionTimeframe"
     ]
     
-    # Collect transferable data, checking for empty values
     transferable_data = {}
     for field in transferable_fields:
         if field in parent_root_dataset:
             value = parent_root_dataset[field]
-            # Skip empty values
             if value is None or (isinstance(value, str) and value.strip() == "") or (isinstance(value, list) and len(value) == 0):
                 continue
             transferable_data[field] = value
@@ -444,83 +448,88 @@ def LinkSubcrates(parent_crate_path: pathlib.Path) -> List[str]:
     sub_crate_references = []
     linked_sub_crate_ids = []
     
-    # Find all subcrates
-    for dir_item in parent_crate_path.iterdir():
-        if dir_item.is_dir():
-            subcrate_metadata_file = dir_item / 'ro-crate-metadata.json'
-            if subcrate_metadata_file.is_file():
-                # Always load as JSON
-                with subcrate_metadata_file.open('r') as f:
-                    subcrate_metadata = json.load(f)
-                
-                # Find subcrate root element
-                subcrate_root_id = None
-                
-                # First find the ID from the metadata descriptor
-                for item in subcrate_metadata.get('@graph', []):
-                    if item.get('@id') == 'ro-crate-metadata.json' and 'about' in item:
-                        subcrate_root_id = item['about'].get('@id')
-                        break
-                
-                # Find the root dataset with that ID
-                subcrate_root = None
-                if subcrate_root_id:
-                    for index, item in enumerate(subcrate_metadata.get('@graph', [])):
-                        if item.get('@id') == subcrate_root_id:
-                            subcrate_root = item
-                            subcrate_root_index = index
+    def find_and_process_subcrates(directory: pathlib.Path, base_path: pathlib.Path):
+        for item in directory.iterdir():
+            if item.is_dir():
+                subcrate_metadata_file = item / 'ro-crate-metadata.json'
+                if subcrate_metadata_file.is_file():
+                    with subcrate_metadata_file.open('r') as f:
+                        subcrate_metadata = json.load(f)
+                    
+                    subcrate_root_id = None
+                    
+                    for elem in subcrate_metadata.get('@graph', []):
+                        if elem.get('@id') == 'ro-crate-metadata.json' and 'about' in elem:
+                            subcrate_root_id = elem['about'].get('@id')
                             break
-                
-                if not subcrate_root:
-                    continue
-
-                # Apply transferable fields to subcrate root if they don't exist or are empty
-                modified = False
-                for field, value in transferable_data.items():
-                    if field not in subcrate_root or subcrate_root[field] is None or \
-                       (isinstance(subcrate_root[field], str) and subcrate_root[field].strip() == "") or \
-                       (isinstance(subcrate_root[field], list) and len(subcrate_root[field]) == 0):
-                        subcrate_root[field] = value
+                    
+                    subcrate_root = None
+                    if subcrate_root_id:
+                        for index, elem in enumerate(subcrate_metadata.get('@graph', [])):
+                            if elem.get('@id') == subcrate_root_id:
+                                subcrate_root = elem
+                                subcrate_root_index = index
+                                break
+                    
+                    if not subcrate_root:
+                        print(f"WARNING: Could not find root dataset in subcrate: {item}")
+                        find_and_process_subcrates(item, base_path)
+                        return
+                    
+                    modified = False
+                    for field, value in transferable_data.items():
+                        if field not in subcrate_root or subcrate_root[field] is None or \
+                           (isinstance(subcrate_root[field], str) and subcrate_root[field].strip() == "") or \
+                           (isinstance(subcrate_root[field], list) and len(subcrate_root[field]) == 0):
+                            subcrate_root[field] = value
+                            modified = True
+                    
+                    if 'isPartOf' not in subcrate_root:
+                        subcrate_root['isPartOf'] = []
+                    
+                    parent_ref_exists = any(
+                        part.get('@id') == parent_root_id 
+                        for part in subcrate_root.get('isPartOf', [])
+                    )
+                    if not parent_ref_exists:
+                        subcrate_root['isPartOf'].append({'@id': parent_root_id})
                         modified = True
-                
-                # Save changes to subcrate if modified
-                if modified:
-                    subcrate_metadata['@graph'][subcrate_root_index] = subcrate_root
-                    with subcrate_metadata_file.open('w') as f:
-                        json.dump(subcrate_metadata, f, indent=2)
-                
-                # Create reference for parent crate
-                reference_dict = dict(subcrate_root)
-                relative_path = (dir_item.relative_to(parent_crate_path) / 'ro-crate-metadata.json').as_posix()
-                reference_dict['ro-crate-metadata'] = relative_path
-
-                sub_crate_references.append(reference_dict)
-                linked_sub_crate_ids.append(subcrate_root_id)
+                    
+                    if modified:
+                        subcrate_metadata['@graph'][subcrate_root_index] = subcrate_root
+                        with subcrate_metadata_file.open('w') as f:
+                            json.dump(subcrate_metadata, f, indent=2)
+                    
+                    reference_dict = dict(subcrate_root)
+                    relative_path = (subcrate_metadata_file.relative_to(base_path)).as_posix()
+                    reference_dict['ro-crate-metadata'] = relative_path
+                    
+                    sub_crate_references.append(reference_dict)
+                    linked_sub_crate_ids.append(subcrate_root_id)
+                else:
+                    find_and_process_subcrates(item, base_path)
     
-    # Update parent crate with references to subcrates
+    find_and_process_subcrates(parent_crate_path, parent_crate_path)
+    
     if sub_crate_references:
         parent_root_dataset.setdefault('hasPart', [])
         existing_haspart_ids = {part.get('@id') for part in parent_root_dataset['hasPart']}
         
-        # Add new references to graph
         existing_graph_ids = {item.get('@id') for item in parent_metadata['@graph']}
         for ref in sub_crate_references:
             if ref['@id'] not in existing_graph_ids:
                 parent_metadata['@graph'].append(ref)
         
-        # Add new hasPart relations
         for sub_id in linked_sub_crate_ids:
             if sub_id not in existing_haspart_ids:
                 parent_root_dataset['hasPart'].append({'@id': sub_id})
         
-        # Write back to parent metadata file
         with parent_metadata_file.open('w') as f:
             json.dump(parent_metadata, f, indent=2)
     else:
         print("No valid sub-crates found to link.")
 
     return linked_sub_crate_ids
-
 def collect_subcrate_metadata(parent_crate_path: pathlib.Path) -> dict:
     """
     Collects author and keyword metadata from all subcrates in the parent crate.
