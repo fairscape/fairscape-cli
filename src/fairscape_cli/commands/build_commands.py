@@ -10,6 +10,11 @@ from datetime import datetime
 from fairscape_cli.datasheet_builder.rocrate.datasheet_generator import DatasheetGenerator
 from fairscape_cli.datasheet_builder.evidence_graph.graph_builder import generate_evidence_graph_from_rocrate
 from fairscape_cli.datasheet_builder.evidence_graph.html_builder import generate_evidence_graph_html
+from fairscape_cli.utils.build_utils import (
+    process_all_subcrates,
+    process_croissant,
+    process_datasheet
+)
 
 from fairscape_cli.models import (
     GenerateROCrate,
@@ -85,6 +90,8 @@ def build_group():
 # Other Properties
 @click.option('--additional-properties', required=False, type=str, help="JSON string with additional property values.")
 @click.option('--custom-properties', required=False, type=str, help='JSON string with additional properties for the parent crate.')
+@click.option('--skip-subcrate-processing', is_flag=True, default=False, help="Skip automatic processing of subcrates.")
+@click.option('--published', is_flag=True, default=False, help="Are the arks live for the release.")
 @click.pass_context
 def build_release(
     ctx,
@@ -138,14 +145,28 @@ def build_release(
     rai_machine_annotation_tools: Optional[Tuple[str]],
     additional_properties: Optional[str],
     custom_properties: Optional[str],
+    skip_subcrate_processing: bool,
+    published: bool,
 ):
     """
     Create a 'release' RO-Crate in RELEASE_DIRECTORY, adding Croissant RAI metadata and linking sub-RO-Crates.
+    
+    Automatically processes subcrates by:
+    - Linking inverse properties
+    - Adding inputs/outputs
+    - Generating evidence graphs
+    - Creating Croissant exports
+    
+    Also generates a datasheet and Croissant for the release itself.
     """
     click.echo(f"Starting release process in: {release_directory.resolve()}")
     
     if not release_directory.exists():
         release_directory.mkdir(parents=True, exist_ok=True)
+    
+    if not skip_subcrate_processing:
+        click.echo("\n=== Processing subcrates ===")
+        subcrate_results = process_all_subcrates(release_directory)
     
     subcrate_metadata = collect_subcrate_metadata(release_directory)
 
@@ -265,6 +286,7 @@ def build_release(
              ctx.exit(1)
 
     try:
+        click.echo("\n=== Creating release RO-Crate ===")
         parent_crate_root_dict = GenerateROCrate(**parent_params)
         parent_crate_guid = parent_crate_root_dict['@id']
         click.echo(f"Initialized parent RO-Crate: {parent_crate_guid}")
@@ -280,7 +302,21 @@ def build_release(
     else:
         click.echo("No valid sub-crates were found or linked.")
 
-    click.echo(f"Release process finished successfully for: {parent_crate_guid}")
+    click.echo("\n=== Processing release artifacts ===")
+    
+    click.echo("Generating release Croissant...")
+    if process_croissant(release_directory):
+        click.echo("  ✓ Release Croissant generated")
+    else:
+        click.echo("  WARNING: Failed to generate release Croissant")
+    
+    click.echo("Generating release datasheet...")
+    if process_datasheet(release_directory, published=published):
+        click.echo("  ✓ Release datasheet generated")
+    else:
+        click.echo("  WARNING: Failed to generate release datasheet")
+
+    click.echo(f"\n✓ Release process finished successfully for: {parent_crate_guid}")
 
 @build_group.command('datasheet')
 @click.argument('rocrate-path', type=click.Path(exists=True, path_type=pathlib.Path))
@@ -452,11 +488,3 @@ def build_croissant(ctx, rocrate_path, output):
         click.echo(f"ERROR: Failed to convert RO-Crate to Croissant: {e}", err=True)
         traceback.print_exc()
         ctx.exit(1)
-        
-# Placeholder for explicit preview generation
-# @build_group.command('preview')
-# @click.argument('rocrate-path', type=click.Path(exists=True, path_type=pathlib.Path))
-# def build_preview(ctx, rocrate_path):
-#     """Generate an HTML preview for a specific RO-Crate."""
-#     # Implementation using PreviewGenerator
-#     pass
