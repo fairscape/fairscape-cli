@@ -1002,7 +1002,6 @@ def generate_evidence_graph_html(rocrate_path, output_path=None):
     try:
         with open(output_path, 'w', encoding='utf-8') as f:
             f.write(html_content)
-        print(f"Evidence graph visualization saved to: {output_path}")
         return str(output_path)
     except IOError as e:
         print(f"Error writing HTML file to {output_path}: {e}")
