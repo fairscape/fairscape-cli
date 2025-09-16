@@ -69,34 +69,51 @@ class DatasheetGenerator:
         self.template_dir = Path(template_dir)
         self.published = published
         
-        # Set up Jinja2 environment
         self.env = Environment(
             loader=FileSystemLoader(str(self.template_dir)),
             trim_blocks=True,
             lstrip_blocks=True
         )
         
-        # Initialize section generators with template engine
         self.overview_generator = OverviewSectionGenerator(self.env)
         self.use_cases_generator = UseCasesSectionGenerator(self.env)
         self.distribution_generator = DistributionSectionGenerator(self.env)
         self.subcrates_generator = SubcratesSectionGenerator(self.env)
         self.preview_generator = PreviewGenerator(self.env)
         
-        # Load and parse the main RO-Crate
         with open(self.json_path, 'r') as f:
             crate_dict = json.load(f)
         self.main_crate = ROCrateV1_2.model_validate(crate_dict)
         
-        # Build global metadata index for cross-references
         self.global_metadata_index = {}
-        self._build_initial_index()
+        self._build_complete_index()
     
-    def _build_initial_index(self):
-        """Build index of all entities in main crate by their guid."""
+    def _build_complete_index(self):
+        """Build index of all entities in main crate and all subcrates by their guid."""
         for item in self.main_crate.metadataGraph:
             if hasattr(item, 'guid'):
                 self.global_metadata_index[getattr(item, 'guid')] = item.model_dump()
+        
+        subcrate_info_list = self._find_subcrate_paths()
+        for info in subcrate_info_list:
+            if not info['full_path'].exists():
+                print(f"Warning: Subcrate metadata file not found at {info['full_path']}")
+                continue
+            
+            try:
+                with open(info['full_path'], 'r') as f:
+                    subcrate_dict = json.load(f)
+                subcrate = ROCrateV1_2.model_validate(subcrate_dict)
+                
+                for item in subcrate.metadataGraph:
+                    if hasattr(item, 'guid'):
+                        guid = getattr(item, 'guid')
+                        self.global_metadata_index[guid] = item.model_dump()
+                        if hasattr(subcrate.metadataGraph[1], 'name'):
+                            self.global_metadata_index[guid]['rocrateName'] = subcrate.metadataGraph[1].name
+            
+            except Exception as e:
+                print(f"Error indexing subcrate {info['name']}: {e}")
     
     def _find_subcrate_paths(self) -> List[Dict[str, Any]]:
         """Find all subcrates referenced in the main crate."""
@@ -120,7 +137,6 @@ class DatasheetGenerator:
         Convert main RO-Crate to datasheet sections using converters.
         Returns FairscapeDatasheet with all sections populated.
         """
-        # Convert Overview section
         overview_converter = ROCToTargetConverter(
             source_crate=self.main_crate,
             mapping_configuration=OVERVIEW_MAPPING_CONFIGURATION
@@ -128,21 +144,18 @@ class DatasheetGenerator:
         overview = overview_converter.convert()
         overview.published = self.published
         
-        # Convert Use Cases section
         usecases_converter = ROCToTargetConverter(
             source_crate=self.main_crate,
             mapping_configuration=USECASES_MAPPING_CONFIGURATION
         )
         use_cases = usecases_converter.convert()
         
-        # Convert Distribution section
         distribution_converter = ROCToTargetConverter(
             source_crate=self.main_crate,
             mapping_configuration=DISTRIBUTION_MAPPING_CONFIGURATION
         )
         distribution = distribution_converter.convert()
         
-        # Process subcrates for Composition section
         subcrate_items = self._process_all_subcrates()
         composition = CompositionSection(items=subcrate_items) if subcrate_items else None
         
@@ -164,20 +177,10 @@ class DatasheetGenerator:
                 continue
             
             try:
-                # Load subcrate
                 with open(info['full_path'], 'r') as f:
                     subcrate_dict = json.load(f)
                 subcrate = ROCrateV1_2.model_validate(subcrate_dict)
                 
-                # Add subcrate entities to global index
-                for item in subcrate.metadataGraph:
-                    if hasattr(item, 'guid'):
-                        guid = getattr(item, 'guid')
-                        self.global_metadata_index[guid] = item.model_dump()
-                        if hasattr(subcrate.metadataGraph[1], 'name'):
-                            self.global_metadata_index[guid]['rocrateName'] = subcrate.metadataGraph[1].name
-                
-                # Convert subcrate to SubCrateItem model
                 converter = ROCToTargetConverter(
                     source_crate=subcrate,
                     mapping_configuration=SUBCRATE_MAPPING_CONFIGURATION,
@@ -186,14 +189,12 @@ class DatasheetGenerator:
                 
                 subcrate_item = converter.convert()
                 
-                # Add computed fields
                 subcrate_item.metadata_path = info['metadata_path']
                 subcrate_item.published = self.published
                 
                 subcrate_dir = os.path.dirname(subcrate_item.metadata_path)
                 subcrate_item.preview_url = f"{subcrate_dir}/ro-crate-preview.html"
                 
-                # Calculate size if not provided
                 subcrate_dir = info['full_path'].parent
                 if not subcrate_item.size and subcrate_dir.exists():
                     try:
@@ -202,19 +203,16 @@ class DatasheetGenerator:
                     except Exception:
                         subcrate_item.size = "Unknown"
                 
-                # Inherit DOI from main crate if not set
                 if not subcrate_item.doi:
                     main_root = self.main_crate.metadataGraph[1].model_dump()
                     subcrate_item.doi = main_root.get('identifier')
                 
-                # Inherit publications from main crate if not set
                 if not subcrate_item.related_publications:
                     main_root = self.main_crate.metadataGraph[1].model_dump()
                     pubs = main_root.get('associatedPublication', [])
                     if pubs:
                         subcrate_item.related_publications = pubs if isinstance(pubs, list) else [pubs]
                 
-                # Add statistical summary info if present
                 self._enhance_subcrate_item(subcrate_item, subcrate)
                 
                 subcrate_items.append(subcrate_item)
@@ -240,12 +238,10 @@ class DatasheetGenerator:
                     content_url = entity_dict.get('contentUrl')
                     
                     if content_url:
-                        # Build relative path to summary file
                         if subcrate_item.metadata_path:
                             subcrate_path_prefix = os.path.dirname(subcrate_item.metadata_path)
                             path_in_subcrate = content_url
                             
-                            # Clean up file:// prefixes
                             if path_in_subcrate.startswith("file:///"):
                                 path_in_subcrate = path_in_subcrate[len("file:///"):]
                             elif path_in_subcrate.startswith("file://"):
@@ -282,16 +278,13 @@ class DatasheetGenerator:
         else:
             output_path = Path(output_path)
         
-        # Step 1: Convert RO-Crate to pydantic datasheet model
         datasheet = self.convert_main_sections()
         
-        # Step 2: Generate HTML for each section using section generators
         overview_html = self.overview_generator.generate(datasheet.overview, self.published)
         use_cases_html = self.use_cases_generator.generate(datasheet.use_cases)
         distribution_html = self.distribution_generator.generate(datasheet.distribution)
         subcrates_html = self.subcrates_generator.generate(datasheet.composition, self.published)
         
-        # Step 3: Combine sections using base.html template
         base_template = self.env.get_template('base.html')
         
         context = {
@@ -306,7 +299,6 @@ class DatasheetGenerator:
         
         final_html = base_template.render(**context)
         
-        # Step 4: Save to file
         with open(output_path, 'w', encoding='utf-8') as f:
             f.write(final_html)
         
@@ -322,12 +314,10 @@ class DatasheetGenerator:
                 continue
             
             try:
-                # Load subcrate
                 with open(info['full_path'], 'r') as f:
                     subcrate_dict = json.load(f)
                 subcrate = ROCrateV1_2.model_validate(subcrate_dict)
                 
-                # Convert to Preview model
                 converter = ROCToTargetConverter(
                     source_crate=subcrate,
                     mapping_configuration=PREVIEW_MAPPING_CONFIGURATION
@@ -335,7 +325,6 @@ class DatasheetGenerator:
                 
                 preview = converter.convert()
                 
-                # Generate and save preview HTML
                 preview_html = self.preview_generator.generate(preview, self.published)
                 
                 output_path = info['full_path'].parent / "ro-crate-preview.html"
