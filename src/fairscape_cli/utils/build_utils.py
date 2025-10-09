@@ -110,8 +110,8 @@ def process_evidence_graph(subcrate_path: Path, release_directory: Optional[Path
         return False
     
     metadata_file = subcrate_path / "ro-crate-metadata.json"
-    output_json = subcrate_path / "provenance-graph.json"
-    output_html = subcrate_path / "provenance-graph.html"
+    output_json = subcrate_path / "ro-crate-prov-graph.json"
+    output_html = subcrate_path / "ro-crate-prov-graph.html"
     
     try:
         evidence_graph = generate_evidence_graph_from_rocrate(
@@ -155,7 +155,7 @@ def process_croissant(crate_path: Path) -> bool:
     from fairscape_models.conversion.mapping.croissant import MAPPING_CONFIGURATION as CROISSANT_MAPPING
     
     metadata_file = crate_path / "ro-crate-metadata.json"
-    output_path = crate_path / "croissant.json"
+    output_path = crate_path / "ro-crate-croissant.json"
     
     try:
         with open(metadata_file, 'r') as f:
