@@ -49,7 +49,8 @@ class ProvenanceTracker:
             keywords=self.config.keywords,
             datePublished=datetime.now().isoformat(),
             version="1.0",
-            license="https://creativecommons.org/licenses/by/4.0/"
+            license="https://creativecommons.org/licenses/by/4.0/",
+            isPartOf=[]
         )
     
 
