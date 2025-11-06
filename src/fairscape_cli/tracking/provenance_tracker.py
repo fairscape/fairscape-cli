@@ -26,6 +26,7 @@ class ProvenanceTracker:
         self.config = config
         self.metadata_generator = metadata_generator
         self.filepath_to_guid: Dict[str, str] = {}
+        self.existing_guids: Set[str] = set()
         self.crate_metadata = None
         
         self._ensure_crate_exists()
@@ -69,6 +70,10 @@ class ProvenanceTracker:
                     self.config.keywords = root_dataset.keywords
             
             for entity in self.crate_metadata['@graph']:
+                entity_guid = getattr(entity, 'guid', None)
+                if entity_guid:
+                    self.existing_guids.add(entity_guid)
+                
                 entity_types = getattr(entity, '@type', [])
                 if isinstance(entity_types, str):
                     entity_types = [entity_types]
@@ -77,7 +82,7 @@ class ProvenanceTracker:
                 if content_url and content_url.startswith('file://'):
                     relative_path = content_url.replace('file:///', '').lstrip('/')
                     filepath_full = (self.config.rocrate_path / relative_path).resolve()
-                    self.filepath_to_guid[str(filepath_full)] = getattr(entity, 'guid')
+                    self.filepath_to_guid[str(filepath_full)] = entity_guid
             
         except Exception as e:
             raise RuntimeError(f"Could not read RO-Crate at {self.config.rocrate_path}: {e}")
@@ -317,15 +322,7 @@ class ProvenanceTracker:
             output_datasets
         )
         
-        new_datasets = []
-        for ds in input_datasets:
-            content_url = getattr(ds, 'contentUrl', None)
-            if content_url:
-                url = content_url if isinstance(content_url, str) else content_url[0]
-                filepath = url.replace('file://', '').replace('file:', '')
-                full_path = str((self.config.rocrate_path / filepath).resolve())
-                if full_path not in self.filepath_to_guid:
-                    new_datasets.append(ds)
+        new_datasets = [ds for ds in input_datasets if ds.guid not in self.existing_guids]
         
         elements = [software] + new_datasets + output_datasets + [computation]
         AppendCrate(cratePath=self.config.rocrate_path, elements=elements)
