@@ -114,11 +114,11 @@ class ProvenanceTracker:
                 print(f"Reusing existing dataset: {input_path.name} ({existing_guid})")
                 
                 existing_dataset = next(
-                    (e for e in self.crate_metadata['@graph'] if getattr(e, '@id', None) == existing_guid),
+                    (e for e in self.crate_metadata['@graph'] if getattr(e, 'guid', None) == existing_guid),
                     None
                 )
                 if existing_dataset:
-                    dataset_obj = Dataset(**existing_dataset.__dict__)
+                    dataset_obj =Dataset.model_validate(existing_dataset)
                     input_datasets.append(dataset_obj)
                     reused_count += 1
                 continue
