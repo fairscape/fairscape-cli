@@ -17,7 +17,6 @@ from datetime import datetime
 
 
 class ProvenanceTracker:
-    """Tracks computational provenance and generates RO-Crate metadata."""
     
     def __init__(
         self,
@@ -33,7 +32,6 @@ class ProvenanceTracker:
         self._load_crate_context()
     
     def _ensure_crate_exists(self):
-        """Create RO-Crate if it doesn't exist with placeholder metadata."""
         metadata_path = self.config.rocrate_path / 'ro-crate-metadata.json'
         
         if metadata_path.exists():
@@ -56,7 +54,6 @@ class ProvenanceTracker:
     
 
     def _load_crate_context(self):
-        """Load existing RO-Crate and build filepath to GUID mapping."""
         try:
             self.crate_metadata = ReadROCrateMetadata(self.config.rocrate_path)
             
@@ -70,7 +67,7 @@ class ProvenanceTracker:
                 if hasattr(root_dataset, 'keywords') and root_dataset.keywords:
                     self.config.keywords = root_dataset.keywords
             
-            for entity in self.crate_metadata.get('@graph', []):
+            for entity in self.crate_metadata['@graph']:
                 entity_types = getattr(entity, '@type', [])
                 if isinstance(entity_types, str):
                     entity_types = [entity_types]
@@ -80,14 +77,11 @@ class ProvenanceTracker:
                     relative_path = content_url.replace('file:///', '').lstrip('/')
                     filepath_full = (self.config.rocrate_path / relative_path).resolve()
                     self.filepath_to_guid[str(filepath_full)] = getattr(entity, 'guid')
-                        
-            print(self.filepath_to_guid)
             
         except Exception as e:
             raise RuntimeError(f"Could not read RO-Crate at {self.config.rocrate_path}: {e}")
     
     def _resolve_manual_inputs(self) -> Set[str]:
-        """Convert manual input paths to absolute paths."""
         manual_input_paths = set()
         for manual_input in self.config.manual_inputs:
             manual_path = Path(manual_input)
@@ -99,7 +93,6 @@ class ProvenanceTracker:
         return manual_input_paths
     
     def _resolve_inputs(self, io_capture: IOCapture) -> tuple[List[Dataset], int]:
-        """Resolve input datasets, reusing existing ones where possible."""
         all_input_files = set(io_capture.inputs)
         all_input_files.update(self._resolve_manual_inputs())
         
@@ -120,11 +113,11 @@ class ProvenanceTracker:
                 print(f"Reusing existing dataset: {input_path.name} ({existing_guid})")
                 
                 existing_dataset = next(
-                    (e for e in self.crate_metadata['@graph'] if e.get('@id') == existing_guid),
+                    (e for e in self.crate_metadata['@graph'] if getattr(e, '@id', None) == existing_guid),
                     None
                 )
                 if existing_dataset:
-                    dataset_obj = Dataset(**existing_dataset)
+                    dataset_obj = Dataset(**existing_dataset.__dict__)
                     input_datasets.append(dataset_obj)
                     reused_count += 1
                 continue
@@ -147,7 +140,6 @@ class ProvenanceTracker:
         return input_datasets, reused_count
     
     def _resolve_outputs(self, io_capture: IOCapture) -> List[Dataset]:
-        """Resolve output datasets."""
         output_datasets = []
         
         for output_file in io_capture.outputs:
@@ -181,23 +173,24 @@ class ProvenanceTracker:
         input_datasets: List[Dataset],
         output_datasets: List[Dataset]
     ) -> Optional[Dict]:
-        """Use LLM to generate better descriptions if available."""
 
         if not self.metadata_generator:
             return None
         
         all_input_files = set()
         for ds in input_datasets:
-            if ds.contentUrl:
-                url = ds.contentUrl if isinstance(ds.contentUrl, str) else ds.contentUrl[0]
+            content_url = getattr(ds, 'contentUrl', None)
+            if content_url:
+                url = content_url if isinstance(content_url, str) else content_url[0]
                 filepath = url.replace('file:///', '').replace('file:', '')
                 full_path = str((self.config.rocrate_path / filepath).resolve())
                 all_input_files.add(full_path)
 
         all_output_files = set()
         for ds in output_datasets:
-            if ds.contentUrl:
-                url = ds.contentUrl if isinstance(ds.contentUrl, str) else ds.contentUrl[0]
+            content_url = getattr(ds, 'contentUrl', None)
+            if content_url:
+                url = content_url if isinstance(content_url, str) else content_url[0]
                 filepath = url.replace('file://', '').replace('file:', '')
                 full_path = str((self.config.rocrate_path / filepath).resolve())
                 all_output_files.add(full_path)
@@ -224,7 +217,6 @@ class ProvenanceTracker:
         input_datasets: List[Dataset],
         output_datasets: List[Dataset]
     ) -> tuple[str, str]:
-        """Apply LLM descriptions to datasets and return software/computation descriptions."""
         software_description = f"Code executed"
         computation_description = f"Computation executed"
         
@@ -248,7 +240,6 @@ class ProvenanceTracker:
         return software_description, computation_description
     
     def _create_software(self, code: str, name: str, description: str) -> Software:
-        """Create software metadata."""
         software_filepath = f"software/{name}.py"
         software_full_path = self.config.rocrate_path / software_filepath
         software_full_path.parent.mkdir(parents=True, exist_ok=True)
@@ -274,7 +265,6 @@ class ProvenanceTracker:
         input_datasets: List[Dataset],
         output_datasets: List[Dataset]
     ) -> Computation:
-        """Create computation metadata."""
         computation = GenerateComputation(
             name=name,
             runBy=self.config.author,
@@ -297,7 +287,6 @@ class ProvenanceTracker:
         io_capture: IOCapture,
         execution_name: Optional[str] = None
     ) -> TrackingResult:
-        """Track a code execution and generate provenance metadata."""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         execution_name = execution_name or f"cell_{timestamp}"
         
@@ -329,8 +318,9 @@ class ProvenanceTracker:
         
         new_datasets = []
         for ds in input_datasets:
-            if ds.contentUrl:
-                url = ds.contentUrl if isinstance(ds.contentUrl, str) else ds.contentUrl[0]
+            content_url = getattr(ds, 'contentUrl', None)
+            if content_url:
+                url = content_url if isinstance(content_url, str) else content_url[0]
                 filepath = url.replace('file://', '').replace('file:', '')
                 full_path = str((self.config.rocrate_path / filepath).resolve())
                 if full_path not in self.filepath_to_guid:
