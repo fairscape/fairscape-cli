@@ -150,10 +150,6 @@ class ProvenanceTracker:
         
         for output_file in io_capture.outputs:
             output_path = Path(output_file)
-            normalized_output = output_path.resolve()
-            
-            if str(normalized_output) in self.filepath_to_guid:
-                print(f"WARNING: Overwriting existing dataset: {output_path.name}")
             
             rel_path = output_path.relative_to(self.config.rocrate_path) if output_path.is_relative_to(self.config.rocrate_path) else output_path
             

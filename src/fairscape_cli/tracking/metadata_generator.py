@@ -108,7 +108,7 @@ class GeminiMetadataGenerator(MetadataGenerator):
         import google.generativeai as genai
         
         genai.configure(api_key=self.api_key)
-        model = genai.GenerativeModel('gemini-2.0-flash-exp')
+        model = genai.GenerativeModel('gemini-2.5-flash')
         
         prompt = self._build_prompt(code, input_samples, output_samples)
         response = model.generate_content(
