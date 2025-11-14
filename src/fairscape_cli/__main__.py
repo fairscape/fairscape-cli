@@ -7,6 +7,7 @@ from fairscape_cli.commands.build_commands import build_group
 from fairscape_cli.commands.publish_commands import publish_group
 from fairscape_cli.commands.schema_commands import schema
 from fairscape_cli.commands.augment_commands import augment_group
+from fairscape_cli.commands.track import track
 
 @click.group(invoke_without_command=True)
 @click.pass_context
@@ -25,6 +26,7 @@ cli.add_command(build_group, name='build')
 cli.add_command(publish_group, name='publish')
 cli.add_command(schema, name='schema')
 cli.add_command(augment_group, name='augment')
+cli.add_command(track, name='track')
 
 if __name__ == "__main__":
     cli()
