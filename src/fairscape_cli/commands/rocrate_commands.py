@@ -16,6 +16,7 @@ from fairscape_cli.models.sample import GenerateSample
 from fairscape_cli.models.instrument import GenerateInstrument
 from fairscape_cli.models.experiment import GenerateExperiment
 from fairscape_cli.models.biochem_entity import GenerateBioChemEntity
+from fairscape_cli.models.MLModel import GenerateModel
 
 from fairscape_cli.models.utils import FileNotInCrateException
 from fairscape_cli.config import NAAN
@@ -873,6 +874,140 @@ def registerBioChemEntity(
     except Exception as exc:
         click.echo(f"ERROR: {exc}", err=True)
         ctx.exit(code=1)
+        
+@register.command('model')
+@click.argument('rocrate-path', type=click.Path(exists=True, path_type=pathlib.Path))
+@click.option('--guid', type=str, required=False, default=None)
+@click.option('--name', required=True)
+@click.option('--author', required=True)
+@click.option('--version', required=True)
+@click.option('--description', required=True)
+@click.option('--keywords', required=True, multiple=True)
+@click.option('--model-type', required=True)
+@click.option('--framework', required=True)
+@click.option('--model-format', required=True)
+@click.option('--training-dataset', required=True, multiple=True)
+@click.option('--generated-by', required=True)
+@click.option('--filepath', required=False)
+@click.option('--content-url', required=False)
+@click.option('--embargoed', required=False, is_flag=True, default=False)
+@click.option('--parameters', required=False, type=float)
+@click.option('--input-size', required=False)
+@click.option('--has-bias', required=False)
+@click.option('--intended-use-case', required=False)
+@click.option('--usage-information', required=False)
+@click.option('--base-model', required=False)
+@click.option('--associated-publication', required=False)
+@click.option('--url', required=False)
+@click.option('--license', required=False)
+@click.option('--citation', required=False)
+@click.option('--custom-properties', required=False, type=str)
+@click.pass_context
+def registerModel(
+    ctx,
+    rocrate_path: pathlib.Path,
+    guid: Optional[str],
+    name: str,
+    author: str,
+    version: str,
+    description: str,
+    keywords: List[str],
+    model_type: str,
+    framework: str,
+    model_format: str,
+    training_dataset: List[str],
+    generated_by: str,
+    filepath: Optional[str],
+    content_url: Optional[str],
+    embargoed: bool,
+    parameters: Optional[float],
+    input_size: Optional[str],
+    has_bias: Optional[str],
+    intended_use_case: Optional[str],
+    usage_information: Optional[str],
+    base_model: Optional[str],
+    associated_publication: Optional[str],
+    url: Optional[str],
+    license: Optional[str],
+    citation: Optional[str],
+    custom_properties: Optional[str],
+):
+    try:
+        ReadROCrateMetadata(rocrate_path)
+    except Exception as exc:
+        click.echo(f"ERROR Reading ROCrate: {exc}", err=True)
+        ctx.exit(code=1)
+    
+    if not filepath and not content_url and not embargoed:
+        click.echo("ERROR: Either 'filepath', 'content-url', or 'embargoed' must be provided for model registration.", err=True)
+        ctx.exit(code=1)
+    if not filepath and not content_url and embargoed:
+        filepath = "Embargoed"
+    if not filepath and content_url:
+        filepath = content_url
+    
+    params = {
+        "guid": guid,
+        "name": name,
+        "author": author,
+        "version": version,
+        "description": description,
+        "keywords": list(keywords),
+        "modelType": model_type,
+        "framework": framework,
+        "modelFormat": model_format,
+        "trainingDataset": list(training_dataset),
+        "generatedBy": generated_by,
+        "filepath": filepath,
+        "cratePath": rocrate_path,
+    }
+    
+    if parameters is not None:
+        params["parameters"] = parameters
+    if input_size:
+        params["inputSize"] = input_size
+    if has_bias:
+        params["hasBias"] = has_bias
+    if intended_use_case:
+        params["intendedUseCase"] = intended_use_case
+    if usage_information:
+        params["usageInformation"] = usage_information
+    if base_model:
+        params["baseModel"] = base_model
+    if associated_publication:
+        params["associatedPublication"] = associated_publication
+    if url:
+        params["url"] = url
+    if license:
+        params["dataLicense"] = license
+    if citation:
+        params["citation"] = citation
+    
+    if custom_properties:
+        try:
+            custom_props = json.loads(custom_properties)
+            if not isinstance(custom_props, dict):
+                raise ValueError("Custom properties must be a JSON object")
+            params.update(custom_props)
+        except Exception as e:
+            click.echo(f"ERROR processing custom properties: {e}", err=True)
+            ctx.exit(code=1)
+    
+    filtered_params = {k: v for k, v in params.items() if v is not None}
+    
+    try:
+        model_instance = GenerateModel(**filtered_params)
+        AppendCrate(cratePath=rocrate_path, elements=[model_instance])
+        click.echo(model_instance.guid)
+    except FileNotInCrateException as e:
+        click.echo(f"ERROR: {e}", err=True)
+        ctx.exit(code=1)
+    except ValidationError as e:
+        click.echo(f"ERROR: Model Validation Failure\n{e}", err=True)
+        ctx.exit(code=1)
+    except Exception as exc:
+        click.echo(f"ERROR: {exc}", err=True)
+        ctx.exit(code=1)
 
 
 @register.command('subrocrate')
@@ -1206,4 +1341,138 @@ def addDataset(
         ctx.exit(code=1)
     except Exception as exc:
         click.echo(f"ERROR: {str(exc)}", err=True)
+        ctx.exit(code=1)
+        
+@add.command('model')
+@click.argument('rocrate-path', type=click.Path(exists=True, path_type=pathlib.Path))
+@click.option('--guid', type=str, required=False, default=None)
+@click.option('--name', required=True)
+@click.option('--author', required=True)
+@click.option('--version', required=True)
+@click.option('--description', required=True)
+@click.option('--keywords', required=True, multiple=True)
+@click.option('--model-type', required=True)
+@click.option('--framework', required=True)
+@click.option('--model-format', required=True)
+@click.option('--training-dataset', required=True, multiple=True)
+@click.option('--generated-by', required=True)
+@click.option('--source-filepath', required=True, type=click.Path(exists=True, path_type=pathlib.Path))
+@click.option('--destination-filepath', required=True, type=click.Path(path_type=pathlib.Path))
+@click.option('--parameters', required=False, type=float)
+@click.option('--input-size', required=False)
+@click.option('--has-bias', required=False)
+@click.option('--intended-use-case', required=False)
+@click.option('--usage-information', required=False)
+@click.option('--base-model', required=False)
+@click.option('--associated-publication', required=False)
+@click.option('--url', required=False)
+@click.option('--license', required=False)
+@click.option('--citation', required=False)
+@click.option('--custom-properties', required=False, type=str)
+@click.pass_context
+def addModel(
+    ctx,
+    rocrate_path: pathlib.Path,
+    guid: Optional[str],
+    name: str,
+    author: str,
+    version: str,
+    description: str,
+    keywords: List[str],
+    model_type: str,
+    framework: str,
+    model_format: str,
+    training_dataset: List[str],
+    generated_by: str,
+    source_filepath: pathlib.Path,
+    destination_filepath: pathlib.Path,
+    parameters: Optional[float],
+    input_size: Optional[str],
+    has_bias: Optional[str],
+    intended_use_case: Optional[str],
+    usage_information: Optional[str],
+    base_model: Optional[str],
+    associated_publication: Optional[str],
+    url: Optional[str],
+    license: Optional[str],
+    citation: Optional[str],
+    custom_properties: Optional[str],
+):
+    try:
+        ReadROCrateMetadata(rocrate_path)
+    except Exception as exc:
+        click.echo(f"ERROR Reading ROCrate: {exc}", err=True)
+        ctx.exit(code=1)
+    
+    if destination_filepath.is_absolute():
+        click.echo(f"ERROR: --destination-filepath must be a relative path within the RO-Crate: {destination_filepath}", err=True)
+        ctx.exit(code=1)
+    
+    try:
+        CopyToROCrate(source_filepath, destination_filepath)
+    except Exception as exc:
+        click.echo(f"ERROR copying file to RO-Crate: {exc}", err=True)
+        ctx.exit(code=1)
+    
+    params = {
+        "guid": guid,
+        "name": name,
+        "author": author,
+        "version": version,
+        "description": description,
+        "keywords": list(keywords),
+        "modelType": model_type,
+        "framework": framework,
+        "modelFormat": model_format,
+        "trainingDataset": list(training_dataset),
+        "generatedBy": generated_by,
+        "filepath": str(destination_filepath),
+        "cratePath": rocrate_path,
+    }
+    
+    if parameters is not None:
+        params["parameters"] = parameters
+    if input_size:
+        params["inputSize"] = input_size
+    if has_bias:
+        params["hasBias"] = has_bias
+    if intended_use_case:
+        params["intendedUseCase"] = intended_use_case
+    if usage_information:
+        params["usageInformation"] = usage_information
+    if base_model:
+        params["baseModel"] = base_model
+    if associated_publication:
+        params["associatedPublication"] = associated_publication
+    if url:
+        params["url"] = url
+    if license:
+        params["dataLicense"] = license
+    if citation:
+        params["citation"] = citation
+    
+    if custom_properties:
+        try:
+            custom_props = json.loads(custom_properties)
+            if not isinstance(custom_props, dict):
+                raise ValueError("Custom properties must be a JSON object")
+            params.update(custom_props)
+        except Exception as e:
+            click.echo(f"ERROR processing custom properties: {e}", err=True)
+            ctx.exit(code=1)
+    
+    filtered_params = {k: v for k, v in params.items() if v is not None}
+    
+    try:
+        model_instance = GenerateModel(**filtered_params)
+        AppendCrate(cratePath=rocrate_path, elements=[model_instance])
+        click.echo(model_instance.guid)
+    except ValidationError as e:
+        click.echo(f"ERROR: Model Validation Failure\n{e}", err=True)
+        ctx.exit(code=1)
+    except FileNotInCrateException as e:
+        click.echo(f"ERROR: {e}", err=True)
+        ctx.exit(code=1)
+    except Exception as exc:
+        click.echo(f"ERROR: {exc}", err=True)
         ctx.exit(code=1)
