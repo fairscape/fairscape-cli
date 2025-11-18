@@ -24,7 +24,6 @@ def GenerateModel(
     modelMetadata = {
         "@id": guid,
         "name": name,
-        "@type": "MLModel"
     }
     
     content_url = None

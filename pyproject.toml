@@ -46,7 +46,8 @@ dependencies = [
         "beautifulsoup4",
         "pandas",
         "rdflib",
-        "mongomock"
+        "mongomock",
+        "huggingface_hub>=0.20.0"
 ]
 
 [tool.setuptools]

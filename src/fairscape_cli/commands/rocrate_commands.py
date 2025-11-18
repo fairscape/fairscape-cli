@@ -17,6 +17,7 @@ from fairscape_cli.models.instrument import GenerateInstrument
 from fairscape_cli.models.experiment import GenerateExperiment
 from fairscape_cli.models.biochem_entity import GenerateBioChemEntity
 from fairscape_cli.models.MLModel import GenerateModel
+from fairscape_cli.utils.huggingface_utils import fetch_huggingface_model_metadata
 
 from fairscape_cli.models.utils import FileNotInCrateException
 from fairscape_cli.config import NAAN
@@ -883,11 +884,11 @@ def registerBioChemEntity(
 @click.option('--version', required=True)
 @click.option('--description', required=True)
 @click.option('--keywords', required=True, multiple=True)
-@click.option('--model-type', required=True)
-@click.option('--framework', required=True)
-@click.option('--model-format', required=True)
-@click.option('--training-dataset', required=True, multiple=True)
-@click.option('--generated-by', required=True)
+@click.option('--model-type', required=False)
+@click.option('--framework', required=False)
+@click.option('--model-format', required=False)
+@click.option('--training-dataset', required=False, multiple=True)
+@click.option('--generated-by', required=False)
 @click.option('--filepath', required=False)
 @click.option('--content-url', required=False)
 @click.option('--embargoed', required=False, is_flag=True, default=False)
@@ -1002,6 +1003,151 @@ def registerModel(
     except FileNotInCrateException as e:
         click.echo(f"ERROR: {e}", err=True)
         ctx.exit(code=1)
+    except ValidationError as e:
+        click.echo(f"ERROR: Model Validation Failure\n{e}", err=True)
+        ctx.exit(code=1)
+    except Exception as exc:
+        click.echo(f"ERROR: {exc}", err=True)
+        ctx.exit(code=1)
+
+
+@register.command('hf')
+@click.argument('hf-url', type=str, metavar='HF_URL_OR_REPO_ID')
+@click.argument('rocrate-path', type=click.Path(exists=True, path_type=pathlib.Path))
+@click.option('--guid', type=str, required=False, default=None, help='Identifier for the model (generated if not provided)')
+@click.option('--name', required=False, help='Override model name from HuggingFace')
+@click.option('--author', required=False, help='Override author from HuggingFace')
+@click.option('--version', required=False, help='Override version (default: 1.0)')
+@click.option('--description', required=False, help='Override description from HuggingFace')
+@click.option('--keywords', required=False, multiple=True, help='Override/supplement keywords from HuggingFace tags')
+@click.option('--model-type', required=False, help='Override model type inferred from tags')
+@click.option('--framework', required=False, help='Override framework inferred from tags')
+@click.option('--model-format', required=False, help='Override model format inferred from file extension')
+@click.option('--training-dataset', required=False, multiple=True, help='Specify training datasets')
+@click.option('--generated-by', required=False, help='RO-Crate computation identifier that generated this model')
+@click.option('--parameters', required=False, type=float, help='Number of model parameters')
+@click.option('--input-size', required=False, help='Model input size')
+@click.option('--has-bias', required=False, help='Whether model has bias')
+@click.option('--intended-use-case', required=False, help='Intended use case for the model')
+@click.option('--usage-information', required=False, help='Usage information')
+@click.option('--base-model', required=False, help='Override base model from HuggingFace')
+@click.option('--associated-publication', required=False, help='Associated publication identifier')
+@click.option('--custom-properties', required=False, type=str, help='JSON string with additional properties')
+@click.pass_context
+def registerHuggingFaceModel(
+    ctx,
+    hf_url: str,
+    rocrate_path: pathlib.Path,
+    guid: Optional[str],
+    name: Optional[str],
+    author: Optional[str],
+    version: Optional[str],
+    description: Optional[str],
+    keywords: Optional[List[str]],
+    model_type: Optional[str],
+    framework: Optional[str],
+    model_format: Optional[str],
+    training_dataset: Optional[List[str]],
+    generated_by: Optional[str],
+    parameters: Optional[float],
+    input_size: Optional[str],
+    has_bias: Optional[str],
+    intended_use_case: Optional[str],
+    usage_information: Optional[str],
+    base_model: Optional[str],
+    associated_publication: Optional[str],
+    custom_properties: Optional[str],
+):
+    """Register a model from HuggingFace using its URL or repo_id.
+
+    Fetches model metadata from HuggingFace API and registers it with the RO-Crate.
+    All CLI options override values fetched from HuggingFace.
+
+    Examples:
+        fairscape rocrate register hf https://huggingface.co/timm/densenet121.tv_in1k ./my-crate
+        fairscape rocrate register hf timm/densenet121.tv_in1k ./my-crate
+        fairscape rocrate register hf timm/densenet121.tv_in1k ./my-crate --generated-by ark:12345/computation-xyz
+    """
+    try:
+        ReadROCrateMetadata(rocrate_path)
+    except Exception as exc:
+        click.echo(f"ERROR Reading ROCrate: {exc}", err=True)
+        ctx.exit(code=1)
+
+    # Fetch metadata from HuggingFace
+    try:
+        click.echo("Fetching model metadata from HuggingFace...", err=True)
+        hf_metadata = fetch_huggingface_model_metadata(hf_url)
+    except ImportError as e:
+        click.echo(f"ERROR: {e}", err=True)
+        click.echo("Install with: pip install huggingface_hub", err=True)
+        ctx.exit(code=1)
+    except Exception as e:
+        click.echo(f"ERROR fetching HuggingFace metadata: {e}", err=True)
+        ctx.exit(code=1)
+
+    # Build params, with CLI options overriding HuggingFace metadata
+    params = {
+        "guid": guid,
+        "name": name or hf_metadata.get('name'),
+        "author": author or hf_metadata.get('author', 'Unknown'),
+        "version": version or hf_metadata.get('version', '1.0'),
+        "description": description or hf_metadata.get('description', ''),
+        "keywords": list(keywords) if keywords else hf_metadata.get('keywords', []),
+        "modelType": model_type or hf_metadata.get('model_type'),
+        "framework": framework or hf_metadata.get('framework'),
+        "modelFormat": model_format or hf_metadata.get('model_format'),
+        "trainingDataset": list(training_dataset) if training_dataset else hf_metadata.get('training_datasets', []),
+        "filepath": hf_metadata.get('download_url'),  
+        "url": hf_metadata.get('landing_page_url'),   
+        "cratePath": rocrate_path,
+    }
+
+    # Add optional parameters
+    if parameters is not None:
+        params["parameters"] = parameters
+    if input_size:
+        params["inputSize"] = input_size
+    if has_bias:
+        params["hasBias"] = has_bias
+    if intended_use_case:
+        params["intendedUseCase"] = intended_use_case
+    if usage_information or hf_metadata.get('usage_information'):
+        params["usageInformation"] = usage_information or hf_metadata.get('usage_information')
+    if base_model or hf_metadata.get('base_model'):
+        params["baseModel"] = base_model or hf_metadata.get('base_model')
+    if associated_publication:
+        params["associatedPublication"] = associated_publication
+    if hf_metadata.get('license'):
+        params["license"] = hf_metadata.get('license')
+
+    # Handle custom properties
+    if custom_properties:
+        try:
+            custom_props = json.loads(custom_properties)
+            if not isinstance(custom_props, dict):
+                raise ValueError("Custom properties must be a JSON object")
+            params.update(custom_props)
+        except Exception as e:
+            click.echo(f"ERROR processing custom properties: {e}", err=True)
+            ctx.exit(code=1)
+
+    # Filter None values
+    filtered_params = {k: v for k, v in params.items() if v is not None}
+
+    # Validate required fields
+    if not filtered_params.get('name'):
+        click.echo("ERROR: Could not determine model name from HuggingFace. Please specify --name", err=True)
+        ctx.exit(code=1)
+    if not filtered_params.get('description'):
+        click.echo("ERROR: Could not determine model description from HuggingFace. Please specify --description", err=True)
+        ctx.exit(code=1)
+
+    # Register the model
+    try:
+        model_instance = GenerateModel(**filtered_params)
+        AppendCrate(cratePath=rocrate_path, elements=[model_instance])
+        click.echo(model_instance.guid)
     except ValidationError as e:
         click.echo(f"ERROR: Model Validation Failure\n{e}", err=True)
         ctx.exit(code=1)
