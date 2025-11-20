@@ -1085,6 +1085,9 @@ def registerHuggingFaceModel(
     except Exception as e:
         click.echo(f"ERROR fetching HuggingFace metadata: {e}", err=True)
         ctx.exit(code=1)
+        
+    if 'https://' not in  hf_metadata.get('landing_page_url'):
+        hf_metadata['landing_page_url'] = "https://huggingface.co/" + hf_metadata.get('landing_page_url')
 
     # Build params, with CLI options overriding HuggingFace metadata
     params = {
