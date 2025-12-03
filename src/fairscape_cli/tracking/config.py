@@ -9,6 +9,7 @@ class TrackerConfig:
     track_pathlib: bool = True
     track_pandas: bool = True
     track_numpy: bool = True
+    track_matplotlib: bool = True
     excluded_patterns: List[str] = field(default_factory=lambda: [
         '.matplotlib',
         '.ipython',
@@ -44,3 +45,5 @@ class ProvenanceConfig:
     keywords: List[str] = field(default_factory=lambda: ["jupyter", "computation"])
     manual_inputs: List[str] = field(default_factory=list)
     use_llm: bool = False
+    reference_crates: List[Path] = field(default_factory=list)
+    start_clean: bool = False

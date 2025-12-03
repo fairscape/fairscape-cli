@@ -22,11 +22,17 @@ def setRelativeFilepath(cratePath, filePath):
         return filePath
 
     if 'ro-crate-metadata.json' in str(cratePath):
-        rocratePath = pathlib.Path(cratePath).parent.absolute()
+        rocratePath = pathlib.Path(cratePath).parent.resolve()
     else:
-        rocratePath = pathlib.Path(cratePath).absolute()
-            
-    datasetPath = pathlib.Path(filePath).absolute()
+        rocratePath = pathlib.Path(cratePath).resolve()
+
+    # If filepath is relative, resolve it relative to the crate path, not cwd
+    filePathObj = pathlib.Path(filePath)
+    if not filePathObj.is_absolute():
+        datasetPath = (rocratePath / filePath).resolve()
+    else:
+        datasetPath = filePathObj.resolve()
+
     relativePath = datasetPath.relative_to(rocratePath)
     return f"file:///{str(relativePath)}"
 

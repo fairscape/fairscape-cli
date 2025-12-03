@@ -179,55 +179,87 @@ class IOCapture:
         """Patch numpy methods to track file I/O."""
         if not self.config.track_numpy:
             return
-            
+
         original_load = np.load
         original_save = np.save
         original_loadtxt = np.loadtxt
         original_savetxt = np.savetxt
-        
+
         self.original_functions['np.load'] = original_load
         self.original_functions['np.save'] = original_save
         self.original_functions['np.loadtxt'] = original_loadtxt
         self.original_functions['np.savetxt'] = original_savetxt
-        
+
         capture = self
-        
+
         def tracked_load(file, *args, **kwargs):
             if capture._should_track(file):
                 capture.inputs.add(capture._normalize_path(file))
             return original_load(file, *args, **kwargs)
-        
+
         def tracked_save(file, arr, *args, **kwargs):
             if capture._should_track(file):
                 capture.outputs.add(capture._normalize_path(file))
             return original_save(file, arr, *args, **kwargs)
-        
+
         def tracked_loadtxt(fname, *args, **kwargs):
             if capture._should_track(fname):
                 capture.inputs.add(capture._normalize_path(fname))
             return original_loadtxt(fname, *args, **kwargs)
-        
+
         def tracked_savetxt(fname, X, *args, **kwargs):
             if capture._should_track(fname):
                 capture.outputs.add(capture._normalize_path(fname))
             return original_savetxt(fname, X, *args, **kwargs)
-        
+
         np.load = tracked_load
         np.save = tracked_save
         np.loadtxt = tracked_loadtxt
         np.savetxt = tracked_savetxt
+
+    def patch_matplotlib(self):
+        """Patch matplotlib methods to track file I/O."""
+        if not self.config.track_matplotlib:
+            return
+
+        try:
+            import matplotlib.pyplot as plt
+            from matplotlib.figure import Figure
+        except ImportError:
+            return
+
+        original_plt_savefig = plt.savefig
+        original_figure_savefig = Figure.savefig
+
+        self.original_functions['plt.savefig'] = original_plt_savefig
+        self.original_functions['Figure.savefig'] = original_figure_savefig
+
+        capture = self
+
+        def tracked_plt_savefig(fname, *args, **kwargs):
+            if capture._should_track(fname):
+                capture.outputs.add(capture._normalize_path(fname))
+            return original_plt_savefig(fname, *args, **kwargs)
+
+        def tracked_figure_savefig(self, fname, *args, **kwargs):
+            if capture._should_track(fname):
+                capture.outputs.add(capture._normalize_path(fname))
+            return original_figure_savefig(self, fname, *args, **kwargs)
+
+        plt.savefig = tracked_plt_savefig
+        Figure.savefig = tracked_figure_savefig
     
     def restore_all(self):
         """Restore all original functions."""
         builtins.open = self.original_functions.get('builtins.open', builtins.open)
-        
+
         if 'pathlib.Path.open' in self.original_functions:
             pathlib.Path.open = self.original_functions['pathlib.Path.open']
             pathlib.Path.read_text = self.original_functions['pathlib.Path.read_text']
             pathlib.Path.read_bytes = self.original_functions['pathlib.Path.read_bytes']
             pathlib.Path.write_text = self.original_functions['pathlib.Path.write_text']
             pathlib.Path.write_bytes = self.original_functions['pathlib.Path.write_bytes']
-        
+
         if 'pd.read_csv' in self.original_functions:
             pd.read_csv = self.original_functions['pd.read_csv']
             pd.read_excel = self.original_functions['pd.read_excel']
@@ -237,18 +269,28 @@ class IOCapture:
             pd.DataFrame.to_excel = self.original_functions['pd.DataFrame.to_excel']
             pd.DataFrame.to_parquet = self.original_functions['pd.DataFrame.to_parquet']
             pd.DataFrame.to_json = self.original_functions['pd.DataFrame.to_json']
-        
+
         if 'np.load' in self.original_functions:
             np.load = self.original_functions['np.load']
             np.save = self.original_functions['np.save']
             np.loadtxt = self.original_functions['np.loadtxt']
             np.savetxt = self.original_functions['np.savetxt']
-    
+
+        if 'plt.savefig' in self.original_functions:
+            try:
+                import matplotlib.pyplot as plt
+                from matplotlib.figure import Figure
+                plt.savefig = self.original_functions['plt.savefig']
+                Figure.savefig = self.original_functions['Figure.savefig']
+            except ImportError:
+                pass
+
     def __enter__(self):
         self.patch_open()
         self.patch_pathlib()
         self.patch_pandas()
         self.patch_numpy()
+        self.patch_matplotlib()
         return self
     
     def __exit__(self, exc_type, exc_val, exc_tb):
