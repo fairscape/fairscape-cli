@@ -2,6 +2,7 @@ from pathlib import Path
 from datetime import datetime
 from typing import List, Dict, Set, Optional
 import json
+import sys
 
 from fairscape_cli.models.rocrate import ReadROCrateMetadata, AppendCrate
 from fairscape_cli.models.dataset import GenerateDataset, Dataset
@@ -266,40 +267,52 @@ class ProvenanceTracker:
     ) -> Optional[Dict]:
 
         if not self.metadata_generator:
+            print("INFO: No metadata generator available - skipping LLM enhancement", file=sys.stderr)
             return None
-        
-        all_input_files = set()
+
+        print(f"INFO: Starting LLM enhancement with {len(input_datasets)} inputs and {len(output_datasets)} outputs", file=sys.stderr)
+
+        # Collect file paths with their filenames
+        input_files = {}  # filename -> filepath
         for ds in input_datasets:
             content_url = getattr(ds, 'contentUrl', None)
             if content_url:
                 url = content_url if isinstance(content_url, str) else content_url[0]
                 filepath = url.replace('file:///', '').replace('file:', '')
                 full_path = str((self.config.rocrate_path / filepath).resolve())
-                all_input_files.add(full_path)
+                filename = Path(full_path).name
+                input_files[filename] = full_path
 
-        all_output_files = set()
+        output_files = {}  # filename -> filepath
         for ds in output_datasets:
             content_url = getattr(ds, 'contentUrl', None)
             if content_url:
                 url = content_url if isinstance(content_url, str) else content_url[0]
-                filepath = url.replace('file://', '').replace('file:', '')
+                filepath = url.replace('file:///', '').replace('file:', '')
                 full_path = str((self.config.rocrate_path / filepath).resolve())
-                all_output_files.add(full_path)
-        
-        input_samples = collect_dataset_samples(all_input_files)
-        output_samples = collect_dataset_samples(all_output_files)
-        
-        if not input_samples and not output_samples:
+                filename = Path(full_path).name
+                output_files[filename] = full_path
+
+        print(f"INFO: Collected {len(input_files)} input files and {len(output_files)} output files", file=sys.stderr)
+
+        # Call LLM even if there are no files - it can still describe the code
+        if not input_files and not output_files:
+            print("INFO: No files found, but calling LLM to describe code anyway", file=sys.stderr)
+
+        print("INFO: Calling LLM to generate descriptions...", file=sys.stderr)
+        try:
+            result = self.metadata_generator.generate_descriptions(
+                code,
+                input_files,
+                output_files
+            )
+            print("INFO: LLM successfully generated descriptions", file=sys.stderr)
+            return result
+        except Exception as exc:
+            print(f"WARNING: LLM description generation failed: {exc}", file=sys.stderr)
+            import traceback
+            traceback.print_exc(file=sys.stderr)
             return None
-        
-        input_samples_str = format_samples_for_prompt(input_samples)
-        output_samples_str = format_samples_for_prompt(output_samples)
-        
-        return self.metadata_generator.generate_descriptions(
-            code, 
-            input_samples_str, 
-            output_samples_str
-        )
     
     def _apply_llm_descriptions(
         self,

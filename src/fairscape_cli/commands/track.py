@@ -21,6 +21,7 @@ from fairscape_cli.tracking.metadata_generator import create_metadata_generator
 @click.option('--keywords', multiple=True, default=["computation"], help='Keywords for metadata (default: from RO-Crate or ["computation"])')
 @click.option('--input', 'manual_inputs', multiple=True, help='Manual input files to track')
 @click.option('--no-llm', is_flag=True, default=False, help='Disable LLM-based description generation')
+@click.option('--max-images', type=int, default=5, help='Maximum number of images to send to LLM for analysis (default: 5)')
 @click.option('--execution-name', type=str, default=None, help='Name for this execution (default: script filename)')
 @click.option('--reference-crate', 'reference_crates', multiple=True, type=click.Path(exists=True, path_type=pathlib.Path), help='Reference RO-Crate(s) to look up existing ARKs for input files')
 @click.option('--start-clean', is_flag=True, default=False, help='Clear existing @graph entries (except root) before tracking')
@@ -34,6 +35,7 @@ def track(
     keywords: List[str],
     manual_inputs: List[str],
     no_llm: bool,
+    max_images: int,
     execution_name: str,
     reference_crates: Tuple[pathlib.Path, ...],
     start_clean: bool,
@@ -109,17 +111,41 @@ def track(
         click.echo("WARNING: No file I/O detected in script execution", err=True)
         click.echo("No metadata generated.", err=True)
         return
-    
+
     use_llm = not no_llm and os.environ.get("GEMINI_API_KEY")
-    
+
+    # Log LLM decision
+    if no_llm:
+        click.echo("INFO: LLM disabled via --no-llm flag", err=True)
+    elif not os.environ.get("GEMINI_API_KEY"):
+        click.echo("INFO: LLM disabled - GEMINI_API_KEY environment variable not set", err=True)
+        click.echo("INFO: Set GEMINI_API_KEY to enable AI-generated descriptions", err=True)
+    else:
+        click.echo("INFO: LLM enabled - will generate AI descriptions", err=True)
+
     metadata_generator = None
     if use_llm:
         from datetime import datetime
         try:
+            # Test if google.generativeai is available
+            try:
+                import google.generativeai as genai
+                click.echo("INFO: google-generativeai package found", err=True)
+            except ImportError as imp_exc:
+                click.echo(f"WARNING: google-generativeai package not installed: {imp_exc}", err=True)
+                click.echo("INFO: Install with: pip install google-generativeai", err=True)
+                click.echo("Falling back to simple descriptions", err=True)
+                raise
+
             metadata_generator = create_metadata_generator(
                 provider="gemini",
-                timestamp=datetime.now().strftime("%Y%m%d_%H%M%S")
+                timestamp=datetime.now().strftime("%Y%m%d_%H%M%S"),
+                max_images=max_images
             )
+            click.echo("INFO: LLM metadata generator initialized successfully", err=True)
+        except ImportError:
+            # Already logged above
+            pass
         except Exception as exc:
             click.echo(f"WARNING: Could not initialize LLM metadata generator: {exc}", err=True)
             click.echo("Falling back to simple descriptions", err=True)
