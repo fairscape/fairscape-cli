@@ -323,8 +323,9 @@ def build_release(
 @click.option('--output', required=False, type=click.Path(path_type=pathlib.Path), help="Output HTML file path (defaults to ro-crate-datasheet.html in crate dir).")
 @click.option('--template-dir', required=False, type=click.Path(exists=True, path_type=pathlib.Path), help="Custom template directory.")
 @click.option('--published', is_flag=True, default=False, help="Indicate if the crate is considered published (may affect template rendering).")
+@click.option('--pdf', is_flag=True, default=False, help="Also generate a PDF version of the datasheet (requires playwright).")
 @click.pass_context
-def build_datasheet(ctx, rocrate_path, output, template_dir, published):
+def build_datasheet(ctx, rocrate_path, output, template_dir, published, pdf):
     """Generate an HTML datasheet for an RO-Crate."""
 
     if rocrate_path.is_dir():
@@ -359,7 +360,38 @@ def build_datasheet(ctx, rocrate_path, output, template_dir, published):
         generator.process_subcrates()
 
         final_output_path = generator.save_datasheet(str(output_path))
-        click.echo(f"Datasheet generated successfully: {final_output_path}")
+        click.echo(f"✓ HTML datasheet: {final_output_path}")
+
+        # Generate PDF if requested
+        if pdf:
+            try:
+                from playwright.sync_api import sync_playwright
+            except ImportError:
+                click.echo("ERROR: playwright is not installed.", err=True)
+                click.echo("Install with:", err=True)
+                click.echo("  pip install playwright", err=True)
+                click.echo("  playwright install chromium", err=True)
+                ctx.exit(1)
+
+            try:
+                pdf_output_path = Path(final_output_path).with_suffix('.pdf')
+                click.echo(f"Generating PDF datasheet...")
+
+                with sync_playwright() as p:
+                    browser = p.chromium.launch()
+                    page = browser.new_page()
+                    page.goto(f"file://{Path(final_output_path).absolute()}")
+                    page.pdf(path=str(pdf_output_path), format='A4')
+                    browser.close()
+
+                click.echo(f"✓ PDF datasheet: {pdf_output_path}")
+            except Exception as e:
+                click.echo(f"ERROR generating PDF: {str(e)}", err=True)
+                click.echo("Make sure playwright is installed:", err=True)
+                click.echo("  pip install playwright", err=True)
+                click.echo("  playwright install chromium", err=True)
+                ctx.exit(1)
+
     except Exception as e:
         click.echo(f"Error generating datasheet: {str(e)}", err=True)
         traceback.print_exc()
