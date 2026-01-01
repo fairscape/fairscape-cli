@@ -1237,6 +1237,86 @@ def subrocrate(
         click.echo(f"ERROR: {str(exc)}")
         ctx.exit(code=1)
 
+@rocrate_group.command('validate')
+@click.argument('rocrate-path', type=click.Path(exists=True, path_type=pathlib.Path))
+@click.option('--use-official', is_flag=True, help='Use official RO-Crate validator (requires roc-validator package)')
+@click.option('--profile', type=str, default=None, help='Profile to validate against (only with --use-official)')
+@click.option('--requirement-level', type=click.Choice(['REQUIRED', 'RECOMMENDED', 'OPTIONAL']), default='REQUIRED', help='Requirement level for official validator (default: REQUIRED)')
+@click.pass_context
+def validate(ctx, rocrate_path, use_official, profile, requirement_level):
+    """Validate an RO-Crate against ROCrate v1.2 schema or official RO-Crate validator.
+
+    By default, validates against the built-in ROCrate v1.2 model.
+    Use --use-official to validate with the official RO-Crate validator (requires roc-validator package).
+
+    Examples:
+        fairscape rocrate validate ./my-crate
+        fairscape rocrate validate ./my-crate --use-official
+        fairscape rocrate validate ./my-crate --use-official --profile ro-crate
+        fairscape rocrate validate ./my-crate --use-official --requirement-level RECOMMENDED
+    """
+
+    if use_official:
+        # Try to use official RO-Crate validator
+        try:
+            from rocrate_validator.models import ValidationSettings
+            from rocrate_validator import services
+        except ImportError:
+            click.echo("ERROR: roc-validator package is not installed.", err=True)
+            click.echo("Install with: pip install roc-validator", err=True)
+            ctx.exit(code=1)
+
+        try:
+            # Prepare the path for validation
+            crate_uri = str(rocrate_path.absolute())
+
+            # Create validation settings
+            settings_params = {
+                "data_path": crate_uri,
+                "requirement_severity": requirement_level
+            }
+
+            if profile:
+                settings_params["profile_identifier"] = profile
+
+            validation_settings = ValidationSettings(**settings_params)
+
+            # Run validation
+            result = services.validate(validation_settings)
+
+            if result.passed():
+                click.echo("✓ Valid (official RO-Crate validator)")
+            else:
+                click.echo("✗ Validation failed (official RO-Crate validator):")
+                for issue in result.get_issues():
+                    click.echo(f"  [{issue.severity}] {issue.message}")
+
+                ctx.exit(code=1)
+
+        except Exception as e:
+            click.echo(f"ERROR: {e}", err=True)
+            ctx.exit(code=1)
+
+    else:
+        # Use built-in ROCrate v1.2 validation
+        try:
+            metadata = ReadROCrateMetadata(rocrate_path)
+            click.echo("✓ Valid (ROCrate v1.2 model)")
+
+        except ValidationError as e:
+            click.echo(f"✗ Validation failed (ROCrate v1.2 model): {e}", err=True)
+            ctx.exit(code=1)
+        except FileNotFoundError:
+            click.echo(f"✗ ro-crate-metadata.json not found", err=True)
+            ctx.exit(code=1)
+        except json.JSONDecodeError as e:
+            click.echo(f"✗ Invalid JSON: {e}", err=True)
+            ctx.exit(code=1)
+        except Exception as e:
+            click.echo(f"✗ {e}", err=True)
+            ctx.exit(code=1)
+
+
 @rocrate_group.group('add')
 def add():
     """Add a file to the RO-Crate and register its metadata."""
