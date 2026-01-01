@@ -36,7 +36,7 @@ def clean_guid(segment: str) -> str:
     """
     Cleans a string segment intended for use in a GUID.
     Removes unwanted characters and replaces spaces/multiple dashes with single dashes.
-    Allows letters, numbers, single dashes, and forward slashes.
+    Allows letters, numbers, and single dashes (forward slashes are converted to dashes).
     Converts to lowercase.
 
     Args:
@@ -54,7 +54,8 @@ def clean_guid(segment: str) -> str:
     segment = segment.lower()
     segment = re.sub(r'\s+', ' ', segment)
     segment = segment.replace('.', '-')
-    segment = re.sub(r'[^a-z0-9\-/]', '', segment)
+    segment = segment.replace('/', '-')
+    segment = re.sub(r'[^a-z0-9-]', '', segment)
     segment = re.sub(r'-+', '-', segment)
 
     if not segment:

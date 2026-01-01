@@ -1111,18 +1111,23 @@ def registerHuggingFaceModel(
         params["parameters"] = parameters
     if input_size:
         params["inputSize"] = input_size
-    if has_bias:
-        params["hasBias"] = has_bias
-    if intended_use_case:
-        params["intendedUseCase"] = intended_use_case
-    if usage_information or hf_metadata.get('usage_information'):
-        params["usageInformation"] = usage_information or hf_metadata.get('usage_information')
+    bias_value = has_bias or hf_metadata.get('bias')
+    if bias_value:
+        params["hasBias"] = bias_value
+    intended_use_value = intended_use_case or hf_metadata.get('intended_use_case')
+    if intended_use_value:
+        params["intendedUseCase"] = intended_use_value
+    usage_value = usage_information or hf_metadata.get('usage_information')
+    if usage_value:
+        params["usageInformation"] = usage_value
     if base_model or hf_metadata.get('base_model'):
         params["baseModel"] = base_model or hf_metadata.get('base_model')
     if associated_publication:
         params["associatedPublication"] = associated_publication
     if hf_metadata.get('license'):
         params["license"] = hf_metadata.get('license')
+    if hf_metadata.get('README'):
+        params["README"] = hf_metadata.get('README')
 
     # Handle custom properties
     if custom_properties:

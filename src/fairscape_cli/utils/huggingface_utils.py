@@ -5,6 +5,39 @@ from typing import Dict, Any, Optional, List, Tuple
 from urllib.parse import urlparse
 import re
 
+USE_CASE_KEYWORDS = [
+    "use case",
+    "use-case",
+    "use cases",
+    "uses cases",
+    "intended use",
+    "intended uses",
+    "intended-use",
+    "limitations",
+    "appropriate use",
+    "applications",
+]
+
+USAGE_KEYWORDS = [
+    "model usage",
+    "usage",
+    "useage",
+    "usuage",
+    "usauge",
+    "how to use",
+    "using this model",
+    "getting started",
+    "inference",
+    "prediction",
+]
+
+BIAS_KEYWORDS = [
+    "bias",
+    "biases",
+    "biased",
+    "safety",
+]
+
 
 def parse_huggingface_url(url: str) -> str:
     """
@@ -144,6 +177,46 @@ def extract_section_from_markdown(markdown_text: str, section_heading: str) -> O
     return None
 
 
+def extract_section_by_keywords(markdown_text: str, keywords: List[str]) -> Optional[str]:
+    """
+    Extract a section from markdown using heading keywords (case-insensitive).
+    Falls back to the first paragraph containing any keyword when no heading matches.
+    """
+    if not markdown_text:
+        return None
+
+    lower_keywords = [kw.lower() for kw in keywords]
+    lines = markdown_text.split('\n')
+    section_content = []
+    in_section = False
+    section_level = None
+
+    for line in lines:
+        stripped = line.strip()
+        if stripped.startswith('#'):
+            level = len(stripped) - len(stripped.lstrip('#'))
+            heading_text = stripped.lstrip('#').strip().lower()
+            if any(keyword in heading_text for keyword in lower_keywords):
+                in_section = True
+                section_level = level
+                continue
+            if in_section and section_level is not None and level <= section_level:
+                break
+        if in_section:
+            section_content.append(line)
+
+    if section_content:
+        return '\n'.join(section_content).strip()
+
+    # Fallback: first paragraph containing a keyword
+    paragraphs = markdown_text.split('\n\n')
+    for paragraph in paragraphs:
+        if any(keyword in paragraph.lower() for keyword in lower_keywords):
+            return paragraph.strip()
+
+    return None
+
+
 def extract_model_metadata(model_info: Any, hf_url: str, model_card_text: Optional[str] = None) -> Dict[str, Any]:
     """
     Extract metadata from HuggingFace ModelInfo object.
@@ -189,11 +262,21 @@ def extract_model_metadata(model_info: Any, hf_url: str, model_card_text: Option
     if description:
         metadata['description'] = description
 
-    # Try to extract "Model Usage" section from model card
+    # Try to extract sections from model card text
     if model_card_text:
-        usage_section = extract_section_from_markdown(model_card_text, "Model Usage")
+        usage_section = extract_section_by_keywords(model_card_text, USAGE_KEYWORDS)
         if usage_section:
             metadata['usage_information'] = usage_section
+
+        use_case_section = extract_section_by_keywords(model_card_text, USE_CASE_KEYWORDS)
+        if use_case_section:
+            metadata['intended_use_case'] = use_case_section
+
+        bias_section = extract_section_by_keywords(model_card_text, BIAS_KEYWORDS)
+        if bias_section:
+            metadata['bias'] = bias_section
+
+        metadata['README'] = model_card_text
 
     # Keywords from tags
     if hasattr(model_info, 'tags') and model_info.tags:
