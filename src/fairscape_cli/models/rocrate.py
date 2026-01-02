@@ -36,7 +36,7 @@ def GenerateROCrate(
    metadata_descriptor = ROCrateMetadataFileElem.model_validate({
         "@id": "ro-crate-metadata.json",
         "@type": "CreativeWork",
-        "conformsTo": {"@id": "https://w3id.org/ro/crate/1.2-DRAFT"},
+        "conformsTo": {"@id": "https://w3id.org/ro/crate/1.2"},
         "about": {"@id": guid}
     })
 
