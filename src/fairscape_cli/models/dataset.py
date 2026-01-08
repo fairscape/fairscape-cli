@@ -41,8 +41,7 @@ def GenerateDataset(
     
     datasetMetadata = {
         "@id": guid,
-        "name": name,
-        "@type": "https://w3id.org/EVI#Dataset"
+        "name": name
     }
     
     content_url = None

@@ -40,7 +40,6 @@ def GenerateBioChemEntity(
 	entityMetadata = {
 			"@id": guid,
 			"name": name,
-			"@type": "https://schema.org/BioChemEntity",
 			"description": description
 	}
 
