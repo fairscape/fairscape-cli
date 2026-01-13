@@ -81,8 +81,8 @@ class TestBuildCommands:
         )
 
         assert result.exit_code == 0, f"CLI Error: {result.output}"
-        assert "Datasheet generated successfully" in result.output
-        
+        assert "✓ HTML datasheet:" in result.output
+
         datasheet_path = test_release_crate / "ro-crate-datasheet.html"
         assert datasheet_path.exists()
         assert datasheet_path.stat().st_size > 0
@@ -112,8 +112,8 @@ class TestBuildCommands:
         )
 
         assert result.exit_code == 0
-        assert "Datasheet generated successfully" in result.output
-        
+        assert "✓ HTML datasheet:" in result.output
+
         datasheet_path = test_release_crate / "ro-crate-datasheet.html"
         assert datasheet_path.exists()
 

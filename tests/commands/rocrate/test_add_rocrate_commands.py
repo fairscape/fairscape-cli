@@ -70,7 +70,7 @@ class TestRocrateAddLocal:
         crate_dir = test_environment["crate_dir"]
         source_csv_path = test_environment["source_csv_path"]
         tmp_path = test_environment["tmp_path"]
-        destination_relative_path = "./test-crate/embeddings.csv"
+        destination_relative_path = "./embeddings.csv"
         
         original_cwd = os.getcwd()
         os.chdir(tmp_path)
@@ -111,7 +111,7 @@ class TestRocrateAddLocal:
         crate_dir = test_environment["crate_dir"]
         source_py_path = test_environment["source_py_path"]
         tmp_path = test_environment["tmp_path"]
-        destination_relative_path = "./test-crate/analysis_tool.py"
+        destination_relative_path = "./analysis_tool.py"
         
         original_cwd = os.getcwd()
         os.chdir(tmp_path)
