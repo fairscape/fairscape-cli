@@ -34,8 +34,7 @@ def GenerateExperiment(
     
     experimentMetadata = {
         "@id": guid,
-        "name": name,
-        "@type": "https://w3id.org/EVI#Experiment"
+        "name": name
     }
     
     for key, value in kwargs.items():

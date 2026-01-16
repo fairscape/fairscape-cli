@@ -2,12 +2,13 @@ import pathlib
 import shutil
 import json
 from datetime import datetime
-from typing import Optional, Union, List, Literal, Dict, Any
+from typing import Optional, Union, List, Literal, Dict, Any, Set
+from dataclasses import dataclass, field
 from pydantic import BaseModel, Field, ConfigDict, model_validator
 import uuid 
 import mongomock
 
-from fairscape_cli.config import NAAN, DEFAULT_CONTEXT
+from fairscape_models import DEFAULT_CONTEXT, DEFAULT_ARK_NAAN as NAAN
 from fairscape_cli.models.software import Software
 from fairscape_cli.models.dataset import Dataset
 from fairscape_cli.models.computation import Computation
@@ -530,6 +531,7 @@ def LinkSubcrates(parent_crate_path: pathlib.Path) -> List[str]:
         print("No valid sub-crates found to link.")
 
     return linked_sub_crate_ids
+
 def collect_subcrate_metadata(parent_crate_path: pathlib.Path) -> dict:
     """
     Collects author and keyword metadata from all subcrates in the parent crate.
@@ -584,7 +586,204 @@ def collect_subcrate_metadata(parent_crate_path: pathlib.Path) -> dict:
         'authors': sorted(list(authors)),
         'keywords': sorted(list(keywords))
     }
-    
+
+
+@dataclass
+class AggregatedMetrics:
+    """
+    Aggregated metrics from all sub-crates for AI-Ready scoring.
+
+    This class accumulates entity counts, statistics, checksums, formats,
+    and schema references from all sub-crates in a release to enable
+    efficient AI-Ready score calculation without recursive file reads.
+    """
+
+    # Entity counts (for provenance scoring)
+    dataset_count: int = 0
+    computation_count: int = 0
+    software_count: int = 0
+    schema_count: int = 0
+
+    # Statistics (for characterization scoring)
+    total_content_size_bytes: int = 0
+    entities_with_summary_stats: int = 0
+
+    # Verification (for pre-model explainability)
+    entities_with_checksums: int = 0
+    total_entities: int = 0
+
+    # Computability
+    formats: Set[str] = field(default_factory=set)
+
+    # Standards
+    schemas: List[Dict[str, str]] = field(default_factory=list)
+
+
+def _extract_content_size_bytes(size_str: str) -> int:
+    """
+    Extract content size in bytes from a size string.
+
+    Args:
+        size_str: Size string like "125.5 GB" or "1.2 TB"
+
+    Returns:
+        Size in bytes as integer, or 0 if parsing fails
+    """
+    if not size_str or not isinstance(size_str, str):
+        return 0
+
+    try:
+        size_str = size_str.strip().upper()
+        if "TB" in size_str:
+            return int(float(size_str.replace("TB", "").strip()) * 1e12)
+        elif "GB" in size_str:
+            return int(float(size_str.replace("GB", "").strip()) * 1e9)
+        elif "MB" in size_str:
+            return int(float(size_str.replace("MB", "").strip()) * 1e6)
+        elif "KB" in size_str:
+            return int(float(size_str.replace("KB", "").strip()) * 1e3)
+        else:
+            # Assume bytes if no unit
+            return int(float(size_str))
+    except (ValueError, AttributeError):
+        return 0
+
+
+def _extract_checksum(entity: Dict[str, Any]) -> Optional[str]:
+    """
+    Extract checksum from an entity.
+
+    Args:
+        entity: Entity dictionary from RO-Crate @graph
+
+    Returns:
+        Checksum string (e.g., "md5:abc123...") or None
+    """
+    # Check common checksum fields
+    md5 = entity.get("md5") or entity.get("MD5")
+    if md5:
+        if md5.startswith("md5:"):
+            return md5
+        else:
+            return f"md5:{md5}"
+
+    sha256 = entity.get("sha256") or entity.get("SHA256")
+    if sha256:
+        if sha256.startswith("sha256:"):
+            return sha256
+        else:
+            return f"sha256:{sha256}"
+
+    return None
+
+
+def _get_entity_type(entity: Dict[str, Any]) -> str:
+    """
+    Get type from entity's @type or metadataType field.
+
+    Args:
+        entity: Entity dictionary from RO-Crate @graph
+
+    Returns:
+        Type string (last item if list), or empty string
+    """
+    type_val = entity.get("@type") or entity.get("metadataType") or []
+    if isinstance(type_val, str):
+        return type_val
+    elif isinstance(type_val, list) and type_val:
+        return type_val[-1]
+    return ""
+
+
+def collect_subcrate_aggregated_metrics(
+    parent_crate_path: pathlib.Path
+) -> AggregatedMetrics:
+    """
+    Collect aggregated metrics from all subcrates for AI-Ready scoring.
+
+    This function traverses all sub-crates in a release directory and
+    aggregates entity counts, statistics, checksums, formats, and schemas.
+    These aggregated metrics are added to the release-level RO-Crate to
+    enable efficient AI-Ready score calculation without requiring recursive
+    file system reads during scoring.
+
+    Args:
+        parent_crate_path: Path to the release directory containing sub-crates
+
+    Returns:
+        AggregatedMetrics object with all roll-up properties
+    """
+    parent_crate_path = pathlib.Path(parent_crate_path)
+    metrics = AggregatedMetrics()
+    processed_files = set()
+
+    def process_directory(directory: pathlib.Path):
+        """Recursively process directories to find and aggregate subcrate metadata."""
+        for path in directory.glob('**/ro-crate-metadata.json'):
+            if path.is_file() and str(path) not in processed_files:
+                processed_files.add(str(path))
+
+                subcrate_metadata = ReadROCrateMetadata(path)
+                graph = subcrate_metadata.get('@graph', [])
+
+                for entity in graph:
+                    # Convert pydantic to dict
+                    if hasattr(entity, 'model_dump'):
+                        entity = entity.model_dump(by_alias=True)
+
+                    if entity.get('@id') == 'ro-crate-metadata.json':
+                        continue
+
+                    entity_type = _get_entity_type(entity)
+
+                    if "Dataset" in entity_type:
+                        metrics.dataset_count += 1
+                        metrics.total_entities += 1
+
+                    elif "Computation" in entity_type or "Experiment" in entity_type:
+                        metrics.computation_count += 1
+                        metrics.total_entities += 1
+
+                    elif "Software" in entity_type:
+                        metrics.software_count += 1
+                        metrics.total_entities += 1
+
+                    elif "Schema" in entity_type:
+                        metrics.schema_count += 1
+                        schema_id = entity.get('@id')
+                        if schema_id:
+                            metrics.schemas.append({"@id": schema_id})
+
+                    content_size = entity.get("contentSize")
+                    if content_size:
+                        size_bytes = _extract_content_size_bytes(content_size)
+                        if size_bytes > 0:
+                            metrics.total_content_size_bytes += size_bytes
+
+                    if entity.get("hasSummaryStatistics"):
+                        metrics.entities_with_summary_stats += 1
+
+                    checksum = _extract_checksum(entity)
+                    if checksum:
+                        metrics.entities_with_checksums += 1
+
+                    format_val = entity.get("format") or entity.get("encodingFormat")
+                    if format_val:
+                        if isinstance(format_val, str):
+                            metrics.formats.add(format_val)
+                        elif isinstance(format_val, list):
+                            for fmt in format_val:
+                                if isinstance(fmt, str):
+                                    metrics.formats.add(fmt)
+
+
+    for dir_item in parent_crate_path.iterdir():
+        if dir_item.is_dir():
+            process_directory(dir_item)
+
+    return metrics
+
+
 ################################
 #
 # Mongomock update tests

@@ -40,7 +40,6 @@ def GenerateInstrument(
     instrumentMetadata = {
         "@id": guid,
         "name": name,
-        "@type": "https://w3id.org/EVI#Instrument"
     }
     
     if filepath and cratePath:

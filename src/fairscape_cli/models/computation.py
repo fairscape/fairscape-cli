@@ -34,7 +34,6 @@ def GenerateComputation(
     computationMetadata = {
         "@id": guid,
         "name": name,
-        "@type": "https://w3id.org/EVI#Computation"
     }
     
     for key, value in kwargs.items():

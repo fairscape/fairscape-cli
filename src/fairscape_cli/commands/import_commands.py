@@ -325,7 +325,7 @@ def import_figshare(
 @import_group.command('dataverse')
 @click.argument('dataset-doi', type=str)
 @click.option('--server-url', default='https://dataverse.harvard.edu', show_default=True, help='Dataverse server URL.')
-@click.option('--token', required=False, type=str, help='Dataverse API token (optional, for restricted datasets).')
+@click.option('--token', required=False, type=str, help='Dataverse API token.')
 @generic_importer_options
 @click.pass_context
 def import_dataverse(

@@ -39,8 +39,7 @@ def GenerateSample(
     
     sampleMetadata = {
         "@id": guid,
-        "name": name,
-        "@type": "https://w3id.org/EVI#Sample"
+        "name": name
     }
     
     if filepath and cratePath:

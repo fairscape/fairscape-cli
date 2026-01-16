@@ -19,7 +19,8 @@ from fairscape_cli.utils.build_utils import (
 from fairscape_cli.models import (
     GenerateROCrate,
     LinkSubcrates,
-    collect_subcrate_metadata
+    collect_subcrate_metadata,
+    collect_subcrate_aggregated_metrics
 )
 
 from fairscape_models.rocrate import ROCrateV1_2
@@ -182,6 +183,9 @@ def build_release(
         if keyword not in combined_keywords:
             combined_keywords.append(keyword)
 
+    # Collect aggregated metrics for AI-Ready scoring
+    aggregated_metrics = collect_subcrate_aggregated_metrics(release_directory)
+
     parent_params = {
         "guid": guid,
         "name": name,
@@ -284,6 +288,17 @@ def build_release(
         except ValueError as e:
              click.echo(f"ERROR: {e}")
              ctx.exit(1)
+
+    # Add aggregated metrics as individual properties (following evi: prefix pattern)
+    parent_params["evi:datasetCount"] = aggregated_metrics.dataset_count
+    parent_params["evi:computationCount"] = aggregated_metrics.computation_count
+    parent_params["evi:softwareCount"] = aggregated_metrics.software_count
+    parent_params["evi:schemaCount"] = aggregated_metrics.schema_count
+    parent_params["evi:totalContentSizeBytes"] = aggregated_metrics.total_content_size_bytes
+    parent_params["evi:entitiesWithSummaryStats"] = aggregated_metrics.entities_with_summary_stats
+    parent_params["evi:entitiesWithChecksums"] = aggregated_metrics.entities_with_checksums
+    parent_params["evi:totalEntities"] = aggregated_metrics.total_entities
+    parent_params["evi:formats"] = sorted(list(aggregated_metrics.formats))
 
     try:
         click.echo("\n=== Creating release RO-Crate ===")
