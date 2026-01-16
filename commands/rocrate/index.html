@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://github.com/fairscape/fairscape-cli/commands/rocrate/" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>RO-Crate - FAIRSCAPE CLI</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "RO-Crate";
+        var mkdocs_page_input_path = "commands/rocrate.md";
+        var mkdocs_page_url = "/fairscape/fairscape-cli/commands/rocrate/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> FAIRSCAPE CLI
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../setup/">Setup</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Examples</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../workflows/complete-demo/">Complete Demo</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Commands</span></p>
+              <ul class="current">
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">RO-Crate</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#available-commands">Available Commands</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#command-details">Command Details</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#create">create</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#init">init</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#register">register</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#register-dataset">register dataset</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#register-software">register software</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#register-computation">register computation</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#register-sample">register sample</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#register-instrument">register instrument</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#register-experiment">register experiment</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#register-subrocrate">register subrocrate</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#add">add</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#add-dataset">add dataset</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#add-software">add software</a>
+    </li>
+        </ul>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../schema/">Schema</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../import/">Import</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../build/">Build</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../publish/">Publishing</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">FAIRSCAPE CLI</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Commands</li>
+      <li class="breadcrumb-item active">RO-Crate</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/fairscape/fairscape-cli/edit/master/docs/commands/rocrate.md">Edit on fairscape/fairscape-cli</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="ro-crate-commands">RO-Crate Commands<a class="headerlink" href="#ro-crate-commands" title="Permanent link">&para;</a></h1>
+<p>This document provides detailed information about the RO-Crate commands available in fairscape-cli.</p>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<p>The <code>rocrate</code> command group provides operations for creating and manipulating Research Object Crates (RO-Crates). RO-Crates are a lightweight approach to packaging research data with their metadata, making them more FAIR (Findable, Accessible, Interoperable, and Reusable).</p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>rocrate<span class="w"> </span><span class="o">[</span>COMMAND<span class="o">]</span><span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
+</code></pre></div>
+<h2 id="available-commands">Available Commands<a class="headerlink" href="#available-commands" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="#create"><code>create</code></a> - Create a new RO-Crate in a specified directory</li>
+<li><a href="#init"><code>init</code></a> - Initialize an RO-Crate in the current working directory</li>
+<li><a href="#register"><code>register</code></a> - Add metadata to an existing RO-Crate<ul>
+<li><a href="#register-dataset"><code>dataset</code></a> - Register dataset metadata</li>
+<li><a href="#register-software"><code>software</code></a> - Register software metadata</li>
+<li><a href="#register-computation"><code>computation</code></a> - Register computation metadata</li>
+<li><a href="#register-sample"><code>sample</code></a> - Register sample metadata</li>
+<li><a href="#register-instrument"><code>instrument</code></a> - Register instrument metadata</li>
+<li><a href="#register-experiment"><code>experiment</code></a> - Register experiment metadata</li>
+<li><a href="#register-subrocrate"><code>subrocrate</code></a> - Register a new RO-Crate within an existing RO-Crate</li>
+</ul>
+</li>
+<li><a href="#add"><code>add</code></a> - Add a file to the RO-Crate and register its metadata<ul>
+<li><a href="#add-dataset"><code>dataset</code></a> - Add a dataset file and its metadata</li>
+<li><a href="#add-software"><code>software</code></a> - Add a software file and its metadata</li>
+</ul>
+</li>
+</ul>
+<h2 id="command-details">Command Details<a class="headerlink" href="#command-details" title="Permanent link">&para;</a></h2>
+<h3 id="create"><code>create</code><a class="headerlink" href="#create" title="Permanent link">&para;</a></h3>
+<p>Create a new RO-Crate in a specified directory.</p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>rocrate<span class="w"> </span>create<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>ROCRATE_PATH
+</code></pre></div>
+<p><strong>Options:</strong></p>
+<ul>
+<li><code>--guid TEXT</code> - Optional custom identifier for the RO-Crate</li>
+<li><code>--name TEXT</code> - Name of the RO-Crate [required]</li>
+<li><code>--organization-name TEXT</code> - Name of the organization [required]</li>
+<li><code>--project-name TEXT</code> - Name of the project [required]</li>
+<li><code>--description TEXT</code> - Description of the RO-Crate [required]</li>
+<li><code>--keywords TEXT</code> - Keywords (can be specified multiple times) [required]</li>
+<li><code>--license TEXT</code> - License URL (default: "https://creativecommons.org/licenses/by/4.0/")</li>
+<li><code>--date-published TEXT</code> - Publication date (ISO format)</li>
+<li><code>--author TEXT</code> - Author name (default: "Unknown")</li>
+<li><code>--version TEXT</code> - Version number (default: "1.0")</li>
+<li><code>--associated-publication TEXT</code> - Associated publication</li>
+<li><code>--conditions-of-access TEXT</code> - Conditions of access</li>
+<li><code>--copyright-notice TEXT</code> - Copyright notice</li>
+<li><code>--custom-properties TEXT</code> - JSON string with additional properties to include</li>
+</ul>
+<p><strong>Example:</strong></p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>rocrate<span class="w"> </span>create<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--name<span class="w"> </span><span class="s2">&quot;test rocrate&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--description<span class="w"> </span><span class="s2">&quot;Example RO Crate for Tests&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--organization-name<span class="w"> </span><span class="s2">&quot;UVA&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--project-name<span class="w"> </span><span class="s2">&quot;B2AI&quot;</span><span class="w">  </span><span class="se">\</span>
+<span class="w">  </span>--keywords<span class="w"> </span><span class="s2">&quot;b2ai&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--keywords<span class="w"> </span><span class="s2">&quot;cm4ai&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="s2">&quot;./test_rocrate&quot;</span>
+</code></pre></div>
+<h3 id="init"><code>init</code><a class="headerlink" href="#init" title="Permanent link">&para;</a></h3>
+<p>Initialize an RO-Crate in the current working directory.</p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>rocrate<span class="w"> </span>init<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
+</code></pre></div>
+<p><strong>Options:</strong>
+The same options as for the <code>create</code> command are available. The difference is that <code>init</code> creates the RO-Crate in the current working directory.</p>
+<p><strong>Example:</strong></p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>rocrate<span class="w"> </span>init<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--name<span class="w"> </span><span class="s2">&quot;test rocrate&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--description<span class="w"> </span><span class="s2">&quot;Example RO Crate for Tests&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--organization-name<span class="w"> </span><span class="s2">&quot;UVA&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--project-name<span class="w"> </span><span class="s2">&quot;B2AI&quot;</span><span class="w">  </span><span class="se">\</span>
+<span class="w">  </span>--keywords<span class="w"> </span><span class="s2">&quot;b2ai&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--keywords<span class="w"> </span><span class="s2">&quot;cm4ai&quot;</span>
+</code></pre></div>
+<h3 id="register"><code>register</code><a class="headerlink" href="#register" title="Permanent link">&para;</a></h3>
+<p>Add metadata to an existing RO-Crate. This command has several subcommands depending on the type of metadata to register.</p>
+<h4 id="register-dataset"><code>register dataset</code><a class="headerlink" href="#register-dataset" title="Permanent link">&para;</a></h4>
+<p>Register dataset metadata with an existing RO-Crate.</p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>rocrate<span class="w"> </span>register<span class="w"> </span>dataset<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>ROCRATE_PATH
+</code></pre></div>
+<p><strong>Options:</strong></p>
+<ul>
+<li><code>--guid TEXT</code> - Optional custom identifier for the dataset</li>
+<li><code>--name TEXT</code> - Name of the dataset [required]</li>
+<li><code>--author TEXT</code> - Author of the dataset [required]</li>
+<li><code>--version TEXT</code> - Version of the dataset [required]</li>
+<li><code>--description TEXT</code> - Description of the dataset [required]</li>
+<li><code>--keywords TEXT</code> - Keywords (can be specified multiple times) [required]</li>
+<li><code>--data-format TEXT</code> - Format of the dataset (e.g., csv, json) [required]</li>
+<li><code>--filepath TEXT</code> - Path to the dataset file (relative to crate root)</li>
+<li><code>--content-url TEXT</code> - URL to the dataset file (if hosted externally)</li>
+<li><code>--embargoed</code> - Flag indicating the dataset is embargoed (default: false)</li>
+<li><code>--url TEXT</code> - URL reference for the dataset</li>
+<li><code>--date-published TEXT</code> - Publication date of the dataset (ISO format) [required]</li>
+<li><code>--schema TEXT</code> - Schema identifier for the dataset</li>
+<li><code>--used-by TEXT</code> - Identifiers of computations that use this dataset (can be specified multiple times)</li>
+<li><code>--derived-from TEXT</code> - Identifiers of datasets this one is derived from (can be specified multiple times)</li>
+<li><code>--generated-by TEXT</code> - Identifiers of computations that generated this dataset (can be specified multiple times)</li>
+<li><code>--summary-statistics-filepath TEXT</code> - Path to summary statistics file</li>
+<li><code>--associated-publication TEXT</code> - Associated publication identifier</li>
+<li><code>--additional-documentation TEXT</code> - Additional documentation</li>
+<li><code>--custom-properties TEXT</code> - JSON string with additional properties to include</li>
+</ul>
+<p><strong>File Location Options:</strong>
+You must specify exactly one of the following options to indicate where the dataset is located:</p>
+<ul>
+<li><code>--filepath</code> - For datasets stored within the RO-Crate</li>
+<li><code>--content-url</code> - For datasets hosted externally at a URL</li>
+<li><code>--embargoed</code> - For datasets that are embargoed/restricted</li>
+</ul>
+<p>If multiple options are provided, they are prioritized in this order: <code>filepath</code> &gt; <code>content-url</code> &gt; <code>embargoed</code>.</p>
+<p><strong>Example:</strong></p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Register a dataset file within the crate</span>
+fairscape-cli<span class="w"> </span>rocrate<span class="w"> </span>register<span class="w"> </span>dataset<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--name<span class="w"> </span><span class="s2">&quot;AP-MS embeddings&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--author<span class="w"> </span><span class="s2">&quot;Krogan lab&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--version<span class="w"> </span><span class="s2">&quot;1.0&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--date-published<span class="w"> </span><span class="s2">&quot;2023-04-23&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--description<span class="w"> </span><span class="s2">&quot;APMS embeddings for each protein&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--keywords<span class="w"> </span><span class="s2">&quot;proteomics&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--data-format<span class="w"> </span><span class="s2">&quot;CSV&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--filepath<span class="w"> </span><span class="s2">&quot;./test_rocrate/embeddings.csv&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="s2">&quot;./test_rocrate&quot;</span>
+
+<span class="c1"># Register an external dataset</span>
+fairscape-cli<span class="w"> </span>rocrate<span class="w"> </span>register<span class="w"> </span>dataset<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--name<span class="w"> </span><span class="s2">&quot;External Dataset&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--author<span class="w"> </span><span class="s2">&quot;External Provider&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--version<span class="w"> </span><span class="s2">&quot;1.0&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--date-published<span class="w"> </span><span class="s2">&quot;2023-04-23&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--description<span class="w"> </span><span class="s2">&quot;Dataset hosted externally&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--keywords<span class="w"> </span><span class="s2">&quot;external&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--data-format<span class="w"> </span><span class="s2">&quot;CSV&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--content-url<span class="w"> </span><span class="s2">&quot;https://example.com/dataset.csv&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="s2">&quot;./test_rocrate&quot;</span>
+
+<span class="c1"># Register an embargoed dataset</span>
+fairscape-cli<span class="w"> </span>rocrate<span class="w"> </span>register<span class="w"> </span>dataset<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--name<span class="w"> </span><span class="s2">&quot;Embargoed Dataset&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--author<span class="w"> </span><span class="s2">&quot;Research Team&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--version<span class="w"> </span><span class="s2">&quot;1.0&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--date-published<span class="w"> </span><span class="s2">&quot;2023-04-23&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--description<span class="w"> </span><span class="s2">&quot;Dataset under embargo&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--keywords<span class="w"> </span><span class="s2">&quot;embargoed&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--data-format<span class="w"> </span><span class="s2">&quot;CSV&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--embargoed<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="s2">&quot;./test_rocrate&quot;</span>
+</code></pre></div>
+<h4 id="register-software"><code>register software</code><a class="headerlink" href="#register-software" title="Permanent link">&para;</a></h4>
+<p>Register software metadata with an existing RO-Crate.</p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>rocrate<span class="w"> </span>register<span class="w"> </span>software<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>ROCRATE_PATH
+</code></pre></div>
+<p><strong>Options:</strong></p>
+<ul>
+<li><code>--guid TEXT</code> - Optional custom identifier for the software</li>
+<li><code>--name TEXT</code> - Name of the software [required]</li>
+<li><code>--author TEXT</code> - Author of the software [required]</li>
+<li><code>--version TEXT</code> - Version of the software [required]</li>
+<li><code>--description TEXT</code> - Description of the software [required]</li>
+<li><code>--keywords TEXT</code> - Keywords (can be specified multiple times) [required]</li>
+<li><code>--file-format TEXT</code> - Format of the software (e.g., py, js) [required]</li>
+<li><code>--url TEXT</code> - URL reference for the software</li>
+<li><code>--date-modified TEXT</code> - Last modification date of the software (ISO format)</li>
+<li><code>--filepath TEXT</code> - Path to the software file (relative to crate root)</li>
+<li><code>--content-url TEXT</code> - URL to the software file (if hosted externally)</li>
+<li><code>--embargoed</code> - Flag indicating the software is embargoed (default: false)</li>
+<li><code>--used-by-computation TEXT</code> - Identifiers of computations that use this software (can be specified multiple times)</li>
+<li><code>--associated-publication TEXT</code> - Associated publication identifier</li>
+<li><code>--additional-documentation TEXT</code> - Additional documentation</li>
+<li><code>--custom-properties TEXT</code> - JSON string with additional properties</li>
+</ul>
+<p><strong>File Location Options:</strong>
+You must specify exactly one of the following options to indicate where the software is located:</p>
+<ul>
+<li><code>--filepath</code> - For software stored within the RO-Crate</li>
+<li><code>--content-url</code> - For software hosted externally at a URL</li>
+<li><code>--embargoed</code> - For software that is embargoed/restricted</li>
+</ul>
+<p>If multiple options are provided, they are prioritized in this order: <code>filepath</code> &gt; <code>content-url</code> &gt; <code>embargoed</code>.</p>
+<p><strong>Example:</strong></p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Register software file within the crate</span>
+fairscape-cli<span class="w"> </span>rocrate<span class="w"> </span>register<span class="w"> </span>software<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--name<span class="w"> </span><span class="s2">&quot;calibrate pairwise distance&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--author<span class="w"> </span><span class="s2">&quot;Qin, Y.&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--version<span class="w"> </span><span class="s2">&quot;1.0&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--description<span class="w"> </span><span class="s2">&quot;script written in python to calibrate pairwise distance.&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--keywords<span class="w"> </span><span class="s2">&quot;b2ai&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--file-format<span class="w"> </span><span class="s2">&quot;py&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--filepath<span class="w"> </span><span class="s2">&quot;./test_rocrate/calibrate_pairwise_distance.py&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--date-modified<span class="w"> </span><span class="s2">&quot;2023-04-23&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="s2">&quot;./test_rocrate&quot;</span>
+
+<span class="c1"># Register external software</span>
+fairscape-cli<span class="w"> </span>rocrate<span class="w"> </span>register<span class="w"> </span>software<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--name<span class="w"> </span><span class="s2">&quot;External Analysis Tool&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--author<span class="w"> </span><span class="s2">&quot;External Developer&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--version<span class="w"> </span><span class="s2">&quot;2.1&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--description<span class="w"> </span><span class="s2">&quot;Analysis tool hosted on GitHub&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--keywords<span class="w"> </span><span class="s2">&quot;analysis&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--file-format<span class="w"> </span><span class="s2">&quot;py&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--content-url<span class="w"> </span><span class="s2">&quot;https://github.com/user/repo/blob/main/analysis.py&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--date-modified<span class="w"> </span><span class="s2">&quot;2023-04-23&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="s2">&quot;./test_rocrate&quot;</span>
+
+<span class="c1"># Register embargoed software</span>
+fairscape-cli<span class="w"> </span>rocrate<span class="w"> </span>register<span class="w"> </span>software<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--name<span class="w"> </span><span class="s2">&quot;Proprietary Algorithm&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--author<span class="w"> </span><span class="s2">&quot;Research Team&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--version<span class="w"> </span><span class="s2">&quot;1.0&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--description<span class="w"> </span><span class="s2">&quot;Proprietary analysis algorithm&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--keywords<span class="w"> </span><span class="s2">&quot;proprietary&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--file-format<span class="w"> </span><span class="s2">&quot;py&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--embargoed<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--date-modified<span class="w"> </span><span class="s2">&quot;2023-04-23&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="s2">&quot;./test_rocrate&quot;</span>
+</code></pre></div>
+<h4 id="register-computation"><code>register computation</code><a class="headerlink" href="#register-computation" title="Permanent link">&para;</a></h4>
+<p>Register computation metadata with an existing RO-Crate.</p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>rocrate<span class="w"> </span>register<span class="w"> </span>computation<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>ROCRATE_PATH
+</code></pre></div>
+<p><strong>Options:</strong></p>
+<ul>
+<li><code>--guid TEXT</code> - Optional custom identifier for the computation</li>
+<li><code>--name TEXT</code> - Name of the computation [required]</li>
+<li><code>--run-by TEXT</code> - Person or entity that ran the computation [required]</li>
+<li><code>--command TEXT</code> - Command used to run the computation (string or JSON list)</li>
+<li><code>--date-created TEXT</code> - Date the computation was run (ISO format) [required]</li>
+<li><code>--description TEXT</code> - Description of the computation [required]</li>
+<li><code>--keywords TEXT</code> - Keywords (can be specified multiple times) [required]</li>
+<li><code>--used-software TEXT</code> - Software identifiers used by this computation (can be specified multiple times)</li>
+<li><code>--used-dataset TEXT</code> - Dataset identifiers used by this computation (can be specified multiple times)</li>
+<li><code>--generated TEXT</code> - Dataset/Software identifiers generated by this computation (can be specified multiple times)</li>
+<li><code>--associated-publication TEXT</code> - Associated publication identifier</li>
+<li><code>--additional-documentation TEXT</code> - Additional documentation</li>
+<li><code>--custom-properties TEXT</code> - JSON string with additional properties</li>
+</ul>
+<p><strong>Example:</strong></p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>rocrate<span class="w"> </span>register<span class="w"> </span>computation<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--name<span class="w"> </span><span class="s2">&quot;calibrate pairwise distance&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--run-by<span class="w"> </span><span class="s2">&quot;Qin, Y.&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--date-created<span class="w"> </span><span class="s2">&quot;2023-05-23&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--description<span class="w"> </span><span class="s2">&quot;Average the predicted proximities&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--keywords<span class="w"> </span><span class="s2">&quot;b2ai&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--keywords<span class="w"> </span><span class="s2">&quot;cm4ai&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="s2">&quot;./test_rocrate&quot;</span>
+</code></pre></div>
+<h4 id="register-sample"><code>register sample</code><a class="headerlink" href="#register-sample" title="Permanent link">&para;</a></h4>
+<p>Register sample metadata with an existing RO-Crate.</p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>rocrate<span class="w"> </span>register<span class="w"> </span>sample<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>ROCRATE_PATH
+</code></pre></div>
+<p><strong>Options:</strong></p>
+<ul>
+<li><code>--guid TEXT</code> - Optional custom identifier for the sample</li>
+<li><code>--name TEXT</code> - Name of the sample [required]</li>
+<li><code>--author TEXT</code> - Author or creator of the sample [required]</li>
+<li><code>--description TEXT</code> - Description of the sample [required]</li>
+<li><code>--keywords TEXT</code> - Keywords (can be specified multiple times) [required]</li>
+<li><code>--filepath TEXT</code> - Path to the sample documentation file</li>
+<li><code>--cell-line-reference TEXT</code> - Reference to the cell line used</li>
+<li><code>--custom-properties TEXT</code> - JSON string with additional properties</li>
+</ul>
+<p><strong>Example:</strong></p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>rocrate<span class="w"> </span>register<span class="w"> </span>sample<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--name<span class="w"> </span><span class="s2">&quot;HeLa Cell Sample&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--author<span class="w"> </span><span class="s2">&quot;Lab Technician&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--description<span class="w"> </span><span class="s2">&quot;HeLa cells prepared for proteomics analysis&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--keywords<span class="w"> </span><span class="s2">&quot;cell-culture&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--keywords<span class="w"> </span><span class="s2">&quot;proteomics&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--cell-line-reference<span class="w"> </span><span class="s2">&quot;ATCC CCL-2&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="s2">&quot;./test_rocrate&quot;</span>
+</code></pre></div>
+<h4 id="register-instrument"><code>register instrument</code><a class="headerlink" href="#register-instrument" title="Permanent link">&para;</a></h4>
+<p>Register instrument metadata with an existing RO-Crate.</p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>rocrate<span class="w"> </span>register<span class="w"> </span>instrument<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>ROCRATE_PATH
+</code></pre></div>
+<p><strong>Options:</strong></p>
+<ul>
+<li><code>--guid TEXT</code> - Optional custom identifier for the instrument</li>
+<li><code>--name TEXT</code> - Name of the instrument [required]</li>
+<li><code>--manufacturer TEXT</code> - Manufacturer of the instrument [required]</li>
+<li><code>--model TEXT</code> - Model number/name of the instrument [required]</li>
+<li><code>--description TEXT</code> - Description of the instrument [required]</li>
+<li><code>--filepath TEXT</code> - Path to instrument documentation file</li>
+<li><code>--used-by-experiment TEXT</code> - Identifiers of experiments using this instrument (can be specified multiple times)</li>
+<li><code>--associated-publication TEXT</code> - Associated publication identifier</li>
+<li><code>--additional-documentation TEXT</code> - Additional documentation</li>
+<li><code>--custom-properties TEXT</code> - JSON string with additional properties</li>
+</ul>
+<p><strong>Example:</strong></p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>rocrate<span class="w"> </span>register<span class="w"> </span>instrument<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--name<span class="w"> </span><span class="s2">&quot;Mass Spectrometer MS-1000&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--manufacturer<span class="w"> </span><span class="s2">&quot;Thermo Fisher Scientific&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--model<span class="w"> </span><span class="s2">&quot;Orbitrap Fusion Lumos&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--description<span class="w"> </span><span class="s2">&quot;High-resolution mass spectrometer for proteomics&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--filepath<span class="w"> </span><span class="s2">&quot;./instruments/ms1000_manual.pdf&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="s2">&quot;./test_rocrate&quot;</span>
+</code></pre></div>
+<h4 id="register-experiment"><code>register experiment</code><a class="headerlink" href="#register-experiment" title="Permanent link">&para;</a></h4>
+<p>Register experiment metadata with an existing RO-Crate.</p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>rocrate<span class="w"> </span>register<span class="w"> </span>experiment<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>ROCRATE_PATH
+</code></pre></div>
+<p><strong>Options:</strong></p>
+<ul>
+<li><code>--guid TEXT</code> - Optional custom identifier for the experiment</li>
+<li><code>--name TEXT</code> - Name of the experiment [required]</li>
+<li><code>--experiment-type TEXT</code> - Type of experiment conducted [required]</li>
+<li><code>--run-by TEXT</code> - Person or entity that ran the experiment [required]</li>
+<li><code>--description TEXT</code> - Description of the experiment [required]</li>
+<li><code>--date-performed TEXT</code> - Date the experiment was performed (ISO format) [required]</li>
+<li><code>--used-instrument TEXT</code> - Instrument identifiers used in this experiment (can be specified multiple times)</li>
+<li><code>--used-sample TEXT</code> - Sample identifiers used in this experiment (can be specified multiple times)</li>
+<li><code>--used-treatment TEXT</code> - Treatment identifiers used in this experiment (can be specified multiple times)</li>
+<li><code>--used-stain TEXT</code> - Stain identifiers used in this experiment (can be specified multiple times)</li>
+<li><code>--generated TEXT</code> - Identifiers of entities generated by this experiment (can be specified multiple times)</li>
+<li><code>--protocol TEXT</code> - Protocol identifier or description</li>
+<li><code>--associated-publication TEXT</code> - Associated publication identifier</li>
+<li><code>--custom-properties TEXT</code> - JSON string with additional properties</li>
+</ul>
+<p><strong>Example:</strong></p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>rocrate<span class="w"> </span>register<span class="w"> </span>experiment<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--name<span class="w"> </span><span class="s2">&quot;Proteomics Analysis Experiment&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--experiment-type<span class="w"> </span><span class="s2">&quot;Mass Spectrometry&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--run-by<span class="w"> </span><span class="s2">&quot;Research Team&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--description<span class="w"> </span><span class="s2">&quot;Comprehensive proteomics analysis of cell samples&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--date-performed<span class="w"> </span><span class="s2">&quot;2023-05-15&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--used-instrument<span class="w"> </span><span class="s2">&quot;ark:/12345/instrument-1&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--used-sample<span class="w"> </span><span class="s2">&quot;ark:/12345/sample-1&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--protocol<span class="w"> </span><span class="s2">&quot;Standard MS Protocol v2.1&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="s2">&quot;./test_rocrate&quot;</span>
+</code></pre></div>
+<h4 id="register-subrocrate"><code>register subrocrate</code><a class="headerlink" href="#register-subrocrate" title="Permanent link">&para;</a></h4>
+<p>Register a new RO-Crate within an existing RO-Crate directory.</p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>rocrate<span class="w"> </span>register<span class="w"> </span>subrocrate<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>ROCRATE_PATH<span class="w"> </span>SUBROCRATE_PATH
+</code></pre></div>
+<p><strong>Options:</strong></p>
+<ul>
+<li><code>--guid TEXT</code> - Optional custom identifier for the sub-crate</li>
+<li><code>--name TEXT</code> - Name of the sub-crate [required]</li>
+<li><code>--organization-name TEXT</code> - Name of the organization [required]</li>
+<li><code>--project-name TEXT</code> - Name of the project [required]</li>
+<li><code>--description TEXT</code> - Description of the sub-crate [required]</li>
+<li><code>--keywords TEXT</code> - Keywords (can be specified multiple times) [required]</li>
+<li><code>--author TEXT</code> - Author name (default: "Unknown")</li>
+<li><code>--version TEXT</code> - Version number (default: "1.0")</li>
+<li><code>--license TEXT</code> - License URL (default: "https://creativecommons.org/licenses/by/4.0/")</li>
+</ul>
+<p><strong>Example:</strong></p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>rocrate<span class="w"> </span>register<span class="w"> </span>subrocrate<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--name<span class="w"> </span><span class="s2">&quot;Sub-Crate Example&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--organization-name<span class="w"> </span><span class="s2">&quot;UVA&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--project-name<span class="w"> </span><span class="s2">&quot;B2AI&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--description<span class="w"> </span><span class="s2">&quot;A sub-crate within the main RO-Crate&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--keywords<span class="w"> </span><span class="s2">&quot;sub-crate&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="s2">&quot;./test_rocrate&quot;</span><span class="w"> </span><span class="s2">&quot;./test_rocrate/sub_crate&quot;</span>
+</code></pre></div>
+<h3 id="add"><code>add</code><a class="headerlink" href="#add" title="Permanent link">&para;</a></h3>
+<p>Add a file to the RO-Crate and register its metadata. This command copies local files into the RO-Crate directory structure and registers their metadata.</p>
+<h4 id="add-dataset"><code>add dataset</code><a class="headerlink" href="#add-dataset" title="Permanent link">&para;</a></h4>
+<p>Add a dataset file and its metadata to an RO-Crate.</p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>rocrate<span class="w"> </span>add<span class="w"> </span>dataset<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>ROCRATE_PATH
+</code></pre></div>
+<p><strong>Options:</strong></p>
+<ul>
+<li><code>--guid TEXT</code> - Optional custom identifier for the dataset</li>
+<li><code>--name TEXT</code> - Name of the dataset [required]</li>
+<li><code>--author TEXT</code> - Author of the dataset [required]</li>
+<li><code>--version TEXT</code> - Version of the dataset (default: "1.0")</li>
+<li><code>--description TEXT</code> - Description of the dataset [required]</li>
+<li><code>--keywords TEXT</code> - Keywords (can be specified multiple times) [required]</li>
+<li><code>--data-format TEXT</code> - Format of the dataset (e.g., csv, json) [required]</li>
+<li><code>--source-filepath TEXT</code> - Path to the source dataset file on your local filesystem [required]</li>
+<li><code>--destination-filepath TEXT</code> - Path where the dataset file will be copied in the RO-Crate [required]</li>
+<li><code>--url TEXT</code> - URL reference for the dataset</li>
+<li><code>--date-published TEXT</code> - Publication date of the dataset (ISO format)</li>
+<li><code>--schema TEXT</code> - Schema identifier for the dataset</li>
+<li><code>--used-by TEXT</code> - Identifiers of computations that use this dataset (can be specified multiple times)</li>
+<li><code>--derived-from TEXT</code> - Identifiers of datasets this one is derived from (can be specified multiple times)</li>
+<li><code>--generated-by TEXT</code> - Identifiers of computations that generated this dataset (can be specified multiple times)</li>
+<li><code>--summary-statistics-source TEXT</code> - Path to source summary statistics file on your local filesystem</li>
+<li><code>--summary-statistics-destination TEXT</code> - Path where summary statistics file will be copied in the RO-Crate</li>
+<li><code>--associated-publication TEXT</code> - Associated publication identifier</li>
+<li><code>--additional-documentation TEXT</code> - Additional documentation</li>
+<li><code>--custom-properties TEXT</code> - JSON string with additional properties</li>
+</ul>
+<p><strong>Example:</strong></p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>rocrate<span class="w"> </span>add<span class="w"> </span>dataset<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--name<span class="w"> </span><span class="s2">&quot;AP-MS embeddings&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--author<span class="w"> </span><span class="s2">&quot;Krogan lab&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--version<span class="w"> </span><span class="s2">&quot;1.0&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--date-published<span class="w"> </span><span class="s2">&quot;2023-04-23&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--description<span class="w"> </span><span class="s2">&quot;APMS embeddings for each protein&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--keywords<span class="w"> </span><span class="s2">&quot;proteomics&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--data-format<span class="w"> </span><span class="s2">&quot;CSV&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--source-filepath<span class="w"> </span><span class="s2">&quot;./data/embeddings.csv&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--destination-filepath<span class="w"> </span><span class="s2">&quot;./test_rocrate/embeddings.csv&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="s2">&quot;./test_rocrate&quot;</span>
+</code></pre></div>
+<h4 id="add-software"><code>add software</code><a class="headerlink" href="#add-software" title="Permanent link">&para;</a></h4>
+<p>Add a software file and its metadata to an RO-Crate.</p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>rocrate<span class="w"> </span>add<span class="w"> </span>software<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>ROCRATE_PATH
+</code></pre></div>
+<p><strong>Options:</strong></p>
+<ul>
+<li><code>--guid TEXT</code> - Optional custom identifier for the software</li>
+<li><code>--name TEXT</code> - Name of the software [required]</li>
+<li><code>--author TEXT</code> - Author of the software [required]</li>
+<li><code>--version TEXT</code> - Version of the software [required]</li>
+<li><code>--description TEXT</code> - Description of the software [required]</li>
+<li><code>--keywords TEXT</code> - Keywords (can be specified multiple times) [required]</li>
+<li><code>--file-format TEXT</code> - Format of the software (e.g., py, js) [required]</li>
+<li><code>--url TEXT</code> - URL reference for the software</li>
+<li><code>--source-filepath TEXT</code> - Path to the source software file on your local filesystem [required]</li>
+<li><code>--destination-filepath TEXT</code> - Path where the software file will be copied in the RO-Crate [required]</li>
+<li><code>--date-modified TEXT</code> - Last modification date of the software (ISO format)</li>
+<li><code>--used-by-computation TEXT</code> - Identifiers of computations that use this software (can be specified multiple times)</li>
+<li><code>--associated-publication TEXT</code> - Associated publication identifier</li>
+<li><code>--additional-documentation TEXT</code> - Additional documentation</li>
+<li><code>--custom-properties TEXT</code> - JSON string with additional properties</li>
+</ul>
+<p><strong>Example:</strong></p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>rocrate<span class="w"> </span>add<span class="w"> </span>software<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--name<span class="w"> </span><span class="s2">&quot;calibrate pairwise distance&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--author<span class="w"> </span><span class="s2">&quot;Qin, Y.&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--version<span class="w"> </span><span class="s2">&quot;1.0&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--description<span class="w"> </span><span class="s2">&quot;script written in python to calibrate pairwise distance.&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--keywords<span class="w"> </span><span class="s2">&quot;b2ai&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--file-format<span class="w"> </span><span class="s2">&quot;py&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--source-filepath<span class="w"> </span><span class="s2">&quot;./scripts/calibrate_pairwise_distance.py&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--destination-filepath<span class="w"> </span><span class="s2">&quot;./test_rocrate/calibrate_pairwise_distance.py&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--date-modified<span class="w"> </span><span class="s2">&quot;2023-04-23&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="s2">&quot;./test_rocrate&quot;</span>
+</code></pre></div>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../../workflows/complete-demo/" class="btn btn-neutral float-left" title="Complete Demo"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../schema/" class="btn btn-neutral float-right" title="Schema">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+      <p>Copyright &copy; 2023 THE RECTOR AND VISITORS OF THE UNIVERSITY OF VIRGINIA</p>
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/fairscape/fairscape-cli" class="fa fa-code-fork" style="color: #fcfcfc"> fairscape/fairscape-cli</a>
+        </span>
+    
+    
+      <span><a href="../../workflows/complete-demo/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../schema/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
