@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field, ConfigDict, model_validator
 import uuid 
 import mongomock
 
-from fairscape_cli.config import NAAN, DEFAULT_CONTEXT
+from fairscape_models import DEFAULT_CONTEXT, DEFAULT_ARK_NAAN as NAAN
 from fairscape_cli.models.software import Software
 from fairscape_cli.models.dataset import Dataset
 from fairscape_cli.models.computation import Computation
@@ -531,6 +531,7 @@ def LinkSubcrates(parent_crate_path: pathlib.Path) -> List[str]:
         print("No valid sub-crates found to link.")
 
     return linked_sub_crate_ids
+
 def collect_subcrate_metadata(parent_crate_path: pathlib.Path) -> dict:
     """
     Collects author and keyword metadata from all subcrates in the parent crate.
@@ -648,23 +649,6 @@ def _extract_content_size_bytes(size_str: str) -> int:
         return 0
 
 
-def _is_schema_entity(entity_type: Union[str, List[str]]) -> bool:
-    """
-    Check if an entity type indicates a Schema.
-
-    Args:
-        entity_type: @type value (string or list)
-
-    Returns:
-        True if entity is a Schema
-    """
-    if isinstance(entity_type, str):
-        return "Schema" in entity_type or "evi:Schema" in entity_type
-    elif isinstance(entity_type, list):
-        return any("Schema" in t or "evi:Schema" in t for t in entity_type)
-    return False
-
-
 def _extract_checksum(entity: Dict[str, Any]) -> Optional[str]:
     """
     Extract checksum from an entity.
@@ -739,62 +723,59 @@ def collect_subcrate_aggregated_metrics(
             if path.is_file() and str(path) not in processed_files:
                 processed_files.add(str(path))
 
-                try:
-                    # Load and validate the subcrate
-                    subcrate_metadata = ReadROCrateMetadata(path)
-                    graph = subcrate_metadata.get('@graph', [])
+                subcrate_metadata = ReadROCrateMetadata(path)
+                graph = subcrate_metadata.get('@graph', [])
 
-                    for entity in graph:
-                        if not isinstance(entity, dict):
-                            continue
+                for entity in graph:
+                    # Convert pydantic to dict
+                    if hasattr(entity, 'model_dump'):
+                        entity = entity.model_dump(by_alias=True)
 
-                        if entity.get('@id') == 'ro-crate-metadata.json':
-                            continue
+                    if entity.get('@id') == 'ro-crate-metadata.json':
+                        continue
 
-                        entity_type = _get_entity_type(entity)
+                    entity_type = _get_entity_type(entity)
 
-                        if "Dataset" in entity_type:
-                            metrics.dataset_count += 1
-                            metrics.total_entities += 1
+                    if "Dataset" in entity_type:
+                        metrics.dataset_count += 1
+                        metrics.total_entities += 1
 
-                        elif "Computation" in entity_type or "Experiment" in entity_type:
-                            metrics.computation_count += 1
-                            metrics.total_entities += 1
+                    elif "Computation" in entity_type or "Experiment" in entity_type:
+                        metrics.computation_count += 1
+                        metrics.total_entities += 1
 
-                        elif "Software" in entity_type:
-                            metrics.software_count += 1
-                            metrics.total_entities += 1
+                    elif "Software" in entity_type:
+                        metrics.software_count += 1
+                        metrics.total_entities += 1
 
-                        elif _is_schema_entity(entity_type):
-                            metrics.schema_count += 1
-                            schema_id = entity.get('@id')
-                            if schema_id:
-                                metrics.schemas.append({"@id": schema_id})
+                    elif "Schema" in entity_type:
+                        metrics.schema_count += 1
+                        schema_id = entity.get('@id')
+                        if schema_id:
+                            metrics.schemas.append({"@id": schema_id})
 
-                        content_size = entity.get("contentSize")
-                        if content_size:
-                            size_bytes = _extract_content_size_bytes(content_size)
-                            if size_bytes > 0:
-                                metrics.total_content_size_bytes += size_bytes
+                    content_size = entity.get("contentSize")
+                    if content_size:
+                        size_bytes = _extract_content_size_bytes(content_size)
+                        if size_bytes > 0:
+                            metrics.total_content_size_bytes += size_bytes
 
-                        if entity.get("hasSummaryStatistics"):
-                            metrics.entities_with_summary_stats += 1
+                    if entity.get("hasSummaryStatistics"):
+                        metrics.entities_with_summary_stats += 1
 
-                        checksum = _extract_checksum(entity)
-                        if checksum:
-                            metrics.entities_with_checksums += 1
+                    checksum = _extract_checksum(entity)
+                    if checksum:
+                        metrics.entities_with_checksums += 1
 
-                        format_val = entity.get("format") or entity.get("encodingFormat")
-                        if format_val:
-                            if isinstance(format_val, str):
-                                metrics.formats.add(format_val)
-                            elif isinstance(format_val, list):
-                                for fmt in format_val:
-                                    if isinstance(fmt, str):
-                                        metrics.formats.add(fmt)
+                    format_val = entity.get("format") or entity.get("encodingFormat")
+                    if format_val:
+                        if isinstance(format_val, str):
+                            metrics.formats.add(format_val)
+                        elif isinstance(format_val, list):
+                            for fmt in format_val:
+                                if isinstance(fmt, str):
+                                    metrics.formats.add(fmt)
 
-                except Exception:
-                    continue
 
     for dir_item in parent_crate_path.iterdir():
         if dir_item.is_dir():
