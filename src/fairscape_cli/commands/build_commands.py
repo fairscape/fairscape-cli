@@ -13,7 +13,9 @@ from fairscape_cli.datasheet_builder.evidence_graph.html_builder import generate
 from fairscape_cli.utils.build_utils import (
     process_all_subcrates,
     process_croissant,
-    process_datasheet
+    process_datasheet,
+    process_preview,
+    process_subcrate
 )
 
 from fairscape_cli.models import (
@@ -535,3 +537,93 @@ def build_croissant(ctx, rocrate_path, output):
         click.echo(f"ERROR: Failed to convert RO-Crate to Croissant: {e}", err=True)
         traceback.print_exc()
         ctx.exit(1)
+
+
+@build_group.command('preview')
+@click.argument('rocrate-path', type=click.Path(exists=True, path_type=pathlib.Path))
+@click.option('--published', is_flag=True, default=False, help="Indicate if the crate is considered published (affects link rendering).")
+@click.pass_context
+def build_preview_command(ctx, rocrate_path: pathlib.Path, published: bool):
+    """
+    Generate a preview HTML file (ro-crate-preview.html) for an RO-Crate.
+
+    This creates a lightweight HTML summary of the RO-Crate that can be
+    viewed in a browser. Useful for quickly inspecting crate contents.
+    """
+    if rocrate_path.is_dir():
+        crate_dir = rocrate_path
+    elif rocrate_path.name == "ro-crate-metadata.json":
+        crate_dir = rocrate_path.parent
+    else:
+        click.echo(f"ERROR: Input path must be an RO-Crate directory or a ro-crate-metadata.json file.", err=True)
+        ctx.exit(1)
+
+    metadata_file = crate_dir / "ro-crate-metadata.json"
+    if not metadata_file.exists():
+        click.echo(f"ERROR: Metadata file not found: {metadata_file}", err=True)
+        ctx.exit(1)
+
+    click.echo(f"Generating preview for: {crate_dir}")
+
+    if process_preview(crate_dir, published=published):
+        click.echo(f"Preview generated: {crate_dir / 'ro-crate-preview.html'}")
+    else:
+        click.echo("ERROR: Failed to generate preview", err=True)
+        ctx.exit(1)
+
+
+@build_group.command('subcrate')
+@click.argument('subcrate-path', type=click.Path(exists=True, path_type=pathlib.Path))
+@click.option('--release-directory', type=click.Path(exists=True, path_type=pathlib.Path), default=None,
+              help="Parent release directory (used for relative paths in evidence graphs).")
+@click.option('--published', is_flag=True, default=False, help="Indicate if the crate is considered published.")
+@click.pass_context
+def build_subcrate_command(ctx, subcrate_path: pathlib.Path, release_directory: Optional[pathlib.Path], published: bool):
+    """
+    Process a subcrate with all augmentation and build steps.
+
+    This command performs the following steps on a single subcrate:
+
+    \b
+    1. Link inverse properties (OWL ontology entailments)
+    2. Add EVI:inputs and EVI:outputs to the root dataset
+    3. Generate evidence graph (JSON + HTML visualization)
+    4. Generate Croissant export (JSON-LD)
+    5. Generate preview HTML
+
+    Use this command to fully process a subcrate before or after adding it
+    to a release. This is the individual-crate equivalent of the subcrate
+    processing that happens during 'build release'.
+    """
+    if subcrate_path.is_dir():
+        crate_dir = subcrate_path
+    elif subcrate_path.name == "ro-crate-metadata.json":
+        crate_dir = subcrate_path.parent
+    else:
+        click.echo(f"ERROR: Input path must be an RO-Crate directory or a ro-crate-metadata.json file.", err=True)
+        ctx.exit(1)
+
+    metadata_file = crate_dir / "ro-crate-metadata.json"
+    if not metadata_file.exists():
+        click.echo(f"ERROR: Metadata file not found: {metadata_file}", err=True)
+        ctx.exit(1)
+
+    click.echo(f"\n=== Processing subcrate: {crate_dir.name} ===")
+
+    results = process_subcrate(crate_dir, release_directory=release_directory, published=published)
+
+    # Summary
+    click.echo(f"\n=== Summary ===")
+    click.echo(f"  Link inverses:   {'OK' if results['link_inverses'] else 'FAILED'}")
+    click.echo(f"  Add I/O:         {'OK' if results['add_io'] else 'FAILED'}")
+    click.echo(f"  Evidence graph:  {'OK' if results['evidence_graph'] else 'SKIPPED/FAILED'}")
+    click.echo(f"  Croissant:       {'OK' if results['croissant'] else 'FAILED'}")
+    click.echo(f"  Preview:         {'OK' if results['preview'] else 'FAILED'}")
+
+    if results['errors']:
+        click.echo(f"\nErrors encountered:")
+        for error in results['errors']:
+            click.echo(f"  - {error}")
+        ctx.exit(1)
+    else:
+        click.echo(f"\nSubcrate processing completed successfully.")

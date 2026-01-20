@@ -198,6 +198,119 @@ def process_datasheet(crate_path: Path, published: bool = False) -> bool:
         click.echo(f"  ERROR generating datasheet for {crate_path.name}: {e}")
         return False
 
+def process_preview(crate_path: Path, published: bool = False) -> bool:
+    """Generate ro-crate-preview.html for a single RO-Crate."""
+    from fairscape_models.rocrate import ROCrateV1_2
+    from fairscape_models.conversion.converter import ROCToTargetConverter
+    from fairscape_models.conversion.mapping.FairscapeDatasheet import PREVIEW_MAPPING_CONFIGURATION
+    from fairscape_cli.datasheet_builder.rocrate.section_generators import PreviewGenerator
+    from jinja2 import Environment, FileSystemLoader
+
+    metadata_file = crate_path / "ro-crate-metadata.json"
+    output_path = crate_path / "ro-crate-preview.html"
+
+    try:
+        import fairscape_cli
+        package_dir = Path(fairscape_cli.__file__).parent
+        template_dir = package_dir / 'datasheet_builder' / 'templates'
+
+        env = Environment(
+            loader=FileSystemLoader(str(template_dir)),
+            trim_blocks=True,
+            lstrip_blocks=True
+        )
+        preview_generator = PreviewGenerator(env)
+
+        with open(metadata_file, 'r') as f:
+            crate_dict = json.load(f)
+
+        crate = ROCrateV1_2.model_validate(crate_dict)
+
+        converter = ROCToTargetConverter(
+            source_crate=crate,
+            mapping_configuration=PREVIEW_MAPPING_CONFIGURATION
+        )
+
+        preview = converter.convert()
+        preview_html = preview_generator.generate(preview, published)
+
+        with open(output_path, 'w', encoding='utf-8') as f:
+            f.write(preview_html)
+
+        return True
+    except Exception as e:
+        click.echo(f"  ERROR generating preview for {crate_path.name}: {e}")
+        return False
+
+
+def process_subcrate(subcrate_path: Path, release_directory: Optional[Path] = None, published: bool = False) -> Dict[str, Any]:
+    """
+    Process a single subcrate with all augmentation and build steps.
+
+    Steps:
+    1. Link inverse properties (OWL ontology)
+    2. Add EVI:inputs and EVI:outputs
+    3. Generate evidence graph
+    4. Generate Croissant export
+    5. Generate preview HTML
+
+    Returns a dict with results for each step.
+    """
+    results = {
+        'subcrate': subcrate_path.name,
+        'link_inverses': False,
+        'add_io': False,
+        'evidence_graph': False,
+        'croissant': False,
+        'preview': False,
+        'errors': []
+    }
+
+    click.echo(f"Processing subcrate: {subcrate_path.name}")
+
+    # Step 1: Link inverses
+    click.echo(f"  - Linking inverses...")
+    if process_link_inverses(subcrate_path):
+        results['link_inverses'] = True
+        click.echo(f"    ✓ Inverses linked")
+    else:
+        results['errors'].append("Failed to link inverses")
+
+    # Step 2: Add inputs/outputs
+    click.echo(f"  - Adding inputs/outputs...")
+    if process_add_io(subcrate_path):
+        results['add_io'] = True
+        click.echo(f"    ✓ Inputs/outputs added")
+    else:
+        results['errors'].append("Failed to add I/O")
+
+    # Step 3: Evidence graph
+    click.echo(f"  - Generating evidence graph...")
+    if process_evidence_graph(subcrate_path, release_directory):
+        results['evidence_graph'] = True
+        click.echo(f"    ✓ Evidence graph generated")
+    else:
+        click.echo(f"    - No EVI:outputs found or graph generation skipped")
+
+    # Step 4: Croissant
+    click.echo(f"  - Generating Croissant...")
+    if process_croissant(subcrate_path):
+        results['croissant'] = True
+        click.echo(f"    ✓ Croissant generated")
+    else:
+        results['errors'].append("Failed to generate Croissant")
+
+    # Step 5: Preview
+    click.echo(f"  - Generating preview...")
+    if process_preview(subcrate_path, published):
+        results['preview'] = True
+        click.echo(f"    ✓ Preview generated")
+    else:
+        results['errors'].append("Failed to generate preview")
+
+    return results
+
+
 def process_all_subcrates(release_directory: Path) -> Dict[str, Any]:
     subcrates = find_subcrates(release_directory)
     
