@@ -104,7 +104,7 @@ The HTML visualization provides an interactive graph that can be viewed in a web
 
 ### `release`
 
-Build a release RO-Crate in a directory, scanning for and linking existing sub-RO-Crates. This creates a parent RO-Crate that references and contextualizes the sub-crates.
+Build a release RO-Crate in a directory, scanning for and linking existing sub-RO-Crates. This creates a parent RO-Crate that references and contextualizes the sub-crates. For more details see [workflow documentation](release_creation.md)
 
 ```bash
 fairscape-cli build release [OPTIONS] RELEASE_DIRECTORY
