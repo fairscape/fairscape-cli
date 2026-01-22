@@ -11,7 +11,10 @@ def extract_datasets_from_graph(graph: List[Dict]) -> List[Tuple[str, bool]]:
     """
     datasets = []
     for entity in graph:
-        if entity.get("@type") == "https://w3id.org/EVI#Dataset":
+        entity_type = entity.get("@type")
+        if isinstance(entity_type, list):
+            entity_type = entity_type[-1]
+        if 'Dataset' in entity_type:
             dataset_id = entity.get("@id")
             has_generated_by = bool(entity.get("generatedBy"))
             datasets.append((dataset_id, has_generated_by))
@@ -27,6 +30,8 @@ def extract_samples_from_graph(graph: List[Dict]) -> List[str]:
     samples = []
     for entity in graph:
         entity_type = entity.get("@type")
+        if isinstance(entity_type, list):
+            entity_type = entity_type[-1]
         if entity_type == "https://w3id.org/EVI#Sample" or entity_type == "EVI:Sample":
             sample_id = entity.get("@id")
             if sample_id:
@@ -43,6 +48,8 @@ def extract_used_datasets_from_computations(graph: List[Dict]) -> Set[str]:
     used_datasets = set()
     for entity in graph:
         entity_type = entity.get("@type")
+        if isinstance(entity_type, list):
+            entity_type = entity_type[-1]
         if entity_type == "https://w3id.org/EVI#Computation" or entity_type == "EVI:Computation":
             used_dataset_list = entity.get("usedDataset", [])
             for dataset_ref in used_dataset_list:
@@ -140,11 +147,12 @@ def add_inputs_outputs_to_rocrate(rocrate_path: pathlib.Path) -> Tuple[bool, str
         for i, entity in enumerate(graph):
             entity_type = entity.get("@type")
             if isinstance(entity_type, list):
-                if "Dataset" in entity_type or "https://w3id.org/EVI#ROCrate" in entity_type:
-                    if entity.get("@id") != "ro-crate-metadata.json":
-                        root_dataset = entity
-                        root_index = i
-                        break
+                entity_type = entity_type[-1]
+            if "https://w3id.org/EVI#ROCrate" in entity_type:
+                if entity.get("@id") != "ro-crate-metadata.json":
+                    root_dataset = entity
+                    root_index = i
+                    break
             elif entity_type == "Dataset":
                 if entity.get("@id") != "ro-crate-metadata.json":
                     root_dataset = entity
