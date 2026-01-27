@@ -452,6 +452,138 @@
       }
       /* END: New styles for sidebar navigation */
 
+      /* START: Executive Summary and AI-Readiness Score styles */
+      .executive-summary-section {
+        background-color: #e9ecef;
+        padding: 20px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+        border: 1px solid #ced4da;
+      }
+
+      .executive-summary-section h2 {
+        font-size: 18px;
+        color: #2c3e50;
+        margin: 0 0 12px 0;
+        padding-bottom: 8px;
+        border-bottom: 2px solid #2c3e50;
+      }
+
+      .summary-description {
+        font-size: 13px;
+        color: #495057;
+        margin-bottom: 15px;
+      }
+
+      .exec-summary-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+      }
+
+      .exec-summary-item {
+        background-color: #f8f9fa;
+        padding: 12px 15px;
+        border-radius: 4px;
+        border: 1px solid #e9ecef;
+      }
+
+      .exec-summary-label {
+        font-weight: bold;
+        color: #2c3e50;
+        display: block;
+        margin-bottom: 10px;
+        padding-bottom: 6px;
+        border-bottom: 1px solid #dee2e6;
+        font-size: 13px;
+      }
+
+      .exec-summary-item .stat-item {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 12px;
+      }
+
+      .stat-sub-label {
+        color: #495057;
+      }
+
+      .stat-sub-value {
+        color: #333;
+      }
+
+      .formats-list {
+        word-break: break-word;
+      }
+
+      /* AI-Ready Score Bars */
+      .aiready-bars {
+        margin-top: 2px;
+      }
+
+      .aiready-bar-row {
+        display: flex;
+        align-items: center;
+        margin-bottom: 4px;
+      }
+
+      .aiready-bar-label {
+        width: 90px;
+        font-size: 10px;
+        font-weight: 600;
+        color: #444;
+      }
+
+      .aiready-bar-track {
+        flex: 1;
+        height: 12px;
+        background: #e0e0e0;
+        border-radius: 2px;
+        overflow: hidden;
+      }
+
+      .aiready-bar-fill {
+        height: 100%;
+        border-radius: 2px;
+      }
+
+      .aiready-bar-score {
+        width: 30px;
+        font-size: 9px;
+        text-align: right;
+        color: #666;
+        margin-left: 6px;
+      }
+
+      .aiready-overall-row {
+        margin-top: 6px;
+        padding-top: 6px;
+        border-top: 1px solid #ddd;
+      }
+
+      .aiready-overall-row .aiready-bar-label {
+        font-weight: bold;
+        color: #2c3e50;
+      }
+
+      .aiready-overall-row .aiready-bar-score {
+        font-weight: bold;
+        color: #333;
+      }
+
+      .view-details-link {
+        font-size: 11px;
+        font-weight: normal;
+        color: #2c3e50;
+        text-decoration: none;
+        margin-left: 5px;
+      }
+
+      .view-details-link:hover {
+        text-decoration: underline;
+      }
+      /* END: Executive Summary and AI-Readiness Score styles */
+
       @media print {
         body {
           background-color: white;
@@ -481,7 +613,8 @@
 
       @media (max-width: 768px) {
         .compact-grid,
-        .regulatory-grid {
+        .regulatory-grid,
+        .exec-summary-grid {
           grid-template-columns: 1fr;
         }
 
@@ -503,6 +636,7 @@
 
     <nav id="sidebar">
       <div class="sidebar-title">Navigation</div>
+      <a href="#datasheet-summary">Datasheet Summary</a>
       <a href="#dataset-details">Dataset Details</a>
       <a href="#ai-readiness">AI Ready Information</a>
       <a href="#composition">Composition</a>
@@ -514,6 +648,9 @@
         <h1 id="project-title">{{ title }}</h1>
         <div>Version: {{ version }}</div>
       </header>
+
+      <!-- Executive Summary with AI-Readiness Score -->
+      {{ summary_section | safe }}
 
       <!-- Added id="dataset-details" to link to the section -->
       <div id="dataset-details">{{ overview_section | safe }}</div>

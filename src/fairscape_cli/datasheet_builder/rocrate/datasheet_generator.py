@@ -37,6 +37,7 @@ from .section_generators import (
     SubcratesSectionGenerator,
     PreviewGenerator
 )
+from .summary_generator import SummarySectionGenerator
 
 
 def get_directory_size(directory):
@@ -80,6 +81,7 @@ class DatasheetGenerator:
         self.distribution_generator = DistributionSectionGenerator(self.env)
         self.subcrates_generator = SubcratesSectionGenerator(self.env)
         self.preview_generator = PreviewGenerator(self.env)
+        self.summary_generator = SummarySectionGenerator(self.env)
         
         with open(self.json_path, 'r') as f:
             crate_dict = json.load(f)
@@ -279,17 +281,20 @@ class DatasheetGenerator:
             output_path = Path(output_path)
         
         datasheet = self.convert_main_sections()
-        
+
+        summary_html = self.summary_generator.generate(self.main_crate, output_dir=self.base_dir)
+
         overview_html = self.overview_generator.generate(datasheet.overview, self.published)
         use_cases_html = self.use_cases_generator.generate(datasheet.use_cases)
         distribution_html = self.distribution_generator.generate(datasheet.distribution)
         subcrates_html = self.subcrates_generator.generate(datasheet.composition, self.published)
-        
+
         base_template = self.env.get_template('base.html')
-        
+
         context = {
             'title': datasheet.overview.title if datasheet.overview else "Untitled RO-Crate",
             'version': datasheet.overview.version if datasheet.overview else "",
+            'summary_section': summary_html,
             'overview_section': overview_html,
             'use_cases_section': use_cases_html,
             'distribution_section': distribution_html,

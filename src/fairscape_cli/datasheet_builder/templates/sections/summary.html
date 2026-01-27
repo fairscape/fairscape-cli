@@ -1,0 +1,70 @@
+<div id="datasheet-summary" class="executive-summary-section">
+    <h2>Datasheet Summary</h2>
+    {% if description %}
+    <p class="summary-description">{{ description }}</p>
+    {% endif %}
+
+    <div class="exec-summary-grid">
+        <div class="exec-summary-item">
+            <span class="exec-summary-label">Dataset Statistics</span>
+            {% if total_size %}
+            <div class="stat-item">
+                <strong class="stat-sub-label">Total Data Volume:</strong>
+                <span class="stat-sub-value">{{ total_size }}</span>
+            </div>
+            {% endif %}
+            {% if total_entities %}
+            <div class="stat-item">
+                <strong class="stat-sub-label">Total Files:</strong>
+                <span class="stat-sub-value">{{ total_entities }}</span>
+            </div>
+            {% endif %}
+            {% if formats %}
+            <div class="stat-item">
+                <strong class="stat-sub-label">Available Formats:</strong>
+                <span class="stat-sub-value formats-list">{{ formats }}</span>
+            </div>
+            {% endif %}
+            {% if dataset_count and dataset_count != "0" %}
+            <div class="stat-item">
+                <strong class="stat-sub-label">Datasets:</strong>
+                <span class="stat-sub-value">{{ dataset_count }}</span>
+            </div>
+            {% endif %}
+            {% if computation_count and computation_count != "0" %}
+            <div class="stat-item">
+                <strong class="stat-sub-label">Computations:</strong>
+                <span class="stat-sub-value">{{ computation_count }}</span>
+            </div>
+            {% endif %}
+            {% if software_count and software_count != "0" %}
+            <div class="stat-item">
+                <strong class="stat-sub-label">Software:</strong>
+                <span class="stat-sub-value">{{ software_count }}</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="exec-summary-item aiready-item">
+            <span class="exec-summary-label">AI-Readiness Score{% if aiready_json_filename %} <a href="{{ aiready_json_filename }}" class="view-details-link">(View Details)</a>{% endif %}</span>
+            <div class="aiready-bars">
+                {% for cat in aiready_categories %}
+                <div class="aiready-bar-row">
+                    <div class="aiready-bar-label">{{ cat.label }}</div>
+                    <div class="aiready-bar-track">
+                        <div class="aiready-bar-fill" style="width: {{ cat.percentage }}%; background: {{ cat.color }};"></div>
+                    </div>
+                    <div class="aiready-bar-score">{{ cat.earned }}/{{ cat.possible }}</div>
+                </div>
+                {% endfor %}
+                <div class="aiready-bar-row aiready-overall-row">
+                    <div class="aiready-bar-label">Overall</div>
+                    <div class="aiready-bar-track">
+                        <div class="aiready-bar-fill" style="width: {{ aiready_total_percentage }}%; background: {{ aiready_total_color }};"></div>
+                    </div>
+                    <div class="aiready-bar-score">{{ aiready_total_percentage|int }}%</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
