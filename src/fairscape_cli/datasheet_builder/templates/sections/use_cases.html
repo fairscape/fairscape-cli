@@ -7,25 +7,125 @@
     <div class="use-cases-label">Intended Uses:</div>
     <div class="use-cases-value">{{ intended_uses }}</div>
   </div>
-  {% endif %} {% if limitations %}
+  {% endif %}
+  {% if limitations %}
   <div class="use-cases-item">
     <div class="use-cases-label">Limitations:</div>
     <div class="use-cases-value">{{ limitations }}</div>
   </div>
-  {% endif %} {% if prohibited_uses %}
+  {% endif %}
+  {% if prohibited_uses %}
   <div class="use-cases-item">
     <div class="use-cases-label">Prohibited Uses:</div>
     <div class="use-cases-value">{{ prohibited_uses }}</div>
   </div>
-  {% endif %} {% if potential_bias %}
+  {% endif %}
+  {% if potential_bias %}
   <div class="use-cases-item">
     <div class="use-cases-label">Potential Sources of Bias:</div>
     <div class="use-cases-value">{{ potential_bias }}</div>
   </div>
-  {% endif %} {% if maintenance_plan %}
+  {% endif %}
+  {% if maintenance_plan %}
   <div class="use-cases-item">
     <div class="use-cases-label">Maintenance Plan:</div>
     <div class="use-cases-value">{{ maintenance_plan }}</div>
+  </div>
+  {% endif %}
+  {% if data_collection %}
+  <div class="use-cases-item">
+    <div class="use-cases-label">Data Collection:</div>
+    <div class="use-cases-value">{{ data_collection }}</div>
+  </div>
+  {% endif %}
+  {% if data_collection_type %}
+  <div class="use-cases-item">
+    <div class="use-cases-label">Data Collection Type:</div>
+    <div class="use-cases-value">{{ data_collection_type }}</div>
+  </div>
+  {% endif %}
+  {% if data_collection_missing_data %}
+  <div class="use-cases-item">
+    <div class="use-cases-label">Missing Data:</div>
+    <div class="use-cases-value">{{ data_collection_missing_data }}</div>
+  </div>
+  {% endif %}
+  {% if data_collection_raw_data %}
+  <div class="use-cases-item">
+    <div class="use-cases-label">Raw Data:</div>
+    <div class="use-cases-value">{{ data_collection_raw_data }}</div>
+  </div>
+  {% endif %}
+  {% if data_collection_timeframe %}
+  <div class="use-cases-item">
+    <div class="use-cases-label">Collection Timeframe:</div>
+    <div class="use-cases-value">{{ data_collection_timeframe }}</div>
+  </div>
+  {% endif %}
+  {% if data_imputation_protocol %}
+  <div class="use-cases-item">
+    <div class="use-cases-label">Imputation Protocol:</div>
+    <div class="use-cases-value">{{ data_imputation_protocol }}</div>
+  </div>
+  {% endif %}
+  {% if data_manipulation_protocol %}
+  <div class="use-cases-item">
+    <div class="use-cases-label">Manipulation Protocol:</div>
+    <div class="use-cases-value">{{ data_manipulation_protocol }}</div>
+  </div>
+  {% endif %}
+  {% if data_preprocessing_protocol %}
+  <div class="use-cases-item">
+    <div class="use-cases-label">Preprocessing Protocol:</div>
+    <div class="use-cases-value">{{ data_preprocessing_protocol }}</div>
+  </div>
+  {% endif %}
+  {% if data_annotation_protocol %}
+  <div class="use-cases-item">
+    <div class="use-cases-label">Annotation Protocol:</div>
+    <div class="use-cases-value">{{ data_annotation_protocol }}</div>
+  </div>
+  {% endif %}
+  {% if data_annotation_platform %}
+  <div class="use-cases-item">
+    <div class="use-cases-label">Annotation Platform:</div>
+    <div class="use-cases-value">{{ data_annotation_platform }}</div>
+  </div>
+  {% endif %}
+  {% if data_annotation_analysis %}
+  <div class="use-cases-item">
+    <div class="use-cases-label">Annotation Analysis:</div>
+    <div class="use-cases-value">{{ data_annotation_analysis }}</div>
+  </div>
+  {% endif %}
+  {% if personal_sensitive_information %}
+  <div class="use-cases-item">
+    <div class="use-cases-label">Personal/Sensitive Information:</div>
+    <div class="use-cases-value">{{ personal_sensitive_information }}</div>
+  </div>
+  {% endif %}
+  {% if data_social_impact %}
+  <div class="use-cases-item">
+    <div class="use-cases-label">Social Impact:</div>
+    <div class="use-cases-value">{{ data_social_impact }}</div>
+  </div>
+  {% endif %}
+  {% if annotations_per_item %}
+  <div class="use-cases-item">
+    <div class="use-cases-label">Annotations Per Item:</div>
+    <div class="use-cases-value">{{ annotations_per_item }}</div>
+  </div>
+  {% endif %}
+  {% if annotator_demographics %}
+  <div class="use-cases-item">
+    <div class="use-cases-label">Annotator Demographics:</div>
+    <div class="use-cases-value">{{ annotator_demographics }}</div>
+  </div>
+  {% endif %}
+  {% if machine_annotation_tools %}
+  <div class="use-cases-item">
+    <div class="use-cases-label">Machine Annotation Tools:</div>
+    <div class="use-cases-value">{{ machine_annotation_tools }}</div>
   </div>
   {% endif %}
 </div>
