@@ -94,19 +94,37 @@ class OverviewSectionGenerator(SectionGenerator):
 
 class UseCasesSectionGenerator(SectionGenerator):
     """Convert UseCasesSection pydantic model to HTML."""
-    
+
     def generate(self, use_cases: Optional[UseCasesSection]) -> str:
         if not use_cases:
             return ""
-        
+
         context = {
             'intended_uses': use_cases.intended_use or "",
             'limitations': use_cases.limitations or "",
             'prohibited_uses': use_cases.prohibited_uses or "",
             'maintenance_plan': use_cases.maintenance_plan or "",
-            'potential_bias': use_cases.potential_sources_of_bias or ""
+            'potential_bias': use_cases.potential_sources_of_bias or "",
+
+            # Additional RAI fields
+            'data_collection': use_cases.data_collection or "",
+            'data_collection_type': use_cases.data_collection_type or "",
+            'data_collection_missing_data': use_cases.data_collection_missing_data or "",
+            'data_collection_raw_data': use_cases.data_collection_raw_data or "",
+            'data_collection_timeframe': use_cases.data_collection_timeframe or "",
+            'data_imputation_protocol': use_cases.data_imputation_protocol or "",
+            'data_manipulation_protocol': use_cases.data_manipulation_protocol or "",
+            'data_preprocessing_protocol': use_cases.data_preprocessing_protocol or "",
+            'data_annotation_protocol': use_cases.data_annotation_protocol or "",
+            'data_annotation_platform': use_cases.data_annotation_platform or "",
+            'data_annotation_analysis': use_cases.data_annotation_analysis or "",
+            'personal_sensitive_information': use_cases.personal_sensitive_information or "",
+            'data_social_impact': use_cases.data_social_impact or "",
+            'annotations_per_item': use_cases.annotations_per_item or "",
+            'annotator_demographics': use_cases.annotator_demographics or "",
+            'machine_annotation_tools': use_cases.machine_annotation_tools or "",
         }
-        
+
         return super().generate('sections/use_cases.html', **context)
 
 
