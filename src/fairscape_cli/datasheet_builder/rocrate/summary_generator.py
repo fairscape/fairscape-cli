@@ -85,6 +85,8 @@ class SummarySectionGenerator:
                 size_str = self._format_size(size_bytes)
 
         formats = root_data.get("evi:formats", [])
+        if formats is None:
+            formats = []
         formats = [f for f in formats if f and f != "unknown"]
 
         return SummaryData(
