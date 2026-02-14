@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fairscape-cli"
-version = "1.1.10"
+version = "1.1.13"
 description = "A utility for packaging objects and validating metadata for FAIRSCAPE"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -47,7 +47,8 @@ dependencies = [
         "pandas",
         "rdflib",
         "mongomock",
-        "huggingface_hub>=0.20.0"
+        "huggingface_hub>=0.20.0",
+        "pyarrow>=17.0.0",
 ]
 
 [tool.setuptools]
