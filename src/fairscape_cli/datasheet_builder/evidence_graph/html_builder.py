@@ -211,7 +211,7 @@ def generate_evidence_graph_html(rocrate_path, output_path=None):
 
     function getEntityType(typeUri) {{
         if (!typeUri) return "Unknown";
-        const typeString = Array.isArray(typeUri) ? typeUri[0] : typeUri;
+        const typeString = Array.isArray(typeUri) ? typeUri[typeUri.length - 1] : typeUri;
         const simpleType = typeString.split(/[#\\/]/).pop() || "Unknown";
         const eviPrefix = "evi:";
         const specificType = (Array.isArray(typeUri) ? typeUri : [typeUri])
