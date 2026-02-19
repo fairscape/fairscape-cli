@@ -25,7 +25,7 @@ from fairscape_cli.models import (
     collect_subcrate_aggregated_metrics
 )
 
-from fairscape_models.rocrate import ROCrateV1_2
+from fairscape_models.rocrate import ROCrateV1_2, ROCrateMetadataElem
 from fairscape_models.conversion.converter import ROCToTargetConverter
 from fairscape_models.conversion.mapping.croissant import MAPPING_CONFIGURATION as CROISSANT_MAPPING
 
@@ -44,7 +44,7 @@ def build_group():
 @click.option('--project-name', required=True, type=str, help="Project name associated with the release.")
 @click.option('--description', required=True, type=str, help="Description of the release RO-Crate.")
 @click.option('--keywords', required=True, multiple=True, type=str, help="Keywords for the release RO-Crate.")
-@click.option('--license', required=False, type=str, default="https://creativecommons.org/licenses/by/4.0/", help="License URL for the release.")
+@click.option('--license', required=True, type=str, default="https://creativecommons.org/licenses/by/4.0/", help="License URL for the release.")
 @click.option('--date-published', required=False, type=str, help="Publication date (ISO format, defaults to now).")
 @click.option('--author', required=False, type=str, default=None, help="Author(s) of the release.")
 @click.option('--version', required=False, type=str, default="1.0", help="Version of the release.")
@@ -59,10 +59,15 @@ def build_group():
 @click.option('--usage-info', required=False, type=str, help="Usage information for the release.")
 @click.option('--content-size', required=False, type=str, help="Content size of the release.")
 @click.option('--citation', required=False, type=str, help="Citation for the release.")
+
+#AI-Ready and other structured properties
 @click.option('--completeness', required=False, type=str, help="Completeness information for the release.")
 @click.option('--ethical-review', required=False, type=str, help="Ethical review information.")
 @click.option('--human-subject', required=False, type=str, help="Human subject involvement information.")
 @click.option('--confidentiality-level', required=False, type=str, help="Confidentiality level for the release.")
+@click.option('--data-governance', required=False, type=str, help="Data governance information for the release.")
+@click.option('--irb', required=False, type=str, help="IRB number for the release.")
+@click.option('--has-summary-stats', required=False, type=str, help="Summary statistics for the release.")
 
 # Mapped RAI Properties (were previously generic properties)
 @click.option('--maintenance-plan', required=False, type=str, help="RAI: Versioning, maintainers, and deprecation policies.")
@@ -87,7 +92,6 @@ def build_group():
 @click.option('--rai-sensitive-info', required=False, multiple=True, type=str, help="RAI: Description of any personal or sensitive information.")
 @click.option('--rai-social-impact', required=False, type=str, help="RAI: Discussion of the dataset's potential social impact.")
 @click.option('--rai-annotations-per-item', required=False, type=str, help="RAI: Number of human labels per dataset item.")
-@click.option('--rai-annotator-demographics', required=False, multiple=True, type=str, help="RAI: Demographic specifications about the annotators.")
 @click.option('--rai-machine-annotation-tools', required=False, multiple=True, type=str, help="RAI: Software used for automated data annotation.")
 
 # Other Properties
@@ -127,6 +131,9 @@ def build_release(
     limitations: Optional[str],
     prohibited_uses: Optional[str],
     potential_sources_of_bias: Optional[str],
+    data_governance: Optional[str],
+    irb: Optional[str],
+    has_summary_stats: Optional[str],
     human_subject: Optional[str],
     ethical_review: Optional[str],
     rai_data_collection: Optional[str],
@@ -144,7 +151,6 @@ def build_release(
     rai_sensitive_info: Optional[Tuple[str]],
     rai_social_impact: Optional[str],
     rai_annotations_per_item: Optional[str],
-    rai_annotator_demographics: Optional[Tuple[str]],
     rai_machine_annotation_tools: Optional[Tuple[str]],
     additional_properties: Optional[str],
     custom_properties: Optional[str],
@@ -216,6 +222,7 @@ def build_release(
     if usage_info: parent_params["usageInfo"] = usage_info
     if content_size: parent_params["contentSize"] = content_size
     if ethical_review: parent_params["ethicalReview"] = ethical_review
+    if has_summary_stats: parent_params["hasSummaryStats"] = has_summary_stats
     
     # Process RAI and other structured properties
     rai_properties = {}
@@ -244,7 +251,6 @@ def build_release(
     if rai_sensitive_info: rai_properties["rai:personalSensitiveInformation"] = list(rai_sensitive_info)
     if rai_social_impact: rai_properties["rai:dataSocialImpact"] = rai_social_impact
     if rai_annotations_per_item: rai_properties["rai:annotationsPerItem"] = rai_annotations_per_item
-    if rai_annotator_demographics: rai_properties["rai:annotatorDemographics"] = list(rai_annotator_demographics)
     if rai_machine_annotation_tools: rai_properties["rai:machineAnnotationTools"] = list(rai_machine_annotation_tools)
     
     timeframe = []
@@ -262,6 +268,10 @@ def build_release(
         additional_props.append({"@type": "PropertyValue", "name": "Human Subject", "value": human_subject})
     if prohibited_uses:
         additional_props.append({"@type": "PropertyValue", "name": "Prohibited Uses", "value": prohibited_uses})
+    if data_governance:
+        additional_props.append({"@type": "PropertyValue", "name": "Data Governance Committee", "value": data_governance})
+    if irb:
+        additional_props.append({"@type": "PropertyValue", "name": "IRB", "value": irb})
     
     if additional_properties:
         try:
@@ -307,6 +317,12 @@ def build_release(
         parent_crate_root_dict = GenerateROCrate(**parent_params)
         parent_crate_guid = parent_crate_root_dict['@id']
         click.echo(f"Initialized parent RO-Crate: {parent_crate_guid}")
+
+        aiready_warnings = ROCrateMetadataElem.model_validate(parent_crate_root_dict).get_aiready_warnings()
+        if aiready_warnings:
+            click.echo("\nAI-Ready warnings (missing recommended properties):")
+            for warning in aiready_warnings:
+                click.echo(f"  WARNING: {warning}")
     except Exception as e:
         click.echo(f"ERROR: Failed to initialize parent RO-Crate: {e}")
         ctx.exit(1)
