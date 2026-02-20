@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 from pathlib import Path
 from datetime import datetime
-from typing import List, Dict, Set, Optional
+from typing import List, Dict, Set, Optional, Tuple
 import json
 import sys
 
@@ -210,7 +212,12 @@ class ProvenanceTracker:
                 continue
 
             # File not in any crate - create new dataset if it's within rocrate_path
-            if not input_path.is_relative_to(self.config.rocrate_path):
+            try:
+                input_path.relative_to(self.config.rocrate_path)
+                _in_crate = True
+            except ValueError:
+                _in_crate = False
+            if not _in_crate:
                 # Skip files outside the crate path silently (e.g., /dev/null)
                 continue
 
@@ -238,7 +245,12 @@ class ProvenanceTracker:
             output_path = Path(output_file).resolve()
 
             # Skip files outside the crate path (e.g., /dev/null)
-            if not output_path.is_relative_to(self.config.rocrate_path):
+            try:
+                output_path.relative_to(self.config.rocrate_path)
+                _in_crate = True
+            except ValueError:
+                _in_crate = False
+            if not _in_crate:
                 continue
 
             rel_path = output_path.relative_to(self.config.rocrate_path)
