@@ -1,6 +1,7 @@
 import pathlib
 import os
 import json
+import pyarrow.parquet as pq
 import pandas as pd
 import h5py
 from datetime import datetime
@@ -196,8 +197,14 @@ class TabularValidationSchema(BaseModel):
         """Infer schema from a file using Frictionless"""
         file_type = FileType.from_extension(filepath)
         separator = '\t' if file_type == FileType.TSV else ','
-        
-        resource = describe(filepath)
+
+        # if parquet file need to read in file with pyarrow to pandas
+        if file_type == FileType.PARQUET:
+            pd_table = pq.read_table(filepath).to_pandas()
+            resource = describe(pd_table)
+
+        else: 
+            resource = describe(filepath)
         
         properties = {}
         required_fields = []
