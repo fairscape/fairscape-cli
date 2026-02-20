@@ -39,7 +39,7 @@ dependencies = [
         "prettytable>=3.9.0",
         "jsonschema>=4.20.0",
         "sqids>=0.4.1",
-        "fairscape-models>=1.0.22",
+        "fairscape-models>=1.0.23",
         "pyyaml",
         "h5py",
         "frictionless>=5.0,<6.0",
