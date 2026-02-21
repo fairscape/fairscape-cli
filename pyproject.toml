@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fairscape-cli"
-version = "1.1.13"
+version = "1.1.14"
 description = "A utility for packaging objects and validating metadata for FAIRSCAPE"
 readme = "README.md"
 requires-python = ">=3.8"
