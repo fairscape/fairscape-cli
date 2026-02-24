@@ -243,6 +243,37 @@ def process_preview(crate_path: Path, published: bool = False) -> bool:
         return False
 
 
+def process_merkle_tree(crate_path: Path) -> bool:
+    """Generate ro-crate-merkle-tree.json and annotate the root entity with the Merkle root hash."""
+    from fairscape_cli.utils.merkle import generate_merkle_tree
+
+    metadata_file = crate_path / "ro-crate-metadata.json"
+    output_path = crate_path / "ro-crate-merkle-tree.json"
+
+    try:
+        tree = generate_merkle_tree(crate_path)
+        if tree is None:
+            return False
+
+        with open(output_path, 'w') as f:
+            json.dump(tree, f, indent=2)
+
+        # Annotate root entity with the Merkle root hash
+        with open(metadata_file, 'r') as f:
+            metadata = json.load(f)
+
+        graph = metadata.get('@graph', [])
+        if len(graph) > 1:
+            graph[1]['evi:merkleRootHash'] = tree['rootHash']
+            with open(metadata_file, 'w') as f:
+                json.dump(metadata, f, indent=2)
+
+        return True
+    except Exception as e:
+        click.echo(f"  ERROR generating Merkle tree for {crate_path.name}: {e}")
+        return False
+
+
 def process_subcrate(subcrate_path: Path, release_directory: Optional[Path] = None, published: bool = False) -> Dict[str, Any]:
     """
     Process a single subcrate with all augmentation and build steps.
@@ -253,6 +284,7 @@ def process_subcrate(subcrate_path: Path, release_directory: Optional[Path] = No
     3. Generate evidence graph
     4. Generate Croissant export
     5. Generate preview HTML
+    6. Generate Merkle tree
 
     Returns a dict with results for each step.
     """
@@ -263,6 +295,7 @@ def process_subcrate(subcrate_path: Path, release_directory: Optional[Path] = No
         'evidence_graph': False,
         'croissant': False,
         'preview': False,
+        'merkle_tree': False,
         'errors': []
     }
 
@@ -307,6 +340,14 @@ def process_subcrate(subcrate_path: Path, release_directory: Optional[Path] = No
         click.echo(f"    ✓ Preview generated")
     else:
         results['errors'].append("Failed to generate preview")
+
+    # Step 6: Merkle tree
+    click.echo(f"  - Generating Merkle tree...")
+    if process_merkle_tree(subcrate_path):
+        results['merkle_tree'] = True
+        click.echo(f"    ✓ Merkle tree generated")
+    else:
+        click.echo(f"    - No local files found or Merkle tree generation skipped")
 
     return results
 

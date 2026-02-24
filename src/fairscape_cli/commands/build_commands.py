@@ -606,6 +606,7 @@ def build_subcrate_command(ctx, subcrate_path: pathlib.Path, release_directory: 
     3. Generate evidence graph (JSON + HTML visualization)
     4. Generate Croissant export (JSON-LD)
     5. Generate preview HTML
+    6. Generate Merkle tree (SHA-256 integrity verification)
 
     Use this command to fully process a subcrate before or after adding it
     to a release. This is the individual-crate equivalent of the subcrate
@@ -635,6 +636,7 @@ def build_subcrate_command(ctx, subcrate_path: pathlib.Path, release_directory: 
     click.echo(f"  Evidence graph:  {'OK' if results['evidence_graph'] else 'SKIPPED/FAILED'}")
     click.echo(f"  Croissant:       {'OK' if results['croissant'] else 'FAILED'}")
     click.echo(f"  Preview:         {'OK' if results['preview'] else 'FAILED'}")
+    click.echo(f"  Merkle tree:     {'OK' if results['merkle_tree'] else 'SKIPPED/FAILED'}")
 
     if results['errors']:
         click.echo(f"\nErrors encountered:")
