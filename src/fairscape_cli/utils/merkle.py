@@ -8,7 +8,7 @@ root hash can be used to verify the integrity of the crate's contents.
 import hashlib
 import json
 from pathlib import Path
-from typing import Optional
+from typing import Dict, List, Optional
 
 
 def sha256_file(filepath: Path) -> str:
@@ -26,7 +26,7 @@ def sha256_concat(left: str, right: str) -> str:
     return hashlib.sha256(combined).hexdigest()
 
 
-def build_merkle_tree(leaves: list[dict]) -> dict:
+def build_merkle_tree(leaves: List[Dict]) -> dict:
     """Build a Merkle tree from a list of leaf dicts.
 
     Args:

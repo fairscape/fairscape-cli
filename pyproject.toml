@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fairscape-cli"
-version = "1.1.14"
+version = "1.1.15"
 description = "A utility for packaging objects and validating metadata for FAIRSCAPE"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -39,7 +39,7 @@ dependencies = [
         "prettytable>=3.9.0",
         "jsonschema>=4.20.0",
         "sqids>=0.4.1",
-        "fairscape-models>=1.0.23",
+        "fairscape-models>=1.0.25",
         "pyyaml",
         "h5py",
         "frictionless>=5.0,<6.0",
