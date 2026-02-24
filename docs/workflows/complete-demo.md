@@ -79,7 +79,7 @@ fairscape-cli rocrate register dataset \
     --description 'Input data for computation example' \
     --keywords 'data,input' \
     --data-format 'csv' \
-    --filepath './simple-computation/input.csv'
+    --filepath './input.csv'
 
 # Register the software
 fairscape-cli rocrate register software \
@@ -90,7 +90,7 @@ fairscape-cli rocrate register software \
     --description 'Software that computes sum and product of two columns' \
     --keywords 'software,processing' \
     --file-format 'py' \
-    --filepath './simple-computation/software.py' \
+    --filepath './software.py' \
     --date-modified '2025-04-16'
 ```
 
@@ -170,7 +170,7 @@ fairscape-cli rocrate register dataset \
     --description 'Output data from computation example' \
     --keywords 'data,output' \
     --data-format 'csv' \
-    --filepath './simple-computation/output.csv' \
+    --filepath './output.csv' \
     --generated-by 'ark:59852/computation-data-processing-computation-XXXX'
 
 # Infer the schema and add it to the RO-Crate
