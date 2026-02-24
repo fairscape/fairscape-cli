@@ -16,6 +16,8 @@ Before starting this workflow, make sure you have:
 
 ## Step 1: Build a Crate with Local Files and Computation
 
+[Download the full script](./simple-computation-demo.sh)
+
 We'll start by creating a small data processing example using local files. This demonstrates the full research object lifecycle from input to output.
 
 ### 1.1 Create Input File and Processing Script
@@ -69,8 +71,8 @@ fairscape-cli rocrate create \
     --keywords 'computation,demo,rocrate' \
     './simple-computation'
 
-# Register the input dataset
-fairscape-cli rocrate register dataset \
+# Register the input dataset and store the returned GUID
+INPUT_GUID=$(fairscape-cli rocrate register dataset \
     './simple-computation' \
     --name 'Input Dataset' \
     --author 'Example Author' \
@@ -79,10 +81,10 @@ fairscape-cli rocrate register dataset \
     --description 'Input data for computation example' \
     --keywords 'data,input' \
     --data-format 'csv' \
-    --filepath './input.csv'
+    --filepath './input.csv')
 
-# Register the software
-fairscape-cli rocrate register software \
+# Register the software and store the returned GUID
+SOFTWARE_GUID=$(fairscape-cli rocrate register software \
     './simple-computation' \
     --name 'Data Processing Software' \
     --author 'Example Developer' \
@@ -91,7 +93,7 @@ fairscape-cli rocrate register software \
     --keywords 'software,processing' \
     --file-format 'py' \
     --filepath './software.py' \
-    --date-modified '2025-04-16'
+    --date-modified '2025-04-16')
 ```
 
 ### 1.3 Infer and Validate Input Data Against Schema
@@ -140,28 +142,26 @@ python ./simple-computation/software.py \
     ./simple-computation/input.csv \
     ./simple-computation/output.csv
 
-# Register the computation
-fairscape-cli rocrate register computation \
+# Register the computation using the stored GUIDs
+COMPUTATION_GUID=$(fairscape-cli rocrate register computation \
     './simple-computation' \
     --name 'Data Processing Computation' \
     --run-by 'Example Researcher' \
     --date-created '2025-04-16' \
     --description 'Computation that generates sum and product of input values' \
     --keywords 'computation,processing' \
-    --used-software 'ark:59852/software-data-processing-software-XXXX' \
-    --used-dataset 'ark:59852/dataset-input-dataset-XXXX' \
-    --command 'python software.py input.csv output.csv'
+    --used-software "$SOFTWARE_GUID" \
+    --used-dataset "$INPUT_GUID" \
+    --command 'python software.py input.csv output.csv')
 ```
-
-Note: Replace the ARK identifiers with the actual values returned by your previous commands.
 
 ### 1.5 Register Output and Infer Schema
 
 Register the output dataset and infer its schema:
 
 ```bash
-# Register the output dataset with explicit --generated-by parameter
-fairscape-cli rocrate register dataset \
+# Register the output dataset using the stored computation GUID
+OUTPUT_GUID=$(fairscape-cli rocrate register dataset \
     './simple-computation' \
     --name 'Output Dataset' \
     --author 'Example Author' \
@@ -171,7 +171,7 @@ fairscape-cli rocrate register dataset \
     --keywords 'data,output' \
     --data-format 'csv' \
     --filepath './output.csv' \
-    --generated-by 'ark:59852/computation-data-processing-computation-XXXX'
+    --generated-by "$COMPUTATION_GUID")
 
 # Infer the schema and add it to the RO-Crate
 fairscape-cli schema infer \
@@ -187,15 +187,13 @@ fairscape-cli schema validate \
     --data './simple-computation/output.csv'
 ```
 
-### 1.6 Generate a Provenance Graph for the Main Output
+### 1.6 Build the Subcrate
 
-Create a visual representation of the data provenance:
+Build the HTML preview, croissant metadata, and fill in inverse properties:
 
 ```bash
-# Generate evidence graph for the output dataset
-fairscape-cli build evidence-graph \
-    './simple-computation' \
-    'ark:59852/dataset-output-dataset-XXXX'
+# Build the subcrate (generates HTML preview, croissant, and fills in inverse properties)
+fairscape-cli build subcrate './simple-computation'
 ```
 
 This will create both JSON and HTML visualizations of the data provenance in the RO-Crate.
