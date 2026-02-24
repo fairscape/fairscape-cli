@@ -367,6 +367,9 @@ def CopyToROCrate(source_filepath: str, destination_filepath: str):
 
     # TODO check that destination path is in the rocrate
 
+    # create parent directories if they don't exist
+    destination_path.parent.mkdir(parents=True, exist_ok=True)
+
     # copy the file into the destinationPath
     shutil.copy(source_path, destination_path)
 

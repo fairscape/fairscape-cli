@@ -95,8 +95,8 @@ class TestRocrateAddLocal:
             
             assert result.exit_code == 0, f"CLI Error: {result.output}"
             dataset_guid = result.output.strip()
-            
-            destination_full_path = pathlib.Path(destination_relative_path)
+
+            destination_full_path = crate_dir / destination_relative_path
             assert destination_full_path.exists(), f"File was not copied to {destination_full_path}"
             
             dataset_entity = _load_and_get_graph_entity(crate_dir, dataset_guid)
@@ -137,7 +137,7 @@ class TestRocrateAddLocal:
             assert result.exit_code == 0, f"CLI Error: {result.output}"
             software_guid = result.output.strip()
 
-            destination_full_path = pathlib.Path(destination_relative_path)
+            destination_full_path = crate_dir / destination_relative_path
             assert destination_full_path.exists(), f"File was not copied to {destination_full_path}"
             
             software_entity = _load_and_get_graph_entity(crate_dir, software_guid)

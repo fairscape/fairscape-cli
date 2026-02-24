@@ -1371,7 +1371,7 @@ def addSoftware(
         ctx.exit(code=1)
 
     try:
-        CopyToROCrate(source_filepath, destination_filepath)
+        CopyToROCrate(source_filepath, pathlib.Path(rocrate_path) / destination_filepath)
     except Exception as exc:
         click.echo(f"ERROR copying file to RO-Crate: {str(exc)}", err=True)
         ctx.exit(code=1)
@@ -1382,11 +1382,11 @@ def addSoftware(
         "author": author,
         "version": version,
         "description": description,
-        "keywords": list(keywords), 
+        "keywords": list(keywords),
         "fileFormat": file_format,
-        "url": url, 
+        "url": url,
         "dateModified": date_modified,
-        "filepath": str(destination_filepath.resolve().relative_to(pathlib.Path(rocrate_path).resolve())),
+        "filepath": str(destination_filepath),
         "usedByComputation": list(used_by_computation) if used_by_computation else [],
         "associatedPublication": associated_publication,
         "additionalDocumentation": additional_documentation,
@@ -1497,14 +1497,14 @@ def addDataset(
          ctx.exit(code=1)
 
     try:
-        CopyToROCrate(source_filepath, destination_filepath)
+        CopyToROCrate(source_filepath, pathlib.Path(rocrate_path) / destination_filepath)
 
         elements_to_append = []
         summary_stats_guid = None
 
         if summary_statistics_source and summary_statistics_destination:
             try:
-                copied_summary_stats_filepath = CopyToROCrate(summary_statistics_source, summary_statistics_destination)
+                copied_summary_stats_filepath = CopyToROCrate(summary_statistics_source, pathlib.Path(rocrate_path) / summary_statistics_destination)
                 click.echo(f"Copied '{summary_statistics_source}' to '{copied_summary_stats_filepath}' inside the crate.")
 
                 summary_stats_guid, summary_stats_instance, computation_instance = generateSummaryStatsElements(
@@ -1535,7 +1535,7 @@ def addDataset(
             "keywords": list(keywords), 
             "version": version, 
             "format": data_format,
-            "filepath": str(destination_filepath.resolve().relative_to(pathlib.Path(rocrate_path).resolve())),
+            "filepath": str(destination_filepath),
             "cratePath": rocrate_path,
             "url": url,
             "datePublished": date_published,
@@ -1643,11 +1643,11 @@ def addModel(
         ctx.exit(code=1)
     
     try:
-        CopyToROCrate(source_filepath, destination_filepath)
+        CopyToROCrate(source_filepath, pathlib.Path(rocrate_path) / destination_filepath)
     except Exception as exc:
         click.echo(f"ERROR copying file to RO-Crate: {exc}", err=True)
         ctx.exit(code=1)
-    
+
     params = {
         "guid": guid,
         "name": name,
@@ -1660,7 +1660,7 @@ def addModel(
         "modelFormat": model_format,
         "trainingDataset": list(training_dataset),
         "generatedBy": generated_by,
-        "filepath": str(destination_filepath.resolve().relative_to(pathlib.Path(rocrate_path).resolve())),
+        "filepath": str(destination_filepath),
         "cratePath": rocrate_path,
     }
 
