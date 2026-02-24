@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://github.com/fairscape/fairscape-cli/subcrate-processing-workflow/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Subcrate Processing Workflow - FAIRSCAPE CLI</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Subcrate Processing Workflow";
+        var mkdocs_page_input_path = "subcrate-processing-workflow.md";
+        var mkdocs_page_url = "/fairscape/fairscape-cli/subcrate-processing-workflow/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> FAIRSCAPE CLI
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../setup/">Setup</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Examples</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../workflows/complete-demo/">Complete Demo</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Commands</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../commands/rocrate/">RO-Crate</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../commands/schema/">Schema</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../commands/import/">Import</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../commands/build/">Build</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../commands/publish/">Publishing</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">FAIRSCAPE CLI</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Subcrate Processing Workflow</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/fairscape/fairscape-cli/edit/master/docs/subcrate-processing-workflow.md">Edit on fairscape/fairscape-cli</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="subcrate-processing-workflow">Subcrate Processing Workflow<a class="headerlink" href="#subcrate-processing-workflow" title="Permanent link">&para;</a></h1>
+<p>This document describes how <code>process_all_subcrates</code> works in the <code>build release</code> command and how its steps map to individual CLI commands for flexible workflow support.</p>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<p>The <code>build release</code> command can operate in two modes:
+1. <strong>Full processing</strong> (default): Processes all subcrates, then creates the release crate
+2. <strong>Skip processing</strong> (<code>--skip-subcrate-processing</code>): Creates the release crate without processing subcrates. But the sub-crates would need to be later linked and the top-level ro-crate is missing aggreagated metrics. </p>
+<h2 id="what-process_all_subcrates-does">What <code>process_all_subcrates</code> Does<a class="headerlink" href="#what-process_all_subcrates-does" title="Permanent link">&para;</a></h2>
+<p>Located in <code>src/fairscape_cli/utils/build_utils.py</code>, this function performs five steps on each subcrate found in the release directory:</p>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Function</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>process_link_inverses()</code></td>
+<td>Adds OWL inverse properties using the EVI ontology</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>process_add_io()</code></td>
+<td>Calculates and adds <code>EVI:inputs</code> and <code>EVI:outputs</code> to the root dataset</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>process_evidence_graph()</code></td>
+<td>Generates provenance graph JSON and HTML visualization</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>process_croissant()</code></td>
+<td>Converts RO-Crate metadata to Croissant JSON-LD format</td>
+</tr>
+<tr>
+<td>5</td>
+<td><code>process_preview()</code></td>
+<td>Generates <code>ro-crate-preview.html</code> for browser viewing</td>
+</tr>
+</tbody>
+</table>
+<h2 id="mapping-to-cli-commands">Mapping to CLI Commands<a class="headerlink" href="#mapping-to-cli-commands" title="Permanent link">&para;</a></h2>
+<p>Each processing step can be executed individually using existing CLI commands:</p>
+<table>
+<thead>
+<tr>
+<th>Processing Step</th>
+<th>Equivalent CLI Command</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>process_link_inverses()</code></td>
+<td><code>fairscape augment link-inverses &lt;rocrate-path&gt;</code></td>
+</tr>
+<tr>
+<td><code>process_add_io()</code></td>
+<td><code>fairscape augment add-io &lt;rocrate-path&gt;</code></td>
+</tr>
+<tr>
+<td><code>process_evidence_graph()</code></td>
+<td><code>fairscape build evidence-graph &lt;rocrate-path&gt; &lt;ark-id&gt;</code></td>
+</tr>
+<tr>
+<td><code>process_croissant()</code></td>
+<td><code>fairscape build croissant &lt;rocrate-path&gt;</code></td>
+</tr>
+<tr>
+<td><code>process_preview()</code></td>
+<td><code>fairscape build preview &lt;rocrate-path&gt;</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>All-in-one command:</strong> Use <code>fairscape build subcrate &lt;path&gt;</code> to run all five steps on a single subcrate.</p>
+<h2 id="supported-workflows">Supported Workflows<a class="headerlink" href="#supported-workflows" title="Permanent link">&para;</a></h2>
+<h3 id="workflow-1-subcrates-first-then-release-default">Workflow 1: Subcrates First, Then Release (Default)<a class="headerlink" href="#workflow-1-subcrates-first-then-release-default" title="Permanent link">&para;</a></h3>
+<p>This is the current default behavior. Subcrates are processed automatically before the release crate is created.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Single command handles everything</span>
+fairscape<span class="w"> </span>build<span class="w"> </span>release<span class="w"> </span>./my-release<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--name<span class="w"> </span><span class="s2">&quot;My Release&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--organization-name<span class="w"> </span><span class="s2">&quot;My Org&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--project-name<span class="w"> </span><span class="s2">&quot;My Project&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--description<span class="w"> </span><span class="s2">&quot;Release description&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--keywords<span class="w"> </span><span class="s2">&quot;keyword1&quot;</span><span class="w"> </span>--keywords<span class="w"> </span><span class="s2">&quot;keyword2&quot;</span>
+</code></pre></div>
+<p><strong>What happens internally:</strong>
+1. <code>process_all_subcrates()</code> finds and processes all subcrates in <code>./my-release</code>
+2. Subcrate metadata is collected (authors, keywords)
+3. Release RO-Crate is created with aggregated metadata
+4. Subcrates are linked to the release via <code>LinkSubcrates()</code>
+5. Release-level Croissant and datasheet are generated</p>
+<h3 id="workflow-2-release-first-then-subcrates-later">Workflow 2: Release First, Then Subcrates Later<a class="headerlink" href="#workflow-2-release-first-then-subcrates-later" title="Permanent link">&para;</a></h3>
+<p>Use this when you need to create the release crate structure first and add/process subcrates afterward.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Step 1: Create release crate without processing subcrates</span>
+fairscape<span class="w"> </span>build<span class="w"> </span>release<span class="w"> </span>./my-release<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--name<span class="w"> </span><span class="s2">&quot;My Release&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--organization-name<span class="w"> </span><span class="s2">&quot;My Org&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--project-name<span class="w"> </span><span class="s2">&quot;My Project&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--description<span class="w"> </span><span class="s2">&quot;Release description&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--keywords<span class="w"> </span><span class="s2">&quot;keyword1&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--skip-subcrate-processing
+
+<span class="c1"># Step 2: Add subcrates to the release directory</span>
+<span class="c1"># (manually copy or create subcrate directories)</span>
+
+<span class="c1"># Step 3: Process each subcrate (all-in-one command)</span>
+fairscape<span class="w"> </span>build<span class="w"> </span>subcrate<span class="w"> </span>./my-release/subcrate1<span class="w"> </span>--release-directory<span class="w"> </span>./my-release
+fairscape<span class="w"> </span>build<span class="w"> </span>subcrate<span class="w"> </span>./my-release/subcrate2<span class="w"> </span>--release-directory<span class="w"> </span>./my-release
+
+<span class="c1"># Or process each step individually if needed:</span>
+<span class="c1"># fairscape augment link-inverses ./my-release/subcrate1</span>
+<span class="c1"># fairscape augment add-io ./my-release/subcrate1</span>
+<span class="c1"># fairscape build evidence-graph ./my-release/subcrate1 &lt;ark-id&gt;</span>
+<span class="c1"># fairscape build croissant ./my-release/subcrate1</span>
+<span class="c1"># fairscape build preview ./my-release/subcrate1</span>
+</code></pre></div>
+<h2 id="potential-enhancements">Potential Enhancements<a class="headerlink" href="#potential-enhancements" title="Permanent link">&para;</a></h2>
+<h3 id="1-batch-subcrate-processing-command">1. Batch Subcrate Processing Command<a class="headerlink" href="#1-batch-subcrate-processing-command" title="Permanent link">&para;</a></h3>
+<p>A new command to process all subcrates in an existing release:</p>
+<div class="highlight"><pre><span></span><code>fairscape<span class="w"> </span>augment<span class="w"> </span>subcrates<span class="w"> </span>&lt;release-directory&gt;
+</code></pre></div>
+<p>This would call <code>process_all_subcrates()</code> on an existing release, enabling:
+1. Build release first with <code>--skip-subcrate-processing</code>
+2. Add subcrates to the release directory
+3. Run batch processing on all subcrates</p>
+<h3 id="2-re-link-subcrates-command">2. Re-link Subcrates Command<a class="headerlink" href="#2-re-link-subcrates-command" title="Permanent link">&para;</a></h3>
+<p>A command to update the release's <code>hasPart</code> references after adding new subcrates:</p>
+<div class="highlight"><pre><span></span><code>fairscape<span class="w"> </span>augment<span class="w"> </span>link-subcrates<span class="w"> </span>&lt;release-directory&gt;
+</code></pre></div>
+<p>This would call <code>LinkSubcrates()</code> to update the release metadata with references to any newly added subcrates.</p>
+<h3 id="3-combined-post-processing-command">3. Combined Post-Processing Command<a class="headerlink" href="#3-combined-post-processing-command" title="Permanent link">&para;</a></h3>
+<p>A single command to both process subcrates and re-link them:</p>
+<div class="highlight"><pre><span></span><code>fairscape<span class="w"> </span>augment<span class="w"> </span>finalize-release<span class="w"> </span>&lt;release-directory&gt;
+</code></pre></div>
+<p>This would:
+1. Run <code>process_all_subcrates()</code> to process all subcrates
+2. Run <code>LinkSubcrates()</code> to update release references
+3. Regenerate release-level Croissant and datasheet</p>
+<h2 id="command-reference">Command Reference<a class="headerlink" href="#command-reference" title="Permanent link">&para;</a></h2>
+<h3 id="augment-link-inverses"><code>augment link-inverses</code><a class="headerlink" href="#augment-link-inverses" title="Permanent link">&para;</a></h3>
+<p>Adds OWL inverse properties to an RO-Crate based on the EVI ontology.</p>
+<div class="highlight"><pre><span></span><code>fairscape<span class="w"> </span>augment<span class="w"> </span>link-inverses<span class="w"> </span>&lt;rocrate-path&gt;<span class="w"> </span><span class="o">[</span>--ontology-path<span class="w"> </span>PATH<span class="o">]</span><span class="w"> </span><span class="o">[</span>--namespace<span class="w"> </span>URI<span class="o">]</span>
+</code></pre></div>
+<p><strong>Options:</strong>
+- <code>--ontology-path</code>: Custom OWL ontology file (defaults to bundled <code>evi.xml</code>)
+- <code>--namespace</code>: Primary namespace URI for property keys (defaults to EVI namespace)</p>
+<h3 id="augment-add-io"><code>augment add-io</code><a class="headerlink" href="#augment-add-io" title="Permanent link">&para;</a></h3>
+<p>Calculates and adds <code>EVI:inputs</code> and <code>EVI:outputs</code> to the root dataset.</p>
+<div class="highlight"><pre><span></span><code>fairscape<span class="w"> </span>augment<span class="w"> </span>add-io<span class="w"> </span>&lt;rocrate-path&gt;<span class="w"> </span><span class="o">[</span>--verbose<span class="o">]</span>
+</code></pre></div>
+<p><strong>Inputs are:</strong>
+- All <code>EVI:Sample</code> entities
+- Datasets referenced in <code>usedDataset</code> that were not generated by a computation
+- Datasets referenced in <code>usedDataset</code> but not defined in the <code>@graph</code></p>
+<p><strong>Outputs are:</strong>
+- All datasets that were not used by any computation</p>
+<h3 id="build-evidence-graph"><code>build evidence-graph</code><a class="headerlink" href="#build-evidence-graph" title="Permanent link">&para;</a></h3>
+<p>Generates a provenance graph for a specific ARK identifier.</p>
+<div class="highlight"><pre><span></span><code>fairscape<span class="w"> </span>build<span class="w"> </span>evidence-graph<span class="w"> </span>&lt;rocrate-path&gt;<span class="w"> </span>&lt;ark-id&gt;<span class="w"> </span><span class="o">[</span>--output-file<span class="w"> </span>PATH<span class="o">]</span>
+</code></pre></div>
+<p><strong>Outputs:</strong>
+- <code>provenance-graph.json</code>: JSON representation of the evidence graph
+- <code>provenance-graph.html</code>: Interactive HTML visualization</p>
+<h3 id="build-croissant"><code>build croissant</code><a class="headerlink" href="#build-croissant" title="Permanent link">&para;</a></h3>
+<p>Converts an RO-Crate to Croissant JSON-LD format.</p>
+<div class="highlight"><pre><span></span><code>fairscape<span class="w"> </span>build<span class="w"> </span>croissant<span class="w"> </span>&lt;rocrate-path&gt;<span class="w"> </span><span class="o">[</span>--output<span class="w"> </span>PATH<span class="o">]</span>
+</code></pre></div>
+<p><strong>Output:</strong>
+- <code>croissant.json</code> (or custom path): Croissant-formatted metadata</p>
+<h3 id="build-preview"><code>build preview</code><a class="headerlink" href="#build-preview" title="Permanent link">&para;</a></h3>
+<p>Generates a lightweight HTML preview for an RO-Crate.</p>
+<div class="highlight"><pre><span></span><code>fairscape<span class="w"> </span>build<span class="w"> </span>preview<span class="w"> </span>&lt;rocrate-path&gt;<span class="w"> </span><span class="o">[</span>--published<span class="o">]</span>
+</code></pre></div>
+<p><strong>Options:</strong>
+- <code>--published</code>: Indicate if the crate is published (affects link rendering)</p>
+<p><strong>Output:</strong>
+- <code>ro-crate-preview.html</code>: Browser-viewable summary of the crate</p>
+<h3 id="build-subcrate"><code>build subcrate</code><a class="headerlink" href="#build-subcrate" title="Permanent link">&para;</a></h3>
+<p>Processes a single subcrate with all augmentation and build steps. This is the recommended command for processing individual subcrates.</p>
+<div class="highlight"><pre><span></span><code>fairscape<span class="w"> </span>build<span class="w"> </span>subcrate<span class="w"> </span>&lt;subcrate-path&gt;<span class="w"> </span><span class="o">[</span>--release-directory<span class="w"> </span>PATH<span class="o">]</span><span class="w"> </span><span class="o">[</span>--published<span class="o">]</span>
+</code></pre></div>
+<p><strong>Options:</strong>
+- <code>--release-directory</code>: Parent release directory (used for relative paths in evidence graphs)
+- <code>--published</code>: Indicate if the crate is published</p>
+<p><strong>Steps performed:</strong>
+1. Link inverse properties (OWL ontology entailments)
+2. Add <code>EVI:inputs</code> and <code>EVI:outputs</code> to the root dataset
+3. Generate evidence graph (JSON + HTML visualization)
+4. Generate Croissant export (JSON-LD)
+5. Generate preview HTML</p>
+<p><strong>Example:</strong>
+<div class="highlight"><pre><span></span><code><span class="c1"># Process a subcrate within a release</span>
+fairscape<span class="w"> </span>build<span class="w"> </span>subcrate<span class="w"> </span>./my-release/experiment-1<span class="w"> </span>--release-directory<span class="w"> </span>./my-release
+
+<span class="c1"># Process a standalone subcrate</span>
+fairscape<span class="w"> </span>build<span class="w"> </span>subcrate<span class="w"> </span>./my-subcrate
+</code></pre></div></p>
+              
+            </div>
+          </div><footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+      <p>Copyright &copy; 2023 THE RECTOR AND VISITORS OF THE UNIVERSITY OF VIRGINIA</p>
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/fairscape/fairscape-cli" class="fa fa-code-fork" style="color: #fcfcfc"> fairscape/fairscape-cli</a>
+        </span>
+    
+    
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

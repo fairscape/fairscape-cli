@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://github.com/fairscape/fairscape-cli/schema-metadata/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Schema metadata - FAIRSCAPE CLI</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Schema metadata";
+        var mkdocs_page_input_path = "schema-metadata.md";
+        var mkdocs_page_url = "/fairscape/fairscape-cli/schema-metadata/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> FAIRSCAPE CLI
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../setup/">Setup</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Examples</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../workflows/complete-demo/">Complete Demo</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Commands</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../commands/rocrate/">RO-Crate</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../commands/schema/">Schema</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../commands/import/">Import</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../commands/build/">Build</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../commands/publish/">Publishing</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">FAIRSCAPE CLI</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Schema metadata</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/fairscape/fairscape-cli/edit/master/docs/schema-metadata.md">Edit on fairscape/fairscape-cli</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <p>The Command Line Interface (CLI) offers users more than just the ability to transfer and register dataset objects. It also enables the addition of metadata to describe schemas and perform basic validation of objects. As of this release, the CLI solely supports tabular datasets.</p>
+<h2 id="tabular-dataset">Tabular Dataset<a class="headerlink" href="#tabular-dataset" title="Permanent link">&para;</a></h2>
+<p>To illustrate, let's consider the tabular data frame named <code>APMS_embedding_MUSIC.csv</code>. This particular dataset comprises 1026 columns. The first column, <code>Internal Experiment Identifier</code>, identifies the experiment that generated the source data, while the second column, <code>Gene Symbol</code>, contains the Gene name for the bait protien. The remaining columns, from <code>Embedding0</code> to <code>Embedding1023</code>, are a 1024 length embedding vector. The original data frame has no headers, but after consulting with a domain expert, headers are added for clarity, and based on these headers, the schema will be described.  </p>
+<table>
+<thead>
+<tr>
+<th>Internal Experiment Identifier</th>
+<th>Gene Symbol</th>
+<th>Embedding0</th>
+<th>Embedding1</th>
+<th>Embedding2</th>
+<th>...</th>
+<th>Embedding1023</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>APMS_1</td>
+<td>RRS1</td>
+<td>0.07591</td>
+<td>0.161315</td>
+<td>-0.025731</td>
+<td>...</td>
+<td>-0.172205</td>
+</tr>
+<tr>
+<td>APMS_2</td>
+<td>SNRNP70</td>
+<td>-0.019872</td>
+<td>0.083736</td>
+<td>0.151332</td>
+<td>...</td>
+<td>0.042429</td>
+</tr>
+<tr>
+<td>APMS_3</td>
+<td>RPL18</td>
+<td>0.067353</td>
+<td>0.099565</td>
+<td>0.308037</td>
+<td>...</td>
+<td>0.049538</td>
+</tr>
+<tr>
+<td>APMS_4</td>
+<td>JMJD6</td>
+<td>0.087387</td>
+<td>-0.17969</td>
+<td>0.036929</td>
+<td>...</td>
+<td>0.068675</td>
+</tr>
+<tr>
+<td>APMS_5</td>
+<td>NCAPH2</td>
+<td>0.007115</td>
+<td>0.118820</td>
+<td>-0.059649</td>
+<td>...</td>
+<td>0.119648</td>
+</tr>
+<tr>
+<td>APMS_6</td>
+<td>BSG</td>
+<td>0.143906</td>
+<td>-0.034937</td>
+<td>-0.141535</td>
+<td>...</td>
+<td>-0.178751</td>
+</tr>
+<tr>
+<td>APMS_7</td>
+<td>FAM189B</td>
+<td>-0.107395</td>
+<td>0.284882</td>
+<td>0.065763</td>
+<td>...</td>
+<td>0.044294</td>
+</tr>
+<tr>
+<td>APMS_8</td>
+<td>MRPS11</td>
+<td>-0.051772</td>
+<td>0.045301</td>
+<td>0.08211</td>
+<td>...</td>
+<td>0.079971</td>
+</tr>
+<tr>
+<td>APMS_9</td>
+<td>TRIM28</td>
+<td>-0.17398</td>
+<td>0.209120</td>
+<td>0.021203</td>
+<td>...</td>
+<td>-0.092368</td>
+</tr>
+<tr>
+<td>APMS_10</td>
+<td>LAMP3</td>
+<td>0.048065</td>
+<td>0.087677</td>
+<td>0.000867</td>
+<td>...</td>
+<td>0.047628</td>
+</tr>
+</tbody>
+</table>
+<p>Throughout the rest of the document, we will use this tabular dataset as a guide to walk through the step-by-step process of creating, populating and validating the schema.   </p>
+<h3 id="create-schema">Create schema<a class="headerlink" href="#create-schema" title="Permanent link">&para;</a></h3>
+<p>To create a schema for a tabular dataset, the <code>create-tabular</code> command must be invoked, requiring a <code>name</code>, a brief <code>description</code>, a <code>separator</code> character, and an optional boolean value for <code>header</code> to specify the presence of column headers. Once created, the schema will be located in the destination specified by the <code>SCHEMA_FILE</code>.</p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>schema<span class="w"> </span>create-tabular<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>SCHEMA_FILE
+
+Options:
+<span class="w">  </span>--name<span class="w"> </span>TEXT<span class="w">         </span><span class="o">[</span>required<span class="o">]</span>
+<span class="w">  </span>--description<span class="w"> </span>TEXT<span class="w">  </span><span class="o">[</span>required<span class="o">]</span>
+<span class="w">  </span>--guid<span class="w"> </span>TEXT
+<span class="w">  </span>--separator<span class="w"> </span>TEXT<span class="w">    </span><span class="o">[</span>required<span class="o">]</span>
+<span class="w">  </span>--header<span class="w"> </span>BOOLEAN
+<span class="w">  </span>--help<span class="w">              </span>Show<span class="w"> </span>this<span class="w"> </span>message<span class="w"> </span>and<span class="w"> </span>exit.
+</code></pre></div>
+<p>In the schema creation example below, the symbol <code>,</code> (comma) is used as the <code>separator</code> and the <code>header</code> is set to <code>False</code>. The CLI will autogenerate a value for the <code>guid</code>. </p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>schema<span class="w"> </span>create-tabular<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--name<span class="w"> </span><span class="s1">&#39;APMS Embedding Schema&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--description<span class="w"> </span><span class="s1">&#39;Tabular format for APMS music embeddings from PPI networks from the music pipeline from the B2AI Cellmaps for AI project&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--separator<span class="w"> </span><span class="s1">&#39;,&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--header<span class="w"> </span>False<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>./schema_apms_music_embedding.json
+</code></pre></div>
+<h3 id="populate-schema">Populate schema<a class="headerlink" href="#populate-schema" title="Permanent link">&para;</a></h3>
+<p>To populate the schema for a tabular dataset, we describe its syntactic and semantic properties through a series of unique properties, each representing a single column or an array of similar columns. To add a property, we use the <code>fairscape-cli schema add-property</code> command.</p>
+<p>The first step in adding a property is to choose the datatype it represents in the column or array of columns. For example, if a column represents a <code>string</code> datatype, we create a string property by using the <code>fairscape-cli schema add-property string</code> command. We can use a similar command for other datatypes as well. The CLI supports five datatypes for a tabular dataset, which are listed in the table below.</p>
+<table>
+<thead>
+<tr>
+<th>Datatype</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>string</code></td>
+<td>Strings of text</td>
+</tr>
+<tr>
+<td><code>number</code></td>
+<td>Any numeric type</td>
+</tr>
+<tr>
+<td><code>integer</code></td>
+<td>Integral numbers</td>
+</tr>
+<tr>
+<td><code>array</code></td>
+<td>Ordered elements</td>
+</tr>
+<tr>
+<td><code>boolean</code></td>
+<td>True and False</td>
+</tr>
+</tbody>
+</table>
+<p>After choosing the datatype, we must fill in additional information about the column or array of columns it represents. The table headers below display all available options for each datatype. For a <code>string</code> property, this includes a unique <code>name</code>, an integer value for the <code>index</code> (where 0 represents the first column, 1 represents the second, and so on), a human-readable <code>description</code>, a standard vocabulary term for the <code>value-url</code>, and a regular expression for the data <code>pattern</code> in that column. While the first three options are required, the rest are optional.</p>
+<table>
+<thead>
+<tr>
+<th>Datatype</th>
+<th style="text-align: center;">name</th>
+<th style="text-align: center;">index</th>
+<th style="text-align: center;">description</th>
+<th style="text-align: center;">value-url</th>
+<th style="text-align: center;">pattern</th>
+<th style="text-align: center;">items-datatype</th>
+<th style="text-align: center;">min-items</th>
+<th style="text-align: center;">max-items</th>
+<th style="text-align: center;">unique-items</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>string</code></td>
+<td style="text-align: center;">required</td>
+<td style="text-align: center;">required</td>
+<td style="text-align: center;">required</td>
+<td style="text-align: center;">optional</td>
+<td style="text-align: center;">optional</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+</tr>
+<tr>
+<td><code>number</code></td>
+<td style="text-align: center;">required</td>
+<td style="text-align: center;">required</td>
+<td style="text-align: center;">required</td>
+<td style="text-align: center;">optional</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+</tr>
+<tr>
+<td><code>integer</code></td>
+<td style="text-align: center;">required</td>
+<td style="text-align: center;">required</td>
+<td style="text-align: center;">required</td>
+<td style="text-align: center;">optional</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+</tr>
+<tr>
+<td><code>array</code></td>
+<td style="text-align: center;">required</td>
+<td style="text-align: center;">required</td>
+<td style="text-align: center;">required</td>
+<td style="text-align: center;">optional</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;">required</td>
+<td style="text-align: center;">optional</td>
+<td style="text-align: center;">optional</td>
+<td style="text-align: center;">optional</td>
+</tr>
+<tr>
+<td><code>boolean</code></td>
+<td style="text-align: center;">required</td>
+<td style="text-align: center;">required</td>
+<td style="text-align: center;">required</td>
+<td style="text-align: center;">optional</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+</tr>
+</tbody>
+</table>
+<p>To view all available options and arguments, including those for the string datatype, we can use the command <code>fairscape-cli schema add-property string --help</code>, which will display a complete list of options.</p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>schema<span class="w"> </span>add-property<span class="w"> </span>string<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>SCHEMA_FILE
+
+Options:
+<span class="w">  </span>--name<span class="w"> </span>TEXT<span class="w">         </span><span class="o">[</span>required<span class="o">]</span>
+<span class="w">  </span>--index<span class="w"> </span>INTEGER<span class="w">     </span><span class="o">[</span>required<span class="o">]</span>
+<span class="w">  </span>--description<span class="w"> </span>TEXT<span class="w">  </span><span class="o">[</span>required<span class="o">]</span>
+<span class="w">  </span>--value-url<span class="w"> </span>TEXT
+<span class="w">  </span>--pattern<span class="w"> </span>TEXT
+<span class="w">  </span>--help<span class="w">              </span>Show<span class="w"> </span>this<span class="w"> </span>message<span class="w"> </span>and<span class="w"> </span>exit.
+</code></pre></div>
+<h4 id="add-a-string-property">Add a String Property<a class="headerlink" href="#add-a-string-property" title="Permanent link">&para;</a></h4>
+<p>Columns index 0 and 1 have string values. 
+Both can be constrained with an optional regex pattern.
+For our first column we have the experiment identifier, and add this to the schema with the following command.</p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>schema<span class="w"> </span>add-property<span class="w"> </span>string<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--name<span class="w"> </span><span class="s1">&#39;Experiment Identifier&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--index<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--description<span class="w"> </span><span class="s1">&#39;Identifier for the APMS experiment responsible for generating the raw PPI used to create this embedding vector&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--pattern<span class="w"> </span><span class="s1">&#39;^APMS_[0-9]*$&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>./schema_apms_music_embedding.json
+</code></pre></div>
+<p>For the second column we have Gene Symbols for values, 
+We can choose then to provide the optional flag <code>--value-url</code> to align these values to an ontology.
+Using the (EDAM ontology of bioscientific data analysis and data management)[], we can specify that these are Gene Symbols.
+This can be usefull for specifying the Database of a particular Gene Identifier. Which enables linking Identifiers across databases.
+Any ontology can be used to align data.</p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>schema<span class="w"> </span>add-property<span class="w"> </span>string<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--name<span class="w"> </span><span class="s1">&#39;Gene Symbol&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--index<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--description<span class="w"> </span><span class="s1">&#39;Gene Symbol for the APMS bait protien&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--pattern<span class="w"> </span><span class="s1">&#39;^[A-Za-z0-9\-]*$&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--value-url<span class="w"> </span><span class="s1">&#39;http://edamontology.org/data_1026&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>./schema_apms_music_embedding.json
+</code></pre></div>
+<h4 id="add-an-array-property">Add an Array Property<a class="headerlink" href="#add-an-array-property" title="Permanent link">&para;</a></h4>
+<p>Instead of registering properties for 1024 individual columns we can add a property for an array of 1024 elements.
+We can accomplish this with a slice expression for the index.
+The following slice expressions are supported.</p>
+<table>
+<thead>
+<tr>
+<th>Slice Expression</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>i::</code></td>
+<td>starting at index i to the final index</td>
+</tr>
+<tr>
+<td><code>::i</code></td>
+<td>starting at index 0 to index i</td>
+</tr>
+<tr>
+<td><code>i:j</code></td>
+<td>starting at index i to index j</td>
+</tr>
+</tbody>
+</table>
+<p>We then must specify that the type of the data inside this array is numeric.
+Items are not contstrained to unique values.
+And that for every row we expect there to be exactly 1024 elements.</p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>schema<span class="w"> </span>add-property<span class="w"> </span>array<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--name<span class="w"> </span><span class="s1">&#39;MUSIC APMS Embedding&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--index<span class="w"> </span><span class="s1">&#39;2::&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--description<span class="w"> </span><span class="s1">&#39;Embedding Vector values for genes determined by running node2vec on APMS PPI networks. Vector has 1024 values for each bait protien&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--items-datatype<span class="w"> </span><span class="s1">&#39;number&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--unique-items<span class="w"> </span>False<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--min-items<span class="w"> </span><span class="m">1024</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--max-items<span class="w"> </span><span class="m">1024</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>./schema_apms_music_embedding.json
+</code></pre></div>
+<h3 id="generated-schema">Generated schema<a class="headerlink" href="#generated-schema" title="Permanent link">&para;</a></h3>
+<p>Looking at our schema we should have a json document equivalent to the following
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;@context&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;@vocab&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://schema.org/&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;EVI&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://w3,org/EVI#&quot;</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;@id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ark:59852/schema-apms-music-embedding-izNjXSs&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;@type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;EVI:Schema&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;APMS Embedding Schema&quot;</span><span class="p">,</span><span class="w">    </span>
+<span class="w">    </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Tabular format for APMS music embeddings from PPI networks from the music pipeline from the B2AI Cellmaps for AI project&quot;</span><span class="p">,</span><span class="w">    </span>
+<span class="w">    </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">    </span>
+<span class="w">    </span><span class="nt">&quot;Experiment Identifier&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">    </span>
+<span class="w">        </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Identifier for the APMS experiment responsible for generating the raw PPI used to create this embedding vector&quot;</span><span class="p">,</span><span class="w">    </span>
+<span class="w">        </span><span class="nt">&quot;index&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">                                 </span>
+<span class="w">        </span><span class="nt">&quot;valueURL&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w">    </span>
+<span class="w">        </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span><span class="w">    </span>
+<span class="w">        </span><span class="nt">&quot;pattern&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;^APMS_[0-9]*$&quot;</span><span class="w"> </span>
+<span class="w">    </span><span class="p">},</span><span class="w">                                 </span>
+<span class="w">    </span><span class="nt">&quot;Gene Symbol&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">                                             </span>
+<span class="w">        </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Gene Symbol for the APMS bait protien&quot;</span><span class="p">,</span><span class="w">    </span>
+<span class="w">        </span><span class="nt">&quot;index&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">    </span>
+<span class="w">        </span><span class="nt">&quot;valueURL&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;http://edamontology.org/data_1026&quot;</span><span class="p">,</span><span class="w">    </span>
+<span class="w">        </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span><span class="w">          </span>
+<span class="w">        </span><span class="nt">&quot;pattern&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;^[A-Za-z0-9\-]*$&quot;</span><span class="w">    </span>
+<span class="w">    </span><span class="p">},</span><span class="w">                                                                          </span>
+<span class="w">    </span><span class="nt">&quot;MUSIC APMS Embedding&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">                                                                </span>
+<span class="w">        </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Embedding Vector values for genes determined by running node2vec on APMS PPI networks. Vector has 1024 values for each bait protien&quot;</span><span class="p">,</span><span class="w">    </span>
+<span class="w">        </span><span class="nt">&quot;index&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2::&quot;</span><span class="p">,</span><span class="w">                                                           </span>
+<span class="w">        </span><span class="nt">&quot;valueURL&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w">    </span>
+<span class="w">        </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;array&quot;</span><span class="p">,</span><span class="w">    </span>
+<span class="w">        </span><span class="nt">&quot;maxItems&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1024</span><span class="p">,</span><span class="w">                               </span>
+<span class="w">        </span><span class="nt">&quot;minItems&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1024</span><span class="p">,</span><span class="w">                                    </span>
+<span class="w">        </span><span class="nt">&quot;uniqueItems&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">                                        </span>
+<span class="w">        </span><span class="nt">&quot;items&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">    </span>
+<span class="w">            </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;number&quot;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span><span class="w">                                                              </span>
+<span class="w">    </span><span class="p">},</span><span class="w">                        </span>
+<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;object&quot;</span><span class="p">,</span><span class="w">                                   </span>
+<span class="w">    </span><span class="nt">&quot;additionalProperties&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">                                               </span>
+<span class="w">    </span><span class="nt">&quot;required&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;Experiment Identifier&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Gene Symbol&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;MUSIC APMS Embedding&quot;</span><span class="p">],</span><span class="w">    </span>
+<span class="w">    </span><span class="nt">&quot;seperator&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;,&quot;</span><span class="p">,</span><span class="w">                         </span>
+<span class="w">    </span><span class="nt">&quot;header&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">    </span>
+<span class="w">    </span><span class="nt">&quot;examples&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span><span class="w">    </span>
+<span class="p">}</span>
+</code></pre></div></p>
+<h3 id="validate-schema">Validate schema<a class="headerlink" href="#validate-schema" title="Permanent link">&para;</a></h3>
+<p>With our schema we can execute the validation rules against some example data, and explore how errors are reported.
+In the github repo, example data is provided to evaluate the same schema we have just created.
+When validating against data where every row conforms to the schema, a simple success message is displayed.</p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>schema<span class="w"> </span>validate<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--data<span class="w"> </span>./examples/schemas/MUSIC_embedding/APMS_embedding_MUSIC.csv<span class="w">  </span><span class="se">\</span>
+<span class="w">    </span>--schema<span class="w"> </span>./examples/schemas/MUSIC_embedding/music_apms_embedding_schema.json
+
+Validation<span class="w"> </span>Success
+</code></pre></div>
+<p>However when validating against data that contains issues, a table of errors is printed out.
+For this purpose we provide some intentionally corrupted data to demonstrate how these errors are reported.</p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>schema<span class="w"> </span>validate<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--data<span class="w"> </span>examples/schemas/MUSIC_embedding/APMS_embedding_corrupted.csv<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--schema<span class="w"> </span>examples/schemas/MUSIC_embedding/music_apms_embedding_schema.json<span class="w"> </span>
+
++-----+-----------------+----------------+-------------------------------------------------------+
+<span class="p">|</span><span class="w"> </span>row<span class="w"> </span><span class="p">|</span><span class="w">    </span>error_type<span class="w">   </span><span class="p">|</span><span class="w"> </span>failed_keyword<span class="w"> </span><span class="p">|</span><span class="w">                        </span>message<span class="w">                        </span><span class="p">|</span>
++-----+-----------------+----------------+-------------------------------------------------------+
+<span class="p">|</span><span class="w">  </span><span class="m">3</span><span class="w">  </span><span class="p">|</span><span class="w">   </span>ParsingError<span class="w">  </span><span class="p">|</span><span class="w">      </span>None<span class="w">      </span><span class="p">|</span><span class="w"> </span>ValueError:<span class="w"> </span>Failed<span class="w"> </span>to<span class="w"> </span>Parse<span class="w"> </span>Attribute<span class="w"> </span>embed<span class="w"> </span><span class="k">for</span><span class="w"> </span>Row<span class="w"> </span><span class="m">3</span><span class="w"> </span><span class="p">|</span>
+<span class="p">|</span><span class="w">  </span><span class="m">4</span><span class="w">  </span><span class="p">|</span><span class="w">   </span>ParsingError<span class="w">  </span><span class="p">|</span><span class="w">      </span>None<span class="w">      </span><span class="p">|</span><span class="w"> </span>ValueError:<span class="w"> </span>Failed<span class="w"> </span>to<span class="w"> </span>Parse<span class="w"> </span>Attribute<span class="w"> </span>embed<span class="w"> </span><span class="k">for</span><span class="w"> </span>Row<span class="w"> </span><span class="m">4</span><span class="w"> </span><span class="p">|</span>
+<span class="p">|</span><span class="w">  </span><span class="m">0</span><span class="w">  </span><span class="p">|</span><span class="w"> </span>ValidationError<span class="w"> </span><span class="p">|</span><span class="w">    </span>pattern<span class="w">     </span><span class="p">|</span><span class="w">        </span><span class="s1">&#39;APMS_A&#39;</span><span class="w"> </span>does<span class="w"> </span>not<span class="w"> </span>match<span class="w"> </span><span class="s1">&#39;^APMS_[0-9]*$&#39;</span><span class="w">        </span><span class="p">|</span>
+<span class="p">|</span><span class="w">  </span><span class="m">1</span><span class="w">  </span><span class="p">|</span><span class="w"> </span>ValidationError<span class="w"> </span><span class="p">|</span><span class="w">    </span>pattern<span class="w">     </span><span class="p">|</span><span class="w">          </span><span class="s1">&#39; -8- &#39;</span><span class="w"> </span>does<span class="w"> </span>not<span class="w"> </span>match<span class="w"> </span><span class="s1">&#39;^[A-Z0-9]*$&#39;</span><span class="w">         </span><span class="p">|</span>
+<span class="p">|</span><span class="w">  </span><span class="m">2</span><span class="w">  </span><span class="p">|</span><span class="w"> </span>ValidationError<span class="w"> </span><span class="p">|</span><span class="w">    </span>pattern<span class="w">     </span><span class="p">|</span><span class="w">           </span><span class="s1">&#39;-`~&#39;</span><span class="w"> </span>does<span class="w"> </span>not<span class="w"> </span>match<span class="w"> </span><span class="s1">&#39;^[A-Z0-9]*$&#39;</span><span class="w">          </span><span class="p">|</span>
++-----+-----------------+----------------+-------------------------------------------------------+
+</code></pre></div>
+<p>When errors are found there are two sources of these errors.
+Parsing errors which occur when attempting convert a row of tabular data into the specified json structure.
+This can happen when either the number of specified rows is incorrect, or the data for a specific column cannot be coerced to the datatype specified of the schema.
+When this occurs the row is marked as a failure and reported as a ParsingError. Rows that report a ParsingError are not validated against the jsonschema. </p>
+<p>Validation Errors occur when a data element violates the contraints specified by the schema.
+In our example we show multiple examples of strings that defy the regex specified by the pattern attribute.
+Other constraints include min and max for numeric and integer properties, length for string, etc.
+In future work we will expand to cover the entire json schema specification.</p>
+<h4 id="using-default-schemas">Using default schemas<a class="headerlink" href="#using-default-schemas" title="Permanent link">&para;</a></h4>
+<p>For conveineince a collection of default schemas are provided for the <a href="https://github.com/idekerlab/cellmaps_pipeline">Cell Maps for AI pipeline</a>.
+These schemas have their own <a href="https://github.com/fairscape/cm4ai-schemas">repo</a>, and will track the progress of the pipeline as new data modalities are added.
+These default schemas are packaged and provided as part of the fairscape-cli, and can be implemented using the respective identifier for the schema.
+Examples for all of the existing default schemas are provided below.</p>
+<div class="highlight"><pre><span></span><code><span class="w">    </span><span class="c1"># validate imageloader files</span>
+<span class="w">    </span>fairscape-cli<span class="w"> </span>schema<span class="w"> </span>validate<span class="w"> </span><span class="se">\</span>
+<span class="w">        </span>--data<span class="w"> </span><span class="s2">&quot;examples/schemas/cm4ai-rocrates/imageloader/samplescopy.csv&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">        </span>--schema<span class="w"> </span><span class="s2">&quot;ark:59852/schema-cm4ai-imageloader-samplescopy&quot;</span><span class="w"> </span>
+
+<span class="w">    </span>fairscape-cli<span class="w"> </span>schema<span class="w"> </span>validate<span class="w"> </span><span class="se">\</span>
+<span class="w">        </span>--data<span class="w"> </span><span class="s2">&quot;examples/schemas/cm4ai-rocrates/imageloader/uniquecopy.csv&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">        </span>--schema<span class="w"> </span><span class="s2">&quot;ark:59852/schema-cm4ai-imageloader-uniquecopy&quot;</span>
+
+<span class="w">    </span><span class="c1"># validate image embedding outputs</span>
+<span class="w">    </span>fairscape-cli<span class="w"> </span>schema<span class="w"> </span>validate<span class="w"> </span><span class="se">\</span>
+<span class="w">        </span>--data<span class="w"> </span><span class="s2">&quot;examples/schemas/cm4ai-rocrates/image_embedding/image_emd.tsv&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">        </span>--schema<span class="w"> </span><span class="s2">&quot;ark:59852/schema-cm4ai-image-embedding-image-emd&quot;</span>
+
+<span class="w">    </span>fairscape-cli<span class="w"> </span>schema<span class="w"> </span>validate<span class="w"> </span><span class="se">\</span>
+<span class="w">        </span>--data<span class="w"> </span><span class="s2">&quot;examples/schemas/cm4ai-rocrates/image_embedding/labels_prob.tsv&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">        </span>--schema<span class="w"> </span><span class="s2">&quot;ark:59852/schema-cm4ai-image-embedding-labels-prob&quot;</span>
+
+<span class="w">    </span><span class="c1"># validate apsm loader input</span>
+<span class="w">    </span>fairscape-cli<span class="w"> </span>schema<span class="w"> </span>validate<span class="w"> </span><span class="se">\</span>
+<span class="w">        </span>--data<span class="w"> </span><span class="s2">&quot;examples/schemas/cm4ai-rocrates/apmsloader/ppi_gene_node_attributes.tsv&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">        </span>--schema<span class="w"> </span><span class="s2">&quot;ark:59852/schema-cm4ai-apmsloader-gene-node-attributes&quot;</span>
+
+<span class="w">    </span>fairscape-cli<span class="w"> </span>schema<span class="w"> </span>validate<span class="w"> </span><span class="se">\</span>
+<span class="w">        </span>--data<span class="w"> </span><span class="s2">&quot;examples/schemas/cm4ai-rocrates/apmsloader/ppi_edgelist.tsv&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">        </span>--schema<span class="w"> </span><span class="s2">&quot;ark:59852/schema-cm4ai-apmsloader-ppi-edgelist&quot;</span>
+
+<span class="w">    </span><span class="c1"># validate apms embedding </span>
+<span class="w">    </span>fairscape-cli<span class="w"> </span>schema<span class="w"> </span>validate<span class="w"> </span><span class="se">\</span>
+<span class="w">        </span>--data<span class="w"> </span><span class="s2">&quot;examples/schemas/cm4ai-rocrates/apms_embedding/ppi_emd.tsv&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">        </span>--schema<span class="w"> </span><span class="s2">&quot;ark:59852/schema-cm4ai-apms-embedding&quot;</span><span class="w">    </span>
+
+<span class="w">    </span><span class="c1"># validate coembedding </span>
+<span class="w">    </span>fairscape-cli<span class="w"> </span>schema<span class="w"> </span>validate<span class="w"> </span><span class="se">\</span>
+<span class="w">        </span>--data<span class="w"> </span><span class="s2">&quot;examples/schemas/cm4ai-rocrates/coembedding/coembedding_emd.tsv&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">        </span>--schema<span class="w"> </span><span class="s2">&quot;ark:59852/schema-cm4ai-coembedding&quot;</span>
+</code></pre></div>
+              
+            </div>
+          </div><footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+      <p>Copyright &copy; 2023 THE RECTOR AND VISITORS OF THE UNIVERSITY OF VIRGINIA</p>
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/fairscape/fairscape-cli" class="fa fa-code-fork" style="color: #fcfcfc"> fairscape/fairscape-cli</a>
+        </span>
+    
+    
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

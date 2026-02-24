@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://github.com/fairscape/fairscape-cli/commands/schema/" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Schema - FAIRSCAPE CLI</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Schema";
+        var mkdocs_page_input_path = "commands/schema.md";
+        var mkdocs_page_url = "/fairscape/fairscape-cli/commands/schema/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> FAIRSCAPE CLI
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../setup/">Setup</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Examples</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../workflows/complete-demo/">Complete Demo</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Commands</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../rocrate/">RO-Crate</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Schema</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#available-commands">Available Commands</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#command-details">Command Details</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#create-tabular">create-tabular</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#add-property">add-property</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#add-property-string">add-property string</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#add-property-number">add-property number</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#add-property-integer">add-property integer</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#add-property-boolean">add-property boolean</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#add-property-array">add-property array</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#infer">infer</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#add-to-crate">add-to-crate</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#validate">validate</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#error-types">Error Types</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#working-with-different-file-types">Working with Different File Types</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../import/">Import</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../build/">Build</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../publish/">Publishing</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">FAIRSCAPE CLI</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Commands</li>
+      <li class="breadcrumb-item active">Schema</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/fairscape/fairscape-cli/edit/master/docs/commands/schema.md">Edit on fairscape/fairscape-cli</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="schema-commands">Schema Commands<a class="headerlink" href="#schema-commands" title="Permanent link">&para;</a></h1>
+<p>This document provides detailed information about the schema commands available in fairscape-cli.</p>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<p>The <code>schema</code> command group provides operations for creating, modifying, working with data schemas, and validating data against schemas. Schemas describe the structure and constraints of datasets, enabling validation and improved interoperability.</p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>schema<span class="w"> </span><span class="o">[</span>COMMAND<span class="o">]</span><span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
+</code></pre></div>
+<h2 id="available-commands">Available Commands<a class="headerlink" href="#available-commands" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="#create-tabular"><code>create-tabular</code></a> - Create a new tabular schema definition</li>
+<li><a href="#add-property"><code>add-property</code></a> - Add a property to an existing schema<ul>
+<li><a href="#add-property-string"><code>string</code></a> - Add a string property</li>
+<li><a href="#add-property-number"><code>number</code></a> - Add a number property</li>
+<li><a href="#add-property-integer"><code>integer</code></a> - Add an integer property</li>
+<li><a href="#add-property-boolean"><code>boolean</code></a> - Add a boolean property</li>
+<li><a href="#add-property-array"><code>array</code></a> - Add an array property</li>
+</ul>
+</li>
+<li><a href="#infer"><code>infer</code></a> - Infer a schema from a data file</li>
+<li><a href="#add-to-crate"><code>add-to-crate</code></a> - Add a schema to an RO-Crate</li>
+<li><a href="#validate"><code>validate</code></a> - Validate a dataset against a schema definition</li>
+</ul>
+<h2 id="command-details">Command Details<a class="headerlink" href="#command-details" title="Permanent link">&para;</a></h2>
+<h3 id="create-tabular"><code>create-tabular</code><a class="headerlink" href="#create-tabular" title="Permanent link">&para;</a></h3>
+<p>Create a new tabular schema definition.</p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>schema<span class="w"> </span>create-tabular<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>SCHEMA_FILE
+</code></pre></div>
+<p><strong>Options:</strong></p>
+<ul>
+<li><code>--name TEXT</code> - Name of the schema [required]</li>
+<li><code>--description TEXT</code> - Description of the schema [required]</li>
+<li><code>--guid TEXT</code> - Optional custom identifier for the schema</li>
+<li><code>--separator TEXT</code> - Field separator character (e.g., <code>,</code> for CSV) [required]</li>
+<li><code>--header BOOLEAN</code> - Whether the data file has a header row (default: False)</li>
+</ul>
+<p><strong>Example:</strong></p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>schema<span class="w"> </span>create-tabular<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--name<span class="w"> </span><span class="s1">&#39;APMS Embedding Schema&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--description<span class="w"> </span><span class="s1">&#39;Tabular format for APMS music embeddings&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--separator<span class="w"> </span><span class="s1">&#39;,&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--header<span class="w"> </span>False<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>./schema_apms_music_embedding.json
+</code></pre></div>
+<h3 id="add-property"><code>add-property</code><a class="headerlink" href="#add-property" title="Permanent link">&para;</a></h3>
+<p>This command group allows you to add different types of properties to an existing schema.</p>
+<h4 id="add-property-string"><code>add-property string</code><a class="headerlink" href="#add-property-string" title="Permanent link">&para;</a></h4>
+<p>Add a string property to a schema.</p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>schema<span class="w"> </span>add-property<span class="w"> </span>string<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>SCHEMA_FILE
+</code></pre></div>
+<p><strong>Options:</strong></p>
+<ul>
+<li><code>--name TEXT</code> - Name of the property [required]</li>
+<li><code>--index INTEGER</code> - Column index in the data (0-based) [required]</li>
+<li><code>--description TEXT</code> - Description of the property [required]</li>
+<li><code>--value-url TEXT</code> - URL to a vocabulary term</li>
+<li><code>--pattern TEXT</code> - Regular expression pattern for validation</li>
+</ul>
+<p><strong>Example:</strong></p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>schema<span class="w"> </span>add-property<span class="w"> </span>string<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--name<span class="w"> </span><span class="s1">&#39;Gene Symbol&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--index<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--description<span class="w"> </span><span class="s1">&#39;Gene Symbol for the APMS bait protein&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--pattern<span class="w"> </span><span class="s1">&#39;^[A-Za-z0-9\-]*$&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--value-url<span class="w"> </span><span class="s1">&#39;http://edamontology.org/data_1026&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>./schema_apms_music_embedding.json
+</code></pre></div>
+<h4 id="add-property-number"><code>add-property number</code><a class="headerlink" href="#add-property-number" title="Permanent link">&para;</a></h4>
+<p>Add a number property to a schema.</p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>schema<span class="w"> </span>add-property<span class="w"> </span>number<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>SCHEMA_FILE
+</code></pre></div>
+<p><strong>Options:</strong></p>
+<ul>
+<li><code>--name TEXT</code> - Name of the property [required]</li>
+<li><code>--index INTEGER</code> - Column index in the data (0-based) [required]</li>
+<li><code>--description TEXT</code> - Description of the property [required]</li>
+<li><code>--maximum FLOAT</code> - Maximum allowed value</li>
+<li><code>--minimum FLOAT</code> - Minimum allowed value</li>
+<li><code>--value-url TEXT</code> - URL to a vocabulary term</li>
+</ul>
+<p><strong>Example:</strong></p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>schema<span class="w"> </span>add-property<span class="w"> </span>number<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--name<span class="w"> </span><span class="s1">&#39;Measurement&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--index<span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--description<span class="w"> </span><span class="s1">&#39;Sensor reading in units of X&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--minimum<span class="w"> </span><span class="m">0</span>.0<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--maximum<span class="w"> </span><span class="m">100</span>.0<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>./schema_apms_music_embedding.json
+</code></pre></div>
+<h4 id="add-property-integer"><code>add-property integer</code><a class="headerlink" href="#add-property-integer" title="Permanent link">&para;</a></h4>
+<p>Add an integer property to a schema.</p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>schema<span class="w"> </span>add-property<span class="w"> </span>integer<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>SCHEMA_FILE
+</code></pre></div>
+<p><strong>Options:</strong></p>
+<ul>
+<li><code>--name TEXT</code> - Name of the property [required]</li>
+<li><code>--index INTEGER</code> - Column index in the data (0-based) [required]</li>
+<li><code>--description TEXT</code> - Description of the property [required]</li>
+<li><code>--maximum INTEGER</code> - Maximum allowed value</li>
+<li><code>--minimum INTEGER</code> - Minimum allowed value</li>
+<li><code>--value-url TEXT</code> - URL to a vocabulary term</li>
+</ul>
+<p><strong>Example:</strong></p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>schema<span class="w"> </span>add-property<span class="w"> </span>integer<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--name<span class="w"> </span><span class="s1">&#39;Count&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--index<span class="w"> </span><span class="m">3</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--description<span class="w"> </span><span class="s1">&#39;Count of observations&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--minimum<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>./schema_apms_music_embedding.json
+</code></pre></div>
+<h4 id="add-property-boolean"><code>add-property boolean</code><a class="headerlink" href="#add-property-boolean" title="Permanent link">&para;</a></h4>
+<p>Add a boolean property to a schema.</p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>schema<span class="w"> </span>add-property<span class="w"> </span>boolean<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>SCHEMA_FILE
+</code></pre></div>
+<p><strong>Options:</strong></p>
+<ul>
+<li><code>--name TEXT</code> - Name of the property [required]</li>
+<li><code>--index INTEGER</code> - Column index in the data (0-based) [required]</li>
+<li><code>--description TEXT</code> - Description of the property [required]</li>
+<li><code>--value-url TEXT</code> - URL to a vocabulary term</li>
+</ul>
+<p><strong>Example:</strong></p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>schema<span class="w"> </span>add-property<span class="w"> </span>boolean<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--name<span class="w"> </span><span class="s1">&#39;IsValid&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--index<span class="w"> </span><span class="m">4</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--description<span class="w"> </span><span class="s1">&#39;Whether the observation is valid&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>./schema_apms_music_embedding.json
+</code></pre></div>
+<h4 id="add-property-array"><code>add-property array</code><a class="headerlink" href="#add-property-array" title="Permanent link">&para;</a></h4>
+<p>Add an array property to a schema.</p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>schema<span class="w"> </span>add-property<span class="w"> </span>array<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>SCHEMA_FILE
+</code></pre></div>
+<p><strong>Options:</strong></p>
+<ul>
+<li><code>--name TEXT</code> - Name of the property [required]</li>
+<li><code>--index TEXT</code> - Column index or range in the data (e.g., "5" or "2::") [required]</li>
+<li><code>--description TEXT</code> - Description of the property [required]</li>
+<li><code>--value-url TEXT</code> - URL to a vocabulary term</li>
+<li><code>--items-datatype TEXT</code> - Datatype of items in the array (<code>string</code>, <code>number</code>, <code>integer</code>, <code>boolean</code>) [required]</li>
+<li><code>--min-items INTEGER</code> - Minimum number of items in the array</li>
+<li><code>--max-items INTEGER</code> - Maximum number of items in the array</li>
+<li><code>--unique-items BOOLEAN</code> - Whether items must be unique</li>
+</ul>
+<p><strong>Example:</strong></p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>schema<span class="w"> </span>add-property<span class="w"> </span>array<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--name<span class="w"> </span><span class="s1">&#39;MUSIC APMS Embedding&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--index<span class="w"> </span><span class="s1">&#39;2::&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--description<span class="w"> </span><span class="s1">&#39;Embedding Vector values&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--items-datatype<span class="w"> </span><span class="s1">&#39;number&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--unique-items<span class="w"> </span>False<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--min-items<span class="w"> </span><span class="m">1024</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--max-items<span class="w"> </span><span class="m">1024</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>./schema_apms_music_embedding.json
+</code></pre></div>
+<h3 id="infer"><code>infer</code><a class="headerlink" href="#infer" title="Permanent link">&para;</a></h3>
+<p>Infer a schema from a data file.</p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>schema<span class="w"> </span>infer<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>INPUT_FILE<span class="w"> </span>SCHEMA_FILE
+</code></pre></div>
+<p><strong>Options:</strong></p>
+<ul>
+<li><code>--name TEXT</code> - Name for the schema [required]</li>
+<li><code>--description TEXT</code> - Description for the schema [required]</li>
+<li><code>--guid TEXT</code> - Optional custom identifier for the schema</li>
+<li><code>--rocrate-path PATH</code> - Optional path to an RO-Crate to append the schema to</li>
+</ul>
+<p><strong>Example:</strong></p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>schema<span class="w"> </span>infer<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--name<span class="w"> </span><span class="s1">&#39;Output Dataset Schema&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--description<span class="w"> </span><span class="s1">&#39;Inferred schema for output data&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--rocrate-path<span class="w"> </span>./my_rocrate<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>./my_rocrate/output.csv<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>./my_rocrate/output_schema.json
+</code></pre></div>
+<h3 id="add-to-crate"><code>add-to-crate</code><a class="headerlink" href="#add-to-crate" title="Permanent link">&para;</a></h3>
+<p>Add a schema to an RO-Crate.</p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>schema<span class="w"> </span>add-to-crate<span class="w"> </span>ROCRATE_PATH<span class="w"> </span>SCHEMA_FILE
+</code></pre></div>
+<p><strong>Arguments:</strong></p>
+<ul>
+<li><code>ROCRATE_PATH</code> - Path to the RO-Crate to add the schema to</li>
+<li><code>SCHEMA_FILE</code> - Path to the schema file</li>
+</ul>
+<p><strong>Example:</strong></p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>schema<span class="w"> </span>add-to-crate<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>./my_rocrate<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>./schema_apms_music_embedding.json
+</code></pre></div>
+<h3 id="validate"><code>validate</code><a class="headerlink" href="#validate" title="Permanent link">&para;</a></h3>
+<p>Validate a dataset against a schema definition.</p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>schema<span class="w"> </span>validate<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
+</code></pre></div>
+<p><strong>Options:</strong></p>
+<ul>
+<li><code>--schema TEXT</code> - Path to the schema file or ARK identifier [required]</li>
+<li><code>--data TEXT</code> - Path to the data file to validate [required]</li>
+</ul>
+<p><strong>Example:</strong></p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>schema<span class="w"> </span>validate<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--schema<span class="w"> </span>./music_apms_embedding_schema.json<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--data<span class="w"> </span>./APMS_embedding_MUSIC.csv
+</code></pre></div>
+<p>When validation succeeds, you'll see:</p>
+<div class="highlight"><pre><span></span><code>Validation Success
+</code></pre></div>
+<p>If validation fails, you'll see a table of errors:</p>
+<div class="highlight"><pre><span></span><code>+-----+-----------------+----------------+-------------------------------------------------------+
+| row |    error_type   | failed_keyword |                        message                        |
++-----+-----------------+----------------+-------------------------------------------------------+
+|  3  |   ParsingError  |      None      | ValueError: Failed to Parse Attribute embed for Row 3 |
+|  4  |   ParsingError  |      None      | ValueError: Failed to Parse Attribute embed for Row 4 |
+|  0  | ValidationError |    pattern     |        &#39;APMS_A&#39; does not match &#39;^APMS_[0-9]*$&#39;        |
++-----+-----------------+----------------+-------------------------------------------------------+
+</code></pre></div>
+<h2 id="error-types">Error Types<a class="headerlink" href="#error-types" title="Permanent link">&para;</a></h2>
+<p>Errors are categorized into two main types:</p>
+<ol>
+<li>
+<p><strong>ParsingError</strong>: Occurs when the data cannot be parsed according to the schema structure. This often happens when:</p>
+</li>
+<li>
+<p>The number of columns doesn't match the schema</p>
+</li>
+<li>
+<p>A value cannot be converted to the expected datatype</p>
+</li>
+<li>
+<p><strong>ValidationError</strong>: Occurs when the data can be parsed but fails validation constraints like:</p>
+</li>
+<li>String values not matching the specified pattern</li>
+<li>Numeric values outside the min/max range</li>
+<li>Array length not within specified bounds</li>
+</ol>
+<h2 id="working-with-different-file-types">Working with Different File Types<a class="headerlink" href="#working-with-different-file-types" title="Permanent link">&para;</a></h2>
+<p>The validation command automatically detects the file type based on its extension:</p>
+<ul>
+<li><strong>CSV/TSV files</strong>: Tabular validation with field separators</li>
+<li><strong>Parquet files</strong>: Tabular validation with columnar storage</li>
+<li><strong>HDF5 files</strong>: Hierarchical validation with nested structures</li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../rocrate/" class="btn btn-neutral float-left" title="RO-Crate"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../import/" class="btn btn-neutral float-right" title="Import">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+      <p>Copyright &copy; 2023 THE RECTOR AND VISITORS OF THE UNIVERSITY OF VIRGINIA</p>
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/fairscape/fairscape-cli" class="fa fa-code-fork" style="color: #fcfcfc"> fairscape/fairscape-cli</a>
+        </span>
+    
+    
+      <span><a href="../rocrate/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../import/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

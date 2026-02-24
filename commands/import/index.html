@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://github.com/fairscape/fairscape-cli/commands/import/" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Import - FAIRSCAPE CLI</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Import";
+        var mkdocs_page_input_path = "commands/import.md";
+        var mkdocs_page_url = "/fairscape/fairscape-cli/commands/import/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> FAIRSCAPE CLI
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../setup/">Setup</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Examples</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../workflows/complete-demo/">Complete Demo</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Commands</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../rocrate/">RO-Crate</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../schema/">Schema</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Import</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#available-commands">Available Commands</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#command-details">Command Details</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#bioproject">bioproject</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pep">pep</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../build/">Build</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../publish/">Publishing</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">FAIRSCAPE CLI</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Commands</li>
+      <li class="breadcrumb-item active">Import</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/fairscape/fairscape-cli/edit/master/docs/commands/import.md">Edit on fairscape/fairscape-cli</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="import-commands">Import Commands<a class="headerlink" href="#import-commands" title="Permanent link">&para;</a></h1>
+<p>This document provides detailed information about the import commands available in fairscape-cli.</p>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<p>The <code>import</code> command group provides operations for importing external data into RO-Crate format. These commands fetch data from external repositories and convert them to well-structured RO-Crates with appropriate metadata.</p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>import<span class="w"> </span><span class="o">[</span>COMMAND<span class="o">]</span><span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
+</code></pre></div>
+<h2 id="available-commands">Available Commands<a class="headerlink" href="#available-commands" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="#bioproject"><code>bioproject</code></a> - Import data from an NCBI BioProject</li>
+<li><a href="#pep"><code>pep</code></a> - Import a Portable Encapsulated Project (PEP)</li>
+</ul>
+<h2 id="command-details">Command Details<a class="headerlink" href="#command-details" title="Permanent link">&para;</a></h2>
+<h3 id="bioproject"><code>bioproject</code><a class="headerlink" href="#bioproject" title="Permanent link">&para;</a></h3>
+<p>Import data from an NCBI BioProject into an RO-Crate.</p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>import<span class="w"> </span>bioproject<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
+</code></pre></div>
+<p><strong>Options:</strong></p>
+<ul>
+<li><code>--accession TEXT</code> - NCBI BioProject accession (e.g., PRJNA12345) [required]</li>
+<li><code>--output-dir PATH</code> - Directory to create the RO-Crate in [required]</li>
+<li><code>--author TEXT</code> - Author name to associate with generated metadata [required]</li>
+<li><code>--api-key TEXT</code> - NCBI API key (optional)</li>
+<li><code>--name TEXT</code> - Override the default RO-Crate name</li>
+<li><code>--description TEXT</code> - Override the default RO-Crate description</li>
+<li><code>--keywords TEXT</code> - Override the default RO-Crate keywords (can be used multiple times)</li>
+<li><code>--license TEXT</code> - Override the default RO-Crate license URL</li>
+<li><code>--version TEXT</code> - Override the default RO-Crate version</li>
+<li><code>--organization-name TEXT</code> - Set the organization name for the RO-Crate</li>
+<li><code>--project-name TEXT</code> - Set the project name for the RO-Crate</li>
+</ul>
+<p><strong>Example:</strong></p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>import<span class="w"> </span>bioproject<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--accession<span class="w"> </span><span class="s2">&quot;PRJDB2884&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">&quot;./bioproject_crate&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--author<span class="w"> </span><span class="s2">&quot;Jane Smith&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--keywords<span class="w"> </span><span class="s2">&quot;genomics&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--keywords<span class="w"> </span><span class="s2">&quot;sequencing&quot;</span>
+</code></pre></div>
+<p>This command:</p>
+<ol>
+<li>Fetches metadata from the NCBI BioProject database</li>
+<li>Creates an RO-Crate with the BioProject metadata</li>
+<li>Registers datasets, samples, and other relevant data from the BioProject</li>
+<li>Outputs the ARK identifier of the created RO-Crate</li>
+</ol>
+<h3 id="pep"><code>pep</code><a class="headerlink" href="#pep" title="Permanent link">&para;</a></h3>
+<p>Import a Portable Encapsulated Project (PEP) into an RO-Crate.</p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>import<span class="w"> </span>pep<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>PEP_PATH
+</code></pre></div>
+<p><strong>Arguments:</strong></p>
+<ul>
+<li><code>PEP_PATH</code> - Path to the PEP directory or config file [required]</li>
+</ul>
+<p><strong>Options:</strong></p>
+<ul>
+<li><code>--output-path PATH</code> - Path for the generated RO-Crate (defaults to PEP directory)</li>
+<li><code>--name TEXT</code> - Name for the RO-Crate (overrides PEP metadata)</li>
+<li><code>--description TEXT</code> - Description (overrides PEP metadata)</li>
+<li><code>--author TEXT</code> - Author (overrides PEP metadata)</li>
+<li><code>--organization-name TEXT</code> - Organization name</li>
+<li><code>--project-name TEXT</code> - Project name</li>
+<li><code>--keywords TEXT</code> - Keywords (overrides PEP metadata, can be used multiple times)</li>
+<li><code>--license TEXT</code> - License URL (default: "https://creativecommons.org/licenses/by/4.0/")</li>
+<li><code>--date-published TEXT</code> - Publication date</li>
+<li><code>--version TEXT</code> - Version string (default: "1.0")</li>
+</ul>
+<p><strong>Example:</strong></p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>import<span class="w"> </span>pep<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>./my_pep_project<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--output-path<span class="w"> </span>./pep_rocrate<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--author<span class="w"> </span><span class="s2">&quot;John Doe&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--organization-name<span class="w"> </span><span class="s2">&quot;University Example&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--project-name<span class="w"> </span><span class="s2">&quot;My PEP Project&quot;</span>
+</code></pre></div>
+<p>This command:</p>
+<ol>
+<li>Reads the PEP project configuration</li>
+<li>Creates an RO-Crate with metadata from the PEP</li>
+<li>Outputs the ARK identifier of the created RO-Crate</li>
+</ol>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../schema/" class="btn btn-neutral float-left" title="Schema"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../build/" class="btn btn-neutral float-right" title="Build">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+      <p>Copyright &copy; 2023 THE RECTOR AND VISITORS OF THE UNIVERSITY OF VIRGINIA</p>
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/fairscape/fairscape-cli" class="fa fa-code-fork" style="color: #fcfcfc"> fairscape/fairscape-cli</a>
+        </span>
+    
+    
+      <span><a href="../schema/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../build/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

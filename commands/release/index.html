@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://github.com/fairscape/fairscape-cli/commands/release/" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Release Commands - FAIRSCAPE CLI</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Release Commands";
+        var mkdocs_page_input_path = "commands/release.md";
+        var mkdocs_page_url = "/fairscape/fairscape-cli/commands/release/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> FAIRSCAPE CLI
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../setup/">Setup</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Examples</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../workflows/complete-demo/">Complete Demo</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Commands</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../rocrate/">RO-Crate</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../schema/">Schema</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../import/">Import</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../build/">Build</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../publish/">Publishing</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">FAIRSCAPE CLI</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Release Commands</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/fairscape/fairscape-cli/edit/master/docs/commands/release.md">Edit on fairscape/fairscape-cli</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="release-commands">Release Commands<a class="headerlink" href="#release-commands" title="Permanent link">&para;</a></h1>
+<p>This document provides detailed information about the release commands available in fairscape-cli.</p>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<p>The <code>release</code> command group provides operations for creating and managing release packages that combine multiple RO-Crates. This allows you to organize related RO-Crates into a cohesive collection with unified metadata and documentation.</p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>release<span class="w"> </span><span class="o">[</span>COMMAND<span class="o">]</span><span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
+</code></pre></div>
+<h2 id="available-commands">Available Commands<a class="headerlink" href="#available-commands" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="#build"><code>build</code></a> - Build a release RO-Crate from a directory containing multiple RO-Crates</li>
+</ul>
+<h2 id="command-details">Command Details<a class="headerlink" href="#command-details" title="Permanent link">&para;</a></h2>
+<h3 id="build"><code>build</code><a class="headerlink" href="#build" title="Permanent link">&para;</a></h3>
+<p>Build a release RO-Crate in a directory, scanning for and linking existing sub-RO-Crates. This creates a parent RO-Crate that references and contextualizes the sub-crates.</p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>release<span class="w"> </span>build<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>RELEASE_DIRECTORY
+</code></pre></div>
+<p><strong>Arguments:</strong></p>
+<ul>
+<li><code>RELEASE_DIRECTORY</code> - Directory where the release RO-Crate will be built [required]</li>
+</ul>
+<p><strong>Options:</strong></p>
+<ul>
+<li><code>--guid TEXT</code> - GUID for the parent release RO-Crate (generated if not provided)</li>
+<li><code>--name TEXT</code> - Name for the parent release RO-Crate [required]</li>
+<li><code>--organization-name TEXT</code> - Organization name associated with the release [required]</li>
+<li><code>--project-name TEXT</code> - Project name associated with the release [required]</li>
+<li><code>--description TEXT</code> - Description of the release RO-Crate [required]</li>
+<li><code>--keywords TEXT</code> - Keywords for the release RO-Crate (can be used multiple times) [required]</li>
+<li><code>--license TEXT</code> - License URL for the release (default: "https://creativecommons.org/licenses/by/4.0/")</li>
+<li><code>--date-published TEXT</code> - Publication date (ISO format, defaults to current date)</li>
+<li><code>--author TEXT</code> - Author(s) of the release (defaults to combined authors from subcrates)</li>
+<li><code>--version TEXT</code> - Version of the release (default: "1.0")</li>
+<li><code>--associated-publication TEXT</code> - Associated publications for the release (can be used multiple times)</li>
+<li><code>--conditions-of-access TEXT</code> - Conditions of access for the release</li>
+<li><code>--copyright-notice TEXT</code> - Copyright notice for the release</li>
+<li><code>--doi TEXT</code> - DOI identifier for the release</li>
+<li><code>--publisher TEXT</code> - Publisher of the release</li>
+<li><code>--principal-investigator TEXT</code> - Principal investigator for the release</li>
+<li><code>--contact-email TEXT</code> - Contact email for the release</li>
+<li><code>--confidentiality-level TEXT</code> - Confidentiality level for the release</li>
+<li><code>--citation TEXT</code> - Citation for the release</li>
+<li><code>--funder TEXT</code> - Funder of the release</li>
+<li><code>--usage-info TEXT</code> - Usage information for the release</li>
+<li><code>--content-size TEXT</code> - Content size of the release</li>
+<li><code>--completeness TEXT</code> - Completeness information for the release</li>
+<li><code>--maintenance-plan TEXT</code> - Maintenance plan for the release</li>
+<li><code>--intended-use TEXT</code> - Intended use of the release</li>
+<li><code>--limitations TEXT</code> - Limitations of the release</li>
+<li><code>--prohibited-uses TEXT</code> - Prohibited uses of the release</li>
+<li><code>--potential-sources-of-bias TEXT</code> - Potential sources of bias in the release</li>
+<li><code>--human-subject TEXT</code> - Human subject involvement information</li>
+<li><code>--ethical-review TEXT</code> - Ethical review information</li>
+<li><code>--additional-properties TEXT</code> - JSON string with additional property values</li>
+<li><code>--custom-properties TEXT</code> - JSON string with additional properties for the parent crate</li>
+</ul>
+<p><strong>Example:</strong></p>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>release<span class="w"> </span>build<span class="w"> </span>./my_release<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--guid<span class="w"> </span><span class="s2">&quot;ark:59852/example-release-2023&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--name<span class="w"> </span><span class="s2">&quot;SRA Genomic Data Example Release - 2023&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--organization-name<span class="w"> </span><span class="s2">&quot;Example Research Institute&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--project-name<span class="w"> </span><span class="s2">&quot;Genomic Data Analysis Project&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--description<span class="w"> </span><span class="s2">&quot;This dataset contains genomic data from multiple sources prepared as AI-ready datasets in RO-Crate format.&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--keywords<span class="w"> </span><span class="s2">&quot;Genomics&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--keywords<span class="w"> </span><span class="s2">&quot;SRA&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--keywords<span class="w"> </span><span class="s2">&quot;RNA-seq&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--license<span class="w"> </span><span class="s2">&quot;https://creativecommons.org/licenses/by/4.0/&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--publisher<span class="w"> </span><span class="s2">&quot;University Example Dataverse&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--principal-investigator<span class="w"> </span><span class="s2">&quot;Dr. Example PI&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--contact-email<span class="w"> </span><span class="s2">&quot;example@example.org&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--confidentiality-level<span class="w"> </span><span class="s2">&quot;HL7 Unrestricted&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--funder<span class="w"> </span><span class="s2">&quot;Example Agency&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--citation<span class="w"> </span><span class="s2">&quot;Example Research Institute (2023). Genomic Data Example Release.&quot;</span>
+</code></pre></div>
+<p>This command:</p>
+<ol>
+<li>Creates a new parent RO-Crate in the specified directory</li>
+<li>Scans the directory for existing RO-Crates to include as subcrates</li>
+<li>Links the subcrates to the parent crate</li>
+<li>Combines metadata from subcrates and the provided options</li>
+<li>Outputs the ARK identifier of the created release RO-Crate</li>
+</ol>
+<h2 id="release-workflow">Release Workflow<a class="headerlink" href="#release-workflow" title="Permanent link">&para;</a></h2>
+<p>A typical release workflow involves:</p>
+<ol>
+<li><strong>Create individual RO-Crates</strong> for specific datasets, software, and computations</li>
+<li><strong>Place these RO-Crates</strong> in a common directory structure</li>
+<li><strong>Build a release</strong> using the <code>release build</code> command to create a parent RO-Crate</li>
+<li><strong>Generate a datasheet</strong> using the <code>build datasheet</code> command</li>
+<li><strong>Publish the release</strong> using the <code>publish</code> commands</li>
+</ol>
+<p>The parent release RO-Crate provides context and relationships between the individual RO-Crates, making it easier to understand and work with complex datasets that span multiple files, processes, and research objects.</p>
+<h2 id="metadata-inheritance">Metadata Inheritance<a class="headerlink" href="#metadata-inheritance" title="Permanent link">&para;</a></h2>
+<p>When building a release, metadata is handled in the following ways:</p>
+<ul>
+<li><strong>Author information</strong> is combined from all subcrates unless explicitly provided</li>
+<li><strong>Keywords</strong> include both the specified keywords and those from subcrates</li>
+<li><strong>Version</strong> defaults to "1.0" unless specified</li>
+<li><strong>License</strong> defaults to CC-BY 4.0 unless specified</li>
+<li><strong>Publication date</strong> defaults to the current date unless specified</li>
+</ul>
+<p>All other metadata must be explicitly provided through the command options.</p>
+              
+            </div>
+          </div><footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+      <p>Copyright &copy; 2023 THE RECTOR AND VISITORS OF THE UNIVERSITY OF VIRGINIA</p>
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/fairscape/fairscape-cli" class="fa fa-code-fork" style="color: #fcfcfc"> fairscape/fairscape-cli</a>
+        </span>
+    
+    
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
