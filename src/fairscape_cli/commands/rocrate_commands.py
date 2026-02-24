@@ -1385,12 +1385,12 @@ def addSoftware(
         "keywords": list(keywords), 
         "fileFormat": file_format,
         "url": url, 
-        "dateModified": date_modified, 
-        "filepath": str(destination_filepath), 
+        "dateModified": date_modified,
+        "filepath": str(destination_filepath.resolve().relative_to(pathlib.Path(rocrate_path).resolve())),
         "usedByComputation": list(used_by_computation) if used_by_computation else [],
-        "associatedPublication": associated_publication, 
-        "additionalDocumentation": additional_documentation, 
-        "cratePath": rocrate_path 
+        "associatedPublication": associated_publication,
+        "additionalDocumentation": additional_documentation,
+        "cratePath": rocrate_path
     }
 
     if custom_properties:
@@ -1535,11 +1535,11 @@ def addDataset(
             "keywords": list(keywords), 
             "version": version, 
             "format": data_format,
-            "filepath": str(destination_filepath), 
-            "cratePath": rocrate_path, 
-            "url": url, 
-            "datePublished": date_published, 
-            "schema": schema, 
+            "filepath": str(destination_filepath.resolve().relative_to(pathlib.Path(rocrate_path).resolve())),
+            "cratePath": rocrate_path,
+            "url": url,
+            "datePublished": date_published,
+            "schema": schema,
             "usedBy": list(used_by) if used_by else [], 
             "derivedFrom": list(derived_from) if derived_from else [], 
             "generatedBy": list(generated_by) if generated_by else [], 
@@ -1660,10 +1660,10 @@ def addModel(
         "modelFormat": model_format,
         "trainingDataset": list(training_dataset),
         "generatedBy": generated_by,
-        "filepath": str(destination_filepath),
+        "filepath": str(destination_filepath.resolve().relative_to(pathlib.Path(rocrate_path).resolve())),
         "cratePath": rocrate_path,
     }
-    
+
     if parameters is not None:
         params["parameters"] = parameters
     if input_size:
