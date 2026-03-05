@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://github.com/fairscape/fairscape-cli/commands/release_creation/" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>How to build a FAIRSCAPE Release - FAIRSCAPE CLI</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "How to build a FAIRSCAPE Release";
+        var mkdocs_page_input_path = "commands/release_creation.md";
+        var mkdocs_page_url = "/fairscape/fairscape-cli/commands/release_creation/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> FAIRSCAPE CLI
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../setup/">Setup</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Examples</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../workflows/complete-demo/">Complete Demo</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Commands</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../rocrate/">RO-Crate</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../schema/">Schema</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../import/">Import</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../build/">Build</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../publish/">Publishing</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">FAIRSCAPE CLI</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">How to build a FAIRSCAPE Release</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/fairscape/fairscape-cli/edit/master/docs/commands/release_creation.md">Edit on fairscape/fairscape-cli</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="how-to-build-a-fairscape-release">How to build a FAIRSCAPE Release<a class="headerlink" href="#how-to-build-a-fairscape-release" title="Permanent link">&para;</a></h1>
+<p>The process is a little complicated I hope to explain its current state and come up with a better future solution without just adding more commands.</p>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<p>The <code>build release</code> command can operate in two modes:</p>
+<ol>
+<li><strong>Full pre-processing</strong> (default): Processes all subcrates, then creates the release crate.</li>
+<li><strong>Skip pre-processing</strong> (<code>--skip-subcrate-processing</code>): Creates the release crate without processing subcrates. The sub-crates would need to be later linked to the release crate and processed.</li>
+</ol>
+<h2 id="what-does-processing-sub-crates-mean">What does processing sub-crates mean?<a class="headerlink" href="#what-does-processing-sub-crates-mean" title="Permanent link">&para;</a></h2>
+<p>Processing function is located in <code>src/fairscape_cli/utils/build_utils.py</code>, this function performs four steps on each subcrate found in the release directory:</p>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Function</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>process_link_inverses()</code></td>
+<td>Adds OWL inverse properties using the EVI</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>process_add_io()</code></td>
+<td>Calculates and adds <code>EVI:inputs</code> and <code>EVI:outputs</code> to the root ro-crate</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>process_evidence_graph()</code></td>
+<td>Generates provenance graph JSON and HTML</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>process_croissant()</code></td>
+<td>Converts RO-Crate metadata to Croissant</td>
+</tr>
+<tr>
+<td>5*</td>
+<td><code>buld_preivew()</code></td>
+<td>Builds html preview for the RO-Crate</td>
+</tr>
+</tbody>
+</table>
+<h2 id="mapping-to-cli-commands">Mapping to CLI Commands<a class="headerlink" href="#mapping-to-cli-commands" title="Permanent link">&para;</a></h2>
+<p>Each processing step can be executed using CLI commands:</p>
+<table>
+<thead>
+<tr>
+<th>Processing Step</th>
+<th>Equivalent CLI Command</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>process_link_inverses()</code></td>
+<td><code>fairscape augment link-inverses &lt;rocrate-path&gt;</code></td>
+</tr>
+<tr>
+<td><code>process_add_io()</code></td>
+<td><code>fairscape augment add-io &lt;rocrate-path&gt;</code></td>
+</tr>
+<tr>
+<td><code>process_evidence_graph()</code></td>
+<td><code>fairscape build evidence-graph &lt;rocrate-path&gt; &lt;ark-id&gt;</code></td>
+</tr>
+<tr>
+<td><code>process_croissant()</code></td>
+<td><code>fairscape build croissant &lt;rocrate-path&gt;</code></td>
+</tr>
+<tr>
+<td><code>build_preview()</code></td>
+<td><code>fairscape build preview &lt;rocrate-path&gt;</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="why-do-subcrates-need-to-be-processed">Why do Subcrates need to be processed<a class="headerlink" href="#why-do-subcrates-need-to-be-processed" title="Permanent link">&para;</a></h2>
+<p>The CLI doesn't know while creating and adding things when the subcrate is completed. So once the user is finished with the subcrate some post-processing occurs to make it "release ready". This post-processing adds missing terms IE fills in generated or generatedBy to make sure all terms are pointing in both directions. Fills in I/O information important for crates saying they were generated by other crates. Creates useful supporting documents and formats HTML Preview, Croissant, and evidence graphs. A sub-crate is valid without all this, but these are an important part of our release processing.</p>
+<h2 id="how-to-make-release-first-sub-crates-later-better">How to make release first sub-crates later better?<a class="headerlink" href="#how-to-make-release-first-sub-crates-later-better" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Add build preview (needed regardless).</li>
+<li>Add augment sub-crate that does all 4 steps so you don't need to do them individually.</li>
+<li>Somehow link and rebuild release? Aggregated metrics rebuilt datasheet with pointers to sub-crate</li>
+</ul>
+              
+            </div>
+          </div><footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+      <p>Copyright &copy; 2023 THE RECTOR AND VISITORS OF THE UNIVERSITY OF VIRGINIA</p>
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/fairscape/fairscape-cli" class="fa fa-code-fork" style="color: #fcfcfc"> fairscape/fairscape-cli</a>
+        </span>
+    
+    
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
