@@ -44,11 +44,22 @@ def rocrate_group():
 @click.option('--associated-publication', required=False, type=str)
 @click.option('--conditions-of-access', required=False, type=str)
 @click.option('--copyright-notice', required=False, type=str)
+@click.option('--completeness', required=False, type=str, help="Completeness of the dataset.")
+@click.option('--ethical-review', required=False, type=str, help="Ethical review information.")
+@click.option('--human-subject', required=False, type=str, help="Human subject involvement information.")
+@click.option('--confidentiality-level', required=False, type=str, help="Confidentiality level.")
+@click.option('--irb', required=False, type=str, help="IRB approval information.")
+@click.option('--irb-protocol-id', required=False, type=str, help="IRB protocol identifier.")
+@click.option('--human-subject-research', required=False, type=str, help="Whether this involves human subject research.")
+@click.option('--human-subject-exemptions', required=False, type=str, help="Human subjects exemption category/description.")
+@click.option('--deidentified', required=False, type=str, help="Whether samples are de-identified.")
+@click.option('--fda-regulated', required=False, type=str, help="Whether the data is FDA regulated.")
+@click.option('--data-governance', required=False, type=str, help="Data governance committee information.")
 @click.option('--maintenance-plan', required=False, type=str, help="RAI: Versioning, maintainers, and deprecation policies.")
 @click.option('--intended-use', required=False, type=str, help="RAI: Recommended dataset uses (e.g., training, validation).")
 @click.option('--limitations', required=False, type=str, help="RAI: Known limitations and non-recommended uses.")
 @click.option('--potential-sources-of-bias', required=False, type=str, help="RAI: Description of known biases in the dataset.")
-@click.option('--prohibited-uses', required=False, type=str, help="Prohibited uses of the release (appended to Limitations).")
+@click.option('--prohibited-uses', required=False, type=str, help="Prohibited uses of the dataset.")
 @click.option('--rai-data-collection', required=False, type=str, help="RAI: Description of the data collection process.")
 @click.option('--rai-data-collection-type', required=False, multiple=True, type=str, help="RAI: Type of data collection (e.g., 'Web Scraping', 'Surveys').")
 @click.option('--rai-missing-data-desc', required=False, type=str, help="RAI: Description of missing data in the dataset.")
@@ -70,7 +81,10 @@ def rocrate_group():
 def init(
     guid, name, organization_name, project_name, description, keywords, license,
     date_published, author, version, associated_publication, conditions_of_access,
-    copyright_notice, maintenance_plan, intended_use, limitations, potential_sources_of_bias,
+    copyright_notice, completeness, ethical_review, human_subject, confidentiality_level,
+    irb, irb_protocol_id, human_subject_research, human_subject_exemptions,
+    deidentified, fda_regulated, data_governance,
+    maintenance_plan, intended_use, limitations, potential_sources_of_bias,
     prohibited_uses, rai_data_collection, rai_data_collection_type, rai_missing_data_desc,
     rai_raw_data_source, rai_collection_start_date, rai_collection_end_date,
     rai_imputation_protocol, rai_manipulation_protocol, rai_preprocessing_protocol,
@@ -87,13 +101,10 @@ def init(
         "conditionsOfAccess": conditions_of_access, "copyrightNotice": copyright_notice,
         "path": pathlib.Path.cwd()
     }
-    
+
     rai_properties = {}
     if limitations:
-        limitations_text = limitations
-        if prohibited_uses:
-            limitations_text += f"\n\nProhibited Uses: {prohibited_uses}"
-        rai_properties["rai:dataLimitations"] = limitations_text
+        rai_properties["rai:dataLimitations"] = limitations
     if potential_sources_of_bias:
         rai_properties["rai:dataBiases"] = potential_sources_of_bias
     if intended_use:
@@ -140,7 +151,21 @@ def init(
         rai_properties["rai:dataCollectionTimeframe"] = timeframe
     
     params.update(rai_properties)
-    
+
+    # Compliance fields as direct top-level properties
+    if completeness:              params["completeness"] = completeness
+    if ethical_review:            params["ethicalReview"] = ethical_review
+    if human_subject:             params["humanSubjects"] = human_subject
+    if confidentiality_level:     params["confidentialityLevel"] = confidentiality_level
+    if prohibited_uses:           params["prohibitedUses"] = prohibited_uses
+    if irb:                       params["irb"] = irb
+    if irb_protocol_id:           params["irbProtocolId"] = irb_protocol_id
+    if human_subject_research:    params["humanSubjectResearch"] = human_subject_research
+    if human_subject_exemptions:  params["humanSubjectExemption"] = human_subject_exemptions
+    if deidentified:              params["deidentified"] = deidentified
+    if fda_regulated:             params["fdaRegulated"] = fda_regulated
+    if data_governance:           params["dataGovernanceCommittee"] = data_governance
+
     if custom_properties:
         try:
             custom_props = json.loads(custom_properties)
@@ -170,11 +195,22 @@ def init(
 @click.option('--associated-publication', required=False, type=str)
 @click.option('--conditions-of-access', required=False, type=str)
 @click.option('--copyright-notice', required=False, type=str)
+@click.option('--completeness', required=False, type=str, help="Completeness of the dataset.")
+@click.option('--ethical-review', required=False, type=str, help="Ethical review information.")
+@click.option('--human-subject', required=False, type=str, help="Human subject involvement information.")
+@click.option('--confidentiality-level', required=False, type=str, help="Confidentiality level.")
+@click.option('--irb', required=False, type=str, help="IRB approval information.")
+@click.option('--irb-protocol-id', required=False, type=str, help="IRB protocol identifier.")
+@click.option('--human-subject-research', required=False, type=str, help="Whether this involves human subject research.")
+@click.option('--human-subject-exemptions', required=False, type=str, help="Human subjects exemption category/description.")
+@click.option('--deidentified', required=False, type=str, help="Whether samples are de-identified.")
+@click.option('--fda-regulated', required=False, type=str, help="Whether the data is FDA regulated.")
+@click.option('--data-governance', required=False, type=str, help="Data governance committee information.")
 @click.option('--maintenance-plan', required=False, type=str, help="RAI: Versioning, maintainers, and deprecation policies.")
 @click.option('--intended-use', required=False, type=str, help="RAI: Recommended dataset uses (e.g., training, validation).")
 @click.option('--limitations', required=False, type=str, help="RAI: Known limitations and non-recommended uses.")
 @click.option('--potential-sources-of-bias', required=False, type=str, help="RAI: Description of known biases in the dataset.")
-@click.option('--prohibited-uses', required=False, type=str, help="Prohibited uses of the release (appended to Limitations).")
+@click.option('--prohibited-uses', required=False, type=str, help="Prohibited uses of the dataset.")
 @click.option('--rai-data-collection', required=False, type=str, help="RAI: Description of the data collection process.")
 @click.option('--rai-data-collection-type', required=False, multiple=True, type=str, help="RAI: Type of data collection (e.g., 'Web Scraping', 'Surveys').")
 @click.option('--rai-missing-data-desc', required=False, type=str, help="RAI: Description of missing data in the dataset.")
@@ -196,7 +232,10 @@ def init(
 def create(
     rocrate_path, guid, name, organization_name, project_name, description, keywords,
     license, date_published, author, version, associated_publication,
-    conditions_of_access, copyright_notice, maintenance_plan, intended_use, limitations,
+    conditions_of_access, copyright_notice, completeness, ethical_review, human_subject,
+    confidentiality_level, irb, irb_protocol_id, human_subject_research, human_subject_exemptions,
+    deidentified, fda_regulated, data_governance,
+    maintenance_plan, intended_use, limitations,
     potential_sources_of_bias, prohibited_uses, rai_data_collection, rai_data_collection_type,
     rai_missing_data_desc, rai_raw_data_source, rai_collection_start_date,
     rai_collection_end_date, rai_imputation_protocol, rai_manipulation_protocol,
@@ -214,13 +253,10 @@ def create(
         "conditionsOfAccess": conditions_of_access, "copyrightNotice": copyright_notice,
         "path": rocrate_path
     }
-    
+
     rai_properties = {}
     if limitations:
-        limitations_text = limitations
-        if prohibited_uses:
-            limitations_text += f"\n\nProhibited Uses: {prohibited_uses}"
-        rai_properties["rai:dataLimitations"] = limitations_text
+        rai_properties["rai:dataLimitations"] = limitations
     if potential_sources_of_bias:
         rai_properties["rai:dataBiases"] = potential_sources_of_bias
     if intended_use:
@@ -267,7 +303,21 @@ def create(
         rai_properties["rai:dataCollectionTimeframe"] = timeframe
     
     params.update(rai_properties)
-    
+
+    # Compliance fields as direct top-level properties
+    if completeness:              params["completeness"] = completeness
+    if ethical_review:            params["ethicalReview"] = ethical_review
+    if human_subject:             params["humanSubjects"] = human_subject
+    if confidentiality_level:     params["confidentialityLevel"] = confidentiality_level
+    if prohibited_uses:           params["prohibitedUses"] = prohibited_uses
+    if irb:                       params["irb"] = irb
+    if irb_protocol_id:           params["irbProtocolId"] = irb_protocol_id
+    if human_subject_research:    params["humanSubjectResearch"] = human_subject_research
+    if human_subject_exemptions:  params["humanSubjectExemption"] = human_subject_exemptions
+    if deidentified:              params["deidentified"] = deidentified
+    if fda_regulated:             params["fdaRegulated"] = fda_regulated
+    if data_governance:           params["dataGovernanceCommittee"] = data_governance
+
     if custom_properties:
         try:
             custom_props = json.loads(custom_properties)

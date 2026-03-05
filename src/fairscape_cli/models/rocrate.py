@@ -425,10 +425,16 @@ def LinkSubcrates(parent_crate_path: pathlib.Path) -> List[str]:
         raise ValueError("Could not determine the root dataset of the parent RO-Crate")
 
     transferable_fields = [
-        "principalInvestigator", "copyrightNotice", 
+        "principalInvestigator", "copyrightNotice",
         "conditionsOfAccess", "contactEmail", "confidentialityLevel",
         "citation", "usageInfo", "additionalProperty",
         "license", "author", "version",
+        # Top-level compliance fields
+        "ethicalReview", "humanSubjects", "humanSubjectResearch",
+        "humanSubjectExemption", "deidentified", "fdaRegulated",
+        "irb", "irbProtocolId", "dataGovernanceCommittee",
+        "completeness", "prohibitedUses",
+        # RAI fields
         "rai:dataLimitations", "rai:dataBiases", "rai:dataUseCases",
         "rai:dataReleaseMaintenancePlan", "rai:dataCollection",
         "rai:dataCollectionType", "rai:dataCollectionMissingData",

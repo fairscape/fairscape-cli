@@ -65,9 +65,13 @@ def build_group():
 @click.option('--ethical-review', required=False, type=str, help="Ethical review information.")
 @click.option('--human-subject', required=False, type=str, help="Human subject involvement information.")
 @click.option('--confidentiality-level', required=False, type=str, help="Confidentiality level for the release.")
-@click.option('--data-governance', required=False, type=str, help="Data governance information for the release.")
-@click.option('--irb', required=False, type=str, help="IRB number for the release.")
-@click.option('--has-summary-stats', required=False, type=str, help="Summary statistics for the release.")
+@click.option('--irb', required=False, type=str, help="IRB approval information.")
+@click.option('--irb-protocol-id', required=False, type=str, help="IRB protocol identifier.")
+@click.option('--human-subject-research', required=False, type=str, help="Whether this involves human subject research.")
+@click.option('--human-subject-exemptions', required=False, type=str, help="Human subjects exemption category/description.")
+@click.option('--deidentified', required=False, type=str, help="Whether samples are de-identified.")
+@click.option('--fda-regulated', required=False, type=str, help="Whether the data is FDA regulated.")
+@click.option('--data-governance', required=False, type=str, help="Data governance committee information.")
 
 # Mapped RAI Properties (were previously generic properties)
 @click.option('--maintenance-plan', required=False, type=str, help="RAI: Versioning, maintainers, and deprecation policies.")
@@ -121,6 +125,11 @@ def build_release(
     principal_investigator: Optional[str],
     contact_email: Optional[str],
     confidentiality_level: Optional[str],
+    irb_protocol_id: Optional[str],
+    human_subject_research: Optional[str],
+    human_subject_exemptions: Optional[str],
+    deidentified: Optional[str],
+    fda_regulated: Optional[str],
     citation: Optional[str],
     funder: Optional[str],
     usage_info: Optional[str],
@@ -260,19 +269,20 @@ def build_release(
     
     parent_params.update(rai_properties)
     
-    # Process remaining generic properties
+    # Compliance fields as direct top-level properties
+    if completeness:              parent_params["completeness"] = completeness
+    if human_subject:             parent_params["humanSubjects"] = human_subject
+    if prohibited_uses:           parent_params["prohibitedUses"] = prohibited_uses
+    if irb:                       parent_params["irb"] = irb
+    if irb_protocol_id:           parent_params["irbProtocolId"] = irb_protocol_id
+    if human_subject_research:    parent_params["humanSubjectResearch"] = human_subject_research
+    if human_subject_exemptions:  parent_params["humanSubjectExemption"] = human_subject_exemptions
+    if deidentified:              parent_params["deidentified"] = deidentified
+    if fda_regulated:             parent_params["fdaRegulated"] = fda_regulated
+    if data_governance:           parent_params["dataGovernanceCommittee"] = data_governance
+
+    # Keep --additional-properties JSON option for arbitrary custom props (backward compat)
     additional_props = []
-    if completeness:
-        additional_props.append({"@type": "PropertyValue", "name": "Completeness", "value": completeness})
-    if human_subject:
-        additional_props.append({"@type": "PropertyValue", "name": "Human Subject", "value": human_subject})
-    if prohibited_uses:
-        additional_props.append({"@type": "PropertyValue", "name": "Prohibited Uses", "value": prohibited_uses})
-    if data_governance:
-        additional_props.append({"@type": "PropertyValue", "name": "Data Governance Committee", "value": data_governance})
-    if irb:
-        additional_props.append({"@type": "PropertyValue", "name": "IRB", "value": irb})
-    
     if additional_properties:
         try:
             add_props = json.loads(additional_properties)
@@ -284,7 +294,7 @@ def build_release(
         except json.JSONDecodeError:
             click.echo("ERROR: Invalid JSON in --additional-properties")
             ctx.exit(1)
-    
+
     if additional_props:
         parent_params["additionalProperty"] = additional_props
 
