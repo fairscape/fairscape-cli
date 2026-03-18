@@ -274,6 +274,37 @@ def process_merkle_tree(crate_path: Path) -> bool:
         return False
 
 
+def process_release_merkle_tree(release_directory: Path) -> bool:
+    """Generate ro-crate-merkle-tree.json for the release from subcrate root hashes."""
+    from fairscape_cli.utils.merkle import generate_release_merkle_tree
+
+    metadata_file = release_directory / "ro-crate-metadata.json"
+    output_path = release_directory / "ro-crate-merkle-tree.json"
+
+    try:
+        tree = generate_release_merkle_tree(release_directory)
+        if tree is None:
+            return False
+
+        with open(output_path, 'w') as f:
+            json.dump(tree, f, indent=2)
+
+        # Annotate release root entity with the Merkle root hash
+        with open(metadata_file, 'r') as f:
+            metadata = json.load(f)
+
+        graph = metadata.get('@graph', [])
+        if len(graph) > 1:
+            graph[1]['evi:merkleRootHash'] = tree['rootHash']
+            with open(metadata_file, 'w') as f:
+                json.dump(metadata, f, indent=2)
+
+        return True
+    except Exception as e:
+        click.echo(f"  ERROR generating release Merkle tree: {e}")
+        return False
+
+
 def process_subcrate(subcrate_path: Path, release_directory: Optional[Path] = None, published: bool = False) -> Dict[str, Any]:
     """
     Process a single subcrate with all augmentation and build steps.
@@ -352,66 +383,84 @@ def process_subcrate(subcrate_path: Path, release_directory: Optional[Path] = No
     return results
 
 
-def process_all_subcrates(release_directory: Path) -> Dict[str, Any]:
+def process_all_subcrates(release_directory: Path, published: bool = False) -> Dict[str, Any]:
     subcrates = find_subcrates(release_directory)
-    
+
     results = {
         'total': len(subcrates),
         'processed': {
             'link_inverses': 0,
             'add_io': 0,
             'evidence_graphs': 0,
-            'croissants': 0
+            'croissants': 0,
+            'previews': 0,
+            'merkle_trees': 0,
         },
         'errors': []
     }
-    
+
     if not subcrates:
         click.echo("No subcrates found to process.")
         return results
-    
+
     click.echo(f"\nProcessing {len(subcrates)} subcrate(s)...")
-    
+
     for subcrate in subcrates:
         click.echo(f"\n  Processing subcrate: {subcrate.name}")
-        
+
         click.echo(f"    - Linking inverses...")
         if process_link_inverses(subcrate):
             results['processed']['link_inverses'] += 1
             click.echo(f"      ✓ Inverses linked")
         else:
             results['errors'].append(f"{subcrate.name}: Failed to link inverses")
-        
+
         click.echo(f"    - Adding inputs/outputs...")
         if process_add_io(subcrate):
             results['processed']['add_io'] += 1
             click.echo(f"      ✓ Inputs/outputs added")
         else:
             results['errors'].append(f"{subcrate.name}: Failed to add I/O")
-        
+
         click.echo(f"    - Checking evidence graph...")
         if process_evidence_graph(subcrate, release_directory):
             results['processed']['evidence_graphs'] += 1
             click.echo(f"      ✓ Evidence graph ready")
         else:
             click.echo(f"      - No EVI:outputs found or graph generation failed")
-        
+
         click.echo(f"    - Generating Croissant...")
         if process_croissant(subcrate):
             results['processed']['croissants'] += 1
             click.echo(f"      ✓ Croissant generated")
         else:
             results['errors'].append(f"{subcrate.name}: Failed to generate Croissant")
-    
+
+        click.echo(f"    - Generating preview...")
+        if process_preview(subcrate, published):
+            results['processed']['previews'] += 1
+            click.echo(f"      ✓ Preview generated")
+        else:
+            results['errors'].append(f"{subcrate.name}: Failed to generate preview")
+
+        click.echo(f"    - Generating Merkle tree...")
+        if process_merkle_tree(subcrate):
+            results['processed']['merkle_trees'] += 1
+            click.echo(f"      ✓ Merkle tree generated")
+        else:
+            click.echo(f"      - No local files found or Merkle tree generation skipped")
+
     click.echo(f"\nSubcrate processing complete:")
-    click.echo(f"  - Inverses linked: {results['processed']['link_inverses']}/{results['total']}")
-    click.echo(f"  - I/O added: {results['processed']['add_io']}/{results['total']}")
-    click.echo(f"  - Evidence graphs: {results['processed']['evidence_graphs']}/{results['total']}")
-    click.echo(f"  - Croissants: {results['processed']['croissants']}/{results['total']}")
-    
+    click.echo(f"  - Inverses linked:  {results['processed']['link_inverses']}/{results['total']}")
+    click.echo(f"  - I/O added:        {results['processed']['add_io']}/{results['total']}")
+    click.echo(f"  - Evidence graphs:  {results['processed']['evidence_graphs']}/{results['total']}")
+    click.echo(f"  - Croissants:       {results['processed']['croissants']}/{results['total']}")
+    click.echo(f"  - Previews:         {results['processed']['previews']}/{results['total']}")
+    click.echo(f"  - Merkle trees:     {results['processed']['merkle_trees']}/{results['total']}")
+
     if results['errors']:
         click.echo(f"\nEncountered {len(results['errors'])} error(s):")
         for error in results['errors']:
             click.echo(f"  - {error}")
-    
+
     return results

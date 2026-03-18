@@ -78,7 +78,7 @@ class OverviewSectionGenerator(SectionGenerator):
             'human_subject_exemptions': overview.human_subject_exemptions or "N/A",
             'deidentified_samples': overview.deidentified_samples or "Yes",
             'fda_regulated': overview.fda_regulated or "No",
-            'irb': overview.irb or "N/A",
+            'irb': overview.irb if overview.irb else "N/A",
             'irb_protocol_id': overview.irb_protocol_id or "N/A",
             'data_governance': overview.data_governance or "",
             

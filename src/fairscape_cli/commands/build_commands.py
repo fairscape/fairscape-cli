@@ -15,8 +15,10 @@ from fairscape_cli.utils.build_utils import (
     process_croissant,
     process_datasheet,
     process_preview,
+    process_release_merkle_tree,
     process_subcrate
 )
+from fairscape_cli.utils.merkle import generate_merkle_tree, generate_release_merkle_tree
 
 from fairscape_cli.models import (
     GenerateROCrate,
@@ -184,7 +186,7 @@ def build_release(
     
     if not skip_subcrate_processing:
         click.echo("\n=== Processing subcrates ===")
-        subcrate_results = process_all_subcrates(release_directory)
+        subcrate_results = process_all_subcrates(release_directory, published=published)
     
     subcrate_metadata = collect_subcrate_metadata(release_directory)
 
@@ -358,6 +360,12 @@ def build_release(
         click.echo("  ✓ Release datasheet generated")
     else:
         click.echo("  WARNING: Failed to generate release datasheet")
+
+    click.echo("Generating release Merkle tree...")
+    if process_release_merkle_tree(release_directory):
+        click.echo("  ✓ Release Merkle tree generated")
+    else:
+        click.echo("  WARNING: No subcrate Merkle trees found; release Merkle tree skipped")
 
     click.echo(f"\n✓ Release process finished successfully for: {parent_crate_guid}")
 
@@ -655,3 +663,99 @@ def build_subcrate_command(ctx, subcrate_path: pathlib.Path, release_directory: 
         ctx.exit(1)
     else:
         click.echo(f"\nSubcrate processing completed successfully.")
+
+
+@build_group.command('validate')
+@click.argument('rocrate-path', type=click.Path(exists=True, path_type=pathlib.Path))
+@click.option('--release', is_flag=True, default=False,
+              help="Validate a release-level Merkle tree (uses subcrate root hashes as leaves).")
+@click.pass_context
+def validate_merkle_command(ctx, rocrate_path: pathlib.Path, release: bool):
+    """
+    Validate RO-Crate file integrity against its saved Merkle tree.
+
+    Recomputes the SHA-256 Merkle tree from the RO-Crate's current files
+    and compares the result to the root hash stored in ro-crate-merkle-tree.json.
+    Exits 0 if the tree matches, 1 if it does not or if an error occurs.
+    """
+    # Resolve to crate directory
+    if rocrate_path.is_dir():
+        crate_dir = rocrate_path
+    elif rocrate_path.name == "ro-crate-metadata.json":
+        crate_dir = rocrate_path.parent
+    else:
+        click.echo("ERROR: Input must be an RO-Crate directory or ro-crate-metadata.json.", err=True)
+        ctx.exit(1)
+        return
+
+    # Load stored tree
+    merkle_file = crate_dir / "ro-crate-merkle-tree.json"
+    if not merkle_file.exists():
+        click.echo(f"ERROR: No Merkle tree found at {merkle_file}", err=True)
+        click.echo("Run 'build subcrate' or 'build release' first to generate one.", err=True)
+        ctx.exit(1)
+        return
+
+    try:
+        with open(merkle_file) as f:
+            stored_tree = json.load(f)
+    except Exception as e:
+        click.echo(f"ERROR: Could not read {merkle_file}: {e}", err=True)
+        ctx.exit(1)
+        return
+
+    stored_root = stored_tree.get("rootHash")
+    if not stored_root:
+        click.echo("ERROR: Stored Merkle tree has no rootHash field.", err=True)
+        ctx.exit(1)
+        return
+
+    # Recompute tree
+    click.echo(f"Validating: {crate_dir}")
+    try:
+        if release:
+            computed_tree = generate_release_merkle_tree(crate_dir)
+        else:
+            computed_tree = generate_merkle_tree(crate_dir)
+    except Exception as e:
+        click.echo(f"ERROR: Failed to compute Merkle tree: {e}", err=True)
+        ctx.exit(1)
+        return
+
+    if computed_tree is None:
+        click.echo("ERROR: No hashable files found. Cannot compute Merkle tree.", err=True)
+        ctx.exit(1)
+        return
+
+    computed_root = computed_tree["rootHash"]
+
+    if stored_root == computed_root:
+        click.echo(f"OK  Merkle tree valid")
+        click.echo(f"    Root hash: {computed_root}")
+    else:
+        click.echo(f"FAIL Merkle tree INVALID")
+        click.echo(f"    Stored:   {stored_root}")
+        click.echo(f"    Computed: {computed_root}")
+
+        # Report which leaves changed
+        stored_leaves = {
+            leaf["contentUrl"]: leaf["sha256"]
+            for leaf in stored_tree.get("leaves", [])
+        }
+        computed_leaves = {
+            leaf["contentUrl"]: leaf["sha256"]
+            for leaf in computed_tree.get("leaves", [])
+        }
+
+        all_urls = sorted(set(stored_leaves) | set(computed_leaves))
+        for url in all_urls:
+            s = stored_leaves.get(url)
+            c = computed_leaves.get(url)
+            if s is None:
+                click.echo(f"    ADDED:   {url}")
+            elif c is None:
+                click.echo(f"    REMOVED: {url}")
+            elif s != c:
+                click.echo(f"    CHANGED: {url}")
+
+        ctx.exit(1)

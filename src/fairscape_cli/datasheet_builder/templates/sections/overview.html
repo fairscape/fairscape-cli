@@ -112,23 +112,63 @@
     <h3>Human Subjects & Regulatory</h3>
     <div class="regulatory-grid">
       <div class="regulatory-item">
-        <span class="regulatory-label">Human Subjects Research:</span> No
+        <span class="regulatory-label">Human Subjects Research:</span> {{ human_subject_research }}
       </div>
       <div class="regulatory-item">
-        <span class="regulatory-label">Human Subjects Exemptions:</span> N/A
+        <span class="regulatory-label">De-identified Samples:</span> {{ deidentified_samples }}
       </div>
       <div class="regulatory-item">
-        <span class="regulatory-label">De-identified Samples:</span> Yes
+        <span class="regulatory-label">FDA Regulated:</span> {{ fda_regulated }}
       </div>
       <div class="regulatory-item">
-        <span class="regulatory-label">FDA Regulated:</span> No
-      </div>
-      <div class="regulatory-item">
-        <span class="regulatory-label">IRB:</span> N/A
-      </div>
-      <div class="regulatory-item">
-        <span class="regulatory-label">IRB Protocol ID:</span> N/A
+        <span class="regulatory-label">IRB Protocol ID:</span> {{ irb_protocol_id }}
       </div>
     </div>
+
+    <div class="irb-detail">
+      <span class="regulatory-label">Institutional Review Board:</span>
+      {% if irb is mapping %}
+        <div class="irb-org">
+          <span class="irb-name">{{ irb.name }}</span>
+          {% if irb.contactPoint %}
+          <div class="irb-contact">
+            {% if irb.contactPoint.contactType %}
+              <span class="irb-contact-type">{{ irb.contactPoint.contactType }}</span>
+            {% endif %}
+            {% if irb.contactPoint.email %}
+              <a href="mailto:{{ irb.contactPoint.email }}">{{ irb.contactPoint.email }}</a>
+            {% endif %}
+            {% if irb.contactPoint.telephone %}
+              <span>{{ irb.contactPoint.telephone }}</span>
+            {% endif %}
+          </div>
+          {% endif %}
+          {% if irb.address %}
+          <div class="irb-address">
+            {% if irb.address.streetAddress %}{{ irb.address.streetAddress }}, {% endif %}
+            {% if irb.address.addressLocality %}{{ irb.address.addressLocality }}, {% endif %}
+            {% if irb.address.addressRegion %}{{ irb.address.addressRegion }} {% endif %}
+            {% if irb.address.postalCode %}{{ irb.address.postalCode }}{% endif %}
+            {% if irb.address.addressCountry %}, {{ irb.address.addressCountry }}{% endif %}
+          </div>
+          {% endif %}
+        </div>
+      {% else %}
+        {{ irb }}
+      {% endif %}
+    </div>
+
+    {% if human_subject_exemptions and human_subject_exemptions != "N/A" %}
+    <div class="regulatory-exemptions">
+      <span class="regulatory-label">Human Subjects Exemptions:</span>
+      <p>{{ human_subject_exemptions }}</p>
+    </div>
+    {% else %}
+    <div class="regulatory-grid">
+      <div class="regulatory-item">
+        <span class="regulatory-label">Human Subjects Exemptions:</span> {{ human_subject_exemptions }}
+      </div>
+    </div>
+    {% endif %}
   </div>
 </div>

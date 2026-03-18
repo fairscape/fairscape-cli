@@ -154,3 +154,36 @@ def generate_merkle_tree(crate_dir: Path) -> Optional[dict]:
     leaves.sort(key=lambda x: x["contentUrl"])
 
     return build_merkle_tree(leaves)
+
+
+def generate_release_merkle_tree(release_dir: Path) -> Optional[dict]:
+    """Build a release-level Merkle tree whose leaves are subcrate root hashes.
+
+    For each direct child directory of release_dir that contains a
+    ro-crate-merkle-tree.json, one leaf is created using the subcrate's
+    directory name as contentUrl and its rootHash as the sha256 value.
+
+    Returns the tree dict, or None if no subcrate trees are found.
+    """
+    leaves = []
+
+    for child in sorted(release_dir.iterdir()):
+        if not child.is_dir():
+            continue
+        subcrate_tree_file = child / "ro-crate-merkle-tree.json"
+        if not subcrate_tree_file.exists():
+            continue
+        try:
+            with open(subcrate_tree_file, "r") as f:
+                subcrate_tree = json.load(f)
+            root_hash = subcrate_tree.get("rootHash")
+            if root_hash:
+                leaves.append({"contentUrl": child.name, "sha256": root_hash})
+        except Exception:
+            continue
+
+    if not leaves:
+        return None
+
+    leaves.sort(key=lambda x: x["contentUrl"])
+    return build_merkle_tree(leaves)
