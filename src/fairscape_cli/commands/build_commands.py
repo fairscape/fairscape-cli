@@ -28,6 +28,7 @@ from fairscape_cli.models import (
 )
 
 from fairscape_models.rocrate import ROCrateV1_2, ROCrateMetadataElem
+from fairscape_cli.utils.serialization import prune_none
 from fairscape_models.conversion.converter import ROCToTargetConverter
 from fairscape_models.conversion.mapping.croissant import MAPPING_CONFIGURATION as CROISSANT_MAPPING
 
@@ -519,7 +520,7 @@ def generate_evidence_graph(
             
             # Write the updated metadata back to the file
             with open(metadata_file, 'w') as f:
-                json.dump(metadata, f, indent=2)
+                json.dump(prune_none(metadata), f, indent=2)
                 
             click.echo(f"Added hasEvidenceGraph reference to {ark_id} in RO-Crate metadata")
         except Exception as e:

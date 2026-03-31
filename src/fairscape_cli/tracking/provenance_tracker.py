@@ -17,6 +17,7 @@ from .metadata_generator import MetadataGenerator, FallbackMetadataGenerator, cr
 from .utils import collect_dataset_samples, format_samples_for_prompt
 
 from fairscape_cli.models.rocrate import GenerateROCrate
+from fairscape_cli.utils.serialization import prune_none
 from datetime import datetime
 
 
@@ -89,7 +90,7 @@ class ProvenanceTracker:
                     root_dataset['hasPart'] = []
 
             with metadata_path.open('w') as f:
-                json.dump(crate_data, f, indent=2)
+                json.dump(prune_none(crate_data), f, indent=2)
 
             print(f"Cleared existing @graph entries from {metadata_path}")
 

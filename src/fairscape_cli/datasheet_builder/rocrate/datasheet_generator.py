@@ -159,6 +159,8 @@ class DatasheetGenerator:
         distribution = distribution_converter.convert()
         
         subcrate_items = self._process_all_subcrates()
+        if not subcrate_items:
+            subcrate_items = self._build_single_crate_composition()
         composition = CompositionSection(items=subcrate_items) if subcrate_items else None
         
         return FairscapeDatasheet(
@@ -226,6 +228,42 @@ class DatasheetGenerator:
         
         return subcrate_items
     
+    def _build_single_crate_composition(self) -> List[SubCrateItem]:
+        """When no subcrates exist, treat the main crate itself as a single subcrate."""
+        try:
+            converter = ROCToTargetConverter(
+                source_crate=self.main_crate,
+                mapping_configuration=SUBCRATE_MAPPING_CONFIGURATION,
+                global_index=self.global_metadata_index
+            )
+            subcrate_item = converter.convert()
+            subcrate_item.published = self.published
+            subcrate_item.preview_url = ""
+
+            if not subcrate_item.size and self.base_dir.exists():
+                try:
+                    dir_size = get_directory_size(str(self.base_dir))
+                    subcrate_item.size = format_size(dir_size)
+                except Exception:
+                    subcrate_item.size = "Unknown"
+
+            main_root = self.main_crate.metadataGraph[1].model_dump()
+            if not subcrate_item.doi:
+                subcrate_item.doi = main_root.get('identifier')
+            if not subcrate_item.related_publications:
+                pubs = main_root.get('associatedPublication', [])
+                if pubs:
+                    subcrate_item.related_publications = pubs if isinstance(pubs, list) else [pubs]
+
+            self._enhance_subcrate_item(subcrate_item, self.main_crate)
+
+            return [subcrate_item]
+        except Exception as e:
+            print(f"Error building single crate composition: {e}")
+            import traceback
+            traceback.print_exc()
+            return []
+
     def _enhance_subcrate_item(self, subcrate_item: SubCrateItem, subcrate: ROCrateV1_2):
         """Add statistical summary info to subcrate item if present."""
         root_dict = subcrate.metadataGraph[1].model_dump() if len(subcrate.metadataGraph) > 1 else {}
