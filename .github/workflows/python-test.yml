@@ -25,4 +25,4 @@ jobs:
           pip install pytest pytest-cov
           pip install .
       - name: Run tests with coverage
-        run: pytest --cov=fairscape_models --cov-report=term-missing
+        run: pytest 
