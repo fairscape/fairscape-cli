@@ -70,3 +70,5 @@ For more detailed examples and a complete workflow demonstration, see the [Compl
 - [Installation](setup.md)
 - [Command Reference](commands/rocrate.md)
 - [Complete Workflow Demo](workflows/complete-demo.md)
+- [Datasheet Property Reference](datasheet-properties.md)
+- [AI-Ready Scoring Reference](ai-ready-scoring.md)

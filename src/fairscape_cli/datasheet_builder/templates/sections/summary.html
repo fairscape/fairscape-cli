@@ -1,7 +1,7 @@
 <div id="datasheet-summary" class="executive-summary-section">
     <h2>Datasheet Summary</h2>
     {% if description %}
-    <p class="summary-description">{{ description }}</p>
+    <p class="summary-description">{{ description }}{% if description_truncated %}... <a href="#description" style="color: #2c3e50; font-size: 12px;">[read full description]</a>{% endif %}</p>
     {% endif %}
 
     <div class="exec-summary-grid">

@@ -22,10 +22,20 @@ nav:
       - Import: commands/import.md
       - Build: commands/build.md
       - Publishing: commands/publish.md
+  - Properties:
+      - Datasheet Properties: datasheet-properties.md
+      - AI-Ready Scoring: ai-ready-scoring.md
 
 theme:
-  name: readthedocs
-  navigation_depth: 4
+  name: material
+  features:
+    - navigation.sections
+    - navigation.expand
+    - content.tabs.link
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
 
 markdown_extensions:
   # Python Markdown
@@ -45,8 +55,8 @@ markdown_extensions:
   - pymdownx.caret
   - pymdownx.details
   - pymdownx.emoji:
-  #    emoji_index: !!python/name:materialx.emoji.twemoji
-  #    emoji_generator: !!python/name:materialx.emoji.to_svg
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - pymdownx.highlight
   - pymdownx.inlinehilite
   - pymdownx.keys

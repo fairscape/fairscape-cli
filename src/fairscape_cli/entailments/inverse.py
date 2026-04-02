@@ -166,9 +166,6 @@ def augment_rocrate_with_inverses(
 
                             if original_target_prop_val != new_target_prop_val:
                                 modified_count +=1
-                        else:
-                            print(f"Warning: Dangling reference. Entity '{source_entity_id}' "
-                                           f"property '{json_prop1_key}' points to non-existent '@id': '{target_id}'.")
 
             # Check reverse direction (prop2_uri exists on source_entity)
             if json_prop2_key in source_entity:
@@ -193,9 +190,6 @@ def augment_rocrate_with_inverses(
 
                             if original_target_prop_val != new_target_prop_val:
                                 modified_count +=1
-                        else:
-                            print(f"Warning: Dangling reference. Entity '{source_entity_id}' "
-                                           f"property '{json_prop2_key}' points to non-existent '@id': '{target_id}'.")
     if modified_count > 0:
         try:
             with open(metadata_file_path, 'w') as f:
