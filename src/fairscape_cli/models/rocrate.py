@@ -22,6 +22,7 @@ from typing import List, Optional, Dict, Any, Tuple
 from fairscape_cli.config import NAAN, DEFAULT_CONTEXT
 from fairscape_cli.models.guid_utils import GenerateDatetimeSquid, clean_guid
 from fairscape_models.rocrate import ROCrateV1_2, ROCrateMetadataElem, ROCrateMetadataFileElem
+from fairscape_cli.utils.serialization import prune_none, model_dump_pruned
 
 def GenerateROCrate(
    path: pathlib.Path,
@@ -80,7 +81,7 @@ def GenerateROCrate(
        ]}
    )
 
-   rocrate_dict = rocrate.model_dump(by_alias=True, exclude_none=True)
+   rocrate_dict = model_dump_pruned(rocrate, by_alias=True)
 
    if 'ro-crate-metadata.json' in str(path):
        roCrateMetadataPath = path
@@ -94,7 +95,7 @@ def GenerateROCrate(
    with roCrateMetadataPath.open(mode="w") as metadataFile:
        json.dump(rocrate_dict, metadataFile, indent=2)
 
-   return root_dataset.model_dump(by_alias=True, exclude_none=True)
+   return model_dump_pruned(root_dataset, by_alias=True)
 class ROCrate(ROCrateMetadataElem):
     model_config = ConfigDict(populate_by_name=True)
 
@@ -213,7 +214,7 @@ class ROCrate(ROCrateMetadataElem):
             
             f.seek(0)
             f.truncate()
-            json.dump(rocrate.model_dump(by_alias=True), f, indent=2)
+            json.dump(model_dump_pruned(rocrate, by_alias=True), f, indent=2)
         
         return subcrate['@id']
 
@@ -269,7 +270,7 @@ class ROCrate(ROCrateMetadataElem):
 
         # Write to file
         with ro_crate_metadata_path.open(mode="w") as metadata_file:
-            json.dump(rocrate_metadata, metadata_file, indent=2)
+            json.dump(prune_none(rocrate_metadata), metadata_file, indent=2)
 
     def registerObject(self, model: Union[Dataset, Software, Computation]):
         """Add metadata to the graph of an ROCrate"""
@@ -279,7 +280,7 @@ class ROCrate(ROCrateMetadataElem):
             rocrate_metadata = json.load(rocrate_metadata_file)
             
             # Add to the @graph
-            model_data = model.model_dump(by_alias=True, exclude_none=True)
+            model_data = model_dump_pruned(model, by_alias=True)
             rocrate_metadata['@graph'].append(model_data)
             
             # Add reference to root dataset's hasPart
@@ -294,7 +295,7 @@ class ROCrate(ROCrateMetadataElem):
             # Write back to file
             rocrate_metadata_file.seek(0)
             rocrate_metadata_file.truncate()
-            json.dump(rocrate_metadata, rocrate_metadata_file, indent=2)
+            json.dump(prune_none(rocrate_metadata), rocrate_metadata_file, indent=2)
 
     def registerDataset(self, dataset: Dataset):
         self.registerObject(dataset)
@@ -336,7 +337,7 @@ def AppendCrate(
             root_dataset['hasPart'] = []
             
         for element in elements:
-            element_data = element.model_dump(by_alias=True, exclude_none=True)
+            element_data = model_dump_pruned(element, by_alias=True)
             rocrate_metadata['@graph'].append(element_data)
             root_dataset['hasPart'].append({"@id": element_data["@id"]})
         
@@ -346,7 +347,7 @@ def AppendCrate(
         # Write back to file
         rocrate_metadata_file.seek(0)
         rocrate_metadata_file.truncate()
-        json.dump(rocrate_metadata, rocrate_metadata_file, indent=2)
+        json.dump(prune_none(rocrate_metadata), rocrate_metadata_file, indent=2)
 
 
 def CopyToROCrate(source_filepath: str, destination_filepath: str):
@@ -385,7 +386,7 @@ def UpdateCrate(
         rocrate_metadata = json.load(rocrate_metadata_file)
         
         # Find and replace the element with matching @id
-        element_data = element.model_dump(by_alias=True, exclude_none=True)
+        element_data = model_dump_pruned(element, by_alias=True)
         for i, existing in enumerate(rocrate_metadata['@graph']):
             if existing.get('@id') == element_data['@id']:
                 rocrate_metadata['@graph'][i] = element_data
@@ -397,7 +398,7 @@ def UpdateCrate(
         # Write back to file
         rocrate_metadata_file.seek(0)
         rocrate_metadata_file.truncate()
-        json.dump(rocrate_metadata, rocrate_metadata_file, indent=2)
+        json.dump(prune_none(rocrate_metadata), rocrate_metadata_file, indent=2)
 
 def LinkSubcrates(parent_crate_path: pathlib.Path) -> List[str]:
     parent_metadata_file = parent_crate_path / 'ro-crate-metadata.json'
@@ -508,7 +509,7 @@ def LinkSubcrates(parent_crate_path: pathlib.Path) -> List[str]:
                     if modified:
                         subcrate_metadata['@graph'][subcrate_root_index] = subcrate_root
                         with subcrate_metadata_file.open('w') as f:
-                            json.dump(subcrate_metadata, f, indent=2)
+                            json.dump(prune_none(subcrate_metadata), f, indent=2)
                     
                     reference_dict = dict(subcrate_root)
                     relative_path = (subcrate_metadata_file.relative_to(base_path)).as_posix()
@@ -535,7 +536,7 @@ def LinkSubcrates(parent_crate_path: pathlib.Path) -> List[str]:
                 parent_root_dataset['hasPart'].append({'@id': sub_id})
         
         with parent_metadata_file.open('w') as f:
-            json.dump(parent_metadata, f, indent=2)
+            json.dump(prune_none(parent_metadata), f, indent=2)
     else:
         print("No valid sub-crates found to link.")
 
@@ -881,7 +882,7 @@ def UpdateEntitiesInGraph(
             return False, f"RO-Crate became invalid after update operations. Details: {e}"
 
         with metadata_filepath.open(mode="w") as metadataFile:
-            json.dump(validated_crate.model_dump(by_alias=True), metadataFile, indent=2, ensure_ascii=False)
+            json.dump(model_dump_pruned(validated_crate, by_alias=True), metadataFile, indent=2, ensure_ascii=False)
 
         return True, f"Successfully processed entities. Matched: {matched_count}, Modified: {modified_count}."
     

@@ -1,5 +1,6 @@
 import pathlib
 import json
+from fairscape_cli.utils.serialization import prune_none
 from typing import List, Tuple, Dict, Any
 from rdflib import Graph, URIRef
 from rdflib.namespace import OWL
@@ -192,7 +193,7 @@ def augment_rocrate_with_inverses(
     if modified_count > 0:
         try:
             with open(metadata_file_path, 'w') as f:
-                json.dump(json_data, f, indent=2, ensure_ascii=False)
+                json.dump(prune_none(json_data), f, indent=2, ensure_ascii=False)
             print(f"RO-Crate '{metadata_file_path}' augmented with inverse properties. {modified_count} modifications made.")
         except Exception as e:
             print(f"Error saving augmented RO-Crate JSON to {metadata_file_path}: {e}")

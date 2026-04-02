@@ -3,6 +3,7 @@ import pathlib
 from pathlib import Path
 from typing import Optional, List, Dict, Any, Tuple
 import click
+from fairscape_cli.utils.serialization import prune_none
 
 def is_subcrate_processed(subcrate_path: Path) -> bool:
     """Check if evi:processed is true on subcrate root entity."""
@@ -207,7 +208,7 @@ def process_evidence_graph(subcrate_path: Path, release_directory: Optional[Path
             }
             
             with open(metadata_file, 'w') as f:
-                json.dump(metadata, f, indent=2)
+                json.dump(prune_none(metadata), f, indent=2)
         
         return True
         
@@ -387,7 +388,7 @@ def process_release_merkle_tree(release_directory: Path) -> bool:
         if len(graph) > 1:
             graph[1]['evi:merkleRootHash'] = tree['rootHash']
             with open(metadata_file, 'w') as f:
-                json.dump(metadata, f, indent=2)
+                json.dump(prune_none(metadata), f, indent=2)
 
         return True
     except Exception as e:

@@ -10,6 +10,7 @@ from pydantic import (
 from typing import (
     Optional
 )
+from fairscape_cli.utils.serialization import model_dump_pruned
 
 
 class BagIt(BaseModel):
@@ -94,7 +95,7 @@ class BagIt(BaseModel):
         bagit_info_path = self.bagit_path / 'bag-info.txt'
         
         with bagit_info_path.open(mode="w") as bag_info_file:                        
-            for key, value in self.model_dump(by_alias=True).items():                              
+            for key, value in model_dump_pruned(self, by_alias=True).items():
                 if key != 'bagit_path' and key != 'rocrate_path':                    
                     bag_info_file.write('%s: %s\n' % (key, value))
 

@@ -1,6 +1,7 @@
 import pathlib
 import json
 from typing import List, Dict, Tuple, Set, Any
+from fairscape_cli.utils.serialization import prune_none
 
 def extract_datasets_from_graph(graph: List[Dict]) -> List[Tuple[str, bool]]:
     """
@@ -169,7 +170,7 @@ def add_inputs_outputs_to_rocrate(rocrate_path: pathlib.Path) -> Tuple[bool, str
         metadata["@graph"] = graph
         
         with open(metadata_path, 'w') as f:
-            json.dump(metadata, f, indent=2)
+            json.dump(prune_none(metadata), f, indent=2)
         
         input_count = len(inputs)
         output_count = len(outputs)

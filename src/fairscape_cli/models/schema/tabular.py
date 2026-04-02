@@ -33,6 +33,7 @@ from fairscape_cli.config import (
     DEFAULT_SCHEMA_TYPE,
     NAAN,
 )
+from fairscape_cli.utils.serialization import model_dump_pruned
 
 class FileType(str, Enum):
     CSV = "csv"
@@ -514,7 +515,7 @@ class HDF5ValidationSchema(BaseModel):
     
 def write_schema(schema: TabularValidationSchema, output_file: str):
     """Write a schema to a file"""
-    schema_dict = schema.to_dict()
+    schema_dict = model_dump_pruned(schema, by_alias=True)
     
     with open(output_file, 'w') as f:
         json.dump(schema_dict, f, indent=2)
@@ -579,4 +580,3 @@ def ReadSchemaLocal(schemaFile: str) -> TabularValidationSchema:
     # load the model into 
     tabularSchema = TabularValidationSchema.model_validate(schemaJson)
     return tabularSchema
-

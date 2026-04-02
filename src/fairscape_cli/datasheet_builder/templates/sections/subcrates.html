@@ -297,9 +297,11 @@
         </div>
       </div>
     </div>
+    {% if subcrate.preview_url %}
     <div class="view-full-link">
       <a href="{{ subcrate.preview_url }}">View Full Dataset Details</a>
     </div>
+    {% endif %}
   </div>
   {% endfor %} {% else %}
   <p>No subcrates found.</p>

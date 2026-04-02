@@ -11,6 +11,7 @@ from jinja2 import Environment
 from fairscape_models.rocrate import ROCrateV1_2
 from fairscape_models.conversion.mapping.AIReady import score_rocrate
 from fairscape_models.conversion.models.AIReady import AIReadyScore
+from fairscape_cli.utils.serialization import model_dump_pruned
 
 
 @dataclass
@@ -89,7 +90,7 @@ class SummarySectionGenerator:
             formats = []
         formats = [f for f in formats if f and f != "unknown"]
 
-        return SummaryData(
+        summary = SummaryData(
             name=root_data.get("name", "Unnamed Dataset"),
             description=root_data.get("description", ""),
             total_size_formatted=size_str,
@@ -99,6 +100,36 @@ class SummarySectionGenerator:
             software_count=root_data.get("evi:softwareCount", 0),
             formats=formats
         )
+
+        # Fallback: compute from graph if evi:* fields are absent (single crate case)
+        if summary.total_entities == 0:
+            formats_set = set()
+            for item in crate.metadataGraph:
+                if item.guid == "ro-crate-metadata.json":
+                    continue
+                item_dict = item.model_dump(by_alias=True)
+                item_type = item_dict.get("@type", "")
+                type_str = " ".join(item_type) if isinstance(item_type, list) else str(item_type)
+
+                if "ROCrate" in type_str or "CreativeWork" in type_str:
+                    continue
+
+                summary.total_entities += 1
+
+                if "Dataset" in type_str:
+                    summary.dataset_count += 1
+                    fmt = item_dict.get("fileFormat")
+                    if fmt and fmt != "unknown":
+                        formats_set.add(fmt)
+                elif "Software" in type_str or "SoftwareSourceCode" in type_str:
+                    summary.software_count += 1
+                elif "Computation" in type_str:
+                    summary.computation_count += 1
+
+            if not summary.formats and formats_set:
+                summary.formats = sorted(formats_set)
+
+        return summary
 
     @staticmethod
     def _format_size(size_bytes: int) -> str:
@@ -160,7 +191,7 @@ class SummarySectionGenerator:
 
     def save_aiready_score(self, raw_score: AIReadyScore, output_path: Path) -> None:
         """Save the AI-Ready score to a JSON file."""
-        score_dict = raw_score.model_dump()
+        score_dict = model_dump_pruned(raw_score)
         with open(output_path, 'w') as f:
             json.dump(score_dict, f, indent=2)
 

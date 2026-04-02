@@ -103,6 +103,7 @@ from fairscape_cli.data_fetcher.cell_line_api import get_cell_line_entity
 from fairscape_cli.data_fetcher.bioproject_fetcher import fetch_bioproject_data
 
 from fairscape_cli.models.rocrate import GenerateROCrate, AppendCrate
+from fairscape_cli.utils.serialization import prune_none
 from fairscape_cli.models.dataset import GenerateDataset
 from fairscape_cli.models.experiment import GenerateExperiment
 from fairscape_cli.models.instrument import GenerateInstrument
@@ -342,7 +343,7 @@ class GenomicData(BaseModel):
                              root_dataset_node["hasPart"].append({"@id": entity_id})
 
                 f.seek(0)
-                json.dump(crate_json, f, indent=2)
+                json.dump(prune_none(crate_json), f, indent=2)
                 f.truncate()
 
 
@@ -360,7 +361,7 @@ class GenomicData(BaseModel):
 
             if updated:
                 f.seek(0)
-                json.dump(crate_json_final, f, indent=2)
+                json.dump(prune_none(crate_json_final), f, indent=2)
                 f.truncate()
 
 
@@ -500,4 +501,3 @@ class GenomicData(BaseModel):
             experiments=Experiments(items=internal_experiments),
             outputs=Outputs(items=outputs_list)
         )
-
