@@ -183,8 +183,10 @@ class SummarySectionGenerator:
             self.save_aiready_score(raw_score, aiready_json_path)
 
         desc = summary.description
+        description_truncated = False
         if len(desc) > 500:
-            desc = desc[:500].rsplit(" ", 1)[0] + "..."
+            desc = desc[:500].rsplit(" ", 1)[0]
+            description_truncated = True
 
         formats_str = ", ".join(sorted(summary.formats)[:10])
         if len(summary.formats) > 10:
@@ -192,6 +194,7 @@ class SummarySectionGenerator:
 
         context = {
             'description': desc,
+            'description_truncated': description_truncated,
             'total_size': summary.total_size_formatted,
             'total_entities': f"{summary.total_entities:,}" if summary.total_entities else "N/A",
             'formats': formats_str,

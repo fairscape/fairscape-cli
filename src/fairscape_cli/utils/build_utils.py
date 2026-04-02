@@ -331,8 +331,32 @@ def process_merkle_tree(crate_path: Path) -> bool:
         graph = metadata.get('@graph', [])
         if len(graph) > 1:
             graph[1]['evi:merkleRootHash'] = tree['rootHash']
-            with open(metadata_file, 'w') as f:
-                json.dump(metadata, f, indent=2)
+
+        # Build a lookup from contentUrl to sha256 from the tree leaves
+        hash_by_url = {
+            leaf['contentUrl']: leaf['sha256']
+            for leaf in tree.get('leaves', [])
+        }
+
+        # Annotate individual dataset/software entities with their sha256
+        for entity in graph:
+            content_url = entity.get('contentUrl')
+            if content_url is None:
+                continue
+            # contentUrl can be a string or list
+            if isinstance(content_url, str):
+                if content_url in hash_by_url:
+                    entity['sha256'] = hash_by_url[content_url]
+            elif isinstance(content_url, list):
+                # For multi-file entities, add sha256 for each url that was hashed
+                hashes = [hash_by_url[url] for url in content_url if url in hash_by_url]
+                if len(hashes) == 1:
+                    entity['sha256'] = hashes[0]
+                elif hashes:
+                    entity['sha256'] = hashes
+
+        with open(metadata_file, 'w') as f:
+            json.dump(metadata, f, indent=2)
 
         return True
     except Exception as e:
