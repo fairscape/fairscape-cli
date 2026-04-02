@@ -16,7 +16,8 @@ from fairscape_cli.utils.build_utils import (
     process_datasheet,
     process_preview,
     process_release_merkle_tree,
-    process_subcrate
+    process_subcrate,
+    ensure_subcrates_linked,
 )
 from fairscape_cli.utils.merkle import generate_merkle_tree, generate_release_merkle_tree
 
@@ -104,6 +105,7 @@ def build_group():
 @click.option('--additional-properties', required=False, type=str, help="JSON string with additional property values.")
 @click.option('--custom-properties', required=False, type=str, help='JSON string with additional properties for the parent crate.')
 @click.option('--skip-subcrate-processing', is_flag=True, default=False, help="Skip automatic processing of subcrates.")
+@click.option('--force-reprocess', is_flag=True, default=False, help="Force re-processing of all subcrates, ignoring evi:processed flag.")
 @click.option('--published', is_flag=True, default=False, help="Are the arks live for the release.")
 @click.pass_context
 def build_release(
@@ -166,6 +168,7 @@ def build_release(
     additional_properties: Optional[str],
     custom_properties: Optional[str],
     skip_subcrate_processing: bool,
+    force_reprocess: bool,
     published: bool,
 ):
     """
@@ -186,7 +189,7 @@ def build_release(
     
     if not skip_subcrate_processing:
         click.echo("\n=== Processing subcrates ===")
-        subcrate_results = process_all_subcrates(release_directory, published=published)
+        subcrate_results = process_all_subcrates(release_directory, published=published, force_reprocess=force_reprocess)
     
     subcrate_metadata = collect_subcrate_metadata(release_directory)
 
@@ -339,7 +342,7 @@ def build_release(
         click.echo(f"ERROR: Failed to initialize parent RO-Crate: {e}")
         ctx.exit(1)
 
-    linked_ids = LinkSubcrates(parent_crate_path=release_directory)
+    linked_ids = ensure_subcrates_linked(release_directory)
     if linked_ids:
         click.echo(f"Successfully linked {len(linked_ids)} sub-crate(s):")
         for sub_id in linked_ids:
@@ -375,8 +378,10 @@ def build_release(
 @click.option('--template-dir', required=False, type=click.Path(exists=True, path_type=pathlib.Path), help="Custom template directory.")
 @click.option('--published', is_flag=True, default=False, help="Indicate if the crate is considered published (may affect template rendering).")
 @click.option('--pdf', is_flag=True, default=False, help="Also generate a PDF version of the datasheet (requires playwright).")
+@click.option('--skip-subcrate-processing', is_flag=True, default=False, help="Skip automatic processing of subcrates.")
+@click.option('--force-reprocess', is_flag=True, default=False, help="Force re-processing of all subcrates, ignoring evi:processed flag.")
 @click.pass_context
-def build_datasheet(ctx, rocrate_path, output, template_dir, published, pdf):
+def build_datasheet(ctx, rocrate_path, output, template_dir, published, pdf, skip_subcrate_processing, force_reprocess):
     """Generate an HTML datasheet for an RO-Crate."""
 
     if rocrate_path.is_dir():
@@ -398,7 +403,18 @@ def build_datasheet(ctx, rocrate_path, output, template_dir, published, pdf):
     package_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     template_dir = Path(os.path.join(package_dir, 'datasheet_builder', 'templates'))
 
-    click.echo(f"Generating datasheet for {metadata_file}")
+    # Link subcrates if needed
+    click.echo("Checking subcrate links...")
+    linked_ids = ensure_subcrates_linked(crate_dir)
+    if linked_ids:
+        click.echo(f"Linked {len(linked_ids)} sub-crate(s)")
+
+    # Process subcrates if needed
+    if not skip_subcrate_processing:
+        click.echo("\n=== Processing subcrates ===")
+        process_all_subcrates(crate_dir, published=published, force_reprocess=force_reprocess)
+
+    click.echo(f"\nGenerating datasheet for {metadata_file}")
     click.echo(f"Outputting to: {output_path}")
 
     try:

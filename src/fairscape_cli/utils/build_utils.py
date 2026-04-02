@@ -4,6 +4,72 @@ from pathlib import Path
 from typing import Optional, List, Dict, Any, Tuple
 import click
 
+def is_subcrate_processed(subcrate_path: Path) -> bool:
+    """Check if evi:processed is true on subcrate root entity."""
+    metadata_file = subcrate_path / "ro-crate-metadata.json"
+    try:
+        with open(metadata_file, 'r') as f:
+            metadata = json.load(f)
+        graph = metadata.get('@graph', [])
+        if len(graph) > 1:
+            return graph[1].get('evi:processed', False) is True
+    except Exception:
+        pass
+    return False
+
+def set_subcrate_processed(subcrate_path: Path) -> bool:
+    """Set evi:processed = true on subcrate root entity."""
+    metadata_file = subcrate_path / "ro-crate-metadata.json"
+    try:
+        with open(metadata_file, 'r') as f:
+            metadata = json.load(f)
+        graph = metadata.get('@graph', [])
+        if len(graph) > 1:
+            graph[1]['evi:processed'] = True
+            with open(metadata_file, 'w') as f:
+                json.dump(metadata, f, indent=2)
+            return True
+    except Exception:
+        pass
+    return False
+
+def ensure_subcrates_linked(crate_directory: Path) -> List[str]:
+    """Link subcrates to parent if not already linked. Returns linked IDs."""
+    metadata_file = crate_directory / "ro-crate-metadata.json"
+    if not metadata_file.exists():
+        return []
+
+    subcrates = find_subcrates(crate_directory)
+    if not subcrates:
+        return []
+
+    # Check existing hasPart
+    with open(metadata_file, 'r') as f:
+        metadata = json.load(f)
+    root = metadata['@graph'][1] if len(metadata.get('@graph', [])) > 1 else {}
+    existing_ids = {p.get('@id') for p in root.get('hasPart', [])}
+
+    # Check if any subcrate is missing from hasPart
+    needs_linking = False
+    for sc in subcrates:
+        sc_meta = sc / "ro-crate-metadata.json"
+        try:
+            with open(sc_meta, 'r') as f:
+                sc_data = json.load(f)
+            sc_id = sc_data['@graph'][1].get('@id') if len(sc_data.get('@graph', [])) > 1 else None
+            if sc_id and sc_id not in existing_ids:
+                needs_linking = True
+                break
+        except Exception:
+            continue
+
+    if needs_linking:
+        from fairscape_cli.models.rocrate import LinkSubcrates
+        return LinkSubcrates(parent_crate_path=crate_directory)
+    else:
+        click.echo("All subcrates already linked.")
+        return list(existing_ids)
+
 def find_subcrates(release_directory: Path) -> List[Path]:
    subcrates = []
    
@@ -383,11 +449,12 @@ def process_subcrate(subcrate_path: Path, release_directory: Optional[Path] = No
     return results
 
 
-def process_all_subcrates(release_directory: Path, published: bool = False) -> Dict[str, Any]:
+def process_all_subcrates(release_directory: Path, published: bool = False, force_reprocess: bool = False) -> Dict[str, Any]:
     subcrates = find_subcrates(release_directory)
 
     results = {
         'total': len(subcrates),
+        'skipped': 0,
         'processed': {
             'link_inverses': 0,
             'add_io': 0,
@@ -406,21 +473,27 @@ def process_all_subcrates(release_directory: Path, published: bool = False) -> D
     click.echo(f"\nProcessing {len(subcrates)} subcrate(s)...")
 
     for subcrate in subcrates:
+        if not force_reprocess and is_subcrate_processed(subcrate):
+            click.echo(f"\n  Skipping subcrate: {subcrate.name} (already processed)")
+            results['skipped'] += 1
+            continue
+
         click.echo(f"\n  Processing subcrate: {subcrate.name}")
+        subcrate_errors = []
 
         click.echo(f"    - Linking inverses...")
         if process_link_inverses(subcrate):
             results['processed']['link_inverses'] += 1
             click.echo(f"      ✓ Inverses linked")
         else:
-            results['errors'].append(f"{subcrate.name}: Failed to link inverses")
+            subcrate_errors.append(f"{subcrate.name}: Failed to link inverses")
 
         click.echo(f"    - Adding inputs/outputs...")
         if process_add_io(subcrate):
             results['processed']['add_io'] += 1
             click.echo(f"      ✓ Inputs/outputs added")
         else:
-            results['errors'].append(f"{subcrate.name}: Failed to add I/O")
+            subcrate_errors.append(f"{subcrate.name}: Failed to add I/O")
 
         click.echo(f"    - Checking evidence graph...")
         if process_evidence_graph(subcrate, release_directory):
@@ -434,14 +507,14 @@ def process_all_subcrates(release_directory: Path, published: bool = False) -> D
             results['processed']['croissants'] += 1
             click.echo(f"      ✓ Croissant generated")
         else:
-            results['errors'].append(f"{subcrate.name}: Failed to generate Croissant")
+            subcrate_errors.append(f"{subcrate.name}: Failed to generate Croissant")
 
         click.echo(f"    - Generating preview...")
         if process_preview(subcrate, published):
             results['processed']['previews'] += 1
             click.echo(f"      ✓ Preview generated")
         else:
-            results['errors'].append(f"{subcrate.name}: Failed to generate preview")
+            subcrate_errors.append(f"{subcrate.name}: Failed to generate preview")
 
         click.echo(f"    - Generating Merkle tree...")
         if process_merkle_tree(subcrate):
@@ -450,7 +523,14 @@ def process_all_subcrates(release_directory: Path, published: bool = False) -> D
         else:
             click.echo(f"      - No local files found or Merkle tree generation skipped")
 
+        results['errors'].extend(subcrate_errors)
+
+        if not subcrate_errors:
+            set_subcrate_processed(subcrate)
+            click.echo(f"      ✓ Marked as processed (evi:processed)")
+
     click.echo(f"\nSubcrate processing complete:")
+    click.echo(f"  - Skipped:          {results['skipped']}/{results['total']}")
     click.echo(f"  - Inverses linked:  {results['processed']['link_inverses']}/{results['total']}")
     click.echo(f"  - I/O added:        {results['processed']['add_io']}/{results['total']}")
     click.echo(f"  - Evidence graphs:  {results['processed']['evidence_graphs']}/{results['total']}")
