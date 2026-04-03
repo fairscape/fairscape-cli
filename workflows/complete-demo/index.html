@@ -1,0 +1,1560 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A utility for packaging objects and validating metadata for FAIRSCAPE.">
+      
+      
+      
+        <link rel="canonical" href="https://github.com/fairscape/fairscape-cli/workflows/complete-demo/">
+      
+      
+        <link rel="prev" href="../../setup/">
+      
+      
+        <link rel="next" href="../../commands/rocrate/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Complete Demo - FAIRSCAPE CLI</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#fairscape-cli-complete-workflow-demo" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="FAIRSCAPE CLI" class="md-header__button md-logo" aria-label="FAIRSCAPE CLI" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            FAIRSCAPE CLI
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Complete Demo
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-hidden="true"  type="radio" name="__palette" id="__palette_0">
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/fairscape/fairscape-cli" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    fairscape/fairscape-cli
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="FAIRSCAPE CLI" class="md-nav__button md-logo" aria-label="FAIRSCAPE CLI" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    FAIRSCAPE CLI
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/fairscape/fairscape-cli" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    fairscape/fairscape-cli
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Setup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Examples
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Complete Demo
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Complete Demo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prerequisites
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-1-build-a-crate-with-local-files-and-computation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1: Build a Crate with Local Files and Computation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 1: Build a Crate with Local Files and Computation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-create-input-file-and-processing-script" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 Create Input File and Processing Script
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-create-and-register-ro-crate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 Create and Register RO-Crate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-infer-and-validate-input-data-against-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3 Infer and Validate Input Data Against Schema
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#14-run-and-register-the-computation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4 Run and Register the Computation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#15-register-output-and-infer-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.5 Register Output and Infer Schema
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#16-build-the-subcrate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.6 Build the Subcrate
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-2-build-a-crate-from-external-repository-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 2: Build a Crate from External Repository Data
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 2: Build a Crate from External Repository Data">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-pull-data-from-an-external-repository" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 Pull Data from an External Repository
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-create-schemas-for-external-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 Create Schemas for External Data
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-generate-evidence-graph-for-external-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 Generate Evidence Graph for External Data
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-3-build-a-unified-release-crate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 3: Build a Unified Release Crate
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-4-publishing-ro-crates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 4: Publishing RO-Crates
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 4: Publishing RO-Crates">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#4-publish-to-fairscape" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4 Publish to Fairscape
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conclusion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Conclusion
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Commands
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Commands
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../commands/rocrate/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RO-Crate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../commands/schema/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Schema
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../commands/import/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Import
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../commands/build/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Build
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../commands/publish/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Publishing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Properties
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Properties
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../datasheet-properties/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Datasheet Properties
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ai-ready-scoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI-Ready Scoring
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prerequisites
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-1-build-a-crate-with-local-files-and-computation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1: Build a Crate with Local Files and Computation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 1: Build a Crate with Local Files and Computation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-create-input-file-and-processing-script" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 Create Input File and Processing Script
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-create-and-register-ro-crate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 Create and Register RO-Crate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-infer-and-validate-input-data-against-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3 Infer and Validate Input Data Against Schema
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#14-run-and-register-the-computation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4 Run and Register the Computation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#15-register-output-and-infer-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.5 Register Output and Infer Schema
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#16-build-the-subcrate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.6 Build the Subcrate
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-2-build-a-crate-from-external-repository-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 2: Build a Crate from External Repository Data
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 2: Build a Crate from External Repository Data">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-pull-data-from-an-external-repository" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 Pull Data from an External Repository
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-create-schemas-for-external-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 Create Schemas for External Data
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-generate-evidence-graph-for-external-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 Generate Evidence Graph for External Data
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-3-build-a-unified-release-crate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 3: Build a Unified Release Crate
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-4-publishing-ro-crates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 4: Publishing RO-Crates
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 4: Publishing RO-Crates">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#4-publish-to-fairscape" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4 Publish to Fairscape
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conclusion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Conclusion
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="fairscape-cli-complete-workflow-demo">Fairscape-CLI Complete Workflow Demo<a class="headerlink" href="#fairscape-cli-complete-workflow-demo" title="Permanent link">&para;</a></h1>
+<p>This document demonstrates a complete workflow for using fairscape-cli to create, manage, and publish research data packages with proper metadata. The workflow follows these key steps:</p>
+<ol>
+<li>Build a crate with local files and computation</li>
+<li>Create schemas and validate data</li>
+<li>Build a crate from external repository data</li>
+<li>Generate evidence graphs</li>
+<li>Build a unified release crate with rich metadata</li>
+</ol>
+<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
+<p>Before starting this workflow, make sure you have:</p>
+<ul>
+<li>fairscape-cli installed</li>
+</ul>
+<h2 id="step-1-build-a-crate-with-local-files-and-computation">Step 1: Build a Crate with Local Files and Computation<a class="headerlink" href="#step-1-build-a-crate-with-local-files-and-computation" title="Permanent link">&para;</a></h2>
+<p><a href="../simple-computation-demo.sh">Download the full script</a></p>
+<p>We'll start by creating a small data processing example using local files. This demonstrates the full research object lifecycle from input to output.</p>
+<h3 id="11-create-input-file-and-processing-script">1.1 Create Input File and Processing Script<a class="headerlink" href="#11-create-input-file-and-processing-script" title="Permanent link">&para;</a></h3>
+<p>First, let's create a directory structure and generate sample files for our computation:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Create the base directory</span>
+mkdir<span class="w"> </span>-p<span class="w"> </span>./simple-computation
+
+<span class="c1"># Create sample input.csv with Python</span>
+python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import pandas as pd; pd.DataFrame({&#39;value1&#39;: [10, 20, 30, 40, 50], &#39;value2&#39;: [5, 15, 25, 35, 45]}).to_csv(&#39;./simple-computation/input.csv&#39;, index=False)&quot;</span>
+
+<span class="c1"># Create sample software.py</span>
+cat<span class="w"> </span>&gt;<span class="w"> </span>./simple-computation/software.py<span class="w"> </span><span class="s">&lt;&lt; &#39;EOF&#39;</span>
+<span class="s">import pandas as pd</span>
+<span class="s">import sys</span>
+
+<span class="s">def process_data(input_file, output_file):</span>
+<span class="s">    # Read input data</span>
+<span class="s">    data = pd.read_csv(input_file)</span>
+
+<span class="s">    # Process data (calculate sum and product)</span>
+<span class="s">    data[&#39;sum&#39;] = data[&#39;value1&#39;] + data[&#39;value2&#39;]</span>
+<span class="s">    data[&#39;product&#39;] = data[&#39;value1&#39;] * data[&#39;value2&#39;]</span>
+
+<span class="s">    # Save results</span>
+<span class="s">    data.to_csv(output_file, index=False)</span>
+<span class="s">    print(f&quot;Processing complete. Results saved to {output_file}&quot;)</span>
+
+<span class="s">if __name__ == &quot;__main__&quot;:</span>
+<span class="s">    if len(sys.argv) &gt;= 3:</span>
+<span class="s">        process_data(sys.argv[1], sys.argv[2])</span>
+<span class="s">    else:</span>
+<span class="s">        print(&quot;Usage: python software.py input.csv output.csv&quot;)</span>
+<span class="s">EOF</span>
+</code></pre></div>
+<h3 id="12-create-and-register-ro-crate">1.2 Create and Register RO-Crate<a class="headerlink" href="#12-create-and-register-ro-crate" title="Permanent link">&para;</a></h3>
+<p>Now, let's create the RO-Crate and register our input dataset and software:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Create the RO-Crate</span>
+fairscape-cli<span class="w"> </span>rocrate<span class="w"> </span>create<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--name<span class="w"> </span><span class="s1">&#39;Simple Computation Example&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--organization-name<span class="w"> </span><span class="s1">&#39;Example Organization&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--project-name<span class="w"> </span><span class="s1">&#39;Data Processing Demo&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--date-published<span class="w"> </span><span class="s1">&#39;2025-04-16&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--description<span class="w"> </span><span class="s1">&#39;A simple demonstration of data processing in an RO-Crate&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--keywords<span class="w"> </span><span class="s1">&#39;computation,demo,rocrate&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="s1">&#39;./simple-computation&#39;</span>
+
+<span class="c1"># Register the input dataset and store the returned GUID</span>
+<span class="nv">INPUT_GUID</span><span class="o">=</span><span class="k">$(</span>fairscape-cli<span class="w"> </span>rocrate<span class="w"> </span>register<span class="w"> </span>dataset<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="s1">&#39;./simple-computation&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--name<span class="w"> </span><span class="s1">&#39;Input Dataset&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--author<span class="w"> </span><span class="s1">&#39;Example Author&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--version<span class="w"> </span><span class="s1">&#39;1.0&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--date-published<span class="w"> </span><span class="s1">&#39;2025-04-16&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--description<span class="w"> </span><span class="s1">&#39;Input data for computation example&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--keywords<span class="w"> </span><span class="s1">&#39;data,input&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--data-format<span class="w"> </span><span class="s1">&#39;csv&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--filepath<span class="w"> </span><span class="s1">&#39;./input.csv&#39;</span><span class="k">)</span>
+
+<span class="c1"># Register the software and store the returned GUID</span>
+<span class="nv">SOFTWARE_GUID</span><span class="o">=</span><span class="k">$(</span>fairscape-cli<span class="w"> </span>rocrate<span class="w"> </span>register<span class="w"> </span>software<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="s1">&#39;./simple-computation&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--name<span class="w"> </span><span class="s1">&#39;Data Processing Software&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--author<span class="w"> </span><span class="s1">&#39;Example Developer&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--version<span class="w"> </span><span class="s1">&#39;1.0&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--description<span class="w"> </span><span class="s1">&#39;Software that computes sum and product of two columns&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--keywords<span class="w"> </span><span class="s1">&#39;software,processing&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--file-format<span class="w"> </span><span class="s1">&#39;py&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--filepath<span class="w"> </span><span class="s1">&#39;./software.py&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--date-modified<span class="w"> </span><span class="s1">&#39;2025-04-16&#39;</span><span class="k">)</span>
+</code></pre></div>
+<h3 id="13-infer-and-validate-input-data-against-schema">1.3 Infer and Validate Input Data Against Schema<a class="headerlink" href="#13-infer-and-validate-input-data-against-schema" title="Permanent link">&para;</a></h3>
+<p>Let's create a schema for our input data and validate against it:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Create the tabular schema</span>
+fairscape-cli<span class="w"> </span>schema<span class="w"> </span>create-tabular<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--name<span class="w"> </span><span class="s1">&#39;Input Dataset Schema&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--description<span class="w"> </span><span class="s1">&#39;Schema for the input data used in the computation example&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--separator<span class="w"> </span><span class="s1">&#39;,&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="s1">&#39;./simple-computation/input_schema.json&#39;</span>
+
+<span class="c1"># Add properties to the schema</span>
+fairscape-cli<span class="w"> </span>schema<span class="w"> </span>add-property<span class="w"> </span>integer<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--name<span class="w"> </span><span class="s1">&#39;value1&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--index<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--description<span class="w"> </span><span class="s1">&#39;Column value1&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="s1">&#39;./simple-computation/input_schema.json&#39;</span>
+
+fairscape-cli<span class="w"> </span>schema<span class="w"> </span>add-property<span class="w"> </span>integer<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--name<span class="w"> </span><span class="s1">&#39;value2&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--index<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--description<span class="w"> </span><span class="s1">&#39;Column value2&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="s1">&#39;./simple-computation/input_schema.json&#39;</span>
+
+<span class="c1"># Register the schema with the RO-Crate</span>
+fairscape-cli<span class="w"> </span>schema<span class="w"> </span>add-to-crate<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="s1">&#39;./simple-computation&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="s1">&#39;./simple-computation/input_schema.json&#39;</span>
+
+<span class="c1"># Validate the input data against the schema</span>
+fairscape-cli<span class="w"> </span>schema<span class="w"> </span>validate<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--schema<span class="w"> </span><span class="s1">&#39;./simple-computation/input_schema.json&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--data<span class="w"> </span><span class="s1">&#39;./simple-computation/input.csv&#39;</span>
+</code></pre></div>
+<h3 id="14-run-and-register-the-computation">1.4 Run and Register the Computation<a class="headerlink" href="#14-run-and-register-the-computation" title="Permanent link">&para;</a></h3>
+<p>Execute the software and register the computation activity:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Run the software to generate output</span>
+python<span class="w"> </span>./simple-computation/software.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>./simple-computation/input.csv<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>./simple-computation/output.csv
+
+<span class="c1"># Register the computation using the stored GUIDs</span>
+<span class="nv">COMPUTATION_GUID</span><span class="o">=</span><span class="k">$(</span>fairscape-cli<span class="w"> </span>rocrate<span class="w"> </span>register<span class="w"> </span>computation<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="s1">&#39;./simple-computation&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--name<span class="w"> </span><span class="s1">&#39;Data Processing Computation&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--run-by<span class="w"> </span><span class="s1">&#39;Example Researcher&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--date-created<span class="w"> </span><span class="s1">&#39;2025-04-16&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--description<span class="w"> </span><span class="s1">&#39;Computation that generates sum and product of input values&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--keywords<span class="w"> </span><span class="s1">&#39;computation,processing&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--used-software<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$SOFTWARE_GUID</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--used-dataset<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$INPUT_GUID</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--command<span class="w"> </span><span class="s1">&#39;python software.py input.csv output.csv&#39;</span><span class="k">)</span>
+</code></pre></div>
+<h3 id="15-register-output-and-infer-schema">1.5 Register Output and Infer Schema<a class="headerlink" href="#15-register-output-and-infer-schema" title="Permanent link">&para;</a></h3>
+<p>Register the output dataset and infer its schema:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Register the output dataset using the stored computation GUID</span>
+<span class="nv">OUTPUT_GUID</span><span class="o">=</span><span class="k">$(</span>fairscape-cli<span class="w"> </span>rocrate<span class="w"> </span>register<span class="w"> </span>dataset<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="s1">&#39;./simple-computation&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--name<span class="w"> </span><span class="s1">&#39;Output Dataset&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--author<span class="w"> </span><span class="s1">&#39;Example Author&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--version<span class="w"> </span><span class="s1">&#39;1.0&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--date-published<span class="w"> </span><span class="s1">&#39;2025-04-16&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--description<span class="w"> </span><span class="s1">&#39;Output data from computation example&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--keywords<span class="w"> </span><span class="s1">&#39;data,output&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--data-format<span class="w"> </span><span class="s1">&#39;csv&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--filepath<span class="w"> </span><span class="s1">&#39;./output.csv&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--generated-by<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$COMPUTATION_GUID</span><span class="s2">&quot;</span><span class="k">)</span>
+
+<span class="c1"># Infer the schema and add it to the RO-Crate</span>
+fairscape-cli<span class="w"> </span>schema<span class="w"> </span>infer<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--name<span class="w"> </span><span class="s1">&#39;Output Dataset Schema&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--description<span class="w"> </span><span class="s1">&#39;Schema for the output data used in the computation example&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--rocrate-path<span class="w"> </span><span class="s1">&#39;./simple-computation&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="s1">&#39;./simple-computation/output.csv&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="s1">&#39;./simple-computation/output_schema.json&#39;</span>
+
+<span class="c1"># Validate the output data against the inferred schema</span>
+fairscape-cli<span class="w"> </span>schema<span class="w"> </span>validate<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--schema<span class="w"> </span><span class="s1">&#39;./simple-computation/output_schema.json&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--data<span class="w"> </span><span class="s1">&#39;./simple-computation/output.csv&#39;</span>
+</code></pre></div>
+<h3 id="16-build-the-subcrate">1.6 Build the Subcrate<a class="headerlink" href="#16-build-the-subcrate" title="Permanent link">&para;</a></h3>
+<p>Build the HTML preview, croissant metadata, and fill in inverse properties:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Build the subcrate (generates HTML preview, croissant, and fills in inverse properties)</span>
+fairscape-cli<span class="w"> </span>build<span class="w"> </span>subcrate<span class="w"> </span><span class="s1">&#39;./simple-computation&#39;</span>
+</code></pre></div>
+<p>This will create both JSON and HTML visualizations of the data provenance in the RO-Crate.</p>
+<h2 id="step-2-build-a-crate-from-external-repository-data">Step 2: Build a Crate from External Repository Data<a class="headerlink" href="#step-2-build-a-crate-from-external-repository-data" title="Permanent link">&para;</a></h2>
+<p>Now let's demonstrate how to pull data from an external repository and create a new RO-Crate.</p>
+<h3 id="21-pull-data-from-an-external-repository">2.1 Pull Data from an External Repository<a class="headerlink" href="#21-pull-data-from-an-external-repository" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Pull data from a BioProject</span>
+fairscape-cli<span class="w"> </span>import<span class="w"> </span>bioproject<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--accession<span class="w"> </span><span class="s2">&quot;PRJDB2884&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--api-key<span class="w"> </span><span class="s2">&quot;&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">&quot;./sra-crate&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--author<span class="w"> </span><span class="s2">&quot;Justin, Max&quot;</span>
+</code></pre></div>
+<p>This command fetches metadata from NCBI's BioProject database and creates a complete RO-Crate with that information.</p>
+<h3 id="22-create-schemas-for-external-data">2.2 Create Schemas for External Data<a class="headerlink" href="#22-create-schemas-for-external-data" title="Permanent link">&para;</a></h3>
+<p>Let's create a schema for FASTQ sequence data:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Create a tabular schema for FASTQ format</span>
+fairscape-cli<span class="w"> </span>schema<span class="w"> </span>create-tabular<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--name<span class="w"> </span><span class="s1">&#39;fastq_data&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--description<span class="w"> </span><span class="s1">&#39;FASTQ sequence data schema&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--separator<span class="w"> </span><span class="s1">&#39;\n&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--header<span class="w"> </span><span class="s1">&#39;false&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="s1">&#39;./sra-crate/fastq_schema.json&#39;</span>
+
+<span class="c1"># Add the header property to the schema</span>
+fairscape-cli<span class="w"> </span>schema<span class="w"> </span>add-property<span class="w"> </span>string<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--name<span class="w"> </span><span class="s1">&#39;header&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--index<span class="w"> </span><span class="s1">&#39;0&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--description<span class="w"> </span><span class="s1">&#39;The header line starting with @&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--pattern<span class="w"> </span><span class="s1">&#39;^@.*&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="s1">&#39;./sra-crate/fastq_schema.json&#39;</span>
+
+<span class="c1"># Add the sequence property to the schema</span>
+fairscape-cli<span class="w"> </span>schema<span class="w"> </span>add-property<span class="w"> </span>string<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--name<span class="w"> </span><span class="s1">&#39;sequence&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--index<span class="w"> </span><span class="s1">&#39;1&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--description<span class="w"> </span><span class="s1">&#39;The nucleotide sequence&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--pattern<span class="w"> </span><span class="s1">&#39;^[ATCGN]+$&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="s1">&#39;./sra-crate/fastq_schema.json&#39;</span>
+
+<span class="c1"># Add the plus sign line property to the schema</span>
+fairscape-cli<span class="w"> </span>schema<span class="w"> </span>add-property<span class="w"> </span>string<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--name<span class="w"> </span><span class="s1">&#39;plus&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--index<span class="w"> </span><span class="s1">&#39;2&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--description<span class="w"> </span><span class="s1">&#39;The plus sign line&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--pattern<span class="w"> </span><span class="s1">&#39;^\+.*&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="s1">&#39;./sra-crate/fastq_schema.json&#39;</span>
+
+<span class="c1"># Add the quality scores property to the schema</span>
+fairscape-cli<span class="w"> </span>schema<span class="w"> </span>add-property<span class="w"> </span>string<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--name<span class="w"> </span><span class="s1">&#39;quality_scores&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--index<span class="w"> </span><span class="s1">&#39;3&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--description<span class="w"> </span><span class="s1">&#39;The quality scores in Phred+33 encoding&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="s1">&#39;./sra-crate/fastq_schema.json&#39;</span>
+
+<span class="c1"># Register the schema with the RO-Crate</span>
+fairscape-cli<span class="w"> </span>schema<span class="w"> </span>add-to-crate<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="s1">&#39;./sra-crate&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="s1">&#39;./sra-crate/fastq_schema.json&#39;</span>
+</code></pre></div>
+<h3 id="23-generate-evidence-graph-for-external-data">2.3 Generate Evidence Graph for External Data<a class="headerlink" href="#23-generate-evidence-graph-for-external-data" title="Permanent link">&para;</a></h3>
+<p>Find a key dataset in the crate and generate its evidence graph:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># First, get the ID of a main dataset in the crate</span>
+<span class="nv">DATASET_ID</span><span class="o">=</span><span class="k">$(</span>grep<span class="w"> </span>-o<span class="w"> </span><span class="s2">&quot;ark:59852/dataset-[a-zA-Z0-9-]*&quot;</span><span class="w"> </span>./sra-crate/ro-crate-metadata.json<span class="w"> </span><span class="p">|</span><span class="w"> </span>head<span class="w"> </span>-1<span class="k">)</span>
+
+<span class="c1"># Generate evidence graph for the dataset</span>
+fairscape-cli<span class="w"> </span>build<span class="w"> </span>evidence-graph<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="s1">&#39;./sra-crate&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="s2">&quot;</span><span class="nv">$DATASET_ID</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--output-file<span class="w"> </span><span class="s1">&#39;./sra-crate/provenance-graph.json&#39;</span>
+</code></pre></div>
+<h2 id="step-3-build-a-unified-release-crate">Step 3: Build a Unified Release Crate<a class="headerlink" href="#step-3-build-a-unified-release-crate" title="Permanent link">&para;</a></h2>
+<p>Now, let's build a release crate that combines our local computation and the external data:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Create a release RO-Crate</span>
+fairscape-cli<span class="w"> </span>build<span class="w"> </span>release<span class="w"> </span>./<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--guid<span class="w"> </span><span class="s2">&quot;ark:59852/example-release-for-demo&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--name<span class="w"> </span><span class="s2">&quot;SRA Genomic Data Example Release - 2025&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--organization-name<span class="w"> </span><span class="s2">&quot;Example Research Institute&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--project-name<span class="w"> </span><span class="s2">&quot;Genomic Data Analysis Project&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--description<span class="w"> </span><span class="s2">&quot;This comprehensive dataset contains genomic data from multiple sources, including Japanese flounder (PRJDB2884) and human RNA-seq data (PRJEB86838) from the Sequence Read Archive (SRA). All data has been processed and prepared as AI-ready datasets in RO-Crate format, with appropriate metadata and provenance information to ensure FAIR data principles compliance.&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--keywords<span class="w"> </span><span class="s2">&quot;Genomics&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--keywords<span class="w"> </span><span class="s2">&quot;SRA&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--keywords<span class="w"> </span><span class="s2">&quot;RNA-seq&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--keywords<span class="w"> </span><span class="s2">&quot;Sequence Read Archive&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--keywords<span class="w"> </span><span class="s2">&quot;Bioinformatics&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--license<span class="w"> </span><span class="s2">&quot;https://creativecommons.org/licenses/by/4.0/&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--version<span class="w"> </span><span class="s2">&quot;1.0&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--publisher<span class="w"> </span><span class="s2">&quot;University of Virginia Dataverse&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--principal-investigator<span class="w"> </span><span class="s2">&quot;Dr. Example PI&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--copyright-notice<span class="w"> </span><span class="s2">&quot;Copyright (c) 2025 The Regents of the University of California except where otherwise noted.&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--conditions-of-access<span class="w"> </span><span class="s2">&quot;Attribution is required to the copyright holders and the authors.&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--contact-email<span class="w"> </span><span class="s2">&quot;example@example.org&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--confidentiality-level<span class="w"> </span><span class="s2">&quot;HL7 Unrestricted&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--funder<span class="w"> </span><span class="s2">&quot;Example Agency&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--usage-info<span class="w"> </span><span class="s2">&quot;This dataset is intended for research purposes in genomics, bioinformatics, and related fields.&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--content-size<span class="w"> </span><span class="s2">&quot;2.45 GB&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--citation<span class="w"> </span><span class="s2">&quot;Example Research Institute (2025). SRA Genomic Data Example Release.&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--associated-publication<span class="w"> </span><span class="s2">&quot;Smith et al. (2025). Novel approaches to genomic data analysis using SRA datasets.&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--completeness<span class="w"> </span><span class="s2">&quot;These data contain complete processed datasets from the specified SRA projects.&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--maintenance-plan<span class="w"> </span><span class="s2">&quot;This dataset will be periodically updated with corrections or additional annotations.&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--intended-use<span class="w"> </span><span class="s2">&quot;This dataset is intended for genomic research and educational purposes.&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--limitations<span class="w"> </span><span class="s2">&quot;While comprehensive quality control has been performed, researchers should be aware of inherent limitations.&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--potential-sources-of-bias<span class="w"> </span><span class="s2">&quot;Original sample collection methods may introduce biases.&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--prohibited-uses<span class="w"> </span><span class="s2">&quot;Commercial redistribution without attribution is prohibited.&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--human-subject<span class="w"> </span><span class="s2">&quot;No&quot;</span>
+
+<span class="c1"># Generate a datasheet for the release</span>
+fairscape-cli<span class="w"> </span>build<span class="w"> </span>datasheet<span class="w"> </span>./
+</code></pre></div>
+<p>This creates a unified release that includes both our individual RO-Crates with a comprehensive datasheet.</p>
+<h2 id="step-4-publishing-ro-crates">Step 4: Publishing RO-Crates<a class="headerlink" href="#step-4-publishing-ro-crates" title="Permanent link">&para;</a></h2>
+<p>Once you've created your RO-Crates and assembled them into a release, you can publish them to repositories for broader access and assign persistent identifiers.</p>
+<h3 id="4-publish-to-fairscape">4 Publish to Fairscape<a class="headerlink" href="#4-publish-to-fairscape" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>fairscape-cli<span class="w"> </span>publish<span class="w"> </span>fairscape<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--rocrate<span class="w"> </span><span class="s2">&quot;./&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--username<span class="w"> </span><span class="s2">&quot;your_username&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--password<span class="w"> </span><span class="s2">&quot;your_password&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--api-url<span class="w"> </span><span class="s2">&quot;https://fairscape.net/api&quot;</span>
+</code></pre></div>
+<h2 id="conclusion">Conclusion<a class="headerlink" href="#conclusion" title="Permanent link">&para;</a></h2>
+<p>This workflow demonstrates the complete process of creating, managing, combining, and publishing research data packages using fairscape-cli. By following these steps, you can:</p>
+<ol>
+<li>Create well-structured RO-Crates with proper metadata</li>
+<li>Register data, software, and computations with appropriate relationships</li>
+<li>Define and validate data schemas</li>
+<li>Pull data from external repositories</li>
+<li>Generate provenance visualizations</li>
+<li>Build comprehensive release packages with rich metadata</li>
+<li>Publish your data to fairscape</li>
+</ol>
+<p>These capabilities enable FAIR (Findable, Accessible, Interoperable, Reusable) data sharing practices for scientific research, making your data discoverable, properly cited, and reusable by the broader community.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2023 THE RECTOR AND VISITORS OF THE UNIVERSITY OF VIRGINIA
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/fairscape/fairscape-cli" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M202.1 328.7c0 20.9-10.9 55.1-36.7 55.1s-36.7-34.2-36.7-55.1 10.9-55.1 36.7-55.1 36.7 34.2 36.7 55.1M496 278.2c0 31.9-3.2 65.7-17.5 95-37.9 76.6-142.1 74.8-216.7 74.8-75.8 0-186.2 2.7-225.6-74.8-14.6-29-20.2-63.1-20.2-95 0-41.9 13.9-81.5 41.5-113.6-5.2-15.8-7.7-32.4-7.7-48.8 0-21.5 4.9-32.3 14.6-51.8 45.3 0 74.3 9 108.8 36 29-6.9 58.8-10 88.7-10 27 0 54.2 2.9 80.4 9.2 34-26.7 63-35.2 107.8-35.2 9.8 19.5 14.6 30.3 14.6 51.8 0 16.4-2.6 32.7-7.7 48.2 27.5 32.4 39 72.3 39 114.2m-64.3 50.5c0-43.9-26.7-82.6-73.5-82.6-18.9 0-37 3.4-56 6-14.9 2.3-29.8 3.2-45.1 3.2-15.2 0-30.1-.9-45.1-3.2-18.7-2.6-37-6-56-6-46.8 0-73.5 38.7-73.5 82.6 0 87.8 80.4 101.3 150.4 101.3h48.2c70.3 0 150.6-13.4 150.6-101.3m-82.6-55.1c-25.8 0-36.7 34.2-36.7 55.1s10.9 55.1 36.7 55.1 36.7-34.2 36.7-55.1-10.9-55.1-36.7-55.1"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.expand", "content.tabs.link"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

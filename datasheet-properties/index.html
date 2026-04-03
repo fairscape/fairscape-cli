@@ -1,0 +1,1636 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A utility for packaging objects and validating metadata for FAIRSCAPE.">
+      
+      
+      
+        <link rel="canonical" href="https://github.com/fairscape/fairscape-cli/datasheet-properties/">
+      
+      
+        <link rel="prev" href="../commands/publish/">
+      
+      
+        <link rel="next" href="../ai-ready-scoring/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Datasheet Properties - FAIRSCAPE CLI</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#datasheet-property-reference" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="FAIRSCAPE CLI" class="md-header__button md-logo" aria-label="FAIRSCAPE CLI" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            FAIRSCAPE CLI
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Datasheet Properties
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-hidden="true"  type="radio" name="__palette" id="__palette_0">
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/fairscape/fairscape-cli" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    fairscape/fairscape-cli
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="FAIRSCAPE CLI" class="md-nav__button md-logo" aria-label="FAIRSCAPE CLI" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    FAIRSCAPE CLI
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/fairscape/fairscape-cli" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    fairscape/fairscape-cli
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Setup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Examples
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../workflows/complete-demo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Complete Demo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Commands
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Commands
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../commands/rocrate/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RO-Crate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../commands/schema/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Schema
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../commands/import/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Import
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../commands/build/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Build
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../commands/publish/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Publishing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Properties
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Properties
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Datasheet Properties
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Datasheet Properties
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview-section" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview Section
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Overview Section">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#property-details" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Property Details
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#additionalproperty-fallbacks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        additionalProperty Fallbacks
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#use-cases-section" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use Cases Section
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Use Cases Section">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#property-details_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Property Details
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#distribution-section" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Distribution Section
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#summary-section-ai-ready-score" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Summary Section (AI-Ready Score)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ai-ready-scoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI-Ready Scoring
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview-section" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview Section
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Overview Section">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#property-details" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Property Details
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#additionalproperty-fallbacks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        additionalProperty Fallbacks
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#use-cases-section" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use Cases Section
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Use Cases Section">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#property-details_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Property Details
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#distribution-section" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Distribution Section
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#summary-section-ai-ready-score" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Summary Section (AI-Ready Score)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="datasheet-property-reference">Datasheet Property Reference<a class="headerlink" href="#datasheet-property-reference" title="Permanent link">&para;</a></h1>
+<p>The <code>fairscape-cli build datasheet</code> command generates an HTML datasheet from your RO-Crate metadata. This document lists every RO-Crate property that populates the datasheet, organized by section.</p>
+<p>All properties are read from the <strong>root entity</strong> of the RO-Crate (the <code>ROCrateMetadataElem</code>).</p>
+<hr />
+<h2 id="overview-section">Overview Section<a class="headerlink" href="#overview-section" title="Permanent link">&para;</a></h2>
+<p>These properties populate the main overview panel of the datasheet.</p>
+<table>
+<thead>
+<tr>
+<th>Datasheet Field</th>
+<th>RO-Crate Property</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Title</td>
+<td><code>name</code></td>
+</tr>
+<tr>
+<td>Description</td>
+<td><code>description</code></td>
+</tr>
+<tr>
+<td>Identifier</td>
+<td><code>@id</code></td>
+</tr>
+<tr>
+<td>DOI</td>
+<td><code>identifier</code></td>
+</tr>
+<tr>
+<td>License</td>
+<td><code>license</code></td>
+</tr>
+<tr>
+<td>Ethical Review</td>
+<td><code>ethicalReview</code></td>
+</tr>
+<tr>
+<td>Release Date</td>
+<td><code>datePublished</code></td>
+</tr>
+<tr>
+<td>Created Date</td>
+<td><code>dateCreated</code></td>
+</tr>
+<tr>
+<td>Updated Date</td>
+<td><code>dateModified</code></td>
+</tr>
+<tr>
+<td>Authors</td>
+<td><code>author</code></td>
+</tr>
+<tr>
+<td>Publisher</td>
+<td><code>publisher</code></td>
+</tr>
+<tr>
+<td>Principal Investigator</td>
+<td><code>principalInvestigator</code></td>
+</tr>
+<tr>
+<td>Contact Email</td>
+<td><code>contactEmail</code></td>
+</tr>
+<tr>
+<td>Copyright</td>
+<td><code>copyrightNotice</code></td>
+</tr>
+<tr>
+<td>Terms of Use</td>
+<td><code>conditionsOfAccess</code></td>
+</tr>
+<tr>
+<td>Confidentiality Level</td>
+<td><code>confidentialityLevel</code></td>
+</tr>
+<tr>
+<td>Citation</td>
+<td><code>citation</code></td>
+</tr>
+<tr>
+<td>Version</td>
+<td><code>version</code></td>
+</tr>
+<tr>
+<td>Content Size</td>
+<td><code>contentSize</code></td>
+</tr>
+<tr>
+<td>Funding</td>
+<td><code>funder</code></td>
+</tr>
+<tr>
+<td>Keywords</td>
+<td><code>keywords</code></td>
+</tr>
+<tr>
+<td>Related Publications</td>
+<td><code>associatedPublication</code></td>
+</tr>
+<tr>
+<td>Completeness</td>
+<td><code>completeness</code></td>
+</tr>
+<tr>
+<td>Human Subject</td>
+<td><code>humanSubjects</code></td>
+</tr>
+<tr>
+<td>Human Subject Research</td>
+<td><code>humanSubjectResearch</code></td>
+</tr>
+<tr>
+<td>Human Subject Exemptions</td>
+<td><code>humanSubjectExemption</code></td>
+</tr>
+<tr>
+<td>De-identified Samples</td>
+<td><code>deidentified</code></td>
+</tr>
+<tr>
+<td>FDA Regulated</td>
+<td><code>fdaRegulated</code></td>
+</tr>
+<tr>
+<td>IRB</td>
+<td><code>irb</code></td>
+</tr>
+<tr>
+<td>IRB Protocol ID</td>
+<td><code>irbProtocolId</code></td>
+</tr>
+<tr>
+<td>Data Governance</td>
+<td><code>dataGovernanceCommittee</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="property-details">Property Details<a class="headerlink" href="#property-details" title="Permanent link">&para;</a></h3>
+<details class="note">
+<summary>Title — <code>name</code></summary>
+<p>Human-readable name for the dataset.</p>
+</details>
+<details class="note">
+<summary>Description — <code>description</code></summary>
+<p>Human-readable description of the dataset.</p>
+</details>
+<details class="note">
+<summary>Identifier — <code>@id</code></summary>
+<p>Persistent unique identifier (ARK, URL, etc.).</p>
+<p><strong>Used in:</strong> AI-Ready Findability and Sustainability scoring.</p>
+</details>
+<details class="note">
+<summary>DOI — <code>identifier</code></summary>
+<p>DOI or other external persistent identifier.</p>
+<p><strong>Used in:</strong> AI-Ready Findability and Sustainability scoring.</p>
+</details>
+<details class="note">
+<summary>License — <code>license</code></summary>
+<p>Link to or name of the dataset license.</p>
+<p><strong>Example:</strong> <code>https://creativecommons.org/licenses/by/4.0/</code></p>
+<p><strong>Used in:</strong> Distribution section, AI-Ready Fairness and Ethics scoring.</p>
+</details>
+<details class="note">
+<summary>Ethical Review — <code>ethicalReview</code></summary>
+<p>Were any ethical or compliance review processes conducted (e.g. by an IRB)?</p>
+<p>Describe the process, frequency of review, and outcomes.</p>
+<p><strong>Used in:</strong> AI-Ready Ethics scoring.</p>
+</details>
+<details class="note">
+<summary>Release Date — <code>datePublished</code></summary>
+<p>Date the dataset was published or made publicly available (ISO 8601).</p>
+<p><strong>Used in:</strong> Distribution section.</p>
+</details>
+<details class="note">
+<summary>Created Date — <code>dateCreated</code></summary>
+<p>Date the dataset was originally created (ISO 8601).</p>
+</details>
+<details class="note">
+<summary>Updated Date — <code>dateModified</code></summary>
+<p>Date the dataset was last modified (ISO 8601).</p>
+</details>
+<details class="note">
+<summary>Authors — <code>author</code></summary>
+<p>Who created the dataset — e.g. which team, research group, on behalf of which institution.</p>
+<p><strong>Format:</strong> Parsed as list (comma or semicolon separated).</p>
+</details>
+<details class="note">
+<summary>Publisher — <code>publisher</code></summary>
+<p>Organization or person responsible for publishing or distributing the dataset.</p>
+<p><strong>Used in:</strong> Distribution section, AI-Ready Computability scoring.</p>
+</details>
+<details class="note">
+<summary>Principal Investigator — <code>principalInvestigator</code></summary>
+<p>A key individual (PI) responsible for or overseeing dataset creation.</p>
+<p><strong>Used in:</strong> AI-Ready Provenance scoring.</p>
+</details>
+<details class="note">
+<summary>Contact Email — <code>contactEmail</code></summary>
+<p>Email address for questions or correspondence about the dataset.</p>
+</details>
+<details class="note">
+<summary>Copyright — <code>copyrightNotice</code></summary>
+<p>Copyright statement including year and rights holder.</p>
+<p><strong>Example:</strong> <code>Copyright (c) 2024 by The Regents of the University of California</code></p>
+</details>
+<details class="note">
+<summary>Terms of Use — <code>conditionsOfAccess</code></summary>
+<p>Terms and conditions governing access to and use of this dataset.</p>
+<p>Includes any data use agreements required.</p>
+</details>
+<details class="note">
+<summary>Confidentiality Level — <code>confidentialityLevel</code></summary>
+<p>Access restriction classification.</p>
+<p><strong>Values:</strong> <code>unrestricted</code>, <code>restricted</code>, or <code>confidential</code>.</p>
+<p><strong>Used in:</strong> AI-Ready Ethics scoring.</p>
+</details>
+<details class="note">
+<summary>Citation — <code>citation</code></summary>
+<p>Preferred citation string for this dataset.</p>
+</details>
+<details class="note">
+<summary>Version — <code>version</code></summary>
+<p>Version string for this release (e.g. <code>1.0</code>, <code>2.3.1</code>).</p>
+<p><strong>Used in:</strong> Distribution section.</p>
+</details>
+<details class="note">
+<summary>Content Size — <code>contentSize</code></summary>
+<p>Total size of the dataset content (e.g. <code>2.4 GB</code>).</p>
+<p><strong>Used in:</strong> AI-Ready Characterization scoring.</p>
+</details>
+<details class="note">
+<summary>Funding — <code>funder</code></summary>
+<p>Who funded the creation of the dataset? Include grant names and numbers.</p>
+<p><strong>Format:</strong> Parsed as list.</p>
+</details>
+<details class="note">
+<summary>Keywords — <code>keywords</code></summary>
+<p>Keywords or tags describing the dataset, used for discovery and search.</p>
+</details>
+<details class="note">
+<summary>Related Publications — <code>associatedPublication</code></summary>
+<p>Publication(s) associated with or describing this dataset.</p>
+<p><strong>Format:</strong> Parsed as list.</p>
+</details>
+<details class="note">
+<summary>Completeness — <code>completeness</code></summary>
+<p>Assessment of how complete the dataset is relative to its intended scope — e.g. percentage of expected records present, known gaps.</p>
+<p><strong>Fallback:</strong> <code>additionalProperty</code> with name "Completeness".</p>
+</details>
+<details class="note">
+<summary>Human Subject — <code>humanSubjects</code></summary>
+<p>Does this dataset involve human subjects? Indicate Yes/No and describe the nature of involvement.</p>
+<p><strong>Fallback:</strong> <code>additionalProperty</code> with name "Human Subject".</p>
+<p><strong>Used in:</strong> AI-Ready Ethics scoring.</p>
+</details>
+<details class="note">
+<summary>Human Subject Research — <code>humanSubjectResearch</code></summary>
+<p>Broader context for human subjects research involvement.</p>
+<p>Covers regulatory frameworks followed (e.g. 45 CFR 46, HIPAA).</p>
+<p><strong>Fallback:</strong> <code>additionalProperty</code> with name "Human Subject Research".</p>
+</details>
+<details class="note">
+<summary>Human Subject Exemptions — <code>humanSubjectExemption</code></summary>
+<p>Applicable exemption category if human subjects research is exempt from full IRB review.</p>
+<p><strong>Example:</strong> 45 CFR 46 Exemption 4.</p>
+<p><strong>Fallback:</strong> <code>additionalProperty</code> with name "Human Subjects Exemptions".</p>
+</details>
+<details class="note">
+<summary>De-identified Samples — <code>deidentified</code></summary>
+<p>Whether the dataset has been de-identified to remove or obscure PII.</p>
+<p>Boolean converted to Yes/No.</p>
+<p><strong>Fallback:</strong> <code>additionalProperty</code> with name "De-identified Samples".</p>
+</details>
+<details class="note">
+<summary>FDA Regulated — <code>fdaRegulated</code></summary>
+<p>Whether this dataset is subject to FDA regulations — e.g. clinical trial data, medical device data.</p>
+<p>Boolean converted to Yes/No.</p>
+<p><strong>Fallback:</strong> <code>additionalProperty</code> with name "FDA Regulated".</p>
+</details>
+<details class="note">
+<summary>IRB — <code>irb</code></summary>
+<p>Institutional Review Board (IRB) information — covers approval status, approving institution, and contact details.</p>
+<p>Accepts a plain string or a structured IRB object.</p>
+<p><strong>Fallback:</strong> <code>additionalProperty</code> with name "IRB".</p>
+</details>
+<details class="note">
+<summary>IRB Protocol ID — <code>irbProtocolId</code></summary>
+<p>IRB protocol identifier number assigned by the reviewing institution.</p>
+<p><strong>Fallback:</strong> <code>additionalProperty</code> with name "IRB Protocol ID".</p>
+</details>
+<details class="note">
+<summary>Data Governance — <code>dataGovernanceCommittee</code></summary>
+<p>Name or contact for the data governance committee — responsible for oversight, access control, and policy enforcement.</p>
+<p><strong>Fallback:</strong> <code>additionalProperty</code> with name "Data Governance Committee".</p>
+<p><strong>Used in:</strong> AI-Ready Ethics and Sustainability scoring.</p>
+</details>
+<h3 id="additionalproperty-fallbacks">additionalProperty Fallbacks<a class="headerlink" href="#additionalproperty-fallbacks" title="Permanent link">&para;</a></h3>
+<p>Several human-subjects and governance fields support a fallback mechanism. If the top-level property is not set, the converter checks the <code>additionalProperty</code> array for a matching <code>name</code> entry:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;additionalProperty&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Human Subject&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;value&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Yes&quot;</span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Data Governance Committee&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;value&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Bridge2AI Ethics Committee&quot;</span><span class="p">}</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+<hr />
+<h2 id="use-cases-section">Use Cases Section<a class="headerlink" href="#use-cases-section" title="Permanent link">&para;</a></h2>
+<p>These properties populate the responsible AI (RAI) and data documentation panel. RAI properties conform to the <a href="http://mlcommons.org/croissant/RAI/1.0">Croissant RAI 1.0 specification</a>. A dataset can declare conformance by setting <code>dct:conformsTo: "http://mlcommons.org/croissant/RAI/1.0"</code> at the root entity level.</p>
+<table>
+<thead>
+<tr>
+<th>Datasheet Field</th>
+<th>RO-Crate Property</th>
+<th>Croissant RAI Use Case</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Intended Use</td>
+<td><code>rai:dataUseCases</code></td>
+<td>AI safety and fairness, Compliance</td>
+</tr>
+<tr>
+<td>Limitations</td>
+<td><code>rai:dataLimitations</code></td>
+<td>AI safety and fairness</td>
+</tr>
+<tr>
+<td>Prohibited Uses</td>
+<td><code>prohibitedUses</code></td>
+<td>Compliance</td>
+</tr>
+<tr>
+<td>Potential Sources of Bias</td>
+<td><code>rai:dataBiases</code></td>
+<td>AI safety and fairness</td>
+</tr>
+<tr>
+<td>Maintenance Plan</td>
+<td><code>rai:dataReleaseMaintenancePlan</code></td>
+<td>Compliance, Data life cycle</td>
+</tr>
+<tr>
+<td>Data Collection</td>
+<td><code>rai:dataCollection</code></td>
+<td>Data life cycle</td>
+</tr>
+<tr>
+<td>Data Collection Type</td>
+<td><code>rai:dataCollectionType</code></td>
+<td>Data life cycle</td>
+</tr>
+<tr>
+<td>Data Collection Missing Data</td>
+<td><code>rai:dataCollectionMissingData</code></td>
+<td>Data life cycle</td>
+</tr>
+<tr>
+<td>Data Collection Raw Data</td>
+<td><code>rai:dataCollectionRawData</code></td>
+<td>Data life cycle</td>
+</tr>
+<tr>
+<td>Data Collection Timeframe</td>
+<td><code>rai:dataCollectionTimeframe</code></td>
+<td>Data life cycle</td>
+</tr>
+<tr>
+<td>Data Imputation Protocol</td>
+<td><code>rai:dataImputationProtocol</code></td>
+<td>Compliance</td>
+</tr>
+<tr>
+<td>Data Manipulation Protocol</td>
+<td><code>rai:dataManipulationProtocol</code></td>
+<td>Compliance</td>
+</tr>
+<tr>
+<td>Data Preprocessing Protocol</td>
+<td><code>rai:dataPreprocessingProtocol</code></td>
+<td>Data life cycle</td>
+</tr>
+<tr>
+<td>Data Annotation Protocol</td>
+<td><code>rai:dataAnnotationProtocol</code></td>
+<td>Data labeling, Compliance</td>
+</tr>
+<tr>
+<td>Data Annotation Platform</td>
+<td><code>rai:dataAnnotationPlatform</code></td>
+<td>Data labeling, Participatory data</td>
+</tr>
+<tr>
+<td>Data Annotation Analysis</td>
+<td><code>rai:dataAnnotationAnalysis</code></td>
+<td>Data labeling, Compliance</td>
+</tr>
+<tr>
+<td>Personal/Sensitive Information</td>
+<td><code>rai:personalSensitiveInformation</code></td>
+<td>Compliance, AI safety and fairness</td>
+</tr>
+<tr>
+<td>Data Social Impact</td>
+<td><code>rai:dataSocialImpact</code></td>
+<td>AI safety and fairness</td>
+</tr>
+<tr>
+<td>Annotations Per Item</td>
+<td><code>rai:annotationsPerItem</code></td>
+<td>Data labeling</td>
+</tr>
+<tr>
+<td>Annotator Demographics</td>
+<td><code>rai:annotatorDemographics</code></td>
+<td>Data labeling, Participatory data, Inclusion</td>
+</tr>
+<tr>
+<td>Machine Annotation Tools</td>
+<td><code>rai:machineAnnotationTools</code></td>
+<td>Data labeling</td>
+</tr>
+</tbody>
+</table>
+<h3 id="property-details_1">Property Details<a class="headerlink" href="#property-details_1" title="Permanent link">&para;</a></h3>
+<details class="note">
+<summary>Intended Use — <code>rai:dataUseCases</code></summary>
+<p>Explicit statement of intended uses.</p>
+<p><strong>Values:</strong> Training, Testing, Validation, Development or Production Use, Fine Tuning, others.</p>
+<p>Include usage guidelines and caveats.</p>
+<p><strong>Used in:</strong> AI-Ready Pre-Model Explainability scoring.</p>
+</details>
+<details class="note">
+<summary>Limitations — <code>rai:dataLimitations</code></summary>
+<p>Known limitations of the dataset.</p>
+<p>Covers data generalization limits (e.g. related to data distribution or quality) and non-recommended uses. Distinct from biases (systematic errors) and anomalies (data quality issues).</p>
+<p><strong>Used in:</strong> AI-Ready Pre-Model Explainability scoring.</p>
+</details>
+<details class="note">
+<summary>Prohibited Uses — <code>prohibitedUses</code></summary>
+<p>Explicit statement of uses not permitted by license, ethics, or policy. Stronger than discouraged uses.</p>
+<p><strong>Fallback:</strong> <code>additionalProperty</code> with name "Prohibited Uses".</p>
+<p><strong>Used in:</strong> AI-Ready Ethics scoring.</p>
+</details>
+<details class="note">
+<summary>Potential Sources of Bias — <code>rai:dataBiases</code></summary>
+<p>Known biases in the dataset — systematic errors or prejudices that may affect representativeness or fairness.</p>
+<p>Distinct from anomalies (data quality issues) and limitations (scope constraints).</p>
+<p><strong>Used in:</strong> AI-Ready Characterization scoring.</p>
+</details>
+<details class="note">
+<summary>Maintenance Plan — <code>rai:dataReleaseMaintenancePlan</code></summary>
+<p>Will the dataset be updated? If so, how often and by whom?</p>
+<p>Cover versioning timeframe, maintainers, how updates are communicated, and deprecation policies.</p>
+<p><strong>Used in:</strong> AI-Ready Sustainability scoring.</p>
+</details>
+<details class="note">
+<summary>Data Collection — <code>rai:dataCollection</code></summary>
+<p>What mechanisms or procedures were used to collect the data?</p>
+<p><strong>Examples:</strong> Hardware sensors, manual curation, software APIs. Also covers how these mechanisms were validated.</p>
+<p><strong>Used in:</strong> AI-Ready Ethics scoring.</p>
+</details>
+<details class="note">
+<summary>Data Collection Type — <code>rai:dataCollectionType</code></summary>
+<p>List of collection type(s), joined to string.</p>
+<p><strong>Recommended values:</strong> Surveys, Secondary Data Analysis, Physical Data Collection, Direct Measurement, Document Analysis, Manual Human Curator, Software Collection, Experiments, Web Scraping, Web API, Focus Groups, Self-Reporting, Customer Feedback Data, User-Generated Content Data, Passive Data Collection, Others.</p>
+</details>
+<details class="note">
+<summary>Data Collection Missing Data — <code>rai:dataCollectionMissingData</code></summary>
+<p>Document missing data patterns and handling strategies.</p>
+<p>Cover pattern types (MCAR, MAR, MNAR), known or suspected causes (e.g. sensor failures, participant dropout, privacy constraints), and strategies used to handle missing values.</p>
+<p><strong>Used in:</strong> AI-Ready Characterization scoring.</p>
+</details>
+<details class="note">
+<summary>Data Collection Raw Data — <code>rai:dataCollectionRawData</code></summary>
+<p>Description of raw data sources before preprocessing or labeling.</p>
+<p>Document where the original data comes from and how it can be accessed.</p>
+</details>
+<details class="note">
+<summary>Data Collection Timeframe — <code>rai:dataCollectionTimeframe</code></summary>
+<p>Over what timeframe was the data collected? Does this timeframe match the creation timeframe of the underlying data?</p>
+<p>Provide start and end dates where possible. List joined to string.</p>
+</details>
+<details class="note">
+<summary>Data Imputation Protocol — <code>rai:dataImputationProtocol</code></summary>
+<p>Describe data imputation methodology.</p>
+<p>Cover techniques used (e.g. mean/median imputation, forward fill, model-based imputation) and rationale for chosen approaches.</p>
+</details>
+<details class="note">
+<summary>Data Manipulation Protocol — <code>rai:dataManipulationProtocol</code></summary>
+<p>Was any cleaning done? Describe the procedures applied.</p>
+<p><strong>Examples:</strong> Removal of instances, processing of missing values, deduplication, filtering.</p>
+</details>
+<details class="note">
+<summary>Data Preprocessing Protocol — <code>rai:dataPreprocessingProtocol</code></summary>
+<p>Was any preprocessing done? Describe steps to make the data ML-ready.</p>
+<p><strong>Examples:</strong> Discretization or bucketing, tokenization, feature extraction, normalization. List joined to string.</p>
+</details>
+<details class="note">
+<summary>Data Annotation Protocol — <code>rai:dataAnnotationProtocol</code></summary>
+<p>Annotation methodology, tasks, and protocols.</p>
+<p>Include annotation guidelines, quality control procedures, task definitions, workforce type, annotation characteristics, and label distributions.</p>
+</details>
+<details class="note">
+<summary>Data Annotation Platform — <code>rai:dataAnnotationPlatform</code></summary>
+<p>Platform or tool used for annotation.</p>
+<p><strong>Examples:</strong> Label Studio, Prodigy, Amazon Mechanical Turk, custom annotation tool. List joined to string.</p>
+</details>
+<details class="note">
+<summary>Data Annotation Analysis — <code>rai:dataAnnotationAnalysis</code></summary>
+<p>Analysis of annotation quality and inter-annotator agreement.</p>
+<p>Cover metrics used (e.g. Cohen's kappa, Fleiss' kappa), systematic disagreements between annotators of different socio-demographic groups, and how final labels relate to individual annotator responses. List joined to string.</p>
+</details>
+<details class="note">
+<summary>Personal/Sensitive Information — <code>rai:personalSensitiveInformation</code></summary>
+<p>Does the dataset contain sensitive data?</p>
+<p><strong>Attribute types:</strong> Gender, Socio-economic status, Geography, Language, Age, Culture, Experience or Seniority, others. List joined to string.</p>
+<p><strong>Used in:</strong> AI-Ready Ethics scoring.</p>
+</details>
+<details class="note">
+<summary>Data Social Impact — <code>rai:dataSocialImpact</code></summary>
+<p>Describe potential social impacts and mitigation strategies.</p>
+<p>Is there anything about the dataset's composition or collection that might impact future uses or create risks/harm (e.g. unfair treatment, legal or financial risks)?</p>
+</details>
+<details class="note">
+<summary>Annotations Per Item — <code>rai:annotationsPerItem</code></summary>
+<p>Number of annotations collected per data item.</p>
+<p>Multiple annotations per item enable calculation of inter-annotator agreement.</p>
+</details>
+<details class="note">
+<summary>Annotator Demographics — <code>rai:annotatorDemographics</code></summary>
+<p>Demographic information about annotators, if available.</p>
+<p><strong>Examples:</strong> Geographic location, language background, expertise level, age group, gender. List joined to string.</p>
+</details>
+<details class="note">
+<summary>Machine Annotation Tools — <code>rai:machineAnnotationTools</code></summary>
+<p>Automated or ML-based annotation tools used.</p>
+<p><strong>Examples:</strong> NLP pipelines, computer vision models. Format each entry as <code>ToolName version</code> (e.g. <code>spaCy 3.5.0</code>). List joined to string.</p>
+</details>
+<hr />
+<h2 id="distribution-section">Distribution Section<a class="headerlink" href="#distribution-section" title="Permanent link">&para;</a></h2>
+<p>These properties populate the distribution/access panel.</p>
+<table>
+<thead>
+<tr>
+<th>Datasheet Field</th>
+<th>RO-Crate Property</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>License</td>
+<td><code>license</code></td>
+<td>Same property as Overview</td>
+</tr>
+<tr>
+<td>Publisher</td>
+<td><code>publisher</code></td>
+<td>Same property as Overview</td>
+</tr>
+<tr>
+<td>DOI</td>
+<td><code>doi</code></td>
+<td></td>
+</tr>
+<tr>
+<td>Release Date</td>
+<td><code>datePublished</code></td>
+<td>Same property as Overview</td>
+</tr>
+<tr>
+<td>Version</td>
+<td><code>version</code></td>
+<td>Same property as Overview</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="summary-section-ai-ready-score">Summary Section (AI-Ready Score)<a class="headerlink" href="#summary-section-ai-ready-score" title="Permanent link">&para;</a></h2>
+<p>The summary section displays the computed AI-Ready score. See <a href="../ai-ready-scoring/">AI-Ready Scoring Reference</a> for the full breakdown of which properties affect each scoring criterion.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2023 THE RECTOR AND VISITORS OF THE UNIVERSITY OF VIRGINIA
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/fairscape/fairscape-cli" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M202.1 328.7c0 20.9-10.9 55.1-36.7 55.1s-36.7-34.2-36.7-55.1 10.9-55.1 36.7-55.1 36.7 34.2 36.7 55.1M496 278.2c0 31.9-3.2 65.7-17.5 95-37.9 76.6-142.1 74.8-216.7 74.8-75.8 0-186.2 2.7-225.6-74.8-14.6-29-20.2-63.1-20.2-95 0-41.9 13.9-81.5 41.5-113.6-5.2-15.8-7.7-32.4-7.7-48.8 0-21.5 4.9-32.3 14.6-51.8 45.3 0 74.3 9 108.8 36 29-6.9 58.8-10 88.7-10 27 0 54.2 2.9 80.4 9.2 34-26.7 63-35.2 107.8-35.2 9.8 19.5 14.6 30.3 14.6 51.8 0 16.4-2.6 32.7-7.7 48.2 27.5 32.4 39 72.3 39 114.2m-64.3 50.5c0-43.9-26.7-82.6-73.5-82.6-18.9 0-37 3.4-56 6-14.9 2.3-29.8 3.2-45.1 3.2-15.2 0-30.1-.9-45.1-3.2-18.7-2.6-37-6-56-6-46.8 0-73.5 38.7-73.5 82.6 0 87.8 80.4 101.3 150.4 101.3h48.2c70.3 0 150.6-13.4 150.6-101.3m-82.6-55.1c-25.8 0-36.7 34.2-36.7 55.1s10.9 55.1 36.7 55.1 36.7-34.2 36.7-55.1-10.9-55.1-36.7-55.1"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.expand", "content.tabs.link"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
