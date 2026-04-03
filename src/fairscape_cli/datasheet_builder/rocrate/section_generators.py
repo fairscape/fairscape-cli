@@ -73,7 +73,6 @@ class OverviewSectionGenerator(SectionGenerator):
             'completeness': overview.completeness or "",
             
             # Human subjects & governance
-            'human_subject': overview.human_subject or "",
             'human_subject_research': overview.human_subject_research or "No",
             'human_subject_exemptions': overview.human_subject_exemptions or "N/A",
             'deidentified_samples': overview.deidentified_samples or "Yes",
