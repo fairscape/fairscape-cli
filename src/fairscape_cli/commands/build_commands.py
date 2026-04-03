@@ -277,7 +277,7 @@ def build_release(
     
     # Compliance fields as direct top-level properties
     if completeness:              parent_params["completeness"] = completeness
-    if human_subject:             parent_params["humanSubjects"] = human_subject
+    if human_subject:             parent_params["humanSubjectResearch"] = human_subject
     if prohibited_uses:           parent_params["prohibitedUses"] = prohibited_uses
     if irb:                       parent_params["irb"] = irb
     if irb_protocol_id:           parent_params["irbProtocolId"] = irb_protocol_id

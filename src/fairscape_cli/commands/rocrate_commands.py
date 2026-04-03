@@ -155,7 +155,7 @@ def init(
     # Compliance fields as direct top-level properties
     if completeness:              params["completeness"] = completeness
     if ethical_review:            params["ethicalReview"] = ethical_review
-    if human_subject:             params["humanSubjects"] = human_subject
+    if human_subject:             params["humanSubjectResearch"] = human_subject
     if confidentiality_level:     params["confidentialityLevel"] = confidentiality_level
     if prohibited_uses:           params["prohibitedUses"] = prohibited_uses
     if irb:                       params["irb"] = irb
@@ -307,7 +307,7 @@ def create(
     # Compliance fields as direct top-level properties
     if completeness:              params["completeness"] = completeness
     if ethical_review:            params["ethicalReview"] = ethical_review
-    if human_subject:             params["humanSubjects"] = human_subject
+    if human_subject:             params["humanSubjectResearch"] = human_subject
     if confidentiality_level:     params["confidentialityLevel"] = confidentiality_level
     if prohibited_uses:           params["prohibitedUses"] = prohibited_uses
     if irb:                       params["irb"] = irb

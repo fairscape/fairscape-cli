@@ -431,7 +431,7 @@ def LinkSubcrates(parent_crate_path: pathlib.Path) -> List[str]:
         "citation", "usageInfo", "additionalProperty",
         "license", "author", "version",
         # Top-level compliance fields
-        "ethicalReview", "humanSubjects", "humanSubjectResearch",
+        "ethicalReview", "humanSubjectResearch",
         "humanSubjectExemption", "deidentified", "fdaRegulated",
         "irb", "irbProtocolId", "dataGovernanceCommittee",
         "completeness", "prohibitedUses",
