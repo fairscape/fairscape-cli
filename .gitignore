@@ -169,3 +169,7 @@ cython_debug/
 
 # ignore local devcontainer settings
 .devcontainer/*
+
+# ignore claude files
+.claude/*
+CLAUDE.md
