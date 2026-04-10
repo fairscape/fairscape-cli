@@ -230,6 +230,25 @@
         margin-bottom: 8px;
         color: #2c3e50;
       }
+      .sidebar-dropdown {
+        border: none;
+        padding: 0;
+        margin: 0;
+      }
+      .sidebar-dropdown summary {
+        padding: 12px 15px;
+        font-size: 18px;
+        color: #f1f1f1;
+        cursor: pointer;
+        transition: 0.2s;
+      }
+      .sidebar-dropdown summary:hover {
+        background-color: #1a252f;
+      }
+      .sidebar-subnav-link {
+        padding-left: 30px !important;
+        font-size: 15px !important;
+      }
       .composition-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -688,7 +707,15 @@
       <a href="#datasheet-summary">Datasheet Summary</a>
       <a href="#dataset-details">Dataset Details</a>
       <a href="#ai-readiness">AI Ready Information</a>
-      <a href="#composition">Composition</a>
+      <details class="sidebar-dropdown">
+        <summary>Composition</summary>
+        <a href="#composition" class="sidebar-subnav-link">All Datasets</a>
+        {% if subcrates %}
+        {% for subcrate in subcrates %}
+        <a href="#subcrate-{{ loop.index }}" class="sidebar-subnav-link">{{ subcrate.name }}</a>
+        {% endfor %}
+        {% endif %}
+      </details>
     </nav>
     <!-- END: New HTML for Sidebar and Toggle Button -->
 

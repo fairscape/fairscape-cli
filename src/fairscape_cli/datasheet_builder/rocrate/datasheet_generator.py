@@ -120,18 +120,30 @@ class DatasheetGenerator:
     def _find_subcrate_paths(self) -> List[Dict[str, Any]]:
         """Find all subcrates referenced in the main crate."""
         subcrate_info = []
-        
+
+        # Get the root dataset ID to exclude it
+        root_id = None
+        if len(self.main_crate.metadataGraph) > 1:
+            root_item = self.main_crate.metadataGraph[1]
+            root_id = getattr(root_item, 'guid', None)
+
         for item in self.main_crate.metadataGraph:
             item_dict = item.model_dump()
+            item_id = item_dict.get('@id', '')
+
+            # Skip the root dataset
+            if item_id == root_id:
+                continue
+
             if 'ro-crate-metadata' in item_dict:
                 metadata_path = item_dict['ro-crate-metadata']
                 subcrate_info.append({
-                    'id': item_dict.get('@id', ''),
+                    'id': item_id,
                     'name': item_dict.get('name', 'Unnamed Sub-Crate'),
                     'metadata_path': metadata_path,
                     'full_path': self.base_dir / metadata_path
                 })
-        
+
         return subcrate_info
     
     def convert_main_sections(self) -> FairscapeDatasheet:
@@ -329,6 +341,11 @@ class DatasheetGenerator:
 
         base_template = self.env.get_template('base.html')
 
+        subcrate_nav = []
+        if datasheet.composition and datasheet.composition.items:
+            for item in datasheet.composition.items:
+                subcrate_nav.append({'name': item.name or 'Unnamed Sub-Crate'})
+
         context = {
             'title': datasheet.overview.title if datasheet.overview else "Untitled RO-Crate",
             'version': datasheet.overview.version if datasheet.overview else "",
@@ -337,7 +354,8 @@ class DatasheetGenerator:
             'use_cases_section': use_cases_html,
             'distribution_section': distribution_html,
             'subcrates_section': subcrates_html,
-            'subcrate_count': len(datasheet.composition.items) if datasheet.composition else 0
+            'subcrate_count': len(datasheet.composition.items) if datasheet.composition else 0,
+            'subcrates': subcrate_nav
         }
         
         final_html = base_template.render(**context)

@@ -1,6 +1,6 @@
 <div class="subcrates-container">
   {% if subcrates %} {% for subcrate in subcrates %}
-  <div class="subcrate-summary">
+  <div class="subcrate-summary" id="subcrate-{{ loop.index }}">
     <h3 class="subcrate-title">{{ subcrate.name }}</h3>
     <div class="subcrate-metadata">
       <div class="metadata-item">
