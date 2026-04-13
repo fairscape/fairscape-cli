@@ -39,10 +39,17 @@
   <div class="summary-row">
     <div class="summary-label">Principal Investigator</div>
     <div class="summary-value" id="principal-investigator">
-      {{ principal_investigator }}; {{ contact_email }}
+      {{ principal_investigator }}
     </div>
   </div>
-  {% if data_governance %}
+  {% if contact_email %}
+  <div class="summary-row">
+    <div class="summary-label">Contact Email</div>
+    <div class="summary-value" id="contact-email">
+      <a href="mailto:{{ contact_email }}">{{ contact_email }}</a>
+    </div>
+  </div>
+  {% endif %} {% if data_governance %}
   <div class="summary-row">
     <div class="summary-label">Data Governance Committee</div>
     <div class="summary-value" id="data-governance">{{ data_governance }}</div>
@@ -112,50 +119,54 @@
     <h3>Human Subjects & Regulatory</h3>
     <div class="regulatory-grid">
       <div class="regulatory-item">
-        <span class="regulatory-label">Human Subjects Research:</span> {{ human_subject_research }}
+        <span class="regulatory-label">Human Subjects Research:</span> {{
+        human_subject_research }}
       </div>
       <div class="regulatory-item">
-        <span class="regulatory-label">De-identified Samples:</span> {{ deidentified_samples }}
+        <span class="regulatory-label">De-identified Samples:</span> {{
+        deidentified_samples }}
       </div>
       <div class="regulatory-item">
         <span class="regulatory-label">FDA Regulated:</span> {{ fda_regulated }}
       </div>
       <div class="regulatory-item">
-        <span class="regulatory-label">IRB Protocol ID:</span> {{ irb_protocol_id }}
+        <span class="regulatory-label">IRB Protocol ID:</span> {{
+        irb_protocol_id }}
       </div>
     </div>
 
     <div class="irb-detail">
       <span class="regulatory-label">Institutional Review Board:</span>
       {% if irb is mapping %}
-        <div class="irb-org">
-          <span class="irb-name">{{ irb.name }}</span>
-          {% if irb.contactPoint %}
-          <div class="irb-contact">
-            {% if irb.contactPoint.contactType %}
-              <span class="irb-contact-type">{{ irb.contactPoint.contactType }}</span>
-            {% endif %}
-            {% if irb.contactPoint.email %}
-              <a href="mailto:{{ irb.contactPoint.email }}">{{ irb.contactPoint.email }}</a>
-            {% endif %}
-            {% if irb.contactPoint.telephone %}
-              <span>{{ irb.contactPoint.telephone }}</span>
-            {% endif %}
-          </div>
-          {% endif %}
-          {% if irb.address %}
-          <div class="irb-address">
-            {% if irb.address.streetAddress %}{{ irb.address.streetAddress }}, {% endif %}
-            {% if irb.address.addressLocality %}{{ irb.address.addressLocality }}, {% endif %}
-            {% if irb.address.addressRegion %}{{ irb.address.addressRegion }} {% endif %}
-            {% if irb.address.postalCode %}{{ irb.address.postalCode }}{% endif %}
-            {% if irb.address.addressCountry %}, {{ irb.address.addressCountry }}{% endif %}
-          </div>
+      <div class="irb-org">
+        <span class="irb-name">{{ irb.name }}</span>
+        {% if irb.contactPoint %}
+        <div class="irb-contact">
+          {% if irb.contactPoint.contactType %}
+          <span class="irb-contact-type"
+            >{{ irb.contactPoint.contactType }}</span
+          >
+          {% endif %} {% if irb.contactPoint.email %}
+          <a href="mailto:{{ irb.contactPoint.email }}"
+            >{{ irb.contactPoint.email }}</a
+          >
+          {% endif %} {% if irb.contactPoint.telephone %}
+          <span>{{ irb.contactPoint.telephone }}</span>
           {% endif %}
         </div>
-      {% else %}
-        {{ irb }}
-      {% endif %}
+        {% endif %} {% if irb.address %}
+        <div class="irb-address">
+          {% if irb.address.streetAddress %}{{ irb.address.streetAddress }}, {%
+          endif %} {% if irb.address.addressLocality %}{{
+          irb.address.addressLocality }}, {% endif %} {% if
+          irb.address.addressRegion %}{{ irb.address.addressRegion }} {% endif
+          %} {% if irb.address.postalCode %}{{ irb.address.postalCode }}{% endif
+          %} {% if irb.address.addressCountry %}, {{ irb.address.addressCountry
+          }}{% endif %}
+        </div>
+        {% endif %}
+      </div>
+      {% else %} {{ irb }} {% endif %}
     </div>
 
     {% if human_subject_exemptions and human_subject_exemptions != "N/A" %}
@@ -166,7 +177,8 @@
     {% else %}
     <div class="regulatory-grid">
       <div class="regulatory-item">
-        <span class="regulatory-label">Human Subjects Exemptions:</span> {{ human_subject_exemptions }}
+        <span class="regulatory-label">Human Subjects Exemptions:</span> {{
+        human_subject_exemptions }}
       </div>
     </div>
     {% endif %}
