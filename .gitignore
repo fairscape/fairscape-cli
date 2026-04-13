@@ -166,3 +166,10 @@ cython_debug/
 #.idea/
 *.pyc
 .vscode/settings.json
+
+# ignore local devcontainer settings
+.devcontainer/*
+
+# ignore claude files
+.claude/*
+CLAUDE.md
