@@ -320,7 +320,8 @@ def process_merkle_tree(crate_path: Path) -> bool:
 
     try:
         if output_path.exists():
-            pass
+            with open(output_path, 'r') as f:
+                tree = json.load(f)
         else:
             tree = generate_merkle_tree(crate_path)
             if tree is None:
@@ -332,6 +333,7 @@ def process_merkle_tree(crate_path: Path) -> bool:
         # Annotate root entity with the Merkle root hash
         with open(metadata_file, 'r') as f:
             metadata = json.load(f)
+
 
         graph = metadata.get('@graph', [])
         if len(graph) > 1:

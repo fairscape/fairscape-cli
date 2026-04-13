@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.8"
 resolution-markers = [
     "python_full_version >= '3.14' and sys_platform == 'win32'",
@@ -673,7 +673,7 @@ wheels = [
 
 [[package]]
 name = "fairscape-cli"
-version = "1.1.13"
+version = "1.2.5"
 source = { editable = "." }
 dependencies = [
     { name = "beautifulsoup4" },
@@ -720,7 +720,7 @@ test = [
 requires-dist = [
     { name = "beautifulsoup4" },
     { name = "click", specifier = ">=8.1.7" },
-    { name = "fairscape-models", specifier = ">=1.0.22" },
+    { name = "fairscape-models", specifier = ">=1.1.1" },
     { name = "frictionless", specifier = ">=5.0,<6.0" },
     { name = "h5py" },
     { name = "huggingface-hub", specifier = ">=0.20.0" },
@@ -740,7 +740,7 @@ provides-extras = ["test"]
 
 [[package]]
 name = "fairscape-models"
-version = "1.0.23"
+version = "1.1.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "mongomock" },
@@ -748,11 +748,12 @@ dependencies = [
     { name = "pydantic", version = "2.12.5", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9'" },
     { name = "pymongo", version = "4.10.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
     { name = "pymongo", version = "4.16.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9'" },
+    { name = "pyyaml" },
     { name = "typing" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e4/2e/393accc8ab5967bb8265a34df8d744a9ceff3a0754211ed98e5cd5ed3afb/fairscape_models-1.0.23.tar.gz", hash = "sha256:4aea789cace85c4074c7595f8a253c5dab7c52dca50ae3fafd3786f6aebb50c6", size = 78571, upload-time = "2026-01-28T14:30:38.35Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/c7/cf/e67f7f257285835a20c9ef26491b486c402868ca20b8ce8429eaab8770eb/fairscape_models-1.1.2.tar.gz", hash = "sha256:c407dd0164ced3bed5fbada0d1a9426c4f054d21bc851c2c2567b46f756cd276", size = 93724, upload-time = "2026-04-03T17:56:34.152Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/92/2e/51feac7d7a5c55aebd07aceb8eb3356bdd85de5fd8cfb617d73218ce0771/fairscape_models-1.0.23-py3-none-any.whl", hash = "sha256:0e57143c01e05acaa55131576813649a316ccfe5001c131d1b81f0adb60f59fa", size = 84566, upload-time = "2026-01-28T14:30:36.771Z" },
+    { url = "https://files.pythonhosted.org/packages/d0/df/7013b9baf41cab5a43527b8f0616aa4dcc349d436751b82149833c68d4fa/fairscape_models-1.1.2-py3-none-any.whl", hash = "sha256:1e73fff4b5d0d09b4d7b459f001b7f0c1500c14246ca6b4aa45c8cad17606f40", size = 96440, upload-time = "2026-04-03T17:56:32.794Z" },
 ]
 
 [[package]]
