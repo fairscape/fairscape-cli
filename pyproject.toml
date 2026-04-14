@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fairscape-cli"
-version = "1.2.7"
+version = "1.2.8"
 description = "A utility for packaging objects and validating metadata for FAIRSCAPE"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -63,6 +63,19 @@ include-package-data = true
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.uv.workspace]
+members = [
+    ".",
+]
+
+[tool.uv.sources]
+fairscape-cli = { workspace = true, editable = true }
+
+[dependency-groups]
+dev = [
+    "fairscape-cli",
+]
 
 [project.urls]
 Homepage = "https://github.com/fairscape/fairscape-cli"

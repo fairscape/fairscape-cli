@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.8"
 resolution-markers = [
     "python_full_version >= '3.14' and sys_platform == 'win32'",
@@ -673,7 +673,7 @@ wheels = [
 
 [[package]]
 name = "fairscape-cli"
-version = "1.2.7"
+version = "1.2.8"
 source = { editable = "." }
 dependencies = [
     { name = "beautifulsoup4" },
@@ -716,6 +716,11 @@ test = [
     { name = "pytest-cov", version = "7.0.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9'" },
 ]
 
+[package.dev-dependencies]
+dev = [
+    { name = "fairscape-cli" },
+]
+
 [package.metadata]
 requires-dist = [
     { name = "beautifulsoup4" },
@@ -737,6 +742,9 @@ requires-dist = [
     { name = "sqids", specifier = ">=0.4.1" },
 ]
 provides-extras = ["test"]
+
+[package.metadata.requires-dev]
+dev = [{ name = "fairscape-cli", editable = "." }]
 
 [[package]]
 name = "fairscape-models"
