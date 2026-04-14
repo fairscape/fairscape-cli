@@ -19,6 +19,7 @@ from fairscape_cli.utils.build_utils import (
     process_subcrate,
     ensure_subcrates_linked,
 )
+from fairscape_cli.datasheet_builder.linkml.convert_rocrate import GenerateLinkML
 from fairscape_cli.utils.merkle import generate_merkle_tree, generate_release_merkle_tree
 
 from fairscape_cli.models import (
@@ -414,6 +415,18 @@ def build_datasheet(ctx, rocrate_path, output, template_dir, published, pdf, ski
     if not skip_subcrate_processing:
         click.echo("\n=== Processing subcrates ===")
         process_all_subcrates(crate_dir, published=published, force_reprocess=force_reprocess)
+
+    # generating link ml for release ROCrate
+    click.echo(f"\nGenerating Link-ML for {metadata_file}")
+
+    link_ml_output_path = crate_dir / "ro-crate-linkml.yaml"
+
+    GenerateLinkML(
+        metadata_file,
+        link_ml_output_path 
+        )
+
+    click.echo(f"✓ LinkML: {link_ml_output_path}")
 
     click.echo(f"\nGenerating datasheet for {metadata_file}")
     click.echo(f"Outputting to: {output_path}")
