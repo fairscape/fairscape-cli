@@ -49,6 +49,9 @@ dependencies = [
         "mongomock",
         "huggingface_hub>=0.20.0",
         "pyarrow>=17.0.0",
+        "fairscape_interpret",
+        "pydantic-ai>=0.1.0",
+        "httpx>=0.28.1",
 ]
 
 [tool.setuptools]
@@ -71,6 +74,7 @@ members = [
 
 [tool.uv.sources]
 fairscape-cli = { workspace = true, editable = true }
+fairscape_interpret = { path = "../fairscape_interpret", editable = true }
 
 [dependency-groups]
 dev = [
