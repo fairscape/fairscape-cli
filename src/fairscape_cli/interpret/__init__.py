@@ -1,4 +1,4 @@
-"""Local-filesystem adapters for the fairscape_interpret pipeline.
+"""Local-filesystem adapters for the fairscape_graph_tools pipeline.
 
 Implements the four ports (`GraphSource`, `ResultSink`, `TaskTracker`,
 `SoftwareFetcher`) against local RO-Crate directories, so the shared

@@ -16,8 +16,8 @@ import sys
 
 import click
 
-from fairscape_interpret.condenser import Condenser
-from fairscape_interpret.interpreter import InterpretConfig, Interpreter
+from fairscape_graph_tools.condenser import Condenser
+from fairscape_graph_tools.interpreter import InterpretConfig, Interpreter
 
 from fairscape_cli.interpret.local_graph import LocalGraphSource
 from fairscape_cli.interpret.local_sink import LocalResultSink

@@ -14,8 +14,8 @@ import logging
 import pathlib
 from typing import List
 
-from fairscape_interpret.models.annotated_computation import AnnotatedComputation
-from fairscape_interpret.models.annotated_evidence_graph import AnnotatedEvidenceGraph
+from fairscape_graph_tools.models.annotated_computation import AnnotatedComputation
+from fairscape_graph_tools.models.annotated_evidence_graph import AnnotatedEvidenceGraph
 
 logger = logging.getLogger(__name__)
 

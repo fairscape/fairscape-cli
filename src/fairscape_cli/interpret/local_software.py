@@ -20,7 +20,7 @@ from __future__ import annotations
 import logging
 import pathlib
 
-from fairscape_interpret.pipeline.github import (
+from fairscape_graph_tools.pipeline.github import (
     MAX_SOFTWARE_BYTES,
     prefetch_software_code,
 )

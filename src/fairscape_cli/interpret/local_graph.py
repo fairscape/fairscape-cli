@@ -18,7 +18,7 @@ import pathlib
 import re
 from typing import Any, Iterable
 
-from fairscape_interpret.pipeline.graph_utils import _is_rocrate_root, flexible_ark_query
+from fairscape_graph_tools.pipeline.graph_utils import _is_rocrate_root, flexible_ark_query
 
 from fairscape_cli.models.rocrate import ReadROCrateMetadata
 
@@ -133,7 +133,7 @@ class LocalGraphSource:
         don't gate on the `"ark:"` prefix -- local crates may reference
         nodes by bare `@id` strings, and our index is authoritative for
         what exists."""
-        from fairscape_interpret.pipeline.condense import ARK_REF_FIELDS
+        from fairscape_graph_tools.pipeline.condense import ARK_REF_FIELDS
 
         collected: dict[str, dict] = {}
         queue: list[str] = [rocrate_id]
