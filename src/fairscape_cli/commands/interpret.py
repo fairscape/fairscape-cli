@@ -18,13 +18,11 @@ import click
 
 from fairscape_interpret.condenser import Condenser
 from fairscape_interpret.interpreter import InterpretConfig, Interpreter
-from fairscape_interpret.pipeline.graph_utils import _is_rocrate_root
 
 from fairscape_cli.interpret.local_graph import LocalGraphSource
 from fairscape_cli.interpret.local_sink import LocalResultSink
 from fairscape_cli.interpret.local_software import LocalSoftwareFetcher
 from fairscape_cli.interpret.local_tracker import InMemoryTaskTracker
-from fairscape_cli.models.rocrate import ReadROCrateMetadata
 
 
 @click.group("interpret")
@@ -47,14 +45,14 @@ def interpret_group():
 )
 @click.option(
     "--llm-model",
-    default="google-gla:gemini-2.5-flash-lite",
+    default="anthropic:claude-haiku-4-5-20251001",
     show_default=True,
     help="pydantic-ai model identifier used for computation annotation and graph synthesis.",
 )
 @click.option(
     "--temperature",
     type=float,
-    default=0.2,
+    default=0.0,
     show_default=True,
 )
 @click.option(
@@ -100,8 +98,12 @@ def interpret_command(
     if not quiet:
         logging.basicConfig(level=logging.INFO, format="%(message)s")
 
-    primary_metadata = ReadROCrateMetadata(rocrate_path)
-    rocrate_id, rocrate_name = _find_root(primary_metadata, rocrate_path)
+    try:
+        graph = LocalGraphSource(rocrate_path, references)
+    except ValueError as e:
+        raise click.ClickException(str(e))
+    rocrate_id = graph.primary_root_id
+    rocrate_name = graph.primary_root_name
 
     if output_path is None:
         slug = _slugify(rocrate_name or rocrate_id.rsplit("/", 1)[-1] or "rocrate")
@@ -122,7 +124,6 @@ def interpret_command(
         if debug_llm_path is not None:
             click.echo(f"  llm trace:     {debug_llm_path}")
 
-    graph = LocalGraphSource(rocrate_path, references)
     sink = LocalResultSink(output_path, condensed_output_path)
     tracker = InMemoryTaskTracker(quiet=quiet, debug_llm_path=debug_llm_path)
     software = LocalSoftwareFetcher(graph)
@@ -143,24 +144,6 @@ def interpret_command(
     if not quiet:
         click.echo(f"\nAnnotatedEvidenceGraph: {aeg_id}")
         click.echo(f"Wrote sidecar: {output_path}")
-
-
-def _find_root(
-    metadata: dict, rocrate_path: pathlib.Path
-) -> tuple[str, str]:
-    """Locate the RO-Crate root node in the primary crate @graph and
-    return its (@id, name). Raises if no root node is found."""
-    graph = metadata.get("@graph", []) or []
-    for node in graph:
-        if _is_rocrate_root(node):
-            node_id = node.get("@id")
-            if not node_id:
-                continue
-            name = node.get("name", "") or ""
-            return node_id, name
-    raise click.ClickException(
-        f"No ROCrate root node found in {rocrate_path}/ro-crate-metadata.json"
-    )
 
 
 def _slugify(value: str) -> str:

@@ -16,13 +16,23 @@ from __future__ import annotations
 import logging
 import pathlib
 import re
-from typing import Iterable
+from typing import Any, Iterable
 
-from fairscape_interpret.pipeline.graph_utils import flexible_ark_query
+from fairscape_interpret.pipeline.graph_utils import _is_rocrate_root, flexible_ark_query
 
 from fairscape_cli.models.rocrate import ReadROCrateMetadata
 
 logger = logging.getLogger(__name__)
+
+
+def _as_dict(item: Any) -> dict:
+    """`ReadROCrateMetadata` runs `ROCrateV1_2.validate_metadata_graph`,
+    which replaces each `@graph` entry with a pydantic model instance.
+    The shared `GraphSource` port returns plain dicts (matching the
+    server's Mongo adapter), so normalize at the boundary."""
+    if hasattr(item, "model_dump"):
+        return item.model_dump(by_alias=True, mode="json", exclude_none=True)
+    return item
 
 
 class LocalGraphSource:
@@ -43,12 +53,20 @@ class LocalGraphSource:
         self._index: dict[str, dict] = {}
         self._crate_dir: dict[str, pathlib.Path] = {}
         self._dataset_stats: dict[str, dict] = {}
+        self.primary_root_id: str | None = None
+        self.primary_root_name: str = ""
 
-        self._load_crate(self.primary_path)
+        self._load_crate(self.primary_path, is_primary=True)
         for ref in self.reference_paths:
-            self._load_crate(ref)
+            self._load_crate(ref, is_primary=False)
 
-    def _load_crate(self, crate_path: pathlib.Path) -> None:
+        if self.primary_root_id is None:
+            raise ValueError(
+                f"No ROCrate root node found in "
+                f"{self.primary_path}/ro-crate-metadata.json"
+            )
+
+    def _load_crate(self, crate_path: pathlib.Path, *, is_primary: bool = False) -> None:
         """Flatten one crate's @graph into the merged index."""
         crate_dir = (
             crate_path.parent
@@ -57,7 +75,8 @@ class LocalGraphSource:
         )
         metadata = ReadROCrateMetadata(crate_path)
         graph = metadata.get("@graph", []) or []
-        for node in graph:
+        for item in graph:
+            node = _as_dict(item)
             node_id = node.get("@id")
             if not node_id or node_id == "ro-crate-metadata.json":
                 continue
@@ -65,6 +84,10 @@ class LocalGraphSource:
                 continue
             self._index[node_id] = node
             self._crate_dir[node_id] = crate_dir
+
+            if is_primary and self.primary_root_id is None and _is_rocrate_root(node):
+                self.primary_root_id = node_id
+                self.primary_root_name = node.get("name", "") or ""
 
             desc = node.get("descriptiveStatistics")
             split = node.get("splitStatistics")
