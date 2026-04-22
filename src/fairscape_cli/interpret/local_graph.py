@@ -120,6 +120,23 @@ class LocalGraphSource:
                 return node
         return None
 
+    def find_many(self, ark_ids: Iterable[str]) -> dict[str, dict]:
+        """Exact-match batch lookup against the merged index.
+
+        Dash-tolerant fallback is intentionally *not* applied here:
+        `EvidenceGraphBuilder` resolves the start-node id via
+        `find_entity` once (flexible), then feeds the canonical id into
+        `find_many` for each BFS level. Keeping this method
+        exact-match-only keeps semantics aligned with
+        `MongoGraphSource.find_many` so server and CLI produce the same
+        `@graph` from the same fixture crate.
+        """
+        return {
+            aid: self._index[aid]
+            for aid in ark_ids
+            if aid in self._index
+        }
+
     def find_dataset_stats(self, ark_ids: Iterable[str]) -> dict[str, dict]:
         return {
             aid: self._dataset_stats[aid]

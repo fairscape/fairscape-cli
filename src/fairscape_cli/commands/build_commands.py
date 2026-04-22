@@ -8,8 +8,10 @@ from typing import Optional, List, Tuple
 from datetime import datetime
 
 from fairscape_cli.datasheet_builder.rocrate.datasheet_generator import DatasheetGenerator
-from fairscape_cli.datasheet_builder.evidence_graph.graph_builder import generate_evidence_graph_from_rocrate
 from fairscape_cli.datasheet_builder.evidence_graph.html_builder import generate_evidence_graph_html
+from fairscape_cli.interpret.local_graph import LocalGraphSource
+from fairscape_cli.interpret.local_sink import LocalResultSink
+from fairscape_graph_tools.evidence_graph_builder import EvidenceGraphBuilder
 from fairscape_cli.utils.build_utils import (
     process_all_subcrates,
     process_croissant,
@@ -512,10 +514,23 @@ def generate_evidence_graph(
     # Generate the evidence graph
     try:
         click.echo(f"Generating evidence graph for {ark_id} from {metadata_file}...")
-        evidence_graph = generate_evidence_graph_from_rocrate(
-            rocrate_path=metadata_file,
-            output_path=output_file,
-            node_id=ark_id
+
+        source = LocalGraphSource(primary_path=metadata_file)
+        resolved = source.find_entity(ark_id)
+        if resolved is None:
+            click.echo(f"ERROR: Could not find entity with ID {ark_id} in RO-Crate")
+            ctx.exit(1)
+            return
+        resolved_id = resolved.get("@id", ark_id)
+        resolved_name = resolved.get("name") or "Unknown"
+
+        sink = LocalResultSink(output_path=output_file)
+        builder = EvidenceGraphBuilder(source, sink)
+        builder.build(
+            resolved_id,
+            owner_email=resolved_id,
+            name=f"Evidence Graph - {resolved_name}",
+            description=f"Evidence graph for {resolved_name}",
         )
         click.echo(f"Evidence graph saved to {output_file}")
         

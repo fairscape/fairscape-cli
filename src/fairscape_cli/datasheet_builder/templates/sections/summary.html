@@ -43,6 +43,11 @@
                 <span class="stat-sub-value">{{ software_count }}</span>
             </div>
             {% endif %}
+            {% if content_url %}
+            <div class="stat-item stat-access-data">
+                <a href="{{ content_url }}" class="access-data-btn" target="_blank" rel="noopener">Access Data</a>
+            </div>
+            {% endif %}
         </div>
 
         <div class="exec-summary-item aiready-item">

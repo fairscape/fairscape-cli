@@ -25,6 +25,7 @@ class SummaryData:
     computation_count: int = 0
     software_count: int = 0
     formats: List[str] = field(default_factory=list)
+    content_url: str = ""
 
 
 @dataclass
@@ -98,7 +99,8 @@ class SummarySectionGenerator:
             dataset_count=root_data.get("evi:datasetCount", 0),
             computation_count=root_data.get("evi:computationCount", 0),
             software_count=root_data.get("evi:softwareCount", 0),
-            formats=formats
+            formats=formats,
+            content_url=root_data.get("contentUrl") or ""
         )
 
         # Fallback: compute from graph if evi:* fields are absent (single crate case)
@@ -226,6 +228,7 @@ class SummarySectionGenerator:
         context = {
             'description': desc,
             'description_truncated': description_truncated,
+            'content_url': summary.content_url,
             'total_size': summary.total_size_formatted,
             'total_entities': f"{summary.total_entities:,}" if summary.total_entities else "N/A",
             'formats': formats_str,

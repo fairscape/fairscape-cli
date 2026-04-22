@@ -166,27 +166,39 @@ def has_local_evidence_graph(subcrate_path: Path) -> bool:
         return False
 
 def process_evidence_graph(subcrate_path: Path, release_directory: Optional[Path] = None) -> bool:
-    from fairscape_cli.datasheet_builder.evidence_graph.graph_builder import generate_evidence_graph_from_rocrate
     from fairscape_cli.datasheet_builder.evidence_graph.html_builder import generate_evidence_graph_html
-    
+    from fairscape_cli.interpret.local_graph import LocalGraphSource
+    from fairscape_cli.interpret.local_sink import LocalResultSink
+    from fairscape_graph_tools.evidence_graph_builder import EvidenceGraphBuilder
+
     if has_local_evidence_graph(subcrate_path):
         return True
-    
+
     first_output = find_first_evi_output(subcrate_path)
     if not first_output:
         return False
-    
+
     metadata_file = subcrate_path / "ro-crate-metadata.json"
     output_json = subcrate_path / "ro-crate-prov-graph.json"
     output_html = subcrate_path / "ro-crate-prov-graph.html"
-    
+
     try:
-        evidence_graph = generate_evidence_graph_from_rocrate(
-            rocrate_path=metadata_file,
-            output_path=output_json,
-            node_id=first_output
+        source = LocalGraphSource(primary_path=metadata_file)
+        resolved = source.find_entity(first_output)
+        if resolved is None:
+            click.echo(f"  ERROR: {first_output} not found in {subcrate_path.name}")
+            return False
+        resolved_id = resolved.get("@id", first_output)
+        resolved_name = resolved.get("name") or "Unknown"
+
+        sink = LocalResultSink(output_path=output_json)
+        EvidenceGraphBuilder(source, sink).build(
+            resolved_id,
+            owner_email=resolved_id,
+            name=f"Evidence Graph - {resolved_name}",
+            description=f"Evidence graph for {resolved_name}",
         )
-        
+
         try:
             result = generate_evidence_graph_html(str(output_json), str(output_html))
             if not result:
