@@ -56,7 +56,7 @@ class FigshareConnector:
                 file_extension = os.path.splitext(file_name)[1].lower()
                 
                 # Simplified software detection, you might want this to be more robust
-                software_extensions = ['.py', '.r', '.sh', '.exe', '.java', '.cpp', '.js', '.jsx', '.css']
+                software_extensions = ['.py', '.ipynb', '.r', '.sh', '.exe', '.java', '.cpp', '.js', '.jsx', '.css']
                 is_software = file_extension in software_extensions
                 print("file data:", file_data)
 
