@@ -231,8 +231,7 @@ def generate_evidence_graph_html(rocrate_path, output_path=None):
         if (!entityData || !entityData["@id"]) return null;
         const id = entityData["@id"];
         const type = getEntityType(entityData["@type"]);
-        const label = entityData.name || entityData.label || id;
-        const displayName = abbreviateName(label);
+        let label = entityData.name || entityData.label || id;
         const description = entityData.description || "";
 
         const hasGeneratedBy = !!entityData.generatedBy;
@@ -240,12 +239,30 @@ def generate_evidence_graph_html(rocrate_path, output_path=None):
         const hasUsedDataset = !!entityData.usedDataset && (!Array.isArray(entityData.usedDataset) || entityData.usedDataset.length > 0);
         const hasUsedSample = !!entityData.usedSample && (!Array.isArray(entityData.usedSample) || entityData.usedSample.length > 0);
         const hasUsedInstrument = !!entityData.usedInstrument && (!Array.isArray(entityData.usedInstrument) || entityData.usedInstrument.length > 0);
+        // DatasetGroup is a UI condensation node emitted by EvidenceGraphBuilder when
+        // many Datasets share identical provenance. It carries `evi:representativeDataset`
+        // (a pointer to one member) and `evi:memberCount`/`evi:memberIds`. The graph
+        // should not dead-end at the group — clicking it (or auto-expansion) should
+        // follow the representative onward.
+        const hasGroupRepresentative = !!(entityData["evi:representativeDataset"]
+            && (typeof entityData["evi:representativeDataset"] === "string"
+                || entityData["evi:representativeDataset"]["@id"]));
 
         let isExpandable = false;
         if (type === "Dataset" && hasGeneratedBy) {{ isExpandable = true; }}
         if ((type === "Computation" || type === "Experiment") && (hasUsedSoftware || hasUsedDataset || hasUsedSample || hasUsedInstrument)) {{ isExpandable = true; }}
+        if (type === "DatasetGroup" && hasGroupRepresentative) {{ isExpandable = true; }}
 
-        if (isExpandable) {{
+        if (type === "DatasetGroup") {{
+            const memberCount = entityData["evi:memberCount"]
+                || (Array.isArray(entityData["evi:memberIds"]) ? entityData["evi:memberIds"].length : 0);
+            if (memberCount) {{
+                label = `${{label}} — ${{memberCount}} members`;
+            }}
+        }}
+        const displayName = abbreviateName(label);
+
+        if (isExpandable && type !== "DatasetGroup") {{
             const checkRelation = (prop) => {{
                 const value = entityData[prop];
                 if (!value) return false;
@@ -305,19 +322,46 @@ def generate_evidence_graph_html(rocrate_path, output_path=None):
 
     function getGraphEntities(graphData) {{
         if (!graphData || !graphData["@graph"]) return {{}};
-        const entities = Array.isArray(graphData["@graph"]) ? graphData["@graph"] : [graphData["@graph"]];
-        const rootEntity = entities.find(e => e["@id"] === "./" || e["@id"] === "ro-crate-metadata.json") || entities[0];
+        const graphField = graphData["@graph"];
+
+        let entities;
+        if (Array.isArray(graphField)) {{
+            entities = graphField;
+        }} else if (typeof graphField === "object" && graphField["@id"]) {{
+            entities = [graphField];
+        }} else if (typeof graphField === "object") {{
+            // EvidenceGraphBuilder format: @graph is a dict keyed by entity @id
+            entities = Object.values(graphField);
+        }} else {{
+            entities = [];
+        }}
+
         const entityMap = new Map();
         entities.forEach(e => {{
             if (e && e["@id"]) {{
                 entityMap.set(e["@id"], e);
             }}
         }});
-        return {{ rootEntityId: rootEntity ? rootEntity["@id"] : null, entityMap }};
+
+        let rootEntityId = null;
+        if (Array.isArray(graphData.outputs) && graphData.outputs.length > 0) {{
+            const firstOut = graphData.outputs[0];
+            rootEntityId = typeof firstOut === "string"
+                ? firstOut
+                : (firstOut && firstOut["@id"]) || null;
+        }}
+        if (!rootEntityId) {{
+            const rootEntity = entities.find(e => e["@id"] === "./" || e["@id"] === "ro-crate-metadata.json") || entities[0];
+            rootEntityId = rootEntity ? rootEntity["@id"] : null;
+        }}
+
+        return {{ rootEntityId, entityMap }};
     }}
 
 
-    function getInitialGraphState(graphData, initialExpansionDepth = 2) {{
+    // Default expansion depth covers the full chain when a DatasetGroup is in the path:
+    // root Dataset → Computation → (Software, DatasetGroup → representative → Experiment → Sample/Instrument).
+    function getInitialGraphState(graphData, initialExpansionDepth = 6) {{
         const {{ rootEntityId, entityMap }} = getGraphEntities(graphData);
         if (!rootEntityId || !entityMap.has(rootEntityId)) {{
             console.error("Could not determine root entity or find it in the graph data.");
@@ -469,6 +513,14 @@ def generate_evidence_graph_html(rocrate_path, output_path=None):
 
         if (nodeType === "Dataset" && sourceData.generatedBy) {{
             addNodeAndEdge(sourceData.generatedBy, "generated by", "generatedBy");
+        }}
+
+        if (nodeType === "DatasetGroup" && sourceData["evi:representativeDataset"]) {{
+            // Show the representative member; downstream `generatedBy` expansion will
+            // continue the chain (representative.generatedBy → Experiment → Sample/Instrument).
+            // The other 858+ members are intentionally collapsed: they share the same
+            // provenance shape, that's why the builder grouped them in the first place.
+            addNodeAndEdge(sourceData["evi:representativeDataset"], "representative member", "representativeMember");
         }}
 
         if ((nodeType === "Computation" || nodeType === "Experiment")) {{
@@ -656,7 +708,7 @@ def generate_evidence_graph_html(rocrate_path, output_path=None):
             case "Dataset": case "Sample": return "#8AE68A";
             case "Computation": case "Experiment": return "#FD9A9A";
             case "Software": case "Instrument": return "#FFC107";
-            case "DatasetCollection": return "#B5DEFF";
+            case "DatasetCollection": case "DatasetGroup": return "#B5DEFF";
             default: return "#E0E0E0";
         }}
     }}
