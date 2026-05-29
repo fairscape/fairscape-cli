@@ -3,8 +3,6 @@
 Reads a CSV manifest + JSON sidecar describing a published dataset that
 doesn't have (or doesn't need) a dedicated repository connector, and returns a
 ResearchData instance for `ResearchData.to_rocrate()` to write out.
-
-See wizards/manifest-import-design/DESIGN.md for the format spec.
 """
 import csv
 import json

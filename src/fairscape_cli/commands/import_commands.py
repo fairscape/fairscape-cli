@@ -363,7 +363,6 @@ def import_manifest(
         click.echo(f"Loaded manifest. Title: {research_data_instance.title}")
         click.echo(f"  Files in manifest: {len(research_data_instance.files)}")
 
-        # Apply CLI overrides (same pattern as the dataverse/figshare commands).
         if name: research_data_instance.title = name
         if description: research_data_instance.description = description
         if author: research_data_instance.authors = list(author)
