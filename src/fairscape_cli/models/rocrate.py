@@ -45,6 +45,7 @@ def GenerateROCrate(
    root_metadata = {
        "@id": guid,
        "@type": ["Dataset", "https://w3id.org/EVI#ROCrate"],
+       "conformsTo": {"@id": "https://w3id.org/fairscape/profile/0.1"},
        "name": name,
        "hasPart": []
    }
@@ -227,6 +228,7 @@ class ROCrate(ROCrateMetadataElem):
         root_dataset = {
             "@id": self.guid,
             "@type": ["Dataset", "https://w3id.org/EVI#ROCrate"],
+            "conformsTo": {"@id": "https://w3id.org/fairscape/profile/0.1"},
             "name": self.name,
             "description": self.description,
             "keywords": self.keywords,
@@ -252,7 +254,7 @@ class ROCrate(ROCrateMetadataElem):
         metadata_descriptor = {
             "@id": "ro-crate-metadata.json",
             "@type": "CreativeWork",
-            "conformsTo": {"@id": "https://w3id.org/ro/crate/1.2-DRAFT"},
+            "conformsTo": {"@id": "https://w3id.org/ro/crate/1.2"},
             "about": {"@id": self.guid}
         }
 
