@@ -5,81 +5,163 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{{ title }} - RO-Crate Preview</title>
     <style>
+      :root {
+        --color-primary: #1f3a52;
+        --color-primary-dark: #16293a;
+        --color-accent: #2d7dd2;
+        --color-bg: #f4f6f9;
+        --color-surface: #ffffff;
+        --color-surface-alt: #f8fafc;
+        --color-border: #e3e8ee;
+        --color-text: #24323f;
+        --color-text-muted: #5d6b7a;
+        --radius: 10px;
+        --radius-sm: 6px;
+        --shadow-card: 0 1px 2px rgba(16, 24, 40, 0.06),
+          0 1px 3px rgba(16, 24, 40, 0.1);
+        --font-sans: system-ui, -apple-system, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+      }
       body {
-        font-family: "Helvetica", "Arial", sans-serif;
+        font-family: var(--font-sans);
         margin: 0;
         padding: 0;
-        color: #333;
-        line-height: 1.5;
-        background-color: #f5f5f5;
+        color: var(--color-text);
+        line-height: 1.55;
+        background-color: var(--color-bg);
       }
       .container {
         max-width: 1100px;
         margin: 0 auto;
-        padding: 20px;
-        background-color: white;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        padding: 20px 24px;
+        background-color: var(--color-surface);
+        box-shadow: var(--shadow-card);
       }
       header {
-        margin-bottom: 20px;
-        border-bottom: 2px solid #2c3e50;
-        padding-bottom: 15px;
-        background-color: #f8f9fa;
-        padding: 20px;
-        border-radius: 5px;
+        margin-bottom: 18px;
+        padding: 26px 24px 22px;
+        border-radius: var(--radius);
+        background: linear-gradient(
+          135deg,
+          var(--color-primary-dark) 0%,
+          var(--color-primary) 55%,
+          #2a5078 100%
+        );
+        color: #fff;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
       }
       h1 {
-        font-size: 24px;
-        margin-bottom: 5px;
-        color: #2c3e50;
+        font-size: 26px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        margin: 0 0 10px 0;
+        color: #fff;
+      }
+      h2 {
+        font-size: 19px;
+        color: var(--color-primary);
+        margin-top: 0;
+        margin-bottom: 10px;
+        padding-left: 10px;
+        border-left: 4px solid var(--color-accent);
+        letter-spacing: -0.01em;
+      }
+      .badge-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .badge-row .badge {
+        display: inline-block;
+        padding: 3px 12px;
+        border-radius: 999px;
+        background-color: rgba(255, 255, 255, 0.14);
+        border: 1px solid rgba(255, 255, 255, 0.28);
+        color: #fff;
+        font-size: 12.5px;
+        font-weight: 600;
+        text-decoration: none;
+        white-space: nowrap;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+      }
+      .badge-row a.badge:hover {
+        background-color: rgba(255, 255, 255, 0.26);
       }
       .summary-section {
-        background-color: #f8f9fa;
-        padding: 20px;
-        border-radius: 4px;
-        margin-bottom: 30px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+        background-color: var(--color-surface);
+        padding: 16px 18px;
+        border-radius: var(--radius);
+        margin-bottom: 24px;
+        border: 1px solid var(--color-border);
+        box-shadow: var(--shadow-card);
         page-break-inside: avoid;
       }
       .summary-row {
         display: flex;
-        margin-bottom: 12px;
-        border-bottom: 1px solid #eee;
-        padding-bottom: 8px;
+        margin-bottom: 0;
+        border-bottom: 1px solid var(--color-border);
+        padding: 7px 0;
+      }
+      .summary-row:last-child {
+        border-bottom: none;
       }
       .summary-label {
         width: 220px;
-        font-weight: bold;
-        color: #2c3e50;
+        flex-shrink: 0;
+        font-weight: 600;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        color: var(--color-text-muted);
+        padding-top: 2px;
       }
       .summary-value {
         flex: 1;
       }
       .tabs {
         display: flex;
-        border-bottom: 1px solid #ddd;
+        border-bottom: 2px solid var(--color-border);
         margin-bottom: 20px;
         flex-wrap: wrap;
+        gap: 2px;
       }
       .tab {
-        padding: 10px 15px;
+        padding: 10px 14px;
         cursor: pointer;
         border-bottom: 3px solid transparent;
-        font-weight: bold;
-        color: #2c3e50;
+        margin-bottom: -2px;
+        font-weight: 600;
+        font-size: 14px;
+        color: var(--color-text-muted);
         white-space: nowrap;
+        transition: color 0.15s ease;
+      }
+      .tab:hover {
+        color: var(--color-primary);
       }
       .tab.active {
-        border-bottom: 3px solid #2c3e50;
+        border-bottom: 3px solid var(--color-accent);
+        color: var(--color-primary);
       }
       .tab .badge {
         display: inline-block;
-        background-color: #2c3e50;
-        color: white;
-        padding: 2px 8px;
-        border-radius: 3px;
-        font-size: 12px;
+        background-color: var(--color-surface-alt);
+        border: 1px solid var(--color-border);
+        color: var(--color-text-muted);
+        padding: 1px 8px;
+        border-radius: 999px;
+        font-size: 11.5px;
         margin-left: 5px;
+      }
+      .tab.active .badge {
+        background-color: var(--color-accent);
+        border-color: var(--color-accent);
+        color: #fff;
       }
       .tab-content {
         margin-bottom: 30px;
@@ -88,27 +170,32 @@
         width: 100%;
         border-collapse: collapse;
         margin-bottom: 20px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-sm);
+        box-shadow: var(--shadow-card);
         table-layout: fixed;
       }
       th,
       td {
         text-align: left;
-        padding: 12px;
-        border-bottom: 1px solid #eaeaea;
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--color-border);
         word-wrap: break-word;
       }
       th {
-        background-color: #f8f9fa;
-        font-weight: bold;
-        color: #2c3e50;
-        border-bottom: 2px solid #ddd;
+        background-color: var(--color-surface-alt);
+        font-weight: 600;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        color: var(--color-text-muted);
+        border-bottom: 2px solid var(--color-border);
       }
       tr:nth-child(even) {
-        background-color: #f8f9fa;
+        background-color: var(--color-surface-alt);
       }
       tr:hover {
-        background-color: #f1f8fe;
+        background-color: #eef5fc;
       }
       td:nth-child(2) {
         max-width: 400px;
@@ -130,43 +217,48 @@
       .schema-details {
         margin: 0;
         padding: 15px;
-        background-color: #f8f9fa;
-        border-top: 1px solid #ddd;
-        border-bottom: 1px solid #ddd;
+        background-color: var(--color-surface-alt);
+        border-top: 1px solid var(--color-border);
+        border-bottom: 1px solid var(--color-border);
       }
       .schema-details-container {
         padding: 0;
       }
       .toggle-schema {
         cursor: pointer;
-        color: #2c3e50;
+        color: var(--color-accent);
         text-decoration: underline;
       }
       .properties-table {
         margin: 0;
         width: 100%;
         box-shadow: none;
-        border: 1px solid #eaeaea;
+        border: 1px solid var(--color-border);
       }
       .properties-table th,
       .properties-table td {
         padding: 8px 12px;
-        background-color: #fff;
+        background-color: var(--color-surface);
       }
       .properties-table th {
-        background-color: #f1f1f1;
+        background-color: var(--color-surface-alt);
       }
       .schema-properties-row {
-        background-color: #f8f9fa !important;
+        background-color: var(--color-surface-alt) !important;
       }
       tr.schema-row:hover
         + tr.schema-properties-row:not([style*="display: none"]) {
-        background-color: #f1f8fe !important;
+        background-color: #eef5fc !important;
+      }
+      a {
+        color: var(--color-accent);
       }
       @media print {
         body {
           font-size: 11pt;
           background-color: white;
+          print-color-adjust: exact;
+          -webkit-print-color-adjust: exact;
         }
         .container {
           max-width: 100%;
@@ -174,7 +266,7 @@
           box-shadow: none;
         }
         table {
-          border: 1px solid #ddd;
+          border: 1px solid var(--color-border);
           page-break-inside: auto;
         }
         tr {
@@ -182,7 +274,7 @@
         }
         th,
         td {
-          border: 1px solid #ddd;
+          border: 1px solid var(--color-border);
         }
         .tab-content {
           display: block !important;
@@ -195,11 +287,6 @@
           display: none;
         }
         .summary-section {
-          box-shadow: none;
-          border: 1px solid #eee;
-        }
-        header {
-          background-color: white;
           box-shadow: none;
         }
         h1 {
@@ -231,9 +318,20 @@
     <div class="container">
       <header>
         <h1>{{ title }}</h1>
-        {% if version %}
-        <div>Version: {{ version }}</div>
-        {% endif %}
+        <div class="badge-row">
+          {% if version %}
+          <span class="badge">Version {{ version }}</span>
+          {% endif %}
+          {% if doi %}
+          <a class="badge" href="{% if doi.startswith('http') %}{{ doi }}{% else %}https://doi.org/{{ doi }}{% endif %}" target="_blank" rel="noopener" title="{{ doi }}">DOI ↗</a>
+          {% endif %}
+          {% if license_value %}
+          <a class="badge" href="{{ license_value }}" target="_blank" rel="noopener" title="{{ license_value }}">License ↗</a>
+          {% endif %}
+          {% if release_date %}
+          <span class="badge">Released {{ release_date }}</span>
+          {% endif %}
+        </div>
       </header>
 
       <div class="summary-section">
