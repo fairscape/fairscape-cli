@@ -30,6 +30,7 @@ from fairscape_cli.models import (
     collect_subcrate_metadata,
     collect_subcrate_aggregated_metrics
 )
+from fairscape_cli.models.rocrate import _extract_content_size_bytes, format_content_size_bytes
 
 from fairscape_models.rocrate import ROCrateV1_2, ROCrateMetadataElem
 from fairscape_cli.datasheet_builder import get_default_template_dir
@@ -240,7 +241,12 @@ def build_release(
     if citation: parent_params["citation"] = citation
     if funder: parent_params["funder"] = funder
     if usage_info: parent_params["usageInfo"] = usage_info
-    if content_size: parent_params["contentSize"] = content_size
+    # An explicitly provided release contentSize is authoritative; otherwise
+    # fill it from the hierarchy-aware sub-crate roll-up.
+    if content_size:
+        parent_params["contentSize"] = content_size
+    elif aggregated_metrics.total_content_size_bytes > 0:
+        parent_params["contentSize"] = format_content_size_bytes(aggregated_metrics.total_content_size_bytes)
     if ethical_review: parent_params["ethicalReview"] = ethical_review
     if has_summary_stats: parent_params["hasSummaryStats"] = has_summary_stats
     
@@ -327,7 +333,8 @@ def build_release(
     parent_params["evi:computationCount"] = aggregated_metrics.computation_count
     parent_params["evi:softwareCount"] = aggregated_metrics.software_count
     parent_params["evi:schemaCount"] = aggregated_metrics.schema_count
-    parent_params["evi:totalContentSizeBytes"] = aggregated_metrics.total_content_size_bytes
+    declared_size_bytes = _extract_content_size_bytes(content_size) if content_size else 0
+    parent_params["evi:totalContentSizeBytes"] = declared_size_bytes or aggregated_metrics.total_content_size_bytes
     parent_params["evi:entitiesWithSummaryStats"] = aggregated_metrics.entities_with_summary_stats
     parent_params["evi:entitiesWithChecksums"] = aggregated_metrics.entities_with_checksums
     parent_params["evi:totalEntities"] = aggregated_metrics.total_entities

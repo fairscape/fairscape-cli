@@ -465,6 +465,12 @@ def _link_one_subcrate(
             subcrate_root[field_name] = value
             modified = True
 
+    if _is_blank(subcrate_root.get('contentSize')):
+        _, size_bytes = _crate_size_info(subcrate_metadata_file)
+        if size_bytes > 0:
+            subcrate_root['contentSize'] = format_content_size_bytes(size_bytes)
+            modified = True
+
     if 'isPartOf' not in subcrate_root:
         subcrate_root['isPartOf'] = []
 
@@ -634,16 +640,18 @@ class AggregatedMetrics:
     schemas: List[Dict[str, str]] = field(default_factory=list)
 
 
-def _extract_content_size_bytes(size_str: str) -> int:
+def _extract_content_size_bytes(size_str) -> int:
     """
     Extract content size in bytes from a size string.
 
     Args:
-        size_str: Size string like "125.5 GB" or "1.2 TB"
+        size_str: Size string like "125.5 GB" or "1.2 TB", or a raw byte count
 
     Returns:
         Size in bytes as integer, or 0 if parsing fails
     """
+    if isinstance(size_str, (int, float)):
+        return int(size_str)
     if not size_str or not isinstance(size_str, str):
         return 0
 
@@ -662,6 +670,71 @@ def _extract_content_size_bytes(size_str: str) -> int:
             return int(float(size_str))
     except (ValueError, AttributeError):
         return 0
+
+
+def format_content_size_bytes(num_bytes: int) -> str:
+    """Format a byte count as a human-readable contentSize string (e.g. "1.2 GB")."""
+    size = float(num_bytes)
+    for unit in ("B", "KB", "MB", "GB"):
+        if size < 1000:
+            return f"{int(size)} B" if unit == "B" else f"{size:.1f} {unit}"
+        size /= 1000
+    return f"{size:.1f} TB"
+
+
+def _crate_size_info(metadata_path: pathlib.Path) -> Tuple[Optional[str], int]:
+    """
+    Compute the total content size of one crate, hierarchy-aware.
+
+    The crate root's own contentSize is authoritative when present (assumed to
+    already cover everything inside the crate). Only when it is absent do we
+    fall back to summing the crate's entities, recursing into nested sub-crates
+    the same way so nothing is counted twice.
+
+    Returns:
+        (root @id or None, size in bytes)
+    """
+    try:
+        with metadata_path.open('r') as f:
+            metadata = json.load(f)
+    except Exception as e:
+        print(f"Error reading crate metadata for size roll-up {metadata_path}: {e}")
+        return None, 0
+
+    root_id, root, _ = _find_root_dataset(metadata)
+    if root:
+        declared = _extract_content_size_bytes(root.get('contentSize'))
+        if declared > 0:
+            return root_id, declared
+
+    # No declared size on the root: recurse into immediate nested sub-crates,
+    # then sum the remaining entities (skipping refs to crates already counted).
+    total = 0
+    counted_ids = set()
+
+    def recurse_nested(directory: pathlib.Path):
+        nonlocal total
+        for item in directory.iterdir():
+            if not item.is_dir():
+                continue
+            nested_metadata = item / 'ro-crate-metadata.json'
+            if nested_metadata.is_file():
+                nested_id, nested_size = _crate_size_info(nested_metadata)
+                total += nested_size
+                if nested_id:
+                    counted_ids.add(nested_id)
+            else:
+                recurse_nested(item)
+
+    recurse_nested(metadata_path.parent)
+
+    for entity in metadata.get('@graph', []):
+        entity_id = entity.get('@id')
+        if entity_id in counted_ids or entity_id in (root_id, 'ro-crate-metadata.json'):
+            continue
+        total += _extract_content_size_bytes(entity.get('contentSize'))
+
+    return root_id, total
 
 
 def _extract_checksum(entity: Dict[str, Any]) -> Optional[str]:
@@ -732,12 +805,6 @@ def _accumulate_entity_metrics(metrics: AggregatedMetrics, entity: Dict[str, Any
         if schema_id:
             metrics.schemas.append({"@id": schema_id})
 
-    content_size = entity.get("contentSize")
-    if content_size:
-        size_bytes = _extract_content_size_bytes(content_size)
-        if size_bytes > 0:
-            metrics.total_content_size_bytes += size_bytes
-
     if entity.get("hasSummaryStatistics"):
         metrics.entities_with_summary_stats += 1
 
@@ -796,9 +863,23 @@ def collect_subcrate_aggregated_metrics(
 
                     _accumulate_entity_metrics(metrics, entity)
 
+    def accumulate_sizes(directory: pathlib.Path):
+        """Sum sizes of the top-most crates only; _crate_size_info handles nesting."""
+        for item in directory.iterdir():
+            if not item.is_dir():
+                continue
+            crate_metadata = item / 'ro-crate-metadata.json'
+            if crate_metadata.is_file():
+                _, size_bytes = _crate_size_info(crate_metadata)
+                metrics.total_content_size_bytes += size_bytes
+            else:
+                accumulate_sizes(item)
+
     for dir_item in parent_crate_path.iterdir():
         if dir_item.is_dir():
             process_directory(dir_item)
+
+    accumulate_sizes(parent_crate_path)
 
     return metrics
 
