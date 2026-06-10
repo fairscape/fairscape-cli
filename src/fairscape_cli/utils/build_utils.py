@@ -165,13 +165,13 @@ def has_local_evidence_graph(subcrate_path: Path) -> bool:
     except Exception:
         return False
 
-def process_evidence_graph(subcrate_path: Path, release_directory: Optional[Path] = None) -> bool:
+def process_evidence_graph(subcrate_path: Path, release_directory: Optional[Path] = None, reference_paths: Optional[List[Path]] = None, force: bool = False) -> bool:
     from fairscape_cli.datasheet_builder.evidence_graph.html_builder import generate_evidence_graph_html
     from fairscape_cli.interpret.local_graph import LocalGraphSource
     from fairscape_cli.interpret.local_sink import LocalResultSink
     from fairscape_graph_tools.evidence_graph_builder import EvidenceGraphBuilder
 
-    if has_local_evidence_graph(subcrate_path):
+    if not force and has_local_evidence_graph(subcrate_path):
         return True
 
     first_output = find_first_evi_output(subcrate_path)
@@ -183,7 +183,7 @@ def process_evidence_graph(subcrate_path: Path, release_directory: Optional[Path
     output_html = subcrate_path / "ro-crate-prov-graph.html"
 
     try:
-        source = LocalGraphSource(primary_path=metadata_file)
+        source = LocalGraphSource(primary_path=metadata_file, reference_paths=reference_paths or ())
         resolved = source.find_entity(first_output)
         if resolved is None:
             click.echo(f"  ERROR: {first_output} not found in {subcrate_path.name}")
@@ -414,7 +414,7 @@ def process_release_merkle_tree(release_directory: Path) -> bool:
         return False
 
 
-def process_subcrate(subcrate_path: Path, release_directory: Optional[Path] = None, published: bool = False) -> Dict[str, Any]:
+def process_subcrate(subcrate_path: Path, release_directory: Optional[Path] = None, published: bool = False, reference_paths: Optional[List[Path]] = None, force: bool = False) -> Dict[str, Any]:
     """
     Process a single subcrate with all augmentation and build steps.
 
@@ -459,7 +459,7 @@ def process_subcrate(subcrate_path: Path, release_directory: Optional[Path] = No
 
     # Step 3: Evidence graph
     click.echo(f"  - Generating evidence graph...")
-    if process_evidence_graph(subcrate_path, release_directory):
+    if process_evidence_graph(subcrate_path, release_directory, reference_paths, force=force):
         results['evidence_graph'] = True
         click.echo(f"    ✓ Evidence graph generated")
     else:
@@ -539,7 +539,8 @@ def process_all_subcrates(release_directory: Path, published: bool = False, forc
             subcrate_errors.append(f"{subcrate.name}: Failed to add I/O")
 
         click.echo(f"    - Checking evidence graph...")
-        if process_evidence_graph(subcrate, release_directory):
+        reference_subcrates = [s for s in subcrates if s != subcrate]
+        if process_evidence_graph(subcrate, release_directory, reference_subcrates, force=force_reprocess):
             results['processed']['evidence_graphs'] += 1
             click.echo(f"      ✓ Evidence graph ready")
         else:

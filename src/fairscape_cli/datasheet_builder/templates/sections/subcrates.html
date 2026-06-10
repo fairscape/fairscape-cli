@@ -35,12 +35,12 @@
         <span class="metadata-label">Authors:</span>
         <span class="metadata-value">{{ subcrate.authors }}</span>
       </div>
+      {% if subcrate.date %}
       <div class="metadata-item">
         <span class="metadata-label">Date:</span>
-        <span class="metadata-value"
-          >{{ subcrate.date if subcrate.date else "Not specified" }}</span
-        >
+        <span class="metadata-value">{{ subcrate.date }}</span>
       </div>
+      {% endif %}
       <div class="metadata-item">
         <span class="metadata-label">Size:</span>
         <span class="metadata-value">{{ subcrate.size }}</span>
@@ -119,17 +119,19 @@
           %} {{ subcrate.keywords|join(', ') }} {% endif %}
         </span>
       </div>
+      {% if subcrate.funder %}
       <div class="metadata-item">
         <span class="metadata-label">Funding:</span>
         <span class="metadata-value">
-          {% if subcrate.funder and (subcrate.funder.startswith('http://') or
-          subcrate.funder.startswith('https://')) %}
+          {% if subcrate.funder.startswith('http://') or
+          subcrate.funder.startswith('https://') %}
           <a href="{{ subcrate.funder }}" target="_blank"
             >{{ subcrate.funder }}</a
           >
           {% else %} {{ subcrate.funder }} {% endif %}
         </span>
       </div>
+      {% endif %}
       {% if subcrate.related_publications %}
       <div class="metadata-item">
         <span class="metadata-label">Related Publications:</span>
