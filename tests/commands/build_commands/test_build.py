@@ -210,10 +210,22 @@ class TestBuildCommands:
 
         with open(subcrate_metadata_path, 'r') as f:
             metadata = json.load(f)
-        
-        root_dataset = metadata['@graph'][1] 
+
+        # The reference must land on the root entity referenced by the
+        # ro-crate-metadata.json descriptor's `about`, not blindly @graph[1]
+        descriptor = next(
+            e for e in metadata['@graph']
+            if e['@id'].endswith('ro-crate-metadata.json')
+        )
+        root_dataset = next(
+            e for e in metadata['@graph']
+            if e['@id'] == descriptor['about']['@id']
+        )
         assert "localEvidenceGraph" in root_dataset
         assert root_dataset["localEvidenceGraph"]["@id"] == str(evidence_html_path)
+
+        # atomic metadata writes must not leave temp files behind
+        assert not list(subcrate_path.glob("*.tmp"))
 
     def test_build_evidence_graph_with_directory(self, runner, test_release_crate: pathlib.Path):
         """Test evidence graph generation with directory path"""

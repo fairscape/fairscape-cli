@@ -1,6 +1,5 @@
 from fairscape_models.software import Software
-from fairscape_cli.config import NAAN
-from fairscape_cli.models.guid_utils import GenerateDatetimeSquid, clean_guid
+from fairscape_cli.models.guid_utils import GenerateEntityGuid
 from typing import Dict, Any, Optional, List
 from urllib.parse import urlparse
 from fairscape_cli.models.utils import setRelativeFilepath, calculate_md5
@@ -30,13 +29,8 @@ def GenerateSoftware(
     Returns:
         A validated Software instance
     """
-    if not guid and name:
-        sq = GenerateDatetimeSquid()
-        seg = clean_guid(f"{name.lower().replace(' ', '-')}-{sq}")
-        guid = f"ark:{NAAN}/software-{seg}"
-    elif not guid:
-        sq = GenerateDatetimeSquid()
-        guid = f"ark:{NAAN}/software-{sq}"
+    if not guid:
+        guid = GenerateEntityGuid("software", name, clean=True)
     
     softwareMetadata = {
         "@id": guid,

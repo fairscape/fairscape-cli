@@ -1,6 +1,6 @@
 from fairscape_models.dataset import Dataset
 from fairscape_cli.config import NAAN
-from fairscape_cli.models.guid_utils import GenerateDatetimeSquid, clean_guid
+from fairscape_cli.models.guid_utils import GenerateDatetimeSquid, GenerateEntityGuid
 from fairscape_cli.models.utils import setRelativeFilepath, calculate_md5
 import pathlib
 import datetime
@@ -31,13 +31,8 @@ def GenerateDataset(
     Returns:
         A validated Dataset instance
     """
-    if not guid and name:
-        sq = GenerateDatetimeSquid()
-        seg = clean_guid(f"{name.lower().replace(' ', '-')}-{sq}")
-        guid = f"ark:{NAAN}/dataset-{seg}"
-    elif not guid:
-        sq = GenerateDatetimeSquid()
-        guid = f"ark:{NAAN}/dataset-{sq}"
+    if not guid:
+        guid = GenerateEntityGuid("dataset", name, clean=True)
     
     datasetMetadata = {
         "@id": guid,

@@ -1,25 +1,17 @@
+import json
 import pathlib
 import shutil
-import json
-from datetime import datetime
-from typing import Optional, Union, List, Literal, Dict, Any, Set
+import uuid
 from dataclasses import dataclass, field
-from pydantic import BaseModel, Field, ConfigDict, model_validator
-import uuid 
-import mongomock
+from datetime import datetime
+from typing import Optional, Union, List, Dict, Any, Set, Tuple
 
-from fairscape_models import DEFAULT_CONTEXT, DEFAULT_ARK_NAAN as NAAN
+from pydantic import Field, ConfigDict
+
+from fairscape_cli.config import NAAN, DEFAULT_CONTEXT
 from fairscape_cli.models.software import Software
 from fairscape_cli.models.dataset import Dataset
 from fairscape_cli.models.computation import Computation
-from fairscape_cli.models.guid_utils import GenerateDatetimeSquid
-
-from datetime import datetime
-import pathlib
-import json
-from typing import List, Optional, Dict, Any, Tuple
-
-from fairscape_cli.config import NAAN, DEFAULT_CONTEXT
 from fairscape_cli.models.guid_utils import GenerateDatetimeSquid, clean_guid
 from fairscape_models.rocrate import ROCrateV1_2, ROCrateMetadataElem, ROCrateMetadataFileElem
 from fairscape_cli.utils.serialization import prune_none, model_dump_pruned
@@ -402,6 +394,98 @@ def UpdateCrate(
         rocrate_metadata_file.truncate()
         json.dump(prune_none(rocrate_metadata), rocrate_metadata_file, indent=2)
 
+# Root-dataset fields propagated from a parent crate into its subcrates by LinkSubcrates
+TRANSFERABLE_FIELDS = [
+    "principalInvestigator", "copyrightNotice",
+    "conditionsOfAccess", "contactEmail", "confidentialityLevel",
+    "citation", "usageInfo", "additionalProperty",
+    "license", "author", "version",
+    # Top-level compliance fields
+    "ethicalReview", "humanSubjectResearch",
+    "humanSubjectExemption", "deidentified", "fdaRegulated",
+    "irb", "irbProtocolId", "dataGovernanceCommittee",
+    "completeness", "prohibitedUses",
+    # RAI fields
+    "rai:dataLimitations", "rai:dataBiases", "rai:dataUseCases",
+    "rai:dataReleaseMaintenancePlan", "rai:dataCollection",
+    "rai:dataCollectionType", "rai:dataCollectionMissingData",
+    "rai:dataCollectionRawData", "rai:dataImputationProtocol",
+    "rai:dataManipulationProtocol", "rai:dataPreprocessingProtocol",
+    "rai:dataAnnotationProtocol", "rai:dataAnnotationPlatform",
+    "rai:dataAnnotationAnalysis", "rai:personalSensitiveInformation",
+    "rai:dataSocialImpact", "rai:annotationsPerItem",
+    "rai:annotatorDemographics", "rai:machineAnnotationTools",
+    "rai:dataCollectionTimeframe"
+]
+
+
+def _is_blank(value) -> bool:
+    return value is None or (isinstance(value, str) and value.strip() == "") or \
+        (isinstance(value, list) and len(value) == 0)
+
+
+def _find_root_dataset(metadata: dict):
+    """Locate the root dataset via the metadata descriptor's 'about' reference.
+
+    Returns (root_id, root_elem, root_index); root_elem/root_index are None when not found.
+    """
+    root_id = None
+    for elem in metadata.get('@graph', []):
+        if elem.get('@id') == 'ro-crate-metadata.json' and 'about' in elem:
+            root_id = elem['about'].get('@id')
+            break
+    if root_id:
+        for index, elem in enumerate(metadata.get('@graph', [])):
+            if elem.get('@id') == root_id:
+                return root_id, elem, index
+    return root_id, None, None
+
+
+def _link_one_subcrate(
+    subcrate_metadata_file: pathlib.Path,
+    transferable_data: dict,
+    parent_root_id: str,
+    base_path: pathlib.Path
+) -> Optional[dict]:
+    """Backfill transferable metadata + isPartOf into one subcrate.
+
+    Returns the subcrate root as a reference entry for the parent @graph,
+    or None if the subcrate has no findable root dataset.
+    """
+    with subcrate_metadata_file.open('r') as f:
+        subcrate_metadata = json.load(f)
+
+    _, subcrate_root, subcrate_root_index = _find_root_dataset(subcrate_metadata)
+    if not subcrate_root:
+        return None
+
+    modified = False
+    for field_name, value in transferable_data.items():
+        if field_name not in subcrate_root or _is_blank(subcrate_root[field_name]):
+            subcrate_root[field_name] = value
+            modified = True
+
+    if 'isPartOf' not in subcrate_root:
+        subcrate_root['isPartOf'] = []
+
+    parent_ref_exists = any(
+        part.get('@id') == parent_root_id
+        for part in subcrate_root.get('isPartOf', [])
+    )
+    if not parent_ref_exists:
+        subcrate_root['isPartOf'].append({'@id': parent_root_id})
+        modified = True
+
+    if modified:
+        subcrate_metadata['@graph'][subcrate_root_index] = subcrate_root
+        with subcrate_metadata_file.open('w') as f:
+            json.dump(prune_none(subcrate_metadata), f, indent=2)
+
+    reference_dict = dict(subcrate_root)
+    reference_dict['ro-crate-metadata'] = (subcrate_metadata_file.relative_to(base_path)).as_posix()
+    return reference_dict
+
+
 def LinkSubcrates(parent_crate_path: pathlib.Path) -> List[str]:
     parent_metadata_file = parent_crate_path / 'ro-crate-metadata.json'
     if not parent_metadata_file.is_file():
@@ -409,134 +493,53 @@ def LinkSubcrates(parent_crate_path: pathlib.Path) -> List[str]:
 
     with parent_metadata_file.open('r') as f:
         parent_metadata = json.load(f)
-    
-    parent_root_id = None
-    parent_root_dataset = None
-    
-    for item in parent_metadata.get('@graph', []):
-        if item.get('@id') == 'ro-crate-metadata.json' and 'about' in item:
-            parent_root_id = item['about'].get('@id')
-            break
-    
-    if parent_root_id:
-        for item in parent_metadata.get('@graph', []):
-            if item.get('@id') == parent_root_id:
-                parent_root_dataset = item
-                break
-    
+
+    parent_root_id, parent_root_dataset, _ = _find_root_dataset(parent_metadata)
     if not parent_root_dataset:
         raise ValueError("Could not determine the root dataset of the parent RO-Crate")
 
-    transferable_fields = [
-        "principalInvestigator", "copyrightNotice",
-        "conditionsOfAccess", "contactEmail", "confidentialityLevel",
-        "citation", "usageInfo", "additionalProperty",
-        "license", "author", "version",
-        # Top-level compliance fields
-        "ethicalReview", "humanSubjectResearch",
-        "humanSubjectExemption", "deidentified", "fdaRegulated",
-        "irb", "irbProtocolId", "dataGovernanceCommittee",
-        "completeness", "prohibitedUses",
-        # RAI fields
-        "rai:dataLimitations", "rai:dataBiases", "rai:dataUseCases",
-        "rai:dataReleaseMaintenancePlan", "rai:dataCollection",
-        "rai:dataCollectionType", "rai:dataCollectionMissingData",
-        "rai:dataCollectionRawData", "rai:dataImputationProtocol",
-        "rai:dataManipulationProtocol", "rai:dataPreprocessingProtocol",
-        "rai:dataAnnotationProtocol", "rai:dataAnnotationPlatform",
-        "rai:dataAnnotationAnalysis", "rai:personalSensitiveInformation",
-        "rai:dataSocialImpact", "rai:annotationsPerItem",
-        "rai:annotatorDemographics", "rai:machineAnnotationTools",
-        "rai:dataCollectionTimeframe"
-    ]
-    
-    transferable_data = {}
-    for field in transferable_fields:
-        if field in parent_root_dataset:
-            value = parent_root_dataset[field]
-            if value is None or (isinstance(value, str) and value.strip() == "") or (isinstance(value, list) and len(value) == 0):
-                continue
-            transferable_data[field] = value
-    
+    transferable_data = {
+        field_name: parent_root_dataset[field_name]
+        for field_name in TRANSFERABLE_FIELDS
+        if field_name in parent_root_dataset and not _is_blank(parent_root_dataset[field_name])
+    }
+
     sub_crate_references = []
     linked_sub_crate_ids = []
-    
-    def find_and_process_subcrates(directory: pathlib.Path, base_path: pathlib.Path):
+
+    def find_and_process_subcrates(directory: pathlib.Path):
         for item in directory.iterdir():
-            if item.is_dir():
-                subcrate_metadata_file = item / 'ro-crate-metadata.json'
-                if subcrate_metadata_file.is_file():
-                    with subcrate_metadata_file.open('r') as f:
-                        subcrate_metadata = json.load(f)
-                    
-                    subcrate_root_id = None
-                    
-                    for elem in subcrate_metadata.get('@graph', []):
-                        if elem.get('@id') == 'ro-crate-metadata.json' and 'about' in elem:
-                            subcrate_root_id = elem['about'].get('@id')
-                            break
-                    
-                    subcrate_root = None
-                    if subcrate_root_id:
-                        for index, elem in enumerate(subcrate_metadata.get('@graph', [])):
-                            if elem.get('@id') == subcrate_root_id:
-                                subcrate_root = elem
-                                subcrate_root_index = index
-                                break
-                    
-                    if not subcrate_root:
-                        print(f"WARNING: Could not find root dataset in subcrate: {item}")
-                        find_and_process_subcrates(item, base_path)
-                        return
-                    
-                    modified = False
-                    for field, value in transferable_data.items():
-                        if field not in subcrate_root or subcrate_root[field] is None or \
-                           (isinstance(subcrate_root[field], str) and subcrate_root[field].strip() == "") or \
-                           (isinstance(subcrate_root[field], list) and len(subcrate_root[field]) == 0):
-                            subcrate_root[field] = value
-                            modified = True
-                    
-                    if 'isPartOf' not in subcrate_root:
-                        subcrate_root['isPartOf'] = []
-                    
-                    parent_ref_exists = any(
-                        part.get('@id') == parent_root_id 
-                        for part in subcrate_root.get('isPartOf', [])
-                    )
-                    if not parent_ref_exists:
-                        subcrate_root['isPartOf'].append({'@id': parent_root_id})
-                        modified = True
-                    
-                    if modified:
-                        subcrate_metadata['@graph'][subcrate_root_index] = subcrate_root
-                        with subcrate_metadata_file.open('w') as f:
-                            json.dump(prune_none(subcrate_metadata), f, indent=2)
-                    
-                    reference_dict = dict(subcrate_root)
-                    relative_path = (subcrate_metadata_file.relative_to(base_path)).as_posix()
-                    reference_dict['ro-crate-metadata'] = relative_path
-                    
-                    sub_crate_references.append(reference_dict)
-                    linked_sub_crate_ids.append(subcrate_root_id)
-                else:
-                    find_and_process_subcrates(item, base_path)
-    
-    find_and_process_subcrates(parent_crate_path, parent_crate_path)
-    
+            if not item.is_dir():
+                continue
+            subcrate_metadata_file = item / 'ro-crate-metadata.json'
+            if not subcrate_metadata_file.is_file():
+                find_and_process_subcrates(item)
+                continue
+            reference_dict = _link_one_subcrate(
+                subcrate_metadata_file, transferable_data, parent_root_id, parent_crate_path
+            )
+            if reference_dict is None:
+                print(f"WARNING: Could not find root dataset in subcrate: {item}")
+                find_and_process_subcrates(item)
+                return
+            sub_crate_references.append(reference_dict)
+            linked_sub_crate_ids.append(reference_dict['@id'])
+
+    find_and_process_subcrates(parent_crate_path)
+
     if sub_crate_references:
         parent_root_dataset.setdefault('hasPart', [])
         existing_haspart_ids = {part.get('@id') for part in parent_root_dataset['hasPart']}
-        
+
         existing_graph_ids = {item.get('@id') for item in parent_metadata['@graph']}
         for ref in sub_crate_references:
             if ref['@id'] not in existing_graph_ids:
                 parent_metadata['@graph'].append(ref)
-        
+
         for sub_id in linked_sub_crate_ids:
             if sub_id not in existing_haspart_ids:
                 parent_root_dataset['hasPart'].append({'@id': sub_id})
-        
+
         with parent_metadata_file.open('w') as f:
             json.dump(prune_none(parent_metadata), f, indent=2)
     else:
@@ -707,6 +710,51 @@ def _get_entity_type(entity: Dict[str, Any]) -> str:
     return ""
 
 
+def _accumulate_entity_metrics(metrics: AggregatedMetrics, entity: Dict[str, Any]) -> None:
+    """Add one @graph entity's counts, size, checksum, and format info to metrics."""
+    entity_type = _get_entity_type(entity)
+
+    if "Dataset" in entity_type:
+        metrics.dataset_count += 1
+        metrics.total_entities += 1
+
+    elif "Computation" in entity_type or "Experiment" in entity_type:
+        metrics.computation_count += 1
+        metrics.total_entities += 1
+
+    elif "Software" in entity_type:
+        metrics.software_count += 1
+        metrics.total_entities += 1
+
+    elif "Schema" in entity_type:
+        metrics.schema_count += 1
+        schema_id = entity.get('@id')
+        if schema_id:
+            metrics.schemas.append({"@id": schema_id})
+
+    content_size = entity.get("contentSize")
+    if content_size:
+        size_bytes = _extract_content_size_bytes(content_size)
+        if size_bytes > 0:
+            metrics.total_content_size_bytes += size_bytes
+
+    if entity.get("hasSummaryStatistics"):
+        metrics.entities_with_summary_stats += 1
+
+    checksum = _extract_checksum(entity)
+    if checksum:
+        metrics.entities_with_checksums += 1
+
+    format_val = entity.get("format") or entity.get("encodingFormat")
+    if format_val:
+        if isinstance(format_val, str):
+            metrics.formats.add(format_val)
+        elif isinstance(format_val, list):
+            for fmt in format_val:
+                if isinstance(fmt, str):
+                    metrics.formats.add(fmt)
+
+
 def collect_subcrate_aggregated_metrics(
     parent_crate_path: pathlib.Path
 ) -> AggregatedMetrics:
@@ -746,48 +794,7 @@ def collect_subcrate_aggregated_metrics(
                     if entity.get('@id') == 'ro-crate-metadata.json':
                         continue
 
-                    entity_type = _get_entity_type(entity)
-
-                    if "Dataset" in entity_type:
-                        metrics.dataset_count += 1
-                        metrics.total_entities += 1
-
-                    elif "Computation" in entity_type or "Experiment" in entity_type:
-                        metrics.computation_count += 1
-                        metrics.total_entities += 1
-
-                    elif "Software" in entity_type:
-                        metrics.software_count += 1
-                        metrics.total_entities += 1
-
-                    elif "Schema" in entity_type:
-                        metrics.schema_count += 1
-                        schema_id = entity.get('@id')
-                        if schema_id:
-                            metrics.schemas.append({"@id": schema_id})
-
-                    content_size = entity.get("contentSize")
-                    if content_size:
-                        size_bytes = _extract_content_size_bytes(content_size)
-                        if size_bytes > 0:
-                            metrics.total_content_size_bytes += size_bytes
-
-                    if entity.get("hasSummaryStatistics"):
-                        metrics.entities_with_summary_stats += 1
-
-                    checksum = _extract_checksum(entity)
-                    if checksum:
-                        metrics.entities_with_checksums += 1
-
-                    format_val = entity.get("format") or entity.get("encodingFormat")
-                    if format_val:
-                        if isinstance(format_val, str):
-                            metrics.formats.add(format_val)
-                        elif isinstance(format_val, list):
-                            for fmt in format_val:
-                                if isinstance(fmt, str):
-                                    metrics.formats.add(fmt)
-
+                    _accumulate_entity_metrics(metrics, entity)
 
     for dir_item in parent_crate_path.iterdir():
         if dir_item.is_dir():
@@ -796,11 +803,7 @@ def collect_subcrate_aggregated_metrics(
     return metrics
 
 
-################################
-#
-# Mongomock update tests
-#
-#################################
+# MongoDB-style in-place updates of the @graph (used by the `augment` commands)
 
 def _transform_entities_for_mongo(entities: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """Transforms RO-Crate entities for MongoDB compatibility (adds _id)."""
@@ -840,6 +843,8 @@ def UpdateEntitiesInGraph(
         A tuple (success_status, message_string).
     """
     try:
+        import mongomock
+
         if cratePath.is_dir():
             metadata_filepath = cratePath / 'ro-crate-metadata.json'
         else:

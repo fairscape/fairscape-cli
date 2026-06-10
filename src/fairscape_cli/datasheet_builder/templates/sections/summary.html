@@ -1,46 +1,52 @@
 <div id="datasheet-summary" class="executive-summary-section">
     <h2>Datasheet Summary</h2>
     {% if description %}
-    <p class="summary-description">{{ description }}{% if description_truncated %}... <a href="#description" style="color: #2c3e50; font-size: 12px;">[read full description]</a>{% endif %}</p>
+    <p class="summary-description">{{ description }}{% if description_truncated %}... <a href="#description" style="color: var(--color-accent); font-size: 12px;">[read full description]</a>{% endif %}</p>
     {% endif %}
 
     <div class="exec-summary-grid">
         <div class="exec-summary-item">
             <span class="exec-summary-label">Dataset Statistics</span>
-            {% if total_size %}
-            <div class="stat-item">
-                <strong class="stat-sub-label">Total Data Volume:</strong>
-                <span class="stat-sub-value">{{ total_size }}</span>
+            <div class="stat-grid">
+                {% if total_size %}
+                <div class="stat-card">
+                    <span class="stat-number">{{ total_size }}</span>
+                    <span class="stat-caption">Total Size</span>
+                </div>
+                {% endif %}
+                {% if total_entities and total_entities != "N/A" %}
+                <div class="stat-card">
+                    <span class="stat-number">{{ total_entities }}</span>
+                    <span class="stat-caption">Files</span>
+                </div>
+                {% endif %}
+                {% if dataset_count and dataset_count != "0" %}
+                <div class="stat-card">
+                    <span class="stat-number">{{ dataset_count }}</span>
+                    <span class="stat-caption">Datasets</span>
+                </div>
+                {% endif %}
+                {% if computation_count and computation_count != "0" %}
+                <div class="stat-card">
+                    <span class="stat-number">{{ computation_count }}</span>
+                    <span class="stat-caption">Computations</span>
+                </div>
+                {% endif %}
+                {% if software_count and software_count != "0" %}
+                <div class="stat-card">
+                    <span class="stat-number">{{ software_count }}</span>
+                    <span class="stat-caption">Software</span>
+                </div>
+                {% endif %}
             </div>
-            {% endif %}
-            {% if total_entities %}
-            <div class="stat-item">
-                <strong class="stat-sub-label">Total Files:</strong>
-                <span class="stat-sub-value">{{ total_entities }}</span>
-            </div>
-            {% endif %}
             {% if formats %}
             <div class="stat-item">
                 <strong class="stat-sub-label">Available Formats:</strong>
-                <span class="stat-sub-value formats-list">{{ formats }}</span>
-            </div>
-            {% endif %}
-            {% if dataset_count and dataset_count != "0" %}
-            <div class="stat-item">
-                <strong class="stat-sub-label">Datasets:</strong>
-                <span class="stat-sub-value">{{ dataset_count }}</span>
-            </div>
-            {% endif %}
-            {% if computation_count and computation_count != "0" %}
-            <div class="stat-item">
-                <strong class="stat-sub-label">Computations:</strong>
-                <span class="stat-sub-value">{{ computation_count }}</span>
-            </div>
-            {% endif %}
-            {% if software_count and software_count != "0" %}
-            <div class="stat-item">
-                <strong class="stat-sub-label">Software:</strong>
-                <span class="stat-sub-value">{{ software_count }}</span>
+                <span class="format-chips">
+                    {% for fmt in formats.split(', ') %}
+                    <span class="chip">{{ fmt }}</span>
+                    {% endfor %}
+                </span>
             </div>
             {% endif %}
             {% if content_url %}
@@ -52,22 +58,28 @@
 
         <div class="exec-summary-item aiready-item">
             <span class="exec-summary-label">AI-Readiness Score{% if aiready_json_filename %} <a href="{{ aiready_json_filename }}" class="view-details-link">(View Details)</a>{% endif %}</span>
-            <div class="aiready-bars">
-                {% for cat in aiready_categories %}
-                <div class="aiready-bar-row">
-                    <div class="aiready-bar-label">{{ cat.label }}</div>
-                    <div class="aiready-bar-track">
-                        <div class="aiready-bar-fill" style="width: {{ cat.percentage }}%; background: {{ cat.color }};"></div>
-                    </div>
-                    <div class="aiready-bar-score">{{ cat.earned }}/{{ cat.possible }}</div>
+            <div class="aiready-flex">
+                <div class="aiready-donut-wrap">
+                    {# r=54 -> circumference 2*pi*54 = 339.3; dasharray scales the arc to the score #}
+                    <svg class="aiready-donut" width="108" height="108" viewBox="0 0 120 120" role="img" aria-label="Overall AI-readiness score: {{ aiready_total_percentage|int }} percent">
+                        <circle class="donut-track" cx="60" cy="60" r="54"></circle>
+                        <circle class="donut-fill" cx="60" cy="60" r="54"
+                                stroke="{{ aiready_total_color }}"
+                                stroke-dasharray="{{ (aiready_total_percentage * 3.393)|round(1) }} 339.3"></circle>
+                        <text class="donut-text" x="60" y="62">{{ aiready_total_percentage|int }}%</text>
+                    </svg>
+                    <div class="aiready-donut-caption">Overall</div>
                 </div>
-                {% endfor %}
-                <div class="aiready-bar-row aiready-overall-row">
-                    <div class="aiready-bar-label">Overall</div>
-                    <div class="aiready-bar-track">
-                        <div class="aiready-bar-fill" style="width: {{ aiready_total_percentage }}%; background: {{ aiready_total_color }};"></div>
+                <div class="aiready-bars">
+                    {% for cat in aiready_categories %}
+                    <div class="aiready-bar-row">
+                        <div class="aiready-bar-label">{{ cat.label }}</div>
+                        <div class="aiready-bar-track">
+                            <div class="aiready-bar-fill" style="width: {{ cat.percentage }}%; background: {{ cat.color }};"></div>
+                        </div>
+                        <div class="aiready-bar-score">{{ cat.earned }}/{{ cat.possible }}</div>
                     </div>
-                    <div class="aiready-bar-score">{{ aiready_total_percentage|int }}%</div>
+                    {% endfor %}
                 </div>
             </div>
         </div>

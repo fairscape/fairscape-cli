@@ -12,6 +12,7 @@ from fairscape_models.rocrate import ROCrateV1_2
 from fairscape_models.conversion.mapping.AIReady import score_rocrate
 from fairscape_models.conversion.models.AIReady import AIReadyScore
 from fairscape_cli.utils.serialization import model_dump_pruned
+from fairscape_cli.utils.rocrate_helpers import get_root_entity
 
 
 @dataclass
@@ -77,7 +78,8 @@ class SummarySectionGenerator:
 
     def extract_summary_data(self, crate: ROCrateV1_2) -> SummaryData:
         """Extract summary statistics from an RO-Crate."""
-        root_data = crate.metadataGraph[1].model_dump(by_alias=True) if len(crate.metadataGraph) > 1 else {}
+        root_entity = get_root_entity(crate)
+        root_data = root_entity.model_dump(by_alias=True) if root_entity else {}
         
         
         size_str = root_data.get("contentSize", "")

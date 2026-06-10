@@ -1,6 +1,5 @@
 from fairscape_models.biochem_entity import BioChemEntity
-from fairscape_cli.config import NAAN
-from fairscape_cli.models.guid_utils import GenerateDatetimeSquid, clean_guid
+from fairscape_cli.models.guid_utils import GenerateEntityGuid
 import datetime
 from typing import Dict, Any, Optional, List, Tuple, Set
 
@@ -29,13 +28,9 @@ def GenerateBioChemEntity(
 		A validated fairscape_models.BioChemEntity instance 
 	"""
 
-	if not guid and name:
-			sq = GenerateDatetimeSquid()
-			seg = clean_guid(f"{name.lower().replace(' ', '-')}-{sq}")
-			guid = f"ark:{NAAN}/dataset-{seg}"
-	elif not guid:
-			sq = GenerateDatetimeSquid()
-			guid = f"ark:{NAAN}/dataset-{sq}"
+	if not guid:
+			# historical quirk: biochem entities use the dataset- guid prefix
+			guid = GenerateEntityGuid("dataset", name, clean=True)
 	
 	entityMetadata = {
 			"@id": guid,

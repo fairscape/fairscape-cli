@@ -3,7 +3,8 @@ import pathlib
 from pathlib import Path
 from typing import Optional, List, Dict, Any, Tuple
 import click
-from fairscape_cli.utils.serialization import prune_none
+from fairscape_cli.utils.serialization import prune_none, write_json_atomic
+from fairscape_cli.utils.rocrate_helpers import get_root_entity_dict
 
 def is_subcrate_processed(subcrate_path: Path) -> bool:
     """Check if evi:processed is true on subcrate root entity."""
@@ -11,9 +12,9 @@ def is_subcrate_processed(subcrate_path: Path) -> bool:
     try:
         with open(metadata_file, 'r') as f:
             metadata = json.load(f)
-        graph = metadata.get('@graph', [])
-        if len(graph) > 1:
-            return graph[1].get('evi:processed', False) is True
+        root = get_root_entity_dict(metadata.get('@graph', []))
+        if root is not None:
+            return root.get('evi:processed', False) is True
     except Exception:
         pass
     return False
@@ -24,11 +25,10 @@ def set_subcrate_processed(subcrate_path: Path) -> bool:
     try:
         with open(metadata_file, 'r') as f:
             metadata = json.load(f)
-        graph = metadata.get('@graph', [])
-        if len(graph) > 1:
-            graph[1]['evi:processed'] = True
-            with open(metadata_file, 'w') as f:
-                json.dump(metadata, f, indent=2)
+        root = get_root_entity_dict(metadata.get('@graph', []))
+        if root is not None:
+            root['evi:processed'] = True
+            write_json_atomic(metadata_file, metadata)
             return True
     except Exception:
         pass
@@ -47,7 +47,7 @@ def ensure_subcrates_linked(crate_directory: Path) -> List[str]:
     # Check existing hasPart
     with open(metadata_file, 'r') as f:
         metadata = json.load(f)
-    root = metadata['@graph'][1] if len(metadata.get('@graph', [])) > 1 else {}
+    root = get_root_entity_dict(metadata.get('@graph', [])) or {}
     existing_ids = {p.get('@id') for p in root.get('hasPart', [])}
 
     # Check if any subcrate is missing from hasPart
@@ -57,7 +57,8 @@ def ensure_subcrates_linked(crate_directory: Path) -> List[str]:
         try:
             with open(sc_meta, 'r') as f:
                 sc_data = json.load(f)
-            sc_id = sc_data['@graph'][1].get('@id') if len(sc_data.get('@graph', [])) > 1 else None
+            sc_root = get_root_entity_dict(sc_data.get('@graph', []))
+            sc_id = sc_root.get('@id') if sc_root else None
             if sc_id and sc_id not in existing_ids:
                 needs_linking = True
                 break
@@ -127,9 +128,8 @@ def find_first_evi_output(subcrate_path: Path) -> Optional[str]:
         with open(metadata_file, 'r') as f:
             metadata = json.load(f)
         
-        graph = metadata.get('@graph', [])
-        if len(graph) > 1:
-            root_entity = graph[1]
+        root_entity = get_root_entity_dict(metadata.get('@graph', []))
+        if root_entity is not None:
             outputs = root_entity.get('https://w3id.org/EVI#outputs', [])
             
             if outputs:
@@ -154,9 +154,8 @@ def has_local_evidence_graph(subcrate_path: Path) -> bool:
         with open(metadata_file, 'r') as f:
             metadata = json.load(f)
         
-        graph = metadata.get('@graph', [])
-        if len(graph) > 1:
-            root_entity = graph[1]
+        root_entity = get_root_entity_dict(metadata.get('@graph', []))
+        if root_entity is not None:
             local_graph = root_entity.get('localEvidenceGraph')
             if local_graph and isinstance(local_graph, dict) and '@id' in local_graph:
                 return True
@@ -208,20 +207,20 @@ def process_evidence_graph(subcrate_path: Path, release_directory: Optional[Path
         
         with open(metadata_file, 'r') as f:
             metadata = json.load(f)
-        
-        if len(metadata.get('@graph', [])) > 1:
+
+        root_entity = get_root_entity_dict(metadata.get('@graph', []))
+        if root_entity is not None:
             if release_directory:
                 relative_path = output_html.relative_to(release_directory).as_posix()
             else:
                 relative_path = output_html.name
-            
-            metadata['@graph'][1]['localEvidenceGraph'] = {
+
+            root_entity['localEvidenceGraph'] = {
                 "@id": relative_path
             }
-            
-            with open(metadata_file, 'w') as f:
-                json.dump(prune_none(metadata), f, indent=2)
-        
+
+            write_json_atomic(metadata_file, prune_none(metadata))
+
         return True
         
     except Exception as e:
@@ -259,10 +258,9 @@ def process_datasheet(crate_path: Path, published: bool = False) -> bool:
     output_path = crate_path / "ro-crate-datasheet.html"
     
     try:
-        import fairscape_cli
-        package_dir = Path(fairscape_cli.__file__).parent
-        template_dir = package_dir / 'datasheet_builder' / 'templates'
-        
+        from fairscape_cli.datasheet_builder import get_default_template_dir
+        template_dir = get_default_template_dir()
+
         generator = DatasheetGenerator(
             json_path=str(metadata_file),
             template_dir=str(template_dir),
@@ -289,9 +287,8 @@ def process_preview(crate_path: Path, published: bool = False) -> bool:
     output_path = crate_path / "ro-crate-preview.html"
 
     try:
-        import fairscape_cli
-        package_dir = Path(fairscape_cli.__file__).parent
-        template_dir = package_dir / 'datasheet_builder' / 'templates'
+        from fairscape_cli.datasheet_builder import get_default_template_dir
+        template_dir = get_default_template_dir()
 
         env = Environment(
             loader=FileSystemLoader(str(template_dir)),
@@ -348,8 +345,9 @@ def process_merkle_tree(crate_path: Path) -> bool:
 
 
         graph = metadata.get('@graph', [])
-        if len(graph) > 1:
-            graph[1]['evi:merkleRootHash'] = tree['rootHash']
+        root_entity = get_root_entity_dict(graph)
+        if root_entity is not None:
+            root_entity['evi:merkleRootHash'] = tree['rootHash']
 
         # Build a lookup from contentUrl to sha256 from the tree leaves
         hash_by_url = {
@@ -374,8 +372,7 @@ def process_merkle_tree(crate_path: Path) -> bool:
                 elif hashes:
                     entity['sha256'] = hashes
 
-        with open(metadata_file, 'w') as f:
-            json.dump(metadata, f, indent=2)
+        write_json_atomic(metadata_file, metadata)
 
         return True
     except Exception as e:
@@ -402,11 +399,10 @@ def process_release_merkle_tree(release_directory: Path) -> bool:
         with open(metadata_file, 'r') as f:
             metadata = json.load(f)
 
-        graph = metadata.get('@graph', [])
-        if len(graph) > 1:
-            graph[1]['evi:merkleRootHash'] = tree['rootHash']
-            with open(metadata_file, 'w') as f:
-                json.dump(prune_none(metadata), f, indent=2)
+        root_entity = get_root_entity_dict(metadata.get('@graph', []))
+        if root_entity is not None:
+            root_entity['evi:merkleRootHash'] = tree['rootHash']
+            write_json_atomic(metadata_file, prune_none(metadata))
 
         return True
     except Exception as e:

@@ -1,4 +1,8 @@
+import logging
+
 import click
+
+logging.basicConfig(level=logging.WARNING, format="%(levelname)s %(name)s: %(message)s")
 
 # Import command groups from their new locations
 from fairscape_cli.commands.rocrate_commands import rocrate_group

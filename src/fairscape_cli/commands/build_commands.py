@@ -32,7 +32,9 @@ from fairscape_cli.models import (
 )
 
 from fairscape_models.rocrate import ROCrateV1_2, ROCrateMetadataElem
-from fairscape_cli.utils.serialization import prune_none
+from fairscape_cli.datasheet_builder import get_default_template_dir
+from fairscape_cli.utils.serialization import prune_none, write_json_atomic
+from fairscape_cli.utils.rocrate_helpers import get_root_entity_dict
 from fairscape_models.conversion.converter import ROCToTargetConverter
 from fairscape_models.conversion.mapping.croissant import MAPPING_CONFIGURATION as CROISSANT_MAPPING
 
@@ -404,8 +406,7 @@ def build_datasheet(ctx, rocrate_path, output, template_dir, published, pdf, ski
 
     output_path = output if output else crate_dir / "ro-crate-datasheet.html"
 
-    package_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    template_dir = Path(os.path.join(package_dir, 'datasheet_builder', 'templates'))
+    template_dir = template_dir if template_dir else get_default_template_dir()
 
     # Link subcrates if needed
     click.echo("Checking subcrate links...")
@@ -547,25 +548,20 @@ def generate_evidence_graph(
             click.echo("WARNING: generate_evidence_graph_html module not found, skipping visualization")
             click.echo("To generate visualizations, please install the visualization module.")
         except Exception as e:
-            click.echo(f"ERROR generating visualization: {str(e)}")\
-                    
+            click.echo(f"ERROR generating visualization: {str(e)}")
+
         try:
             with open(metadata_file, 'r') as f:
                 metadata = json.load(f)
-            
-            i = 0
-            for entity in metadata.get('@graph', []):
-                if i == 1:
-                    entity['localEvidenceGraph'] = {
-                        "@id": str(html_output_path)
-                    }
-                    break
-                i += 1
-            
-            # Write the updated metadata back to the file
-            with open(metadata_file, 'w') as f:
-                json.dump(prune_none(metadata), f, indent=2)
-                
+
+            root_entity = get_root_entity_dict(metadata.get('@graph', []))
+            if root_entity is not None:
+                root_entity['localEvidenceGraph'] = {
+                    "@id": str(html_output_path)
+                }
+
+            write_json_atomic(metadata_file, prune_none(metadata))
+
             click.echo(f"Added hasEvidenceGraph reference to {ark_id} in RO-Crate metadata")
         except Exception as e:
             click.echo(f"WARNING: Failed to add hasEvidenceGraph reference: {str(e)}")

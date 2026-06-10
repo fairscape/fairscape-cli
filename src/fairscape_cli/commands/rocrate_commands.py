@@ -30,207 +30,70 @@ def rocrate_group():
     """Core operations for local RO-Crate manipulation."""
     pass
 
-@rocrate_group.command('init')
-@click.option('--guid', required=False, type=str, default="", show_default=False)
-@click.option('--name', required=True, type=str)
-@click.option('--organization-name', required=True, type=str)
-@click.option('--project-name', required=True, type=str)
-@click.option('--description', required=True, type=str)
-@click.option('--keywords', required=True, multiple=True, type=str)
-@click.option('--license', required=False, type=str, default="https://creativecommons.org/licenses/by/4.0/")
-@click.option('--date-published', required=False, type=str)
-@click.option('--author', required=False, type=str, default="Unknown")
-@click.option('--version', required=False, type=str, default="1.0")
-@click.option('--associated-publication', required=False, type=str)
-@click.option('--conditions-of-access', required=False, type=str)
-@click.option('--copyright-notice', required=False, type=str)
-@click.option('--completeness', required=False, type=str, help="Completeness of the dataset.")
-@click.option('--ethical-review', required=False, type=str, help="Ethical review information.")
-@click.option('--human-subject', required=False, type=str, help="Human subject involvement information.")
-@click.option('--confidentiality-level', required=False, type=str, help="Confidentiality level.")
-@click.option('--irb', required=False, type=str, help="IRB approval information.")
-@click.option('--irb-protocol-id', required=False, type=str, help="IRB protocol identifier.")
-@click.option('--human-subject-research', required=False, type=str, help="Whether this involves human subject research.")
-@click.option('--human-subject-exemptions', required=False, type=str, help="Human subjects exemption category/description.")
-@click.option('--deidentified', required=False, type=str, help="Whether samples are de-identified.")
-@click.option('--fda-regulated', required=False, type=str, help="Whether the data is FDA regulated.")
-@click.option('--data-governance', required=False, type=str, help="Data governance committee information.")
-@click.option('--maintenance-plan', required=False, type=str, help="RAI: Versioning, maintainers, and deprecation policies.")
-@click.option('--intended-use', required=False, type=str, help="RAI: Recommended dataset uses (e.g., training, validation).")
-@click.option('--limitations', required=False, type=str, help="RAI: Known limitations and non-recommended uses.")
-@click.option('--potential-sources-of-bias', required=False, type=str, help="RAI: Description of known biases in the dataset.")
-@click.option('--prohibited-uses', required=False, type=str, help="Prohibited uses of the dataset.")
-@click.option('--rai-data-collection', required=False, type=str, help="RAI: Description of the data collection process.")
-@click.option('--rai-data-collection-type', required=False, multiple=True, type=str, help="RAI: Type of data collection (e.g., 'Web Scraping', 'Surveys').")
-@click.option('--rai-missing-data-desc', required=False, type=str, help="RAI: Description of missing data in the dataset.")
-@click.option('--rai-raw-data-source', required=False, type=str, help="RAI: Description of the raw data source.")
-@click.option('--rai-collection-start-date', required=False, type=str, help="RAI: Start date of the data collection process (ISO format).")
-@click.option('--rai-collection-end-date', required=False, type=str, help="RAI: End date of the data collection process (ISO format).")
-@click.option('--rai-imputation-protocol', required=False, type=str, help="RAI: Description of the data imputation process.")
-@click.option('--rai-manipulation-protocol', required=False, type=str, help="RAI: Description of the data manipulation process.")
-@click.option('--rai-preprocessing-protocol', required=False, multiple=True, type=str, help="RAI: Steps taken to preprocess the data for ML use.")
-@click.option('--rai-annotation-protocol', required=False, type=str, help="RAI: Description of the annotation process (e.g., workforce, tasks).")
-@click.option('--rai-annotation-platform', required=False, multiple=True, type=str, help="RAI: Platform or tool used for human annotation.")
-@click.option('--rai-annotation-analysis', required=False, multiple=True, type=str, help="RAI: Analysis of annotations (e.g., disagreement resolution).")
-@click.option('--rai-sensitive-info', required=False, multiple=True, type=str, help="RAI: Description of any personal or sensitive information.")
-@click.option('--rai-social-impact', required=False, type=str, help="RAI: Discussion of the dataset's potential social impact.")
-@click.option('--rai-annotations-per-item', required=False, type=str, help="RAI: Number of human labels per dataset item.")
-@click.option('--rai-annotator-demographics', required=False, multiple=True, type=str, help="RAI: Demographic specifications about the annotators.")
-@click.option('--rai-machine-annotation-tools', required=False, multiple=True, type=str, help="RAI: Software used for automated data annotation.")
-@click.option('--custom-properties', required=False, type=str, help='JSON string with additional properties to include')
-def init(
-    guid, name, organization_name, project_name, description, keywords, license,
-    date_published, author, version, associated_publication, conditions_of_access,
-    copyright_notice, completeness, ethical_review, human_subject, confidentiality_level,
-    irb, irb_protocol_id, human_subject_research, human_subject_exemptions,
-    deidentified, fda_regulated, data_governance,
-    maintenance_plan, intended_use, limitations, potential_sources_of_bias,
-    prohibited_uses, rai_data_collection, rai_data_collection_type, rai_missing_data_desc,
-    rai_raw_data_source, rai_collection_start_date, rai_collection_end_date,
-    rai_imputation_protocol, rai_manipulation_protocol, rai_preprocessing_protocol,
-    rai_annotation_protocol, rai_annotation_platform, rai_annotation_analysis,
-    rai_sensitive_info, rai_social_impact, rai_annotations_per_item,
-    rai_annotator_demographics, rai_machine_annotation_tools, custom_properties
-):
-    """Initialize an RO-Crate in the current working directory."""
-    params = {
-        "guid": guid, "name": name, "organizationName": organization_name,
-        "projectName": project_name, "description": description, "keywords": list(keywords),
-        "license": license, "datePublished": date_published, "author": author,
-        "version": version, "associatedPublication": associated_publication,
-        "conditionsOfAccess": conditions_of_access, "copyrightNotice": copyright_notice,
-        "path": pathlib.Path.cwd()
-    }
 
-    rai_properties = {}
-    if limitations:
-        rai_properties["rai:dataLimitations"] = limitations
-    if potential_sources_of_bias:
-        rai_properties["rai:dataBiases"] = potential_sources_of_bias
-    if intended_use:
-        rai_properties["rai:dataUseCases"] = intended_use
-    if maintenance_plan:
-        rai_properties["rai:dataReleaseMaintenancePlan"] = maintenance_plan
-    if rai_data_collection:
-        rai_properties["rai:dataCollection"] = rai_data_collection
-    if rai_data_collection_type:
-        rai_properties["rai:dataCollectionType"] = list(rai_data_collection_type)
-    if rai_missing_data_desc:
-        rai_properties["rai:dataCollectionMissingData"] = rai_missing_data_desc
-    if rai_raw_data_source:
-        rai_properties["rai:dataCollectionRawData"] = rai_raw_data_source
-    if rai_imputation_protocol:
-        rai_properties["rai:dataImputationProtocol"] = rai_imputation_protocol
-    if rai_manipulation_protocol:
-        rai_properties["rai:dataManipulationProtocol"] = rai_manipulation_protocol
-    if rai_preprocessing_protocol:
-        rai_properties["rai:dataPreprocessingProtocol"] = list(rai_preprocessing_protocol)
-    if rai_annotation_protocol:
-        rai_properties["rai:dataAnnotationProtocol"] = rai_annotation_protocol
-    if rai_annotation_platform:
-        rai_properties["rai:dataAnnotationPlatform"] = list(rai_annotation_platform)
-    if rai_annotation_analysis:
-        rai_properties["rai:dataAnnotationAnalysis"] = list(rai_annotation_analysis)
-    if rai_sensitive_info:
-        rai_properties["rai:personalSensitiveInformation"] = list(rai_sensitive_info)
-    if rai_social_impact:
-        rai_properties["rai:dataSocialImpact"] = rai_social_impact
-    if rai_annotations_per_item:
-        rai_properties["rai:annotationsPerItem"] = rai_annotations_per_item
-    if rai_annotator_demographics:
-        rai_properties["rai:annotatorDemographics"] = list(rai_annotator_demographics)
-    if rai_machine_annotation_tools:
-        rai_properties["rai:machineAnnotationTools"] = list(rai_machine_annotation_tools)
-    
-    timeframe = []
-    if rai_collection_start_date:
-        timeframe.append(rai_collection_start_date)
-    if rai_collection_end_date:
-        timeframe.append(rai_collection_end_date)
-    if timeframe:
-        rai_properties["rai:dataCollectionTimeframe"] = timeframe
-    
-    params.update(rai_properties)
-
-    # Compliance fields as direct top-level properties
-    if completeness:              params["completeness"] = completeness
-    if ethical_review:            params["ethicalReview"] = ethical_review
-    if human_subject:             params["humanSubjectResearch"] = human_subject
-    if confidentiality_level:     params["confidentialityLevel"] = confidentiality_level
-    if prohibited_uses:           params["prohibitedUses"] = prohibited_uses
-    if irb:                       params["irb"] = irb
-    if irb_protocol_id:           params["irbProtocolId"] = irb_protocol_id
-    if human_subject_research:    params["humanSubjectResearch"] = human_subject_research
-    if human_subject_exemptions:  params["humanSubjectExemption"] = human_subject_exemptions
-    if deidentified:              params["deidentified"] = deidentified
-    if fda_regulated:             params["fdaRegulated"] = fda_regulated
-    if data_governance:           params["dataGovernanceCommittee"] = data_governance
-
-    if custom_properties:
-        try:
-            custom_props = json.loads(custom_properties)
-            if not isinstance(custom_props, dict): raise ValueError("Custom properties must be a JSON object")
-            params.update(custom_props)
-        except Exception as e:
-            click.echo(f"ERROR processing custom properties: {e}", err=True)
-            return
-
-    filtered_params = {k: v for k, v in params.items() if v is not None}
-    passed_crate = GenerateROCrate(**filtered_params)
-    click.echo(passed_crate.get("@id"))
+def add_options(options):
+    """Apply a list of click options written in top-to-bottom --help order."""
+    def wrapper(func):
+        for option in reversed(options):
+            func = option(func)
+        return func
+    return wrapper
 
 
-@rocrate_group.command('create')
-@click.argument('rocrate-path', type=click.Path(exists=False, path_type=pathlib.Path))
-@click.option('--guid', required=False, type=str, default="", show_default=False)
-@click.option('--name', required=True, type=str)
-@click.option('--organization-name', required=True, type=str)
-@click.option('--project-name', required=True, type=str)
-@click.option('--description', required=True, type=str)
-@click.option('--keywords', required=True, multiple=True, type=str)
-@click.option('--license', required=False, type=str, default="https://creativecommons.org/licenses/by/4.0/")
-@click.option('--date-published', required=False, type=str)
-@click.option('--author', required=False, type=str, default="Unknown")
-@click.option('--version', required=False, type=str, default="1.0")
-@click.option('--associated-publication', required=False, type=str)
-@click.option('--conditions-of-access', required=False, type=str)
-@click.option('--copyright-notice', required=False, type=str)
-@click.option('--completeness', required=False, type=str, help="Completeness of the dataset.")
-@click.option('--ethical-review', required=False, type=str, help="Ethical review information.")
-@click.option('--human-subject', required=False, type=str, help="Human subject involvement information.")
-@click.option('--confidentiality-level', required=False, type=str, help="Confidentiality level.")
-@click.option('--irb', required=False, type=str, help="IRB approval information.")
-@click.option('--irb-protocol-id', required=False, type=str, help="IRB protocol identifier.")
-@click.option('--human-subject-research', required=False, type=str, help="Whether this involves human subject research.")
-@click.option('--human-subject-exemptions', required=False, type=str, help="Human subjects exemption category/description.")
-@click.option('--deidentified', required=False, type=str, help="Whether samples are de-identified.")
-@click.option('--fda-regulated', required=False, type=str, help="Whether the data is FDA regulated.")
-@click.option('--data-governance', required=False, type=str, help="Data governance committee information.")
-@click.option('--maintenance-plan', required=False, type=str, help="RAI: Versioning, maintainers, and deprecation policies.")
-@click.option('--intended-use', required=False, type=str, help="RAI: Recommended dataset uses (e.g., training, validation).")
-@click.option('--limitations', required=False, type=str, help="RAI: Known limitations and non-recommended uses.")
-@click.option('--potential-sources-of-bias', required=False, type=str, help="RAI: Description of known biases in the dataset.")
-@click.option('--prohibited-uses', required=False, type=str, help="Prohibited uses of the dataset.")
-@click.option('--rai-data-collection', required=False, type=str, help="RAI: Description of the data collection process.")
-@click.option('--rai-data-collection-type', required=False, multiple=True, type=str, help="RAI: Type of data collection (e.g., 'Web Scraping', 'Surveys').")
-@click.option('--rai-missing-data-desc', required=False, type=str, help="RAI: Description of missing data in the dataset.")
-@click.option('--rai-raw-data-source', required=False, type=str, help="RAI: Description of the raw data source.")
-@click.option('--rai-collection-start-date', required=False, type=str, help="RAI: Start date of the data collection process (ISO format).")
-@click.option('--rai-collection-end-date', required=False, type=str, help="RAI: End date of the data collection process (ISO format).")
-@click.option('--rai-imputation-protocol', required=False, type=str, help="RAI: Description of the data imputation process.")
-@click.option('--rai-manipulation-protocol', required=False, type=str, help="RAI: Description of the data manipulation process.")
-@click.option('--rai-preprocessing-protocol', required=False, multiple=True, type=str, help="RAI: Steps taken to preprocess the data for ML use.")
-@click.option('--rai-annotation-protocol', required=False, type=str, help="RAI: Description of the annotation process (e.g., workforce, tasks).")
-@click.option('--rai-annotation-platform', required=False, multiple=True, type=str, help="RAI: Platform or tool used for human annotation.")
-@click.option('--rai-annotation-analysis', required=False, multiple=True, type=str, help="RAI: Analysis of annotations (e.g., disagreement resolution).")
-@click.option('--rai-sensitive-info', required=False, multiple=True, type=str, help="RAI: Description of any personal or sensitive information.")
-@click.option('--rai-social-impact', required=False, type=str, help="RAI: Discussion of the dataset's potential social impact.")
-@click.option('--rai-annotations-per-item', required=False, type=str, help="RAI: Number of human labels per dataset item.")
-@click.option('--rai-annotator-demographics', required=False, multiple=True, type=str, help="RAI: Demographic specifications about the annotators.")
-@click.option('--rai-machine-annotation-tools', required=False, multiple=True, type=str, help="RAI: Software used for automated data annotation.")
-@click.option('--custom-properties', required=False, type=str, help='JSON string with additional properties to include')
-def create(
-    rocrate_path, guid, name, organization_name, project_name, description, keywords,
+# Crate-level metadata options shared by `rocrate init` and `rocrate create`.
+ROCRATE_METADATA_OPTIONS = [
+    click.option('--guid', required=False, type=str, default="", show_default=False),
+    click.option('--name', required=True, type=str),
+    click.option('--organization-name', required=True, type=str),
+    click.option('--project-name', required=True, type=str),
+    click.option('--description', required=True, type=str),
+    click.option('--keywords', required=True, multiple=True, type=str),
+    click.option('--license', required=False, type=str, default="https://creativecommons.org/licenses/by/4.0/"),
+    click.option('--date-published', required=False, type=str),
+    click.option('--author', required=False, type=str, default="Unknown"),
+    click.option('--version', required=False, type=str, default="1.0"),
+    click.option('--associated-publication', required=False, type=str),
+    click.option('--conditions-of-access', required=False, type=str),
+    click.option('--copyright-notice', required=False, type=str),
+    click.option('--completeness', required=False, type=str, help="Completeness of the dataset."),
+    click.option('--ethical-review', required=False, type=str, help="Ethical review information."),
+    click.option('--human-subject', required=False, type=str, help="Human subject involvement information."),
+    click.option('--confidentiality-level', required=False, type=str, help="Confidentiality level."),
+    click.option('--irb', required=False, type=str, help="IRB approval information."),
+    click.option('--irb-protocol-id', required=False, type=str, help="IRB protocol identifier."),
+    click.option('--human-subject-research', required=False, type=str, help="Whether this involves human subject research."),
+    click.option('--human-subject-exemptions', required=False, type=str, help="Human subjects exemption category/description."),
+    click.option('--deidentified', required=False, type=str, help="Whether samples are de-identified."),
+    click.option('--fda-regulated', required=False, type=str, help="Whether the data is FDA regulated."),
+    click.option('--data-governance', required=False, type=str, help="Data governance committee information."),
+    click.option('--maintenance-plan', required=False, type=str, help="RAI: Versioning, maintainers, and deprecation policies."),
+    click.option('--intended-use', required=False, type=str, help="RAI: Recommended dataset uses (e.g., training, validation)."),
+    click.option('--limitations', required=False, type=str, help="RAI: Known limitations and non-recommended uses."),
+    click.option('--potential-sources-of-bias', required=False, type=str, help="RAI: Description of known biases in the dataset."),
+    click.option('--prohibited-uses', required=False, type=str, help="Prohibited uses of the dataset."),
+    click.option('--rai-data-collection', required=False, type=str, help="RAI: Description of the data collection process."),
+    click.option('--rai-data-collection-type', required=False, multiple=True, type=str, help="RAI: Type of data collection (e.g., 'Web Scraping', 'Surveys')."),
+    click.option('--rai-missing-data-desc', required=False, type=str, help="RAI: Description of missing data in the dataset."),
+    click.option('--rai-raw-data-source', required=False, type=str, help="RAI: Description of the raw data source."),
+    click.option('--rai-collection-start-date', required=False, type=str, help="RAI: Start date of the data collection process (ISO format)."),
+    click.option('--rai-collection-end-date', required=False, type=str, help="RAI: End date of the data collection process (ISO format)."),
+    click.option('--rai-imputation-protocol', required=False, type=str, help="RAI: Description of the data imputation process."),
+    click.option('--rai-manipulation-protocol', required=False, type=str, help="RAI: Description of the data manipulation process."),
+    click.option('--rai-preprocessing-protocol', required=False, multiple=True, type=str, help="RAI: Steps taken to preprocess the data for ML use."),
+    click.option('--rai-annotation-protocol', required=False, type=str, help="RAI: Description of the annotation process (e.g., workforce, tasks)."),
+    click.option('--rai-annotation-platform', required=False, multiple=True, type=str, help="RAI: Platform or tool used for human annotation."),
+    click.option('--rai-annotation-analysis', required=False, multiple=True, type=str, help="RAI: Analysis of annotations (e.g., disagreement resolution)."),
+    click.option('--rai-sensitive-info', required=False, multiple=True, type=str, help="RAI: Description of any personal or sensitive information."),
+    click.option('--rai-social-impact', required=False, type=str, help="RAI: Discussion of the dataset's potential social impact."),
+    click.option('--rai-annotations-per-item', required=False, type=str, help="RAI: Number of human labels per dataset item."),
+    click.option('--rai-annotator-demographics', required=False, multiple=True, type=str, help="RAI: Demographic specifications about the annotators."),
+    click.option('--rai-machine-annotation-tools', required=False, multiple=True, type=str, help="RAI: Software used for automated data annotation."),
+    click.option('--custom-properties', required=False, type=str, help='JSON string with additional properties to include'),
+]
+
+
+def _generate_crate_from_options(
+    path, guid, name, organization_name, project_name, description, keywords,
     license, date_published, author, version, associated_publication,
     conditions_of_access, copyright_notice, completeness, ethical_review, human_subject,
     confidentiality_level, irb, irb_protocol_id, human_subject_research, human_subject_exemptions,
@@ -244,14 +107,13 @@ def create(
     rai_annotations_per_item, rai_annotator_demographics, rai_machine_annotation_tools,
     custom_properties
 ):
-    """Create an RO-Crate in the specified path."""
     params = {
         "guid": guid, "name": name, "organizationName": organization_name,
         "projectName": project_name, "description": description, "keywords": list(keywords),
         "license": license, "datePublished": date_published, "author": author,
         "version": version, "associatedPublication": associated_publication,
         "conditionsOfAccess": conditions_of_access, "copyrightNotice": copyright_notice,
-        "path": rocrate_path
+        "path": path
     }
 
     rai_properties = {}
@@ -293,7 +155,7 @@ def create(
         rai_properties["rai:annotatorDemographics"] = list(rai_annotator_demographics)
     if rai_machine_annotation_tools:
         rai_properties["rai:machineAnnotationTools"] = list(rai_machine_annotation_tools)
-    
+
     timeframe = []
     if rai_collection_start_date:
         timeframe.append(rai_collection_start_date)
@@ -301,7 +163,7 @@ def create(
         timeframe.append(rai_collection_end_date)
     if timeframe:
         rai_properties["rai:dataCollectionTimeframe"] = timeframe
-    
+
     params.update(rai_properties)
 
     # Compliance fields as direct top-level properties
@@ -330,6 +192,85 @@ def create(
     filtered_params = {k: v for k, v in params.items() if v is not None}
     passed_crate = GenerateROCrate(**filtered_params)
     click.echo(passed_crate.get("@id"))
+
+
+def _read_crate_or_exit(ctx, rocrate_path, err=True):
+    try:
+        return ReadROCrateMetadata(rocrate_path)
+    except Exception as exc:
+        click.echo(f"ERROR Reading ROCrate: {exc}", err=err)
+        ctx.exit(code=1)
+
+
+def _merge_custom_properties_or_exit(ctx, params, custom_properties):
+    if not custom_properties:
+        return
+    try:
+        custom_props = json.loads(custom_properties)
+        if not isinstance(custom_props, dict): raise ValueError("Custom properties must be a JSON object")
+        params.update(custom_props)
+    except Exception as e:
+        click.echo(f"ERROR processing custom properties: {e}", err=True)
+        ctx.exit(code=1)
+
+
+def _resolve_file_location_or_exit(ctx, filepath, content_url, embargoed, entity_label):
+    """Pick the filepath value from the mutually-backstopping location options."""
+    if not filepath and not content_url and not embargoed:
+        click.echo(f"ERROR: Either 'filepath', 'content-url', or 'embargoed' must be provided for {entity_label} registration.", err=True)
+        ctx.exit(code=1)
+    if not filepath and not content_url and embargoed:
+        return "Embargoed"
+    if not filepath and content_url:
+        return content_url
+    return filepath
+
+
+def _require_relative_destination(ctx, destination, option_name):
+    if destination is not None and destination.is_absolute():
+        click.echo(f"ERROR: {option_name} must be a relative path within the RO-Crate: {destination}", err=True)
+        ctx.exit(code=1)
+
+
+def _copy_into_crate_or_exit(ctx, source_filepath, rocrate_path, destination_filepath):
+    try:
+        CopyToROCrate(source_filepath, pathlib.Path(rocrate_path) / destination_filepath)
+    except Exception as exc:
+        click.echo(f"ERROR copying file to RO-Crate: {exc}", err=True)
+        ctx.exit(code=1)
+
+
+def _generate_append_echo_or_exit(ctx, rocrate_path, generate_fn, params, entity_label):
+    """Generate an entity from params (Nones dropped), append it to the crate, echo its guid."""
+    filtered_params = {k: v for k, v in params.items() if v is not None}
+    try:
+        instance = generate_fn(**filtered_params)
+        AppendCrate(cratePath=rocrate_path, elements=[instance])
+        click.echo(instance.guid)
+    except FileNotInCrateException as e:
+        click.echo(f"ERROR: {e}", err=True)
+        ctx.exit(code=1)
+    except ValidationError as e:
+        click.echo(f"ERROR: {entity_label} Validation Failure\n{e}", err=True)
+        ctx.exit(code=1)
+    except Exception as exc:
+        click.echo(f"ERROR: {exc}", err=True)
+        ctx.exit(code=1)
+
+
+@rocrate_group.command('init')
+@add_options(ROCRATE_METADATA_OPTIONS)
+def init(**params):
+    """Initialize an RO-Crate in the current working directory."""
+    _generate_crate_from_options(path=pathlib.Path.cwd(), **params)
+
+
+@rocrate_group.command('create')
+@click.argument('rocrate-path', type=click.Path(exists=False, path_type=pathlib.Path))
+@add_options(ROCRATE_METADATA_OPTIONS)
+def create(rocrate_path, **params):
+    """Create an RO-Crate in the specified path."""
+    _generate_crate_from_options(path=rocrate_path, **params)
 
 
 @rocrate_group.group('register')
@@ -380,20 +321,8 @@ def registerSoftware(
     custom_properties: Optional[str],
 ):
     """Register Software metadata with the specified RO-Crate."""
-    try:
-        ReadROCrateMetadata(rocrate_path)
-    except Exception as exc:
-        click.echo(f"ERROR Reading ROCrate: {exc}", err=True)
-        ctx.exit(code=1)
-    
-    #Logic to determine the file_path/location
-    if not filepath and not content_url and not embargoed:
-        click.echo("ERROR: Either 'filepath', 'content-url', or 'embargoed' must be provided for software registration.", err=True)
-        ctx.exit(code=1)
-    if not filepath and not content_url and embargoed:
-        filepath = "Embargoed"
-    if not filepath and content_url:
-        filepath = content_url
+    _read_crate_or_exit(ctx, rocrate_path)
+    filepath = _resolve_file_location_or_exit(ctx, filepath, content_url, embargoed, "software")
 
     params = {
         "guid": guid, "name": name, "author": author, "version": version,
@@ -404,32 +333,8 @@ def registerSoftware(
         "additionalDocumentation": additional_documentation,
         "cratePath": rocrate_path
     }
-
-    if custom_properties:
-        try:
-            custom_props = json.loads(custom_properties)
-            if not isinstance(custom_props, dict): raise ValueError("Custom properties must be a JSON object")
-            params.update(custom_props)
-        except Exception as e:
-            click.echo(f"ERROR processing custom properties: {e}", err=True)
-            ctx.exit(code=1)
-
-    # Filter None values before passing
-    filtered_params = {k: v for k, v in params.items() if v is not None}
-
-    try:
-        software_instance = GenerateSoftware(**filtered_params)
-        AppendCrate(cratePath=rocrate_path, elements=[software_instance])
-        click.echo(software_instance.guid)
-    except FileNotInCrateException as e:
-        click.echo(f"ERROR: {e}", err=True)
-        ctx.exit(code=1)
-    except ValidationError as e:
-        click.echo(f"ERROR: Software Validation Failure\n{e}", err=True)
-        ctx.exit(code=1)
-    except Exception as exc:
-        click.echo(f"ERROR: {exc}", err=True)
-        ctx.exit(code=1)
+    _merge_custom_properties_or_exit(ctx, params, custom_properties)
+    _generate_append_echo_or_exit(ctx, rocrate_path, GenerateSoftware, params, "Software")
 
 
 @register.command('dataset')
@@ -492,21 +397,9 @@ def registerDataset(
         fairscape rocrate register dataset ./my-crate --name "My Dataset" ... --custom-properties '{"publisher": "Acme Corp", "license": "CC-BY-4.0"}'
     """
     
-    try:
-        ReadROCrateMetadata(rocrate_path)
-    except Exception as exc:
-        click.echo(f"ERROR Reading ROCrate: {str(exc)}")
-        ctx.exit(code=1)
-        
-    #Logic to determine the file_path/location
-    if not filepath and not content_url and not embargoed:
-        click.echo("ERROR: Either 'filepath', 'content-url', or 'embargoed' must be provided for dataset registration.", err=True)
-        ctx.exit(code=1)
-    if not filepath and not content_url and embargoed:
-        filepath = "Embargoed"
-    if not filepath and content_url:
-        filepath = content_url
-    
+    _read_crate_or_exit(ctx, rocrate_path, err=False)
+    filepath = _resolve_file_location_or_exit(ctx, filepath, content_url, embargoed, "dataset")
+
     try:
         custom_props = {}
         if custom_properties:
@@ -623,11 +516,7 @@ def computation(
     custom_properties: Optional[str],
 ):
     """Register Computation metadata with the specified RO-Crate."""
-    try:
-        ReadROCrateMetadata(rocrate_path)
-    except Exception as exc:
-        click.echo(f"ERROR Reading ROCrate: {exc}", err=True)
-        ctx.exit(code=1)
+    _read_crate_or_exit(ctx, rocrate_path)
 
     params = {
         "guid": guid, "name": name, "runBy": run_by, "command": command,
@@ -638,29 +527,8 @@ def computation(
         "associatedPublication": associated_publication,
         "additionalDocumentation": additional_documentation
     }
-
-    if custom_properties:
-        try:
-            custom_props = json.loads(custom_properties)
-            if not isinstance(custom_props, dict): raise ValueError("Custom properties must be a JSON object")
-            params.update(custom_props)
-        except Exception as e:
-            click.echo(f"ERROR processing custom properties: {e}", err=True)
-            ctx.exit(code=1)
-
-    # Filter None values before passing
-    filtered_params = {k: v for k, v in params.items() if v is not None}
-
-    try:
-        computationInstance = GenerateComputation(**filtered_params)
-        AppendCrate(cratePath=rocrate_path, elements=[computationInstance])
-        click.echo(computationInstance.guid)
-    except ValidationError as e:
-        click.echo(f"ERROR: Computation Validation Failure\n{e}", err=True)
-        ctx.exit(code=1)
-    except Exception as exc:
-        click.echo(f"ERROR: {exc}", err=True)
-        ctx.exit(code=1)
+    _merge_custom_properties_or_exit(ctx, params, custom_properties)
+    _generate_append_echo_or_exit(ctx, rocrate_path, GenerateComputation, params, "Computation")
 
 @register.command('sample')
 @click.argument('rocrate-path', type=click.Path(exists=True, path_type=pathlib.Path))
@@ -686,40 +554,15 @@ def registerSample(
     custom_properties: Optional[str],
 ):
     """Register Sample metadata with the specified RO-Crate."""
-    try:
-        ReadROCrateMetadata(rocrate_path)
-    except Exception as exc:
-        click.echo(f"ERROR Reading ROCrate: {exc}", err=True)
-        ctx.exit(code=1)
+    _read_crate_or_exit(ctx, rocrate_path)
 
     params = {
         "guid": guid, "name": name, "author": author, "description": description,
         "keywords": list(keywords), "filepath": filepath, "cellLineReference": cell_line_reference,
         "cratePath": rocrate_path
     }
-
-    if custom_properties:
-        try:
-            custom_props = json.loads(custom_properties)
-            if not isinstance(custom_props, dict): raise ValueError("Custom properties must be a JSON object")
-            params.update(custom_props)
-        except Exception as e:
-            click.echo(f"ERROR processing custom properties: {e}", err=True)
-            ctx.exit(code=1)
-
-    # Filter None values before passing
-    filtered_params = {k: v for k, v in params.items() if v is not None}
-
-    try:
-        sample_instance = GenerateSample(**filtered_params)
-        AppendCrate(cratePath=rocrate_path, elements=[sample_instance])
-        click.echo(sample_instance.guid)
-    except ValidationError as e:
-        click.echo(f"ERROR: Sample Validation Failure\n{e}", err=True)
-        ctx.exit(code=1)
-    except Exception as exc:
-        click.echo(f"ERROR: {exc}", err=True)
-        ctx.exit(code=1)
+    _merge_custom_properties_or_exit(ctx, params, custom_properties)
+    _generate_append_echo_or_exit(ctx, rocrate_path, GenerateSample, params, "Sample")
 
 
 @register.command('instrument')
@@ -750,11 +593,7 @@ def registerInstrument(
     custom_properties: Optional[str],
 ):
     """Register Instrument metadata with the specified RO-Crate."""
-    try:
-        ReadROCrateMetadata(rocrate_path)
-    except Exception as exc:
-        click.echo(f"ERROR Reading ROCrate: {exc}", err=True)
-        ctx.exit(code=1)
+    _read_crate_or_exit(ctx, rocrate_path)
 
     params = {
         "guid": guid, "name": name, "manufacturer": manufacturer, "model": model,
@@ -764,29 +603,8 @@ def registerInstrument(
         "additionalDocumentation": additional_documentation,
         "cratePath": rocrate_path
     }
-
-    if custom_properties:
-        try:
-            custom_props = json.loads(custom_properties)
-            if not isinstance(custom_props, dict): raise ValueError("Custom properties must be a JSON object")
-            params.update(custom_props)
-        except Exception as e:
-            click.echo(f"ERROR processing custom properties: {e}", err=True)
-            ctx.exit(code=1)
-
-    # Filter None values before passing
-    filtered_params = {k: v for k, v in params.items() if v is not None}
-
-    try:
-        instrument_instance = GenerateInstrument(**filtered_params)
-        AppendCrate(cratePath=rocrate_path, elements=[instrument_instance])
-        click.echo(instrument_instance.guid)
-    except ValidationError as e:
-        click.echo(f"ERROR: Instrument Validation Failure\n{e}", err=True)
-        ctx.exit(code=1)
-    except Exception as exc:
-        click.echo(f"ERROR: {exc}", err=True)
-        ctx.exit(code=1)
+    _merge_custom_properties_or_exit(ctx, params, custom_properties)
+    _generate_append_echo_or_exit(ctx, rocrate_path, GenerateInstrument, params, "Instrument")
 
 
 @register.command('experiment')
@@ -825,11 +643,7 @@ def registerExperiment(
     custom_properties: Optional[str],
 ):
     """Register Experiment metadata with the specified RO-Crate."""
-    try:
-        ReadROCrateMetadata(rocrate_path)
-    except Exception as exc:
-        click.echo(f"ERROR Reading ROCrate: {exc}", err=True)
-        ctx.exit(code=1)
+    _read_crate_or_exit(ctx, rocrate_path)
 
     params = {
         "guid": guid, "name": name, "experimentType": experiment_type, "runBy": run_by,
@@ -842,29 +656,8 @@ def registerExperiment(
         "protocol": protocol,
         "associatedPublication": associated_publication,
     }
-
-    if custom_properties:
-        try:
-            custom_props = json.loads(custom_properties)
-            if not isinstance(custom_props, dict): raise ValueError("Custom properties must be a JSON object")
-            params.update(custom_props)
-        except Exception as e:
-            click.echo(f"ERROR processing custom properties: {e}", err=True)
-            ctx.exit(code=1)
-
-    # Filter None values before passing
-    filtered_params = {k: v for k, v in params.items() if v is not None}
-
-    try:
-        experiment_instance = GenerateExperiment(**filtered_params)
-        AppendCrate(cratePath=rocrate_path, elements=[experiment_instance])
-        click.echo(experiment_instance.guid)
-    except ValidationError as e:
-        click.echo(f"ERROR: Experiment Validation Failure\n{e}", err=True)
-        ctx.exit(code=1)
-    except Exception as exc:
-        click.echo(f"ERROR: {exc}", err=True)
-        ctx.exit(code=1)
+    _merge_custom_properties_or_exit(ctx, params, custom_properties)
+    _generate_append_echo_or_exit(ctx, rocrate_path, GenerateExperiment, params, "Experiment")
 
 
 @register.command('biochementity')
@@ -887,11 +680,7 @@ def registerBioChemEntity(
     custom_properties: Optional[str],
 ):
     """Register BioChemEntity metadata with the specified RO-Crate."""
-    try:
-        ReadROCrateMetadata(rocrate_path)
-    except Exception as exc:
-        click.echo(f"ERROR Reading ROCrate: {exc}", err=True)
-        ctx.exit(code=1)
+    _read_crate_or_exit(ctx, rocrate_path)
 
     params = {
         "guid": guid, "name": name, "description": description,
@@ -903,28 +692,9 @@ def registerBioChemEntity(
     if identifier:
         params['identifier'] = list(identifier)
 
-    if custom_properties:
-        try:
-            custom_props = json.loads(custom_properties)
-            if not isinstance(custom_props, dict): raise ValueError("Custom properties must be a JSON object")
-            params.update(custom_props)
-        except Exception as e:
-            click.echo(f"ERROR processing custom properties: {e}", err=True)
-            ctx.exit(code=1)
-
-    # Filter None values before passing
-    filtered_params = {k: v for k, v in params.items() if v is not None}
-
-    try:
-        bioChemEntityInstance = GenerateBioChemEntity(**filtered_params)
-        AppendCrate(cratePath=rocrate_path, elements=[bioChemEntityInstance])
-        click.echo(bioChemEntityInstance.guid)
-    except ValidationError as e:
-        click.echo(f"ERROR: Sample Validation Failure\n{e}", err=True)
-        ctx.exit(code=1)
-    except Exception as exc:
-        click.echo(f"ERROR: {exc}", err=True)
-        ctx.exit(code=1)
+    _merge_custom_properties_or_exit(ctx, params, custom_properties)
+    # entity_label "Sample" preserves the historical error message for this command
+    _generate_append_echo_or_exit(ctx, rocrate_path, GenerateBioChemEntity, params, "Sample")
         
 @register.command('model')
 @click.argument('rocrate-path', type=click.Path(exists=True, path_type=pathlib.Path))
@@ -983,20 +753,9 @@ def registerModel(
     citation: Optional[str],
     custom_properties: Optional[str],
 ):
-    try:
-        ReadROCrateMetadata(rocrate_path)
-    except Exception as exc:
-        click.echo(f"ERROR Reading ROCrate: {exc}", err=True)
-        ctx.exit(code=1)
-    
-    if not filepath and not content_url and not embargoed:
-        click.echo("ERROR: Either 'filepath', 'content-url', or 'embargoed' must be provided for model registration.", err=True)
-        ctx.exit(code=1)
-    if not filepath and not content_url and embargoed:
-        filepath = "Embargoed"
-    if not filepath and content_url:
-        filepath = content_url
-    
+    _read_crate_or_exit(ctx, rocrate_path)
+    filepath = _resolve_file_location_or_exit(ctx, filepath, content_url, embargoed, "model")
+
     params = {
         "guid": guid,
         "name": name,
@@ -1034,31 +793,8 @@ def registerModel(
     if citation:
         params["citation"] = citation
     
-    if custom_properties:
-        try:
-            custom_props = json.loads(custom_properties)
-            if not isinstance(custom_props, dict):
-                raise ValueError("Custom properties must be a JSON object")
-            params.update(custom_props)
-        except Exception as e:
-            click.echo(f"ERROR processing custom properties: {e}", err=True)
-            ctx.exit(code=1)
-    
-    filtered_params = {k: v for k, v in params.items() if v is not None}
-    
-    try:
-        model_instance = GenerateModel(**filtered_params)
-        AppendCrate(cratePath=rocrate_path, elements=[model_instance])
-        click.echo(model_instance.guid)
-    except FileNotInCrateException as e:
-        click.echo(f"ERROR: {e}", err=True)
-        ctx.exit(code=1)
-    except ValidationError as e:
-        click.echo(f"ERROR: Model Validation Failure\n{e}", err=True)
-        ctx.exit(code=1)
-    except Exception as exc:
-        click.echo(f"ERROR: {exc}", err=True)
-        ctx.exit(code=1)
+    _merge_custom_properties_or_exit(ctx, params, custom_properties)
+    _generate_append_echo_or_exit(ctx, rocrate_path, GenerateModel, params, "Model")
 
 
 @register.command('hf')
@@ -1118,11 +854,7 @@ def registerHuggingFaceModel(
         fairscape rocrate register hf timm/densenet121.tv_in1k ./my-crate
         fairscape rocrate register hf timm/densenet121.tv_in1k ./my-crate --generated-by ark:12345/computation-xyz
     """
-    try:
-        ReadROCrateMetadata(rocrate_path)
-    except Exception as exc:
-        click.echo(f"ERROR Reading ROCrate: {exc}", err=True)
-        ctx.exit(code=1)
+    _read_crate_or_exit(ctx, rocrate_path)
 
     # Fetch metadata from HuggingFace
     try:
@@ -1179,39 +911,17 @@ def registerHuggingFaceModel(
     if hf_metadata.get('README'):
         params["README"] = hf_metadata.get('README')
 
-    # Handle custom properties
-    if custom_properties:
-        try:
-            custom_props = json.loads(custom_properties)
-            if not isinstance(custom_props, dict):
-                raise ValueError("Custom properties must be a JSON object")
-            params.update(custom_props)
-        except Exception as e:
-            click.echo(f"ERROR processing custom properties: {e}", err=True)
-            ctx.exit(code=1)
-
-    # Filter None values
-    filtered_params = {k: v for k, v in params.items() if v is not None}
+    _merge_custom_properties_or_exit(ctx, params, custom_properties)
 
     # Validate required fields
-    if not filtered_params.get('name'):
+    if not params.get('name'):
         click.echo("ERROR: Could not determine model name from HuggingFace. Please specify --name", err=True)
         ctx.exit(code=1)
-    if not filtered_params.get('description'):
+    if not params.get('description'):
         click.echo("ERROR: Could not determine model description from HuggingFace. Please specify --description", err=True)
         ctx.exit(code=1)
 
-    # Register the model
-    try:
-        model_instance = GenerateModel(**filtered_params)
-        AppendCrate(cratePath=rocrate_path, elements=[model_instance])
-        click.echo(model_instance.guid)
-    except ValidationError as e:
-        click.echo(f"ERROR: Model Validation Failure\n{e}", err=True)
-        ctx.exit(code=1)
-    except Exception as exc:
-        click.echo(f"ERROR: {exc}", err=True)
-        ctx.exit(code=1)
+    _generate_append_echo_or_exit(ctx, rocrate_path, GenerateModel, params, "Model")
 
 
 @register.command('subrocrate')
@@ -1410,21 +1120,9 @@ def addSoftware(
     custom_properties: Optional[str],
 ):
     """Copy a Software file into the RO-Crate and register its metadata."""
-    try:
-        ReadROCrateMetadata(rocrate_path)
-    except Exception as exc:
-        click.echo(f"ERROR Reading ROCrate: {str(exc)}", err=True)
-        ctx.exit(code=1)
-
-    if destination_filepath.is_absolute():
-        click.echo(f"ERROR: --destination-filepath must be a relative path within the RO-Crate: {destination_filepath}", err=True)
-        ctx.exit(code=1)
-
-    try:
-        CopyToROCrate(source_filepath, pathlib.Path(rocrate_path) / destination_filepath)
-    except Exception as exc:
-        click.echo(f"ERROR copying file to RO-Crate: {str(exc)}", err=True)
-        ctx.exit(code=1)
+    _read_crate_or_exit(ctx, rocrate_path)
+    _require_relative_destination(ctx, destination_filepath, "--destination-filepath")
+    _copy_into_crate_or_exit(ctx, source_filepath, rocrate_path, destination_filepath)
 
     params = {
         "guid": guid,
@@ -1443,14 +1141,7 @@ def addSoftware(
         "cratePath": rocrate_path
     }
 
-    if custom_properties:
-        try:
-            custom_props = json.loads(custom_properties)
-            if not isinstance(custom_props, dict): raise ValueError("Custom properties must be a JSON object")
-            params.update(custom_props)
-        except Exception as e:
-            click.echo(f"ERROR processing custom properties: {e}", err=True)
-            ctx.exit(code=1)
+    _merge_custom_properties_or_exit(ctx, params, custom_properties)
 
     filtered_params = {k: v for k, v in params.items() if v is not None}
 
@@ -1532,19 +1223,9 @@ def addDataset(
         fairscape rocrate add dataset ./my-crate --name "My Data" ... --source-filepath /local/data.csv --destination-filepath data/data.csv --summary-statistics-source /local/data_summary.json --summary-statistics-destination data/data_summary.json
     """
 
-    try:
-        ReadROCrateMetadata(rocrate_path)
-    except Exception as exc:
-        click.echo(f"ERROR Reading ROCrate: {str(exc)}", err=True)
-        ctx.exit(code=1)
-
-    if destination_filepath.is_absolute():
-        click.echo(f"ERROR: --destination-filepath must be a relative path within the RO-Crate: {destination_filepath}", err=True)
-        ctx.exit(code=1)
-
-    if summary_statistics_destination and summary_statistics_destination.is_absolute():
-         click.echo(f"ERROR: --summary-statistics-destination must be a relative path within the RO-Crate: {summary_statistics_destination}", err=True)
-         ctx.exit(code=1)
+    _read_crate_or_exit(ctx, rocrate_path)
+    _require_relative_destination(ctx, destination_filepath, "--destination-filepath")
+    _require_relative_destination(ctx, summary_statistics_destination, "--summary-statistics-destination")
 
     try:
         CopyToROCrate(source_filepath, pathlib.Path(rocrate_path) / destination_filepath)
@@ -1682,21 +1363,9 @@ def addModel(
     citation: Optional[str],
     custom_properties: Optional[str],
 ):
-    try:
-        ReadROCrateMetadata(rocrate_path)
-    except Exception as exc:
-        click.echo(f"ERROR Reading ROCrate: {exc}", err=True)
-        ctx.exit(code=1)
-    
-    if destination_filepath.is_absolute():
-        click.echo(f"ERROR: --destination-filepath must be a relative path within the RO-Crate: {destination_filepath}", err=True)
-        ctx.exit(code=1)
-    
-    try:
-        CopyToROCrate(source_filepath, pathlib.Path(rocrate_path) / destination_filepath)
-    except Exception as exc:
-        click.echo(f"ERROR copying file to RO-Crate: {exc}", err=True)
-        ctx.exit(code=1)
+    _read_crate_or_exit(ctx, rocrate_path)
+    _require_relative_destination(ctx, destination_filepath, "--destination-filepath")
+    _copy_into_crate_or_exit(ctx, source_filepath, rocrate_path, destination_filepath)
 
     params = {
         "guid": guid,
@@ -1735,28 +1404,5 @@ def addModel(
     if citation:
         params["citation"] = citation
     
-    if custom_properties:
-        try:
-            custom_props = json.loads(custom_properties)
-            if not isinstance(custom_props, dict):
-                raise ValueError("Custom properties must be a JSON object")
-            params.update(custom_props)
-        except Exception as e:
-            click.echo(f"ERROR processing custom properties: {e}", err=True)
-            ctx.exit(code=1)
-    
-    filtered_params = {k: v for k, v in params.items() if v is not None}
-    
-    try:
-        model_instance = GenerateModel(**filtered_params)
-        AppendCrate(cratePath=rocrate_path, elements=[model_instance])
-        click.echo(model_instance.guid)
-    except ValidationError as e:
-        click.echo(f"ERROR: Model Validation Failure\n{e}", err=True)
-        ctx.exit(code=1)
-    except FileNotInCrateException as e:
-        click.echo(f"ERROR: {e}", err=True)
-        ctx.exit(code=1)
-    except Exception as exc:
-        click.echo(f"ERROR: {exc}", err=True)
-        ctx.exit(code=1)
+    _merge_custom_properties_or_exit(ctx, params, custom_properties)
+    _generate_append_echo_or_exit(ctx, rocrate_path, GenerateModel, params, "Model")
