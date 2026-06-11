@@ -1,308 +1,355 @@
 <div class="subcrates-container">
-  {% if subcrates %} {% for subcrate in subcrates %}
-  <div class="subcrate-summary" id="subcrate-{{ loop.index }}">
-    <h3 class="subcrate-title">{{ subcrate.name }}</h3>
-    <div class="subcrate-metadata">
-      <div class="metadata-item">
-        <span class="metadata-label">ROCrate ID:</span>
-        <span class="metadata-value">
-          {% if subcrate.published %}
-          <a href="https://fairscape.net/view/{{ subcrate.id }}"
-            >{{ subcrate.id }}</a
-          >
-          {% else %} {{ subcrate.id }} {% endif %}
-        </span>
-      </div>
-      {% if subcrate.evidence %}
-      <div class="metadata-item">
-        <span class="metadata-label">Provenance ID:</span>
-        <span class="metadata-value">
-          {% if subcrate.evidence.endswith('.html') %}
-          <a href="{{ subcrate.evidence }}">{{ subcrate.evidence }}</a>
-          {% else %}
-          <a href="https://fairscape.net/{{ subcrate.evidence }}"
-            >{{ subcrate.evidence }}</a
-          >
-          {% endif %}
-        </span>
-      </div>
-      {% endif %}
-      <div class="metadata-item">
-        <span class="metadata-label">Description:</span>
-        <span class="metadata-value">{{ subcrate.description }}</span>
-      </div>
-      <div class="metadata-item">
-        <span class="metadata-label">Authors:</span>
-        <span class="metadata-value">{{ subcrate.authors }}</span>
-      </div>
-      <div class="metadata-item">
-        <span class="metadata-label">Date:</span>
-        <span class="metadata-value"
-          >{{ subcrate.date if subcrate.date else "Not specified" }}</span
-        >
-      </div>
-      <div class="metadata-item">
-        <span class="metadata-label">Size:</span>
-        <span class="metadata-value">{{ subcrate.size }}</span>
-      </div>
-      <div class="metadata-item">
-        <span class="metadata-label">DOI:</span>
-        <span class="metadata-value">
-          {% if subcrate.doi and subcrate.doi != "None" %}
-          <a href="https://doi.org/{{ subcrate.doi }}" target="_blank"
-            >{{ subcrate.doi }}</a
-          >
-          {% else %} None {% endif %}
-        </span>
-      </div>
-      <div class="metadata-item">
-        <span class="metadata-label">Contact:</span>
-        <span class="metadata-value">
-          {% if subcrate.contact and subcrate.contact != "Not specified" %} {%
-          if subcrate.contact.startswith('http://') or
-          subcrate.contact.startswith('https://') %}
-          <a href="{{ subcrate.contact }}" target="_blank"
-            >{{ subcrate.contact }}</a
-          >
-          {% elif '@' in subcrate.contact %}
-          <a href="mailto:{{ subcrate.contact }}">{{ subcrate.contact }}</a>
-          {% else %} {{ subcrate.contact }} {% endif %} {% else %} Not specified
-          {% endif %}
-        </span>
-      </div>
-      {% if subcrate.md5 %}
-      <div class="metadata-item">
-        <span class="metadata-label">MD5:</span>
-        <span class="metadata-value">{{ subcrate.md5 }}</span>
-      </div>
-      {% endif %} {% if subcrate.statistical_summary_info %}
-      <div class="metadata-item">
-        <span class="metadata-label">Statistics/Quality Control:</span>
-        <span class="metadata-value">
-          <a href="{{ subcrate.statistical_summary_info.url }}" target="_blank"
-            >{{ subcrate.statistical_summary_info.name }}</a
-          >
-        </span>
-      </div>
-      {% endif %}
+  {% if subcrates %}
 
-      <div class="metadata-item">
-        <span class="metadata-label">Copyright:</span>
-        <span class="metadata-value">{{ subcrate.copyright }}</span>
-      </div>
-      <div class="metadata-item">
-        <span class="metadata-label">License:</span>
-        <span class="metadata-value">
-          {% if subcrate.license %}
-          <a href="{{ subcrate.license }}" target="_blank"
-            >{{ subcrate.license }}</a
-          >
-          {% else %} Not specified {% endif %}
-        </span>
-      </div>
-      <div class="metadata-item">
-        <span class="metadata-label">Terms of Use:</span>
-        <span class="metadata-value">
-          {% if subcrate.terms_of_use and
-          (subcrate.terms_of_use.startswith('http://') or
-          subcrate.terms_of_use.startswith('https://')) %}
-          <a href="{{ subcrate.terms_of_use }}" target="_blank"
-            >{{ subcrate.terms_of_use }}</a
-          >
-          {% else %} {{ subcrate.terms_of_use }} {% endif %}
-        </span>
-      </div>
-      <div class="metadata-item">
-        <span class="metadata-label">Keywords:</span>
-        <span class="metadata-value">
-          {% if subcrate.keywords is string %} {{ subcrate.keywords }} {% else
-          %} {{ subcrate.keywords|join(', ') }} {% endif %}
-        </span>
-      </div>
-      <div class="metadata-item">
-        <span class="metadata-label">Funding:</span>
-        <span class="metadata-value">
-          {% if subcrate.funder and (subcrate.funder.startswith('http://') or
-          subcrate.funder.startswith('https://')) %}
-          <a href="{{ subcrate.funder }}" target="_blank"
-            >{{ subcrate.funder }}</a
-          >
-          {% else %} {{ subcrate.funder }} {% endif %}
-        </span>
-      </div>
-      {% if subcrate.related_publications %}
-      <div class="metadata-item">
-        <span class="metadata-label">Related Publications:</span>
-        <span class="metadata-value">
-          <ul class="compact-list">
-            {% for pub in subcrate.related_publications %}
-            <li>
-              {% if pub.startswith('http://') or pub.startswith('https://') %}
-              <a href="{{ pub }}" target="_blank">{{ pub }}</a>
-              {% elif pub.startswith('doi:') or pub.startswith('DOI:') %}
-              <a href="https://doi.org/{{ pub[4:] }}" target="_blank"
-                >{{ pub }}</a
-              >
-              {% elif pub.startswith('10.') %}
-              <a href="https://doi.org/{{ pub }}" target="_blank">{{ pub }}</a>
-              {% else %} {{ pub }} {% endif %}
-            </li>
-            {% endfor %}
-          </ul>
-        </span>
-      </div>
-      {% endif %}
-    </div>
-
-    <div class="subcrate-composition">
-      <h4>Content Summary</h4>
-      <div class="compact-grid">
-        <div class="summary-card">
-          <div class="card-header">
-            <span class="card-icon">📊</span>
-            <span class="card-title">Files ({{ subcrate.files_count }})</span>
-          </div>
-          {% if subcrate.file_formats or subcrate.file_access %}
-          <div class="card-content">
-            {% if subcrate.file_formats %}
-            <div class="stat-row">
-              <span class="stat-label">Formats: </span>
-              <span class="stat-value"
-                >{% for fmt, count in subcrate.file_formats.items() %}{{ fmt }}
-                ({{ count }}){% if not loop.last %}, {% endif %}{% endfor
-                %}</span
-              >
-            </div>
-            {% endif %} {% if subcrate.file_access %}
-            <div class="stat-row">
-              <span class="stat-label">Access: </span>
-              <span class="stat-value"
-                >{% for acc, count in subcrate.file_access.items() %}{{ acc }}
-                ({{ count }}){% if not loop.last %}, {% endif %}{% endfor
-                %}</span
-              >
-            </div>
-            {% endif %}
-          </div>
-          {% endif %}
-        </div>
-
-        <div class="summary-card">
-          <div class="card-header">
-            <span class="card-icon">💻</span>
-            <span class="card-title"
-              >Software & Instruments ({{ subcrate.software_count +
-              subcrate.instruments_count }})</span
-            >
-          </div>
-          <div class="card-content">
-            {% if subcrate.software_count > 0 or subcrate.instruments_count > 0
-            %}
-            <div class="stat-row">
-              <span class="stat-label">Software: </span>
-              <span class="stat-value">{{ subcrate.software_count }}</span>
-            </div>
-            <div class="stat-row">
-              <span class="stat-label">Instruments: </span>
-              <span class="stat-value">{{ subcrate.instruments_count }}</span>
-            </div>
-            {% endif %}
-          </div>
-        </div>
-
-        <div class="summary-card">
-          <div class="card-header">
-            <span class="card-icon">🧪</span>
-            <span class="card-title">Inputs ({{ subcrate.inputs_count }})</span>
-          </div>
-          <div class="card-content">
-            {% if subcrate.samples_count > 0 %} {% if subcrate.cell_lines %}
-            <div class="stat-row">
-              <span class="stat-label">Derived From: </span>
-              {% for line_id, cell_info in subcrate.cell_lines.items() %}
-              <span class="stat-value"
-                >{{ cell_info.name }}. {{ cell_info.organism_name }}.</span
-              >
-              {% if not loop.last %}, {% endif %} {% endfor %}
-            </div>
-            {% else %}
-            <div class="stat-row">
-              <span class="stat-label">Derived From: </span>
-              <span class="stat-value">Not specified</span>
-            </div>
-            {% endif %} {% endif %} {% if subcrate.input_datasets %}
-            <div class="stat-row">
-              <span class="stat-label">Datasets: </span>
-              <span class="stat-value"
-                >{{ subcrate.input_datasets_count }}</span
-              >
-            </div>
-            <div class="stat-row indent">
-              <span class="stat-value">
-                {% for fmt, count in subcrate.input_datasets.items() %}{{ fmt }}
-                <span class="small">({{ count }})</span>{% if not loop.last %},
-                {% endif %}{% endfor %}
-              </span>
-            </div>
-            {% endif %}
-          </div>
-        </div>
-        <div class="summary-card">
-          <div class="card-header">
-            <span class="card-icon">⚙️</span>
-            <span class="card-title">Other Components</span>
-          </div>
-          <div class="card-content">
-            <div class="stat-row">
-              <span class="stat-label">Experiments: </span>
-              <span class="stat-value">{{ subcrate.experiments_count }}</span>
-            </div>
-            {% if subcrate.experiment_types %}
-            <div class="stat-row indent">
-              <span class="stat-value small"
-                >{% for type, count in subcrate.experiment_types.items() %}{{
-                type }} ({{ count }}){% if not loop.last %}, {% endif %}{%
-                endfor %}</span
-              >
-            </div>
-            {% endif %} {% if subcrate.experiment_patterns %}
-            <div class="stat-row indent">
-              <span class="stat-value small"
-                >{% for pattern in subcrate.experiment_patterns %}{{ pattern
-                }}{% if not loop.last %}, {% endif %}{% endfor %}</span
-              >
-            </div>
-            {% endif %}
-            <div class="stat-row">
-              <span class="stat-label">Computations: </span>
-              <span class="stat-value">{{ subcrate.computations_count }}</span>
-            </div>
-            {% if subcrate.computation_patterns %}
-            <div class="stat-row indent">
-              <span class="stat-value small"
-                >{% for pattern in subcrate.computation_patterns %}{{ pattern
-                }}{% if not loop.last %}, {% endif %}{% endfor %}</span
-              >
-            </div>
-            {% endif %}
-            <div class="stat-row">
-              <span class="stat-label">Schemas: </span>
-              <span class="stat-value">{{ subcrate.schemas_count }}</span>
-            </div>
-            <div class="stat-row">
-              <span class="stat-label">Other: </span>
-              <span class="stat-value">{{ subcrate.other_count }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    {% if subcrate.preview_url %}
-    <div class="view-full-link">
-      <a href="{{ subcrate.preview_url }}">View Full Dataset Details</a>
-    </div>
-    {% endif %}
+  <!-- Datasets at a glance: filter + index table -->
+  <h3 class="dataset-index-heading">Datasets at a glance</h3>
+  <p class="dataset-index-hint">
+    Select a row to jump to that dataset's full details below.
+  </p>
+  <div class="dataset-toolbar">
+    <input
+      type="search"
+      id="dataset-filter"
+      class="dataset-filter-input"
+      placeholder="Filter datasets by name, keyword or format…"
+      aria-label="Filter datasets"
+      autocomplete="off"
+    />
+    <span id="dataset-filter-count" class="dataset-filter-count"></span>
   </div>
+
+  <table class="data-table dataset-index">
+    <thead>
+      <tr>
+        <th scope="col">Dataset</th>
+        <th scope="col">Size</th>
+        <th scope="col">Files</th>
+        <th scope="col">Computations</th>
+        <th scope="col">Schemas</th>
+        <th scope="col">Formats</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for subcrate in subcrates %}
+      <tr
+        class="dataset-index-row"
+        data-target="subcrate-{{ loop.index }}"
+        data-name="{{ subcrate.name|lower }}"
+        data-keywords="{% if subcrate.keywords is string %}{{ subcrate.keywords|lower }}{% else %}{{ subcrate.keywords|join(' ')|lower }}{% endif %}"
+        data-formats="{% if subcrate.file_formats %}{{ subcrate.file_formats.keys()|join(' ')|lower }}{% endif %}"
+      >
+        <td>
+          <a href="#subcrate-{{ loop.index }}" class="dataset-jump">{{ subcrate.name }}</a>
+        </td>
+        <td>{{ subcrate.size if subcrate.size else "—" }}</td>
+        <td>{{ subcrate.files_count }}</td>
+        <td>{{ subcrate.computations_count }}</td>
+        <td>{{ subcrate.schemas_count }}</td>
+        <td class="dataset-index-formats">
+          {% if subcrate.file_formats %}{% for fmt in subcrate.file_formats.keys()|list %}{{ fmt }}{% if not loop.last %}, {% endif %}{% endfor %}{% else %}—{% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <p id="dataset-no-matches" class="dataset-no-matches" hidden>
+    No datasets match your filter.
+  </p>
+
+  <!-- Per-dataset collapsible cards -->
+  {% for subcrate in subcrates %}
+  <details
+    class="subcrate-card"
+    id="subcrate-{{ loop.index }}"
+    data-name="{{ subcrate.name|lower }}"
+    data-keywords="{% if subcrate.keywords is string %}{{ subcrate.keywords|lower }}{% else %}{{ subcrate.keywords|join(' ')|lower }}{% endif %}"
+    data-formats="{% if subcrate.file_formats %}{{ subcrate.file_formats.keys()|join(' ')|lower }}{% endif %}"
+  >
+    <summary class="subcrate-head">
+      <span class="subcrate-head-title">{{ subcrate.name }}</span>
+      <span class="subcrate-head-chips">
+        {% if subcrate.size %}<span class="chip">{{ subcrate.size }}</span>{% endif %}
+        <span class="chip">{{ subcrate.files_count }} files</span>
+        {% if subcrate.computations_count and subcrate.computations_count > 0 %}<span class="chip">{{ subcrate.computations_count }} computations</span>{% endif %}
+        {% if subcrate.file_formats %}{% for fmt in subcrate.file_formats.keys()|list %}{% if loop.index <= 3 %}<span class="chip chip-format">{{ fmt }}</span>{% endif %}{% endfor %}{% endif %}
+      </span>
+    </summary>
+
+    <div class="subcrate-body">
+      <div class="subcrate-metadata">
+        <div class="metadata-item">
+          <span class="metadata-label">ROCrate ID:</span>
+          <span class="metadata-value">
+            {% if subcrate.published %}
+            <a href="https://fairscape.net/view/{{ subcrate.id }}">{{ subcrate.id }}</a>
+            {% else %} {{ subcrate.id }} {% endif %}
+          </span>
+        </div>
+        {% if subcrate.description %}
+        <div class="metadata-item">
+          <span class="metadata-label">Description:</span>
+          <span class="metadata-value">{{ subcrate.description }}</span>
+        </div>
+        {% endif %}
+        {% if subcrate.authors %}
+        <div class="metadata-item">
+          <span class="metadata-label">Authors:</span>
+          <span class="metadata-value">{{ subcrate.authors }}</span>
+        </div>
+        {% endif %}
+        {% if subcrate.date and subcrate.date != "Not specified" %}
+        <div class="metadata-item">
+          <span class="metadata-label">Date:</span>
+          <span class="metadata-value">{{ subcrate.date }}</span>
+        </div>
+        {% endif %}
+        {% if subcrate.size %}
+        <div class="metadata-item">
+          <span class="metadata-label">Size:</span>
+          <span class="metadata-value">{{ subcrate.size }}</span>
+        </div>
+        {% endif %}
+        <div class="metadata-item">
+          <span class="metadata-label">License:</span>
+          <span class="metadata-value">
+            {% if subcrate.license %}
+            <a href="{{ subcrate.license }}" target="_blank">{{ subcrate.license }}</a>
+            {% else %} Not specified {% endif %}
+          </span>
+        </div>
+        {% if subcrate.keywords %}
+        <div class="metadata-item">
+          <span class="metadata-label">Keywords:</span>
+          <span class="metadata-value">
+            {% if subcrate.keywords is string %} {{ subcrate.keywords }} {% else %} {{ subcrate.keywords|join(', ') }} {% endif %}
+          </span>
+        </div>
+        {% endif %}
+        {% if subcrate.doi and subcrate.doi != "None" %}
+        <div class="metadata-item">
+          <span class="metadata-label">DOI:</span>
+          <span class="metadata-value">
+            <a href="https://doi.org/{{ subcrate.doi }}" target="_blank">{{ subcrate.doi }}</a>
+          </span>
+        </div>
+        {% endif %}
+        {% if subcrate.statistical_summary_info %}
+        <div class="metadata-item">
+          <span class="metadata-label">Statistics/Quality Control:</span>
+          <span class="metadata-value">
+            <a href="{{ subcrate.statistical_summary_info.url }}" target="_blank">{{ subcrate.statistical_summary_info.name }}</a>
+          </span>
+        </div>
+        {% endif %}
+
+        <!-- Secondary metadata grouped under a nested toggle -->
+        {% set has_more = subcrate.evidence or (subcrate.contact and subcrate.contact != "Not specified") or subcrate.md5 or subcrate.copyright or (subcrate.terms_of_use and subcrate.terms_of_use != "Not specified") or subcrate.funder or subcrate.related_publications %}
+        {% if has_more %}
+        <details class="more-meta">
+          <summary>More metadata</summary>
+          {% if subcrate.evidence %}
+          <div class="metadata-item">
+            <span class="metadata-label">Provenance ID:</span>
+            <span class="metadata-value">
+              {% if subcrate.evidence.endswith('.html') %}
+              <a href="{{ subcrate.evidence }}">{{ subcrate.evidence }}</a>
+              {% else %}
+              <a href="https://fairscape.net/{{ subcrate.evidence }}">{{ subcrate.evidence }}</a>
+              {% endif %}
+            </span>
+          </div>
+          {% endif %}
+          {% if subcrate.contact and subcrate.contact != "Not specified" %}
+          <div class="metadata-item">
+            <span class="metadata-label">Contact:</span>
+            <span class="metadata-value">
+              {% if subcrate.contact.startswith('http://') or subcrate.contact.startswith('https://') %}
+              <a href="{{ subcrate.contact }}" target="_blank">{{ subcrate.contact }}</a>
+              {% elif '@' in subcrate.contact %}
+              <a href="mailto:{{ subcrate.contact }}">{{ subcrate.contact }}</a>
+              {% else %} {{ subcrate.contact }} {% endif %}
+            </span>
+          </div>
+          {% endif %}
+          {% if subcrate.md5 %}
+          <div class="metadata-item">
+            <span class="metadata-label">MD5:</span>
+            <span class="metadata-value">{{ subcrate.md5 }}</span>
+          </div>
+          {% endif %}
+          {% if subcrate.copyright %}
+          <div class="metadata-item">
+            <span class="metadata-label">Copyright:</span>
+            <span class="metadata-value">{{ subcrate.copyright }}</span>
+          </div>
+          {% endif %}
+          {% if subcrate.terms_of_use and subcrate.terms_of_use != "Not specified" %}
+          <div class="metadata-item">
+            <span class="metadata-label">Terms of Use:</span>
+            <span class="metadata-value">
+              {% if subcrate.terms_of_use.startswith('http://') or subcrate.terms_of_use.startswith('https://') %}
+              <a href="{{ subcrate.terms_of_use }}" target="_blank">{{ subcrate.terms_of_use }}</a>
+              {% else %} {{ subcrate.terms_of_use }} {% endif %}
+            </span>
+          </div>
+          {% endif %}
+          {% if subcrate.funder %}
+          <div class="metadata-item">
+            <span class="metadata-label">Funding:</span>
+            <span class="metadata-value">
+              {% if subcrate.funder.startswith('http://') or subcrate.funder.startswith('https://') %}
+              <a href="{{ subcrate.funder }}" target="_blank">{{ subcrate.funder }}</a>
+              {% else %} {{ subcrate.funder }} {% endif %}
+            </span>
+          </div>
+          {% endif %}
+          {% if subcrate.related_publications %}
+          <div class="metadata-item">
+            <span class="metadata-label">Related Publications:</span>
+            <span class="metadata-value">
+              <ul class="compact-list">
+                {% for pub in subcrate.related_publications %}
+                <li>
+                  {% if pub.startswith('http://') or pub.startswith('https://') %}
+                  <a href="{{ pub }}" target="_blank">{{ pub }}</a>
+                  {% elif pub.startswith('doi:') or pub.startswith('DOI:') %}
+                  <a href="https://doi.org/{{ pub[4:] }}" target="_blank">{{ pub }}</a>
+                  {% elif pub.startswith('10.') %}
+                  <a href="https://doi.org/{{ pub }}" target="_blank">{{ pub }}</a>
+                  {% else %} {{ pub }} {% endif %}
+                </li>
+                {% endfor %}
+              </ul>
+            </span>
+          </div>
+          {% endif %}
+        </details>
+        {% endif %}
+      </div>
+
+      <div class="subcrate-composition">
+        <h4>Content Summary</h4>
+        <div class="compact-grid">
+          <div class="summary-card">
+            <div class="card-header">
+              <span class="card-icon">📊</span>
+              <span class="card-title">Files ({{ subcrate.files_count }})</span>
+            </div>
+            {% if subcrate.file_formats or subcrate.file_access %}
+            <div class="card-content">
+              {% if subcrate.file_formats %}
+              <div class="stat-row">
+                <span class="stat-label">Formats: </span>
+                <span class="stat-value">{% for fmt, count in subcrate.file_formats.items() %}{{ fmt }} ({{ count }}){% if not loop.last %}, {% endif %}{% endfor %}</span>
+              </div>
+              {% endif %} {% if subcrate.file_access %}
+              <div class="stat-row">
+                <span class="stat-label">Access: </span>
+                <span class="stat-value">{% for acc, count in subcrate.file_access.items() %}{{ acc }} ({{ count }}){% if not loop.last %}, {% endif %}{% endfor %}</span>
+              </div>
+              {% endif %}
+            </div>
+            {% endif %}
+          </div>
+
+          <div class="summary-card">
+            <div class="card-header">
+              <span class="card-icon">💻</span>
+              <span class="card-title">Software &amp; Instruments ({{ subcrate.software_count + subcrate.instruments_count }})</span>
+            </div>
+            <div class="card-content">
+              {% if subcrate.software_count > 0 or subcrate.instruments_count > 0 %}
+              <div class="stat-row">
+                <span class="stat-label">Software: </span>
+                <span class="stat-value">{{ subcrate.software_count }}</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">Instruments: </span>
+                <span class="stat-value">{{ subcrate.instruments_count }}</span>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="summary-card">
+            <div class="card-header">
+              <span class="card-icon">🧪</span>
+              <span class="card-title">Inputs ({{ subcrate.inputs_count }})</span>
+            </div>
+            <div class="card-content">
+              {% if subcrate.samples_count > 0 %} {% if subcrate.cell_lines %}
+              <div class="stat-row">
+                <span class="stat-label">Derived From: </span>
+                {% for line_id, cell_info in subcrate.cell_lines.items() %}
+                <span class="stat-value">{{ cell_info.name }}. {{ cell_info.organism_name }}.</span>
+                {% if not loop.last %}, {% endif %} {% endfor %}
+              </div>
+              {% else %}
+              <div class="stat-row">
+                <span class="stat-label">Derived From: </span>
+                <span class="stat-value">Not specified</span>
+              </div>
+              {% endif %} {% endif %} {% if subcrate.input_datasets %}
+              <div class="stat-row">
+                <span class="stat-label">Datasets: </span>
+                <span class="stat-value">{{ subcrate.input_datasets_count }}</span>
+              </div>
+              <div class="stat-row indent">
+                <span class="stat-value">
+                  {% for fmt, count in subcrate.input_datasets.items() %}{{ fmt }} <span class="small">({{ count }})</span>{% if not loop.last %}, {% endif %}{% endfor %}
+                </span>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+          <div class="summary-card">
+            <div class="card-header">
+              <span class="card-icon">⚙️</span>
+              <span class="card-title">Other Components</span>
+            </div>
+            <div class="card-content">
+              <div class="stat-row">
+                <span class="stat-label">Experiments: </span>
+                <span class="stat-value">{{ subcrate.experiments_count }}</span>
+              </div>
+              {% if subcrate.experiment_types %}
+              <div class="stat-row indent">
+                <span class="stat-value small">{% for type, count in subcrate.experiment_types.items() %}{{ type }} ({{ count }}){% if not loop.last %}, {% endif %}{% endfor %}</span>
+              </div>
+              {% endif %} {% if subcrate.experiment_patterns %}
+              <div class="stat-row indent">
+                <span class="stat-value small">{% for pattern in subcrate.experiment_patterns %}{{ pattern }}{% if not loop.last %}, {% endif %}{% endfor %}</span>
+              </div>
+              {% endif %}
+              <div class="stat-row">
+                <span class="stat-label">Computations: </span>
+                <span class="stat-value">{{ subcrate.computations_count }}</span>
+              </div>
+              {% if subcrate.computation_patterns %}
+              <div class="stat-row indent">
+                <span class="stat-value small">{% for pattern in subcrate.computation_patterns %}{{ pattern }}{% if not loop.last %}, {% endif %}{% endfor %}</span>
+              </div>
+              {% endif %}
+              <div class="stat-row">
+                <span class="stat-label">Schemas: </span>
+                <span class="stat-value">{{ subcrate.schemas_count }}</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">Other: </span>
+                <span class="stat-value">{{ subcrate.other_count }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% if subcrate.preview_url %}
+      <div class="view-full-link">
+        <a href="{{ subcrate.preview_url }}">View Full Dataset Details</a>
+      </div>
+      {% endif %}
+    </div>
+  </details>
   {% endfor %} {% else %}
   <p>No subcrates found.</p>
   {% endif %}

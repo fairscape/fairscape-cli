@@ -273,6 +273,101 @@ def create(rocrate_path, **params):
     _generate_crate_from_options(path=rocrate_path, **params)
 
 
+def _resolve_metadata_path(rocrate_path: pathlib.Path) -> pathlib.Path:
+    """Accept either a crate directory or the metadata JSON file itself."""
+    if rocrate_path.is_dir():
+        return rocrate_path / "ro-crate-metadata.json"
+    return rocrate_path
+
+
+def _deep_coverage_metrics(release_dir):
+    """Walk every sub-crate under release_dir and return v2 coverage metrics
+    keyed by Evidence attribute name. The crate file is NOT modified — these
+    are passed to the scorer and echoed into the AI-Ready score document, so a
+    release scores against its full sub-crate content without storing coverage
+    fields on the RO-Crate itself.
+    """
+    from fairscape_cli.models.rocrate import collect_subcrate_aggregated_metrics
+
+    m = collect_subcrate_aggregated_metrics(release_dir)
+    return {
+        "dataset_count": m.dataset_count,
+        "software_count": m.software_count,
+        "schema_count": m.schema_count,
+        "computation_count": m.computation_count,
+        "total_entities": m.total_entities,
+        "good_computations": m.good_computations,
+        "computation_with_software": m.computations_with_software,
+        "computation_with_io": m.computations_with_io,
+        "entities_with_provenance_link": m.entities_with_provenance_link,
+        "software_with_link": m.software_with_link,
+        "datasets_with_accession": m.datasets_with_accession,
+        "datasets_sourced": m.datasets_with_source,
+        "distribution_link_count": m.distribution_link_count,
+        "distinct_protocols": sorted(m.distribution_protocols),
+        "entities_with_hash": m.entities_with_checksums,
+        "hashable_entities": m.dataset_count + m.software_count,
+        "tabular_dataset_count": m.tabular_dataset_count,
+        "tabular_with_schema": m.tabular_with_schema,
+        "tabular_with_stats": m.tabular_with_stats,
+    }
+
+
+@rocrate_group.command('score')
+@click.argument('rocrate-path', type=click.Path(exists=True, path_type=pathlib.Path))
+@click.option('--grader-version', 'grader_version', type=click.Choice(['v1', 'v2']), default='v1',
+              show_default=True, help="Which AI-Ready grader to run. v2 is the harsher deterministic grader.")
+@click.option('--deep', is_flag=True, default=False,
+              help="Release crates only: walk every sub-crate from disk to compute fresh coverage metrics before scoring (extra compute, does not modify the crate). Recommended for v2 on a release directory.")
+@click.option('--json', 'json_out', type=click.Path(path_type=pathlib.Path), default=None,
+              help="Write the full score as JSON to this path instead of a summary table.")
+def score(rocrate_path, grader_version, deep, json_out):
+    """Compute the deterministic AI-Ready score for an RO-Crate."""
+    ctx = click.get_current_context()
+    metadata_path = _resolve_metadata_path(rocrate_path)
+    try:
+        with metadata_path.open("r") as f:
+            crate_dict = json.load(f)
+    except Exception as exc:
+        click.echo(f"ERROR reading RO-Crate metadata at {metadata_path}: {exc}", err=True)
+        ctx.exit(code=1)
+
+    aggregate_metrics = None
+    if deep:
+        release_dir = rocrate_path if rocrate_path.is_dir() else metadata_path.parent
+        click.echo(f"Walking sub-crates under {release_dir} for deep coverage metrics ...", err=True)
+        try:
+            aggregate_metrics = _deep_coverage_metrics(release_dir)
+        except Exception as exc:
+            click.echo(f"WARNING: deep metric collection failed ({exc}); scoring inline graph only.", err=True)
+
+    try:
+        if grader_version == 'v2':
+            from fairscape_models.conversion.mapping.AIReadyV2 import score_rocrate_v2
+            result = score_rocrate_v2(crate_dict, aggregate_metrics=aggregate_metrics)
+        else:
+            from fairscape_models.conversion.mapping.AIReady import score_rocrate
+            result = score_rocrate(crate_dict)
+    except Exception as exc:
+        click.echo(f"ERROR scoring RO-Crate: {exc}", err=True)
+        ctx.exit(code=1)
+
+    if json_out is not None:
+        json_out.write_text(result.model_dump_json(indent=2))
+        click.echo(f"Wrote {grader_version} AI-Ready score to {json_out}")
+        return
+
+    if grader_version == 'v2':
+        click.echo(f"AI-Ready Score (v2): {result.total_earned}/{result.total_possible} ({result.percentage}%)")
+        for c in result.criteria:
+            click.echo(f"  {c.criterion:28} {c.earned:>2}/{c.possible:<2} ({c.percentage:.0f}%)")
+            for r in c.rubrics:
+                hint = "" if r.score == 2 else f"   -> {r.gaps[0]}" if r.gaps else ""
+                click.echo(f"      {r.id} {r.sub_criterion:30} {r.score} {r.label}{hint}")
+    else:
+        click.echo(result.model_dump_json(indent=2))
+
+
 @rocrate_group.group('register')
 def register():
     """Add a metadata record to the RO-Crate for a Dataset, Software, or Computation (metadata only)."""

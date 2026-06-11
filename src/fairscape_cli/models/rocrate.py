@@ -639,6 +639,20 @@ class AggregatedMetrics:
     # Standards
     schemas: List[Dict[str, str]] = field(default_factory=list)
 
+    # v2 deterministic-grader rollups (harsher coverage-based scoring)
+    computations_with_io: int = 0          # inputs AND outputs declared
+    computations_with_software: int = 0    # usedSoftware declared
+    good_computations: int = 0             # software AND inputs AND outputs
+    entities_with_provenance_link: int = 0
+    software_with_link: int = 0            # versioned/resolvable link
+    datasets_with_accession: int = 0       # specialist-repo accession on contentUrl
+    datasets_with_source: int = 0          # derivedFrom OR generatedBy OR accession (1.a)
+    distribution_link_count: int = 0       # total dataset contentUrl/distribution links (6.b)
+    distribution_protocols: Set[str] = field(default_factory=set)  # url schemes seen (6.b)
+    tabular_dataset_count: int = 0
+    tabular_with_schema: int = 0
+    tabular_with_stats: int = 0
+
 
 def _extract_content_size_bytes(size_str) -> int:
     """
@@ -785,19 +799,57 @@ def _get_entity_type(entity: Dict[str, Any]) -> str:
 
 def _accumulate_entity_metrics(metrics: AggregatedMetrics, entity: Dict[str, Any]) -> None:
     """Add one @graph entity's counts, size, checksum, and format info to metrics."""
+    # Shared graph-only detectors so the rollups match what the v2 grader would
+    # compute over an inlined graph.
+    from fairscape_models.conversion.mapping import aiready_extract as ax
+
     entity_type = _get_entity_type(entity)
 
-    if "Dataset" in entity_type:
+    if ax.has_provenance_link(entity):
+        metrics.entities_with_provenance_link += 1
+
+    if "Dataset" in entity_type and "ROCrate" not in entity_type:
         metrics.dataset_count += 1
         metrics.total_entities += 1
+        tabular = ax.is_tabular_dataset(entity)
+        if tabular:
+            metrics.tabular_dataset_count += 1
+            if ax.get_dataset_schema_link(entity):
+                metrics.tabular_with_schema += 1
+            has_stats = bool(entity.get("hasSummaryStatistics")) or any(
+                entity.get(k) is not None for k in ("rowCount", "columnCount", "contentSize", "sampleSize", "size")
+            )
+            if has_stats:
+                metrics.tabular_with_stats += 1
+        if ax.AccessionDetector.detect(ax.first_present(entity, *ax.CONTENT_URL_KEYS)):
+            metrics.datasets_with_accession += 1
+        if ax.has_dataset_source(entity):
+            metrics.datasets_with_source += 1
+        url = ax.first_present(entity, "contentUrl", "url")
+        for u in ax.as_list(url):
+            if isinstance(u, str) and u:
+                metrics.distribution_link_count += 1
+                if "://" in u:
+                    metrics.distribution_protocols.add(u.split("://", 1)[0].lower())
 
     elif "Computation" in entity_type or "Experiment" in entity_type:
         metrics.computation_count += 1
         metrics.total_entities += 1
+        has_sw = bool(ax.get_used_software(entity))
+        has_io = bool(ax.get_inputs(entity)) and bool(ax.get_outputs(entity))
+        if has_sw:
+            metrics.computations_with_software += 1
+        if has_io:
+            metrics.computations_with_io += 1
+        if has_sw and has_io:
+            metrics.good_computations += 1
 
     elif "Software" in entity_type:
         metrics.software_count += 1
         metrics.total_entities += 1
+        link = ax.first_present(entity, "url", "codeRepository", "contentUrl")
+        if link and (ax.first_present(entity, "version", "versionTag") or ax.ArchiveDetector.is_persistent_id(link)):
+            metrics.software_with_link += 1
 
     elif "Schema" in entity_type:
         metrics.schema_count += 1

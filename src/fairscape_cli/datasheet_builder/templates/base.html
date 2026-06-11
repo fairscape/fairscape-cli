@@ -775,6 +775,200 @@
         text-decoration: underline;
       }
 
+      /* ---- Composition: filter toolbar + at-a-glance index ---- */
+      .dataset-index-heading {
+        margin-top: 4px;
+        margin-bottom: 2px;
+      }
+      .dataset-index-hint {
+        margin: 0 0 8px 0;
+        font-size: 12.5px;
+        color: var(--color-text-muted);
+      }
+      .dataset-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 4px 0 12px 0;
+      }
+      .dataset-filter-input {
+        flex: 1;
+        max-width: 420px;
+        padding: 8px 12px;
+        font-size: 14px;
+        font-family: var(--font-sans);
+        color: var(--color-text);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-sm);
+        background-color: var(--color-surface);
+      }
+      .dataset-filter-input:focus {
+        outline: none;
+        border-color: var(--color-accent);
+        box-shadow: 0 0 0 3px rgba(45, 125, 210, 0.15);
+      }
+      .dataset-filter-count {
+        font-size: 12.5px;
+        color: var(--color-text-muted);
+      }
+      .dataset-index th {
+        position: sticky;
+        top: 0;
+      }
+      .dataset-index th:first-child,
+      .dataset-index td:first-child {
+        width: 28%;
+      }
+      .dataset-index-row {
+        cursor: pointer;
+      }
+      .dataset-index-row:hover {
+        background-color: var(--color-surface-alt);
+      }
+      .dataset-index td {
+        font-size: 13.5px;
+      }
+      .dataset-index-formats {
+        color: var(--color-text-muted);
+        font-size: 12.5px;
+      }
+      .dataset-jump {
+        color: var(--color-accent);
+        text-decoration: none;
+        font-weight: 600;
+      }
+      .dataset-jump:hover {
+        text-decoration: underline;
+      }
+      .dataset-no-matches {
+        color: var(--color-text-muted);
+        font-style: italic;
+        padding: 10px 0;
+      }
+
+      /* ---- Collapsible per-dataset card ---- */
+      .subcrate-card {
+        background-color: var(--color-surface);
+        padding: 0;
+        border-radius: var(--radius);
+        margin-bottom: 12px;
+        border: 1px solid var(--color-border);
+        box-shadow: var(--shadow-card);
+        break-inside: avoid;
+        scroll-margin-top: 60px;
+      }
+      .subcrate-card[open] {
+        box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06),
+          0 4px 12px rgba(16, 24, 40, 0.1);
+      }
+      summary.subcrate-head {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px 12px;
+        padding: 12px 16px;
+        cursor: pointer;
+        list-style: none;
+        color: var(--color-primary);
+      }
+      summary.subcrate-head::-webkit-details-marker {
+        display: none;
+      }
+      summary.subcrate-head::before {
+        content: "\25B8"; /* ▸ */
+        flex-shrink: 0;
+        color: var(--color-text-muted);
+        font-size: 13px;
+        transition: transform 0.15s ease-in-out;
+      }
+      .subcrate-card[open] > summary.subcrate-head::before {
+        transform: rotate(90deg);
+      }
+      summary.subcrate-head:hover {
+        background-color: var(--color-surface-alt);
+        border-radius: var(--radius);
+      }
+      .subcrate-card[open] > summary.subcrate-head:hover {
+        border-radius: var(--radius) var(--radius) 0 0;
+      }
+      .subcrate-head-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--color-primary);
+      }
+      .subcrate-head-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        margin-left: auto;
+      }
+      .chip-format {
+        background-color: var(--color-surface-alt);
+      }
+      .subcrate-body {
+        padding: 4px 16px 16px;
+        border-top: 1px solid var(--color-border);
+      }
+      /* Single-column stacked metadata (matches the original layout) */
+      .subcrate-body .subcrate-metadata {
+        margin-top: 10px;
+        margin-bottom: 10px;
+      }
+      .more-meta {
+        margin-top: 8px;
+      }
+      .more-meta > summary {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--color-accent);
+      }
+
+      /* ---- Back-to-top button ---- */
+      #back-to-top {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        z-index: 1001;
+        width: 42px;
+        height: 42px;
+        border: none;
+        border-radius: 50%;
+        background-color: var(--color-primary);
+        color: #fff;
+        font-size: 20px;
+        line-height: 1;
+        cursor: pointer;
+        box-shadow: var(--shadow-card);
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+      }
+      #back-to-top.visible {
+        opacity: 0.9;
+        visibility: visible;
+      }
+      #back-to-top:hover {
+        opacity: 1;
+        background-color: var(--color-primary-dark);
+      }
+
+      /* ---- Sidebar active-section highlight (scrollspy) ---- */
+      #sidebar a.active,
+      #sidebar a.sidebar-subnav-link.active {
+        background-color: var(--color-accent);
+        color: #fff;
+      }
+
+      /* ---- Sticky Composition section header ---- */
+      #composition.section-header {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        background-color: var(--color-surface);
+        padding-top: 8px;
+        padding-bottom: 4px;
+      }
+
       @media print {
         body {
           background-color: white;
@@ -792,8 +986,18 @@
         }
         .view-full-link,
         #sidebar,
-        #sidebar-toggle {
+        #sidebar-toggle,
+        #back-to-top,
+        .dataset-toolbar {
           display: none;
+        }
+        #composition.section-header,
+        .dataset-index th {
+          position: static;
+        }
+        .subcrate-card {
+          break-inside: avoid;
+          box-shadow: none;
         }
         .summary-section,
         .distribution-section,
@@ -826,6 +1030,9 @@
         .exec-summary-grid {
           grid-template-columns: 1fr;
         }
+        .subcrate-head-chips {
+          margin-left: 0;
+        }
         .aiready-flex {
           flex-direction: column;
           align-items: stretch;
@@ -847,6 +1054,7 @@
   </head>
   <body>
     <button id="sidebar-toggle">☰</button>
+    <button id="back-to-top" title="Back to top" aria-label="Back to top">↑</button>
 
     <nav id="sidebar">
       <div class="sidebar-title">Navigation</div>
@@ -910,14 +1118,166 @@
 
     <script>
       document.addEventListener("DOMContentLoaded", function () {
-        const toggleBtn = document.getElementById("sidebar-toggle");
-        const sidebar = document.getElementById("sidebar");
         const body = document.body;
 
-        toggleBtn.addEventListener("click", function () {
-          sidebar.classList.toggle("active");
-          body.classList.toggle("sidebar-active");
+        /* --- Sidebar toggle --- */
+        const toggleBtn = document.getElementById("sidebar-toggle");
+        const sidebar = document.getElementById("sidebar");
+        if (toggleBtn && sidebar) {
+          toggleBtn.addEventListener("click", function () {
+            sidebar.classList.toggle("active");
+            body.classList.toggle("sidebar-active");
+          });
+        }
+
+        /* --- Jump to a dataset card and open it --- */
+        function openCard(id) {
+          const card = document.getElementById(id);
+          if (card && card.tagName.toLowerCase() === "details") {
+            card.open = true;
+          }
+          return card;
+        }
+        function jumpToCard(id) {
+          const card = openCard(id);
+          if (card) {
+            card.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        }
+        // Intercept clicks on any link/element targeting a subcrate card.
+        document.body.addEventListener("click", function (e) {
+          const link = e.target.closest('a[href^="#subcrate-"]');
+          if (link) {
+            const id = link.getAttribute("href").slice(1);
+            e.preventDefault();
+            jumpToCard(id);
+            history.replaceState(null, "", "#" + id);
+            return;
+          }
+          // Clicking anywhere on an index row jumps too.
+          const row = e.target.closest(".dataset-index-row");
+          if (row && !e.target.closest("a")) {
+            jumpToCard(row.getAttribute("data-target"));
+          }
         });
+        // Open the right card if the page is loaded with a #subcrate-N hash.
+        if (location.hash.indexOf("#subcrate-") === 0) {
+          openCard(location.hash.slice(1));
+        }
+        window.addEventListener("hashchange", function () {
+          if (location.hash.indexOf("#subcrate-") === 0) {
+            openCard(location.hash.slice(1));
+          }
+        });
+
+        /* --- Dataset filter (index table + cards) --- */
+        const filterInput = document.getElementById("dataset-filter");
+        const countEl = document.getElementById("dataset-filter-count");
+        const noMatches = document.getElementById("dataset-no-matches");
+        if (filterInput) {
+          const rows = Array.prototype.slice.call(
+            document.querySelectorAll(".dataset-index-row")
+          );
+          const cards = Array.prototype.slice.call(
+            document.querySelectorAll(".subcrate-card")
+          );
+          const total = cards.length;
+          function matchText(el, q) {
+            return (
+              (el.getAttribute("data-name") || "").indexOf(q) !== -1 ||
+              (el.getAttribute("data-keywords") || "").indexOf(q) !== -1 ||
+              (el.getAttribute("data-formats") || "").indexOf(q) !== -1
+            );
+          }
+          function applyFilter() {
+            const q = filterInput.value.trim().toLowerCase();
+            let shown = 0;
+            rows.forEach(function (r) {
+              const ok = !q || matchText(r, q);
+              r.style.display = ok ? "" : "none";
+            });
+            cards.forEach(function (c) {
+              const ok = !q || matchText(c, q);
+              c.style.display = ok ? "" : "none";
+              if (ok) shown++;
+            });
+            if (noMatches) noMatches.hidden = shown !== 0;
+            if (countEl) {
+              countEl.textContent = q
+                ? shown + " of " + total + " datasets"
+                : "";
+            }
+          }
+          filterInput.addEventListener("input", applyFilter);
+        }
+
+        /* --- Back-to-top button --- */
+        const toTop = document.getElementById("back-to-top");
+        if (toTop) {
+          window.addEventListener("scroll", function () {
+            if (window.scrollY > 400) {
+              toTop.classList.add("visible");
+            } else {
+              toTop.classList.remove("visible");
+            }
+          });
+          toTop.addEventListener("click", function () {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          });
+        }
+
+        /* --- Scrollspy: highlight active sidebar link --- */
+        const navLinks = Array.prototype.slice.call(
+          document.querySelectorAll('#sidebar a[href^="#"]')
+        );
+        const linkById = {};
+        navLinks.forEach(function (a) {
+          linkById[a.getAttribute("href").slice(1)] = a;
+        });
+        const watched = Object.keys(linkById)
+          .map(function (id) {
+            return document.getElementById(id);
+          })
+          .filter(Boolean);
+        if (watched.length && "IntersectionObserver" in window) {
+          let current = null;
+          const observer = new IntersectionObserver(
+            function (entries) {
+              entries.forEach(function (entry) {
+                if (entry.isIntersecting) {
+                  const a = linkById[entry.target.id];
+                  if (a && a !== current) {
+                    if (current) current.classList.remove("active");
+                    a.classList.add("active");
+                    current = a;
+                  }
+                }
+              });
+            },
+            { rootMargin: "-10% 0px -80% 0px", threshold: 0 }
+          );
+          watched.forEach(function (el) {
+            observer.observe(el);
+          });
+        }
+
+        /* --- Print/PDF: force-open every collapsible, restore afterwards --- */
+        let printSnapshot = [];
+        function expandAllForPrint() {
+          printSnapshot = [];
+          document.querySelectorAll("details").forEach(function (d) {
+            printSnapshot.push([d, d.open]);
+            d.open = true;
+          });
+        }
+        function restoreAfterPrint() {
+          printSnapshot.forEach(function (pair) {
+            pair[0].open = pair[1];
+          });
+          printSnapshot = [];
+        }
+        window.addEventListener("beforeprint", expandAllForPrint);
+        window.addEventListener("afterprint", restoreAfterPrint);
       });
     </script>
   </body>
