@@ -295,6 +295,7 @@ def _deep_coverage_metrics(release_dir):
         "software_count": m.software_count,
         "schema_count": m.schema_count,
         "computation_count": m.computation_count,
+        "experiment_count": m.experiment_count,
         "total_entities": m.total_entities,
         "good_computations": m.good_computations,
         "computation_with_software": m.computations_with_software,

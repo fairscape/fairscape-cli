@@ -622,6 +622,7 @@ class AggregatedMetrics:
     # Entity counts (for provenance scoring)
     dataset_count: int = 0
     computation_count: int = 0
+    experiment_count: int = 0   # wet-lab / instrument activities; NOT computations
     software_count: int = 0
     schema_count: int = 0
 
@@ -832,7 +833,7 @@ def _accumulate_entity_metrics(metrics: AggregatedMetrics, entity: Dict[str, Any
                 if "://" in u:
                     metrics.distribution_protocols.add(u.split("://", 1)[0].lower())
 
-    elif "Computation" in entity_type or "Experiment" in entity_type:
+    elif "Computation" in entity_type:
         metrics.computation_count += 1
         metrics.total_entities += 1
         has_sw = bool(ax.get_used_software(entity))
@@ -843,6 +844,10 @@ def _accumulate_entity_metrics(metrics: AggregatedMetrics, entity: Dict[str, Any
             metrics.computations_with_io += 1
         if has_sw and has_io:
             metrics.good_computations += 1
+
+    elif "Experiment" in entity_type:
+        metrics.experiment_count += 1
+        metrics.total_entities += 1
 
     elif "Software" in entity_type:
         metrics.software_count += 1
