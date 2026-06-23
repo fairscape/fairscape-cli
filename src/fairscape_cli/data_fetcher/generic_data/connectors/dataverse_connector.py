@@ -213,7 +213,9 @@ class DataverseConnector:
                     if is_software:
                         software_data.append({
                             **item_common_data,
-                            "version": latest_version_info.get("versionNumber", "1.0"), # Use dataset version for software
+                            # Dataverse returns versionNumber as a numeric type; the
+                            # Software pydantic model requires a string.
+                            "version": str(latest_version_info.get("versionNumber", "1.0")),
                             "documentation_url": dataset_landing_url
                         })
                     else:
@@ -249,7 +251,7 @@ class DataverseConnector:
                 "url": f"{self.server_url}/dataset.xhtml?persistentId=doi:{doi}",
                 "contentUrl": f"{self.server_url}/dataset.xhtml?persistentId=doi:{doi}",
                 "publisher": dataset_metadata_full.get("publisher", ""),
-                "version": latest_version_info.get("versionNumber"),
+                "version": str(latest_version_info.get("versionNumber")) if latest_version_info.get("versionNumber") is not None else None,
             }
         )
     

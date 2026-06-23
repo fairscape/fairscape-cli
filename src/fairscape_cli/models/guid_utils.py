@@ -30,6 +30,16 @@ def GenerateGUID(data: List[int], prefix: str)-> str:
     squid_encoded = squids.encode(data)
     return f"ark:{NAAN}/{prefix}-{squid_encoded}"
 
+def GenerateEntityGuid(prefix: str, name: Optional[str] = None, clean: bool = False) -> str:
+    """Build an ark guid like ark:NAAN/<prefix>-<name-slug>-<squid> (name slug omitted if no name)."""
+    sq = GenerateDatetimeSquid()
+    if not name:
+        return f"ark:{NAAN}/{prefix}-{sq}"
+    seg = f"{name.lower().replace(' ', '-')}-{sq}"
+    if clean:
+        seg = clean_guid(seg)
+    return f"ark:{NAAN}/{prefix}-{seg}"
+
 import re
 
 def clean_guid(segment: str) -> str:

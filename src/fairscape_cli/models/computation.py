@@ -1,6 +1,5 @@
 from fairscape_models.computation import Computation
-from fairscape_cli.config import NAAN
-from fairscape_cli.models.guid_utils import GenerateDatetimeSquid
+from fairscape_cli.models.guid_utils import GenerateEntityGuid
 from typing import Dict, Any, Optional, List, Union
 
 def GenerateComputation(
@@ -24,12 +23,8 @@ def GenerateComputation(
         A validated Computation instance
     """
     # Generate GUID if not provided
-    if not guid and name:
-        sq = GenerateDatetimeSquid()
-        guid = f"ark:{NAAN}/computation-{name.lower().replace(' ', '-')}-{sq}"
-    elif not guid:
-        sq = GenerateDatetimeSquid()
-        guid = f"ark:{NAAN}/computation-{sq}"
+    if not guid:
+        guid = GenerateEntityGuid("computation", name)
     
     computationMetadata = {
         "@id": guid,

@@ -1,6 +1,5 @@
 from fairscape_models.model_card import ModelCard
-from fairscape_cli.config import NAAN
-from fairscape_cli.models.guid_utils import GenerateDatetimeSquid, clean_guid
+from fairscape_cli.models.guid_utils import GenerateEntityGuid
 from fairscape_cli.models.utils import setRelativeFilepath, calculate_md5
 import pathlib
 from typing import Dict, Any, Optional, List, Union
@@ -13,13 +12,8 @@ def GenerateModel(
     cratePath: Optional[str] = None,
     **kwargs
 ) -> ModelCard:
-    if not guid and name:
-        sq = GenerateDatetimeSquid()
-        seg = clean_guid(f"{name.lower().replace(' ', '-')}-{sq}")
-        guid = f"ark:{NAAN}/model-{seg}"
-    elif not guid:
-        sq = GenerateDatetimeSquid()
-        guid = f"ark:{NAAN}/model-{sq}"
+    if not guid:
+        guid = GenerateEntityGuid("model", name, clean=True)
     
     modelMetadata = {
         "@id": guid,

@@ -90,12 +90,14 @@ class ResearchData(BaseModel):
             }
             if file_info.get("md5"):
                 dataset_params["md5"] = file_info["md5"]
+            if file_info.get("sha256"):
+                dataset_params["sha256"] = file_info["sha256"]
             if file_info.get("contentSize"):
                 dataset_params["contentSize"] = file_info["contentSize"]
-            
+
             dataset = GenerateDataset(**dataset_params)
             elements_to_append.append(dataset)
-            
+
         for software_info in self.software:
             software_version = software_info.get("version", "0.1.0") 
             
@@ -105,8 +107,8 @@ class ResearchData(BaseModel):
 
             software_author = self.authors[0] if self.authors else "Unknown"
 
-            software_item = GenerateSoftware(
-                guid=None, 
+            software_kwargs = dict(
+                guid=None,
                 name=software_info.get("name", "Unnamed software"),
                 author=software_author,
                 dateModified=software_info.get("dateModified", datetime.now().isoformat()),
@@ -114,10 +116,18 @@ class ResearchData(BaseModel):
                 description=software_description,
                 associatedPublication=self.doi or None,
                 additionalDocumentation=software_info.get("documentation_url", None),
-                format=software_info.get("format", "application/zip"), 
+                format=software_info.get("format", "application/zip"),
                 usedByComputation=[],
-                contentUrl=software_info.get("contentUrl", software_info.get("url", "")) 
+                contentUrl=software_info.get("contentUrl", software_info.get("url", "")),
             )
+            if software_info.get("md5"):
+                software_kwargs["md5"] = software_info["md5"]
+            if software_info.get("sha256"):
+                software_kwargs["sha256"] = software_info["sha256"]
+            if software_info.get("contentSize"):
+                software_kwargs["contentSize"] = software_info["contentSize"]
+
+            software_item = GenerateSoftware(**software_kwargs)
             elements_to_append.append(software_item)
         
         if elements_to_append:
@@ -137,6 +147,10 @@ class ResearchData(BaseModel):
                 server_url=kwargs.get('server_url', 'https://dataverse.harvard.edu'),
                 api_token=kwargs.get('token')
             )
+            return connector.fetch_data(identifier, include_files=kwargs.get('include_files', True))
+        elif repository_type.lower() == 'manifest':
+            from fairscape_cli.data_fetcher.generic_data.connectors.manifest_connector import ManifestConnector
+            connector = ManifestConnector(sidecar_path=kwargs.get('sidecar_path'))
             return connector.fetch_data(identifier, include_files=kwargs.get('include_files', True))
         else:
             raise ValueError(f"Unsupported repository type: {repository_type}")

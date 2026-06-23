@@ -4,7 +4,6 @@ import pytest
 import pathlib
 import shutil
 import json
-import os
 from unittest.mock import patch, Mock
 from fairscape_cli.__main__ import cli as fairscape_cli_app
 
@@ -199,7 +198,10 @@ class TestBuildCommands:
         
         with open(evidence_json_path, 'r') as f:
             evidence_data = json.load(f)
-        assert evidence_data["@id"] == f"{ark_id}-evidence-graph"
+        # Phase 4 rewires the CLI to the shared EvidenceGraphBuilder, which
+        # derives the graph @id server-style: ark:NAAN/evidence-graph-<postfix>
+        # instead of the old CLI's {ark_id}-evidence-graph.
+        assert evidence_data["@id"] == "ark:59852/evidence-graph-dataset-kolf-pan-genome-aggregated-data-B9Fd0uujkz"
         assert evidence_data["owner"] == ark_id
         
         evidence_html_path = subcrate_path / "provenance-graph.html"
@@ -208,10 +210,22 @@ class TestBuildCommands:
 
         with open(subcrate_metadata_path, 'r') as f:
             metadata = json.load(f)
-        
-        root_dataset = metadata['@graph'][1] 
+
+        # The reference must land on the root entity referenced by the
+        # ro-crate-metadata.json descriptor's `about`, not blindly @graph[1]
+        descriptor = next(
+            e for e in metadata['@graph']
+            if e['@id'].endswith('ro-crate-metadata.json')
+        )
+        root_dataset = next(
+            e for e in metadata['@graph']
+            if e['@id'] == descriptor['about']['@id']
+        )
         assert "localEvidenceGraph" in root_dataset
         assert root_dataset["localEvidenceGraph"]["@id"] == str(evidence_html_path)
+
+        # atomic metadata writes must not leave temp files behind
+        assert not list(subcrate_path.glob("*.tmp"))
 
     def test_build_evidence_graph_with_directory(self, runner, test_release_crate: pathlib.Path):
         """Test evidence graph generation with directory path"""
@@ -261,102 +275,92 @@ class TestBuildCommands:
         assert result.exit_code == 1
         assert "ERROR: ro-crate-metadata.json not found" in result.output
 
-    def test_build_evidence_graph_generation_error(self, runner, minimal_valid_crate: pathlib.Path):
-        """Test handling of evidence graph generation errors"""
-        ark_id = "test-ark-id"
-        
-        with patch('fairscape_cli.commands.build_commands.generate_evidence_graph_from_rocrate') as mock_gen:
-            mock_gen.side_effect = Exception("Graph generation failed")
-            
-            result = runner.invoke(
-                fairscape_cli_app,
-                [
-                    "build", "evidence-graph", str(minimal_valid_crate), ark_id
-                ]
-            )
+    # The mock-based error-path tests that patched
+    # `generate_evidence_graph_from_rocrate` were removed in Phase 4 of the
+    # evidence-graph migration -- that function no longer exists, and the
+    # replacements (LocalGraphSource + EvidenceGraphBuilder) have no single
+    # "generation" patch point to stub out. See EVIDENCE_GRAPH_MIGRATION.md.
 
-            assert result.exit_code == 1
-            assert "ERROR: Graph generation failed" in result.output
+    # ------------------------------------------------------------------
+    # Phase 5 CLI E2E coverage: start-node type matrix.
+    # Backed by the real cm4ai-release/Perturb-Seq/cell-atlas fixture
+    # so the builder runs end-to-end through LocalGraphSource / BFS /
+    # condensation / LocalResultSink. The DatasetGroup-trigger scenario
+    # is covered in the shared-pkg unit tests
+    # (fairscape_graph_tools/tests/test_evidence_graph_builder.py) --
+    # this fixture's 90+ input datasets are stub refs not present in
+    # the crate's @graph, so they become error-stubs rather than
+    # clustering into a DatasetGroup.
+    # ------------------------------------------------------------------
 
-    def test_build_evidence_graph_html_import_error(self, runner, minimal_valid_crate: pathlib.Path):
-        """Test evidence graph when HTML generation module is missing"""
-        ark_id = "test-ark-id"
-        
-        with patch('fairscape_cli.commands.build_commands.generate_evidence_graph_from_rocrate') as mock_graph, \
-             patch('fairscape_cli.commands.build_commands.generate_evidence_graph_html') as mock_html:
-            
-            mock_graph.return_value = {"@id": f"{ark_id}-evidence-graph"}
-            mock_html.side_effect = ImportError("Module not found")
-            
-            result = runner.invoke(
-                fairscape_cli_app,
-                [
-                    "build", "evidence-graph", str(minimal_valid_crate), ark_id
-                ]
-            )
+    def test_build_evidence_graph_from_computation_start(
+        self, runner, test_release_crate: pathlib.Path
+    ):
+        """Computation as the start node: BFS fans out through
+        usedDataset / usedSoftware instead of generatedBy."""
+        subcrate_path = test_release_crate / "Perturb-Seq" / "cell-atlas"
+        subcrate_metadata_path = subcrate_path / "ro-crate-metadata.json"
+        ark_id = (
+            "ark:59852/computation-perturbation-cell-atlas-"
+            "data-processing-Cmx85JtSguG"
+        )
 
-            assert result.exit_code == 0
-            assert "WARNING: generate_evidence_graph_html module not found" in result.output
+        result = runner.invoke(
+            fairscape_cli_app,
+            ["build", "evidence-graph", str(subcrate_metadata_path), ark_id],
+        )
+        assert result.exit_code == 0, result.output
+        assert "Evidence graph saved" in result.output
 
-    def test_build_evidence_graph_html_generation_error(self, runner, minimal_valid_crate: pathlib.Path):
-        """Test evidence graph when HTML generation fails"""
-        ark_id = "test-ark-id"
-        
-        with patch('fairscape_cli.commands.build_commands.generate_evidence_graph_from_rocrate') as mock_graph, \
-             patch('fairscape_cli.commands.build_commands.generate_evidence_graph_html') as mock_html:
-            
-            mock_graph.return_value = {"@id": f"{ark_id}-evidence-graph"}
-            mock_html.side_effect = Exception("HTML generation failed")
-            
-            result = runner.invoke(
-                fairscape_cli_app,
-                [
-                    "build", "evidence-graph", str(minimal_valid_crate), ark_id
-                ]
-            )
+        evidence_json_path = subcrate_path / "provenance-graph.json"
+        data = json.loads(evidence_json_path.read_text())
+        # Derived @id matches the builder's server-style scheme.
+        assert data["@id"] == (
+            "ark:59852/evidence-graph-computation-perturbation-cell-"
+            "atlas-data-processing-Cmx85JtSguG"
+        )
+        # Start node is in the graph, and BFS followed usedSoftware to the
+        # one software node that *is* present in the crate's @graph.
+        assert ark_id in data["@graph"]
+        start = data["@graph"][ark_id]
+        # Computation nodes preserve their used* edges under Phase 2's
+        # projection.
+        assert "usedSoftware" in start
+        sw_ids = [ref["@id"] for ref in start["usedSoftware"]]
+        assert "ark:59852/software-10x-genomics-cell-ranger" in sw_ids
+        assert (
+            "ark:59852/software-10x-genomics-cell-ranger" in data["@graph"]
+        )
 
-            assert result.exit_code == 0
-            assert "ERROR generating visualization: HTML generation failed" in result.output
+    def test_build_evidence_graph_from_rocrate_root_start(
+        self, runner, test_release_crate: pathlib.Path
+    ):
+        """RO-Crate root as the start node: outputs derive from the
+        crate's `hasOutputs` / `EVI:outputs`, and the start-node entry
+        carries a `hasOutputs` annotation (see
+        `_build_node_from_cache`'s rocrate-start branch)."""
+        subcrate_path = test_release_crate / "Perturb-Seq" / "cell-atlas"
+        subcrate_metadata_path = subcrate_path / "ro-crate-metadata.json"
+        ark_id = (
+            "ark:59852/rocrate-a-perturbation-cell-atlas-of-human-"
+            "induced-pluripotent-stem-cells-Cmx85JJSgWm/"
+        )
 
-    def test_build_evidence_graph_html_returns_false(self, runner, minimal_valid_crate: pathlib.Path):
-        """Test evidence graph when HTML generation returns False"""
-        ark_id = "test-ark-id"
-        
-        with patch('fairscape_cli.commands.build_commands.generate_evidence_graph_from_rocrate') as mock_graph, \
-             patch('fairscape_cli.commands.build_commands.generate_evidence_graph_html') as mock_html:
-            
-            mock_graph.return_value = {"@id": f"{ark_id}-evidence-graph"}
-            mock_html.return_value = False
-            
-            result = runner.invoke(
-                fairscape_cli_app,
-                [
-                    "build", "evidence-graph", str(minimal_valid_crate), ark_id
-                ]
-            )
+        result = runner.invoke(
+            fairscape_cli_app,
+            ["build", "evidence-graph", str(subcrate_metadata_path), ark_id],
+        )
+        assert result.exit_code == 0, result.output
+        assert "Evidence graph saved" in result.output
 
-            assert result.exit_code == 0
-            assert "ERROR: Failed to generate visualization" in result.output
-
-    def test_build_evidence_graph_metadata_update_error(self, runner, minimal_valid_crate: pathlib.Path):
-        """Test evidence graph when metadata update fails"""
-        ark_id = "test-ark-id"
-        metadata_file = minimal_valid_crate / "ro-crate-metadata.json"
-        
-        with patch('fairscape_cli.commands.build_commands.generate_evidence_graph_from_rocrate') as mock_graph:
-            mock_graph.return_value = {"@id": f"{ark_id}-evidence-graph"}
-            
-            os.chmod(metadata_file, 0o444)
-            
-            try:
-                result = runner.invoke(
-                    fairscape_cli_app,
-                    [
-                        "build", "evidence-graph", str(minimal_valid_crate), ark_id
-                    ]
-                )
-
-                assert result.exit_code == 0
-                assert "WARNING: Failed to add hasEvidenceGraph reference" in result.output
-            finally:
-                os.chmod(metadata_file, 0o644)
+        evidence_json_path = subcrate_path / "provenance-graph.json"
+        data = json.loads(evidence_json_path.read_text())
+        # The start node is a crate root, so outputs should include *it*
+        # plus any crate-level outputs the projection collected.
+        output_ids = {o["@id"] for o in data["outputs"]}
+        assert ark_id in output_ids
+        # The rocrate root entry itself carries the projection-added
+        # `hasOutputs` annotation (it's the start-rocrate branch of
+        # `_build_node_from_cache`).
+        root_entry = data["@graph"][ark_id]
+        assert "hasOutputs" in root_entry

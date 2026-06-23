@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: sans-serif;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        #root {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+            background-color: #f8f9fa;
+            cursor: grab;
+        }
+         #root.dragging {
+            cursor: grabbing;
+         }
+         .graph-viewport {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            will-change: transform;
+         }
+         .graph-container {
+            position: relative;
+            min-width: 1500px;
+            min-height: 1000px;
+            transform-origin: top left;
+            background-color: #f8f9fa;
+        }
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            font-size: 1.2em;
+            pointer-events: none;
+        }
+        .node-wrapper {
+            position: absolute;
+            cursor: default;
+            box-sizing: border-box;
+            transition: top 0.3s ease, left 0.3s ease;
+            user-select: none;
+        }
+        .node-container {
+            background: #fff;
+            padding: 0;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            text-align: center;
+            width: 180px;
+            height: 90px;
+            font-size: 13px;
+            position: relative;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+        .node-container.expandable {
+            border: 2px dashed #333;
+            cursor: pointer;
+        }
+        .node-header {
+            padding: 8px 6px;
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+            width: 100%;
+            border-top-left-radius: 3px;
+            border-top-right-radius: 3px;
+            box-sizing: border-box;
+            color: #333;
+        }
+        .node-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 15px;
+            width: 100%;
+            text-align: center;
+            word-break: break-word;
+            white-space: normal;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 12px;
+            line-height: 1.3;
+            box-sizing: border-box;
+        }
+        .svg-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: visible;
+        }
+        .edge-path {
+            stroke: #888;
+            stroke-width: 1.5;
+            fill: none;
+        }
+        .edge-label-bg {
+             fill: #f8f9fa;
+             stroke: #f8f9fa;
+             stroke-width: 4px;
+             stroke-linejoin: round;
+             opacity: 0.8;
+        }
+        .edge-label-text {
+            font-size: 10px;
+            fill: #555;
+            text-anchor: middle;
+            dominant-baseline: middle;
+            pointer-events: none;
+        }
+        .controls-container {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 5px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            z-index: 5;
+            display: flex;
+            gap: 5px;
+         }
+         .control-button {
+             padding: 4px 8px;
+             font-size: 12px;
+             cursor: pointer;
+             border: 1px solid #ccc;
+             background-color: #fff;
+             border-radius: 3px;
+         }
+         .control-button:hover {
+             background-color: #eee;
+         }
+        .graph-legend {
+            position: absolute;
+            bottom: 12px;
+            left: 12px;
+            background-color: rgba(255, 255, 255, 0.92);
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 8px 10px;
+            z-index: 5;
+            font-size: 12px;
+            color: #333;
+            line-height: 1.6;
+        }
+        .graph-legend .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .graph-legend .legend-swatch {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border-radius: 3px;
+            border: 1px solid #bbb;
+            flex-shrink: 0;
+        }
+        .graph-legend .legend-swatch.expandable {
+            background: #fff;
+            border: 2px dashed #333;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <div class="graph-legend">
+        <div class="legend-item"><span class="legend-swatch" style="background-color: #8AE68A;"></span>Dataset / Sample</div>
+        <div class="legend-item"><span class="legend-swatch" style="background-color: #FD9A9A;"></span>Computation / Experiment</div>
+        <div class="legend-item"><span class="legend-swatch" style="background-color: #FFC107;"></span>Software / Instrument</div>
+        <div class="legend-item"><span class="legend-swatch" style="background-color: #B5DEFF;"></span>Dataset Collection / Group</div>
+        <div class="legend-item"><span class="legend-swatch expandable"></span>Expandable &mdash; click to expand</div>
+    </div>
+
+    <script>{{ vendor_js }}</script>
+    <script>window.__EVIDENCE_GRAPH_DATA__ = {{ graph_json }};</script>
+    <script>{{ app_js }}</script>
+</body>
+</html>

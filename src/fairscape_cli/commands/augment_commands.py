@@ -12,6 +12,14 @@ from fairscape_cli.entailments.find_outputs import (
     calculate_inputs_outputs,
     add_inputs_outputs_to_rocrate
 )
+from fairscape_cli.entailments.summary_stats import (
+    build_summary_dataset,
+    compute_stats,
+    human_size,
+    is_dataset,
+    is_tabular_entity,
+    read_table,
+)
 
 @click.group('augment')
 def augment_group():
@@ -203,3 +211,114 @@ def add_io_command(
     except Exception as e:
         click.echo(f"An unexpected error occurred: {type(e).__name__} - {e}", err=True)
         ctx.exit(1)
+
+
+@augment_group.command('summary-stats')
+@click.argument('rocrate-path', type=click.Path(exists=True, path_type=pathlib.Path))
+@click.option('--id', 'entity_id', default=None, help="Compute stats only for this Dataset @id. Default: every tabular Dataset.")
+@click.option('--overwrite/--skip-existing', default=False, help="Recompute stats for Datasets that already have hasSummaryStatistics. Default: skip.")
+@click.option('--http-timeout', default=60, show_default=True, help="HTTP timeout in seconds for remote contentUrls.")
+@click.option('--dry-run', is_flag=True, help="Print what would change without writing ro-crate-metadata.json.")
+@click.pass_context
+def summary_stats_command(
+    ctx,
+    rocrate_path: pathlib.Path,
+    entity_id: str,
+    overwrite: bool,
+    http_timeout: int,
+    dry_run: bool,
+):
+    """
+    Compute row/column counts plus per-column statistics for tabular Datasets
+    in an RO-Crate. For each matched Dataset:
+
+      * read its contentUrl (local path, file://, or http(s)://) as csv/tsv/parquet
+      * populate rowCount / columnCount / contentSize / sampleSize on the source
+      * append a child SummaryStats Dataset (per-column dtype, null counts, and
+        numeric min/max/mean/std) and link it via hasSummaryStatistics
+
+    For a no-extra-deps row+column counter that works on csv/tsv only, use
+    `Dataset.add_summary_stats()` from fairscape_models directly.
+    """
+    crate_root = rocrate_path if rocrate_path.is_dir() else rocrate_path.parent
+    metadata_path = crate_root / "ro-crate-metadata.json"
+    if not metadata_path.exists():
+        click.echo(f"Error: RO-Crate metadata file not found at {metadata_path}", err=True)
+        ctx.exit(1)
+
+    with metadata_path.open("r") as f:
+        metadata = json.load(f)
+
+    graph = metadata.get("@graph") or []
+    if not graph:
+        click.echo("Error: RO-Crate metadata has no @graph", err=True)
+        ctx.exit(1)
+
+    root_dataset = graph[1] if len(graph) > 1 else None
+    new_entities: list = []
+    updated_count = 0
+    skipped: list = []
+
+    for entity in graph:
+        if not is_dataset(entity):
+            continue
+        if entity_id and entity.get("@id") != entity_id:
+            continue
+        if entity is root_dataset:
+            continue
+        if not is_tabular_entity(entity):
+            skipped.append((entity.get("@id"), "not tabular"))
+            continue
+        if entity.get("hasSummaryStatistics") and not overwrite:
+            skipped.append((entity.get("@id"), "already has hasSummaryStatistics (use --overwrite)"))
+            continue
+        content_url = entity.get("contentUrl")
+        if isinstance(content_url, list):
+            content_url = content_url[0] if content_url else None
+        if not content_url:
+            skipped.append((entity.get("@id"), "no contentUrl"))
+            continue
+
+        try:
+            df, size_bytes, source_desc = read_table(content_url, crate_root, http_timeout=http_timeout)
+        except Exception as e:
+            click.echo(f"  ! {entity.get('@id')}: failed to read ({type(e).__name__}: {e})", err=True)
+            skipped.append((entity.get("@id"), f"read failed: {e}"))
+            continue
+
+        rows, cols = int(df.shape[0]), int(df.shape[1])
+        size_str = human_size(size_bytes)
+        per_column = compute_stats(df)
+
+        entity["rowCount"] = rows
+        entity["columnCount"] = cols
+        entity["contentSize"] = size_str
+        entity.setdefault("sampleSize", rows)
+
+        stats_entity = build_summary_dataset(entity, rows, cols, size_str, per_column)
+        entity["hasSummaryStatistics"] = {"@id": stats_entity["@id"]}
+        new_entities.append(stats_entity)
+        updated_count += 1
+        click.echo(f"  ✓ {entity['@id']} ← {rows} rows × {cols} cols, {size_str} (source: {source_desc})")
+
+    if not updated_count:
+        click.echo("No Datasets updated.")
+        for eid, reason in skipped:
+            click.echo(f"  - {eid}: {reason}")
+        return
+
+    if new_entities and root_dataset is not None:
+        root_dataset.setdefault("hasPart", []).extend([{"@id": e["@id"]} for e in new_entities])
+        graph.extend(new_entities)
+
+    if dry_run:
+        click.echo(f"\nDRY RUN — would update {updated_count} dataset(s) and add {len(new_entities)} SummaryStats entit{'y' if len(new_entities) == 1 else 'ies'}.")
+        return
+
+    with metadata_path.open("w") as f:
+        json.dump(metadata, f, indent=2)
+    click.echo(f"\nUpdated {updated_count} dataset(s); appended {len(new_entities)} SummaryStats entit{'y' if len(new_entities) == 1 else 'ies'} to {metadata_path}.")
+    if skipped:
+        click.echo("Skipped:")
+        for eid, reason in skipped:
+            click.echo(f"  - {eid}: {reason}")

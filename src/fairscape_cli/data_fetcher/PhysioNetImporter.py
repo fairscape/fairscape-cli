@@ -296,47 +296,113 @@ class PhysioNetImporter:
                         metadata['extracted_keywords'] = keywords
 
 
-            doi_version_p = discovery_card_body.find('p', string=lambda text: text and text.strip().startswith('DOI (version'))
-            if doi_version_p:
-                doi_link = doi_version_p.find('a')
-                if doi_link and doi_link.get('href'): 
-                    metadata['dataset_identifier'] = doi_link['href'] 
-            
-            latest_doi_p = discovery_card_body.find('p', string=lambda text: text and text.strip().startswith('DOI (latest version'))
-            if latest_doi_p and 'dataset_identifier' not in metadata: 
-                 latest_doi_link = latest_doi_p.find('a')
-                 if latest_doi_link and latest_doi_link.get('href'):
-                     metadata['dataset_identifier'] = latest_doi_link['href']
+            # PhysioNet wraps the DOI in <p><strong>...</strong><br><a href="..."/></p>,
+            # so the parent <p> has mixed children and BS4's string= predicate never matches.
+            # Locate the <strong> label first and walk up to the enclosing <p>.
+            def _doi_from_strong(label_prefix: str) -> Optional[str]:
+                strong_tag = discovery_card_body.find(
+                    'strong',
+                    string=lambda text: text and text.strip().startswith(label_prefix)
+                )
+                if not strong_tag:
+                    return None
+                parent_p = strong_tag.find_parent('p')
+                if not parent_p:
+                    return None
+                doi_link = parent_p.find('a', href=True)
+                return doi_link['href'] if doi_link else None
+
+            versioned_doi = _doi_from_strong('DOI (version')
+            if versioned_doi:
+                metadata['dataset_identifier'] = versioned_doi
+
+            if 'dataset_identifier' not in metadata:
+                latest_doi = _doi_from_strong('DOI (latest version')
+                if latest_doi:
+                    metadata['dataset_identifier'] = latest_doi
 
         access_card_body = None
         access_header = soup.find('h5', class_='card-header', string='Access')
         if access_header: 
             access_card_body = access_header.find_next_sibling('div', class_='card-body')
         if access_card_body:
-            license_p = access_card_body.find('p', string=lambda text: text and text.strip().startswith('License (for files):'))
+            # Same mixed-children issue as DOI: locate the <strong> label and look up to <p>.
+            strong_license = access_card_body.find(
+                'strong',
+                string=lambda text: text and text.strip().startswith('License (for files):')
+            )
+            license_p = strong_license.find_parent('p') if strong_license else None
             if license_p:
-                license_link = license_p.find('a')
-                if license_link and license_link.get('href'): 
+                license_link = license_p.find('a', href=True)
+                if license_link:
                     metadata['extracted_license'] = license_link['href']
         return metadata
 
+
+    def _fetch_checksums(self) -> Tuple[Dict[str, str], Optional[str]]:
+        """Fetch and parse PhysioNet's checksum manifest for this dataset.
+
+        Returns a (mapping, algorithm) tuple where mapping is {relative_path: hash}
+        and algorithm is one of "sha256", "md5", or None when no manifest is found.
+        Each manifest line is `<hash> <relative_path>` (single space separator).
+        """
+        candidates = [
+            ("SHA256SUMS.txt", "sha256"),
+            ("SHA256SUMS", "sha256"),
+            ("MD5SUMS.txt", "md5"),
+            ("MD5SUMS", "md5"),
+        ]
+        for filename, algorithm in candidates:
+            url = f"{self.base_file_download_url}{filename}"
+            try:
+                response = requests.get(url, timeout=30)
+            except requests.exceptions.RequestException as e:
+                print(f"Warning: Failed to fetch checksum file {url}: {e}", file=sys.stderr)
+                continue
+            if response.status_code != 200:
+                continue
+
+            mapping: Dict[str, str] = {}
+            for line in response.text.splitlines():
+                line = line.strip()
+                if not line:
+                    continue
+                # Format: "<hash> <relative_path>" — split on first whitespace only,
+                # since paths may contain spaces.
+                parts = line.split(None, 1)
+                if len(parts) != 2:
+                    continue
+                digest, rel_path = parts[0].strip(), parts[1].strip()
+                mapping[rel_path] = digest
+            if mapping:
+                print(f"Loaded {len(mapping)} {algorithm} checksums from {filename}", file=sys.stderr)
+                return mapping, algorithm
+        return {}, None
 
     def _process_file_table_rows(self, table_body_soup: BeautifulSoup, current_subdir_path: str, all_files_list: List[Dict[str, Any]], subdirs_to_explore: List[str], crate_default_date_published: str):
         
         rows_to_process = list(table_body_soup.select('tr'))
 
         for row in rows_to_process:
+            row_classes = row.get('class', [])
+
+            # PhysioNet renders a "Parent Directory" navigation row (class="parentdir")
+            # on every subdirectory page. It has no class="subdir", so without this skip
+            # it would be misclassified as a file and added as a Dataset per traversed dir.
+            if 'parentdir' in row_classes:
+                continue
+
             name_cell_a_tag = row.select_one('td a')
             if not name_cell_a_tag:
                 continue
 
             name = name_cell_a_tag.get_text(strip=True)
-            
-            if name in ['.', '..', '<base>']: 
+
+            if name in ['.', '..', '<base>', 'Parent Directory']:
                 continue
 
-            is_directory = 'subdir' in row.get('class', [])
-            
+            is_directory = 'subdir' in row_classes or name_cell_a_tag.has_attr('data-dfp-dir')
+
             item_relative_path: str = ""
             if is_directory:
                 item_relative_path = name_cell_a_tag.get('data-dfp-dir')
@@ -346,9 +412,9 @@ class PhysioNetImporter:
 
                 if item_relative_path not in subdirs_to_explore and item_relative_path != current_subdir_path :
                     print(f"DEBUG: Found directory: {name} (data-dfp-dir: {item_relative_path}) in {current_subdir_path or '<root>'}. Adding to queue.", file=sys.stderr)
-                    subdirs_to_explore.append(item_relative_path) 
-            else: 
-                item_relative_path = os.path.join(current_subdir_path, name).replace('\\', '/') 
+                    subdirs_to_explore.append(item_relative_path)
+            else:
+                item_relative_path = os.path.join(current_subdir_path, name).replace('\\', '/')
 
 
             if not is_directory:
@@ -532,6 +598,8 @@ class PhysioNetImporter:
         
         print(f"Total files found after exploring subdirectories: {len(all_file_entries)}", file=sys.stderr)
 
+        checksum_map, checksum_algorithm = self._fetch_checksums()
+
         crate_elements_to_add = []
         for item_data in all_file_entries:
             item_path_guid_segment = item_data['relative_path'].replace('/', '_').replace('.', '_').replace(' ', '_').lower()
@@ -553,6 +621,10 @@ class PhysioNetImporter:
             }
             if 'contentSize' in item_data: dataset_params['contentSize'] = item_data['contentSize']
             if 'contentUrl' in item_data: dataset_params['contentUrl'] = item_data['contentUrl']
+
+            digest = checksum_map.get(item_data['relative_path'])
+            if digest and checksum_algorithm:
+                dataset_params[checksum_algorithm] = digest
 
             try:
                 dataset_entity = GenerateDataset(**dataset_params)

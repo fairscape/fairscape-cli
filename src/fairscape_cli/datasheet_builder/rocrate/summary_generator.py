@@ -12,6 +12,7 @@ from fairscape_models.rocrate import ROCrateV1_2
 from fairscape_models.conversion.mapping.AIReady import score_rocrate
 from fairscape_models.conversion.models.AIReady import AIReadyScore
 from fairscape_cli.utils.serialization import model_dump_pruned
+from fairscape_cli.utils.rocrate_helpers import get_root_entity
 
 
 @dataclass
@@ -25,6 +26,7 @@ class SummaryData:
     computation_count: int = 0
     software_count: int = 0
     formats: List[str] = field(default_factory=list)
+    content_url: str = ""
 
 
 @dataclass
@@ -76,7 +78,8 @@ class SummarySectionGenerator:
 
     def extract_summary_data(self, crate: ROCrateV1_2) -> SummaryData:
         """Extract summary statistics from an RO-Crate."""
-        root_data = crate.metadataGraph[1].model_dump(by_alias=True) if len(crate.metadataGraph) > 1 else {}
+        root_entity = get_root_entity(crate)
+        root_data = root_entity.model_dump(by_alias=True) if root_entity else {}
         
         
         size_str = root_data.get("contentSize", "")
@@ -98,7 +101,8 @@ class SummarySectionGenerator:
             dataset_count=root_data.get("evi:datasetCount", 0),
             computation_count=root_data.get("evi:computationCount", 0),
             software_count=root_data.get("evi:softwareCount", 0),
-            formats=formats
+            formats=formats,
+            content_url=root_data.get("contentUrl") or ""
         )
 
         # Fallback: compute from graph if evi:* fields are absent (single crate case)
@@ -226,6 +230,7 @@ class SummarySectionGenerator:
         context = {
             'description': desc,
             'description_truncated': description_truncated,
+            'content_url': summary.content_url,
             'total_size': summary.total_size_formatted,
             'total_entities': f"{summary.total_entities:,}" if summary.total_entities else "N/A",
             'formats': formats_str,

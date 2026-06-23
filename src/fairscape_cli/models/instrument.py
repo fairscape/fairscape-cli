@@ -1,6 +1,5 @@
 from fairscape_models.instrument import Instrument
-from fairscape_cli.config import NAAN
-from fairscape_cli.models.guid_utils import GenerateDatetimeSquid
+from fairscape_cli.models.guid_utils import GenerateEntityGuid
 from fairscape_cli.models.utils import setRelativeFilepath
 import pathlib
 from typing import Dict, Any, Optional, List, Tuple
@@ -30,12 +29,8 @@ def GenerateInstrument(
         A validated Instrument instance
     """
     # Generate GUID if not provided
-    if not guid and name:
-        sq = GenerateDatetimeSquid()
-        guid = f"ark:{NAAN}/instrument-{name.lower().replace(' ', '-')}-{sq}"
-    elif not guid:
-        sq = GenerateDatetimeSquid()
-        guid = f"ark:{NAAN}/instrument-{sq}"
+    if not guid:
+        guid = GenerateEntityGuid("instrument", name)
     
     instrumentMetadata = {
         "@id": guid,

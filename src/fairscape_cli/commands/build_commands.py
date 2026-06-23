@@ -8,8 +8,10 @@ from typing import Optional, List, Tuple
 from datetime import datetime
 
 from fairscape_cli.datasheet_builder.rocrate.datasheet_generator import DatasheetGenerator
-from fairscape_cli.datasheet_builder.evidence_graph.graph_builder import generate_evidence_graph_from_rocrate
 from fairscape_cli.datasheet_builder.evidence_graph.html_builder import generate_evidence_graph_html
+from fairscape_cli.interpret.local_graph import LocalGraphSource
+from fairscape_cli.interpret.local_sink import LocalResultSink
+from fairscape_graph_tools.evidence_graph_builder import EvidenceGraphBuilder
 from fairscape_cli.utils.build_utils import (
     process_all_subcrates,
     process_croissant,
@@ -28,9 +30,12 @@ from fairscape_cli.models import (
     collect_subcrate_metadata,
     collect_subcrate_aggregated_metrics
 )
+from fairscape_cli.models.rocrate import _extract_content_size_bytes, format_content_size_bytes
 
 from fairscape_models.rocrate import ROCrateV1_2, ROCrateMetadataElem
-from fairscape_cli.utils.serialization import prune_none
+from fairscape_cli.datasheet_builder import get_default_template_dir
+from fairscape_cli.utils.serialization import prune_none, write_json_atomic
+from fairscape_cli.utils.rocrate_helpers import get_root_entity_dict
 from fairscape_models.conversion.converter import ROCToTargetConverter
 from fairscape_models.conversion.mapping.croissant import MAPPING_CONFIGURATION as CROISSANT_MAPPING
 
@@ -236,7 +241,12 @@ def build_release(
     if citation: parent_params["citation"] = citation
     if funder: parent_params["funder"] = funder
     if usage_info: parent_params["usageInfo"] = usage_info
-    if content_size: parent_params["contentSize"] = content_size
+    # An explicitly provided release contentSize is authoritative; otherwise
+    # fill it from the hierarchy-aware sub-crate roll-up.
+    if content_size:
+        parent_params["contentSize"] = content_size
+    elif aggregated_metrics.total_content_size_bytes > 0:
+        parent_params["contentSize"] = format_content_size_bytes(aggregated_metrics.total_content_size_bytes)
     if ethical_review: parent_params["ethicalReview"] = ethical_review
     if has_summary_stats: parent_params["hasSummaryStats"] = has_summary_stats
     
@@ -323,7 +333,8 @@ def build_release(
     parent_params["evi:computationCount"] = aggregated_metrics.computation_count
     parent_params["evi:softwareCount"] = aggregated_metrics.software_count
     parent_params["evi:schemaCount"] = aggregated_metrics.schema_count
-    parent_params["evi:totalContentSizeBytes"] = aggregated_metrics.total_content_size_bytes
+    declared_size_bytes = _extract_content_size_bytes(content_size) if content_size else 0
+    parent_params["evi:totalContentSizeBytes"] = declared_size_bytes or aggregated_metrics.total_content_size_bytes
     parent_params["evi:entitiesWithSummaryStats"] = aggregated_metrics.entities_with_summary_stats
     parent_params["evi:entitiesWithChecksums"] = aggregated_metrics.entities_with_checksums
     parent_params["evi:totalEntities"] = aggregated_metrics.total_entities
@@ -402,8 +413,7 @@ def build_datasheet(ctx, rocrate_path, output, template_dir, published, pdf, ski
 
     output_path = output if output else crate_dir / "ro-crate-datasheet.html"
 
-    package_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    template_dir = Path(os.path.join(package_dir, 'datasheet_builder', 'templates'))
+    template_dir = template_dir if template_dir else get_default_template_dir()
 
     # Link subcrates if needed
     click.echo("Checking subcrate links...")
@@ -512,10 +522,23 @@ def generate_evidence_graph(
     # Generate the evidence graph
     try:
         click.echo(f"Generating evidence graph for {ark_id} from {metadata_file}...")
-        evidence_graph = generate_evidence_graph_from_rocrate(
-            rocrate_path=metadata_file,
-            output_path=output_file,
-            node_id=ark_id
+
+        source = LocalGraphSource(primary_path=metadata_file)
+        resolved = source.find_entity(ark_id)
+        if resolved is None:
+            click.echo(f"ERROR: Could not find entity with ID {ark_id} in RO-Crate")
+            ctx.exit(1)
+            return
+        resolved_id = resolved.get("@id", ark_id)
+        resolved_name = resolved.get("name") or "Unknown"
+
+        sink = LocalResultSink(output_path=output_file)
+        builder = EvidenceGraphBuilder(source, sink)
+        builder.build(
+            resolved_id,
+            owner_email=resolved_id,
+            name=f"Evidence Graph - {resolved_name}",
+            description=f"Evidence graph for {resolved_name}",
         )
         click.echo(f"Evidence graph saved to {output_file}")
         
@@ -532,25 +555,20 @@ def generate_evidence_graph(
             click.echo("WARNING: generate_evidence_graph_html module not found, skipping visualization")
             click.echo("To generate visualizations, please install the visualization module.")
         except Exception as e:
-            click.echo(f"ERROR generating visualization: {str(e)}")\
-                    
+            click.echo(f"ERROR generating visualization: {str(e)}")
+
         try:
             with open(metadata_file, 'r') as f:
                 metadata = json.load(f)
-            
-            i = 0
-            for entity in metadata.get('@graph', []):
-                if i == 1:
-                    entity['localEvidenceGraph'] = {
-                        "@id": str(html_output_path)
-                    }
-                    break
-                i += 1
-            
-            # Write the updated metadata back to the file
-            with open(metadata_file, 'w') as f:
-                json.dump(prune_none(metadata), f, indent=2)
-                
+
+            root_entity = get_root_entity_dict(metadata.get('@graph', []))
+            if root_entity is not None:
+                root_entity['localEvidenceGraph'] = {
+                    "@id": str(html_output_path)
+                }
+
+            write_json_atomic(metadata_file, prune_none(metadata))
+
             click.echo(f"Added hasEvidenceGraph reference to {ark_id} in RO-Crate metadata")
         except Exception as e:
             click.echo(f"WARNING: Failed to add hasEvidenceGraph reference: {str(e)}")

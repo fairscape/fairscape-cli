@@ -1,6 +1,5 @@
 from fairscape_models.experiment import Experiment
-from fairscape_cli.config import NAAN
-from fairscape_cli.models.guid_utils import GenerateDatetimeSquid
+from fairscape_cli.models.guid_utils import GenerateEntityGuid
 import pathlib
 from typing import Dict, Any, Optional, List, Tuple
 
@@ -25,12 +24,8 @@ def GenerateExperiment(
         A validated Experiment instance
     """
     # Generate GUID if not provided
-    if not guid and name:
-        sq = GenerateDatetimeSquid()
-        guid = f"ark:{NAAN}/experiment-{name.lower().replace(' ', '-')}-{sq}"
-    elif not guid:
-        sq = GenerateDatetimeSquid()
-        guid = f"ark:{NAAN}/experiment-{sq}"
+    if not guid:
+        guid = GenerateEntityGuid("experiment", name)
     
     experimentMetadata = {
         "@id": guid,

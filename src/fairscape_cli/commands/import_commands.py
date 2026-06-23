@@ -322,6 +322,75 @@ def import_figshare(
         ctx.exit(1)
 
 
+@import_group.command('manifest')
+@click.argument('manifest-path', type=click.Path(exists=True, dir_okay=False, path_type=pathlib.Path))
+@click.option('--sidecar', required=False, type=click.Path(exists=True, dir_okay=False, path_type=pathlib.Path),
+              help='Path to the crate.json sidecar. If omitted, looks for <manifest>.json then ./crate.json.')
+@generic_importer_options
+@click.pass_context
+def import_manifest(
+    ctx: click.Context,
+    manifest_path: pathlib.Path,
+    sidecar: Optional[pathlib.Path],
+    output_dir: pathlib.Path,
+    name: Optional[str],
+    description: Optional[str],
+    author: Optional[Tuple[str]],
+    keywords: Optional[Tuple[str]],
+    license: Optional[str],
+    publication_date: Optional[str],
+    doi: Optional[str],
+    crate_version: str,
+    organization_name: Optional[str],
+    project_name: Optional[str],
+    include_files: bool,
+):
+    """Build an RO-Crate from a generic CSV manifest + JSON sidecar.
+
+    MANIFEST_PATH: Path to a CSV with columns (name, description, contentUrl, [format, md5, sha256, size_bytes, contentSize, datePublished, version, keywords, group]).
+    Crate-level metadata (title, authors, license, doi, ...) comes from a sibling sidecar JSON.
+    See wizards/manifest-import-design/DESIGN.md for the full spec.
+    """
+    click.echo(f"Importing manifest {manifest_path}...")
+
+    try:
+        research_data_instance = ResearchData.from_repository(
+            repository_type='manifest',
+            identifier=str(manifest_path),
+            sidecar_path=sidecar,
+            include_files=include_files,
+        )
+        click.echo(f"Loaded manifest. Title: {research_data_instance.title}")
+        click.echo(f"  Files in manifest: {len(research_data_instance.files)}")
+
+        if name: research_data_instance.title = name
+        if description: research_data_instance.description = description
+        if author: research_data_instance.authors = list(author)
+        if keywords: research_data_instance.keywords = list(keywords)
+        if license: research_data_instance.license = license
+        if publication_date: research_data_instance.publication_date = publication_date
+        if doi: research_data_instance.doi = doi
+
+        rocrate_guid = research_data_instance.to_rocrate(
+            output_dir=str(output_dir),
+            crate_version=crate_version,
+            organization_name=organization_name,
+            project_name=project_name,
+        )
+
+        click.echo(f"Successfully created RO-Crate from manifest {manifest_path.name}.")
+        click.echo(f"RO-Crate Root GUID: {rocrate_guid}")
+        click.echo(f"RO-Crate saved to: {output_dir.resolve()}")
+
+    except ValueError as e:
+        click.echo(f"ERROR: {e}", err=True)
+        ctx.exit(1)
+    except Exception as e:
+        click.echo(f"An unexpected error occurred: {e}", err=True)
+        traceback.print_exc()
+        ctx.exit(1)
+
+
 @import_group.command('dataverse')
 @click.argument('dataset-doi', type=str)
 @click.option('--server-url', default='https://dataverse.harvard.edu', show_default=True, help='Dataverse server URL.')
