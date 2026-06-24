@@ -142,24 +142,24 @@
           </span>
         </div>
         {% endif %}
+        {% if subcrate.evidence %}
+        <div class="metadata-item">
+          <span class="metadata-label">Provenance Graph:</span>
+          <span class="metadata-value">
+            {% if subcrate.evidence.endswith('.html') %}
+            <a href="{{ subcrate.evidence }}">{{ subcrate.evidence }}</a>
+            {% else %}
+            <a href="https://fairscape.net/{{ subcrate.evidence }}">{{ subcrate.evidence }}</a>
+            {% endif %}
+          </span>
+        </div>
+        {% endif %}
 
         <!-- Secondary metadata grouped under a nested toggle -->
-        {% set has_more = subcrate.evidence or (subcrate.contact and subcrate.contact != "Not specified") or subcrate.md5 or subcrate.copyright or (subcrate.terms_of_use and subcrate.terms_of_use != "Not specified") or subcrate.funder or subcrate.related_publications %}
+        {% set has_more = (subcrate.contact and subcrate.contact != "Not specified") or subcrate.md5 or subcrate.copyright or (subcrate.terms_of_use and subcrate.terms_of_use != "Not specified") or subcrate.funder or subcrate.related_publications %}
         {% if has_more %}
         <details class="more-meta">
           <summary>More metadata</summary>
-          {% if subcrate.evidence %}
-          <div class="metadata-item">
-            <span class="metadata-label">Provenance ID:</span>
-            <span class="metadata-value">
-              {% if subcrate.evidence.endswith('.html') %}
-              <a href="{{ subcrate.evidence }}">{{ subcrate.evidence }}</a>
-              {% else %}
-              <a href="https://fairscape.net/{{ subcrate.evidence }}">{{ subcrate.evidence }}</a>
-              {% endif %}
-            </span>
-          </div>
-          {% endif %}
           {% if subcrate.contact and subcrate.contact != "Not specified" %}
           <div class="metadata-item">
             <span class="metadata-label">Contact:</span>
