@@ -512,7 +512,11 @@ const evidenceGraphData = window.__EVIDENCE_GRAPH_DATA__;
     const EvidenceNode = memo(({ nodeData, onClick }) => {
         const { id, type, label, displayName, description, expandable, x, y, width, height } = nodeData;
         const nodeColor = getNodeColor(type);
-        const tooltip = [label, `Type: ${type}`, `ID: ${id}`, description].filter(Boolean).join('\n');
+        // DatasetGroup (graph-condensation node) and DatasetCollection (synthetic UI grouping
+        // node) are the same idea to a reader, so show one unified label for both.
+        const displayType = (type === "DatasetCollection" || type === "DatasetGroup")
+            ? "Dataset Group" : type;
+        const tooltip = [label, `Type: ${displayType}`, `ID: ${id}`, description].filter(Boolean).join('\n');
 
         const handleClick = useCallback((event) => {
             event.stopPropagation();
@@ -537,7 +541,7 @@ const evidenceGraphData = window.__EVIDENCE_GRAPH_DATA__;
             'div',
             { style: style, className: 'node-wrapper', title: tooltip, onClick: handleClick, onMouseDown: (e) => e.stopPropagation() },
             createElement('div', { className: containerClasses.join(' ') }, [
-                createElement('div', { key: 'header', className: 'node-header', style: { backgroundColor: nodeColor } }, type),
+                createElement('div', { key: 'header', className: 'node-header', style: { backgroundColor: nodeColor } }, displayType),
                 createElement('div', { key: 'content', className: 'node-content' },
                      createElement('div', { style: { width: '100%', textAlign: 'center' } }, displayName)
                 )

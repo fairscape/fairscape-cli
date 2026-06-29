@@ -9,6 +9,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from jinja2 import Environment
 
 from fairscape_models.rocrate import ROCrateV1_2
+from fairscape_models.conversion.mapping.subcrate_utils import normalize_formats
 from fairscape_models.conversion.mapping.AIReady import score_rocrate
 from fairscape_models.conversion.models.AIReady import AIReadyScore
 from fairscape_cli.utils.serialization import model_dump_pruned
@@ -88,10 +89,7 @@ class SummarySectionGenerator:
             if size_bytes:
                 size_str = self._format_size(size_bytes)
 
-        formats = root_data.get("evi:formats", [])
-        if formats is None:
-            formats = []
-        formats = [f for f in formats if f and f != "unknown"]
+        formats = sorted(set(normalize_formats(root_data.get("evi:formats", []))))
 
         summary = SummaryData(
             name=root_data.get("name", "Unnamed Dataset"),
@@ -122,9 +120,7 @@ class SummarySectionGenerator:
 
                 if "Dataset" in type_str:
                     summary.dataset_count += 1
-                    fmt = item_dict.get("fileFormat")
-                    if fmt and fmt != "unknown":
-                        formats_set.add(fmt)
+                    formats_set.update(normalize_formats(item_dict.get("fileFormat")))
                 elif "Software" in type_str or "SoftwareSourceCode" in type_str:
                     summary.software_count += 1
                 elif "Computation" in type_str:

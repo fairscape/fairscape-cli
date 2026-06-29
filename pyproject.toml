@@ -59,9 +59,10 @@ include-package-data = true
 
 [tool.setuptools.package-data]
 "fairscape_cli" = [
-    "datasheet_builder/templates/**/*", 
+    "datasheet_builder/templates/**/*",
     "datasheet_builder/templates/**/*.html",
-    "entailments/*.xml"
+    "entailments/*.xml",
+    "data/shapes/*.ttl"
 ]
 
 [tool.setuptools.packages.find]
@@ -96,4 +97,7 @@ fairscape-cli = "fairscape_cli.__main__:cli"
 test = [
     "pytest",
     "pytest-cov"
+]
+shacl = [
+    "pyshacl>=0.27"
 ]

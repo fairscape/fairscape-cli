@@ -433,7 +433,15 @@
         {% endif %} {% if citation %}
         <div class="summary-row">
           <div class="summary-label">Citation</div>
-          <div class="summary-value" id="citation">{{ citation }}</div>
+          <div class="summary-value" id="citation">
+            {% if citation is string %}{{ citation }}{% else %}
+            <ul class="publications-list">
+              {% for c in citation %}
+              <li>{{ c }}</li>
+              {% endfor %}
+            </ul>
+            {% endif %}
+          </div>
         </div>
         {% endif %} {% if related_publications %}
         <div class="summary-row">

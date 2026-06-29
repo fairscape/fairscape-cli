@@ -647,6 +647,7 @@ class AggregatedMetrics:
     entities_with_provenance_link: int = 0
     software_with_link: int = 0            # versioned/resolvable link
     datasets_with_accession: int = 0       # specialist-repo accession on contentUrl
+    datasets_in_repository: int = 0        # in a recognized repository, specialist OR generalist (5.b)
     datasets_with_source: int = 0          # derivedFrom OR generatedBy OR accession (1.a)
     distribution_link_count: int = 0       # total dataset contentUrl/distribution links (6.b)
     distribution_protocols: Set[str] = field(default_factory=set)  # url schemes seen (6.b)
@@ -824,6 +825,8 @@ def _accumulate_entity_metrics(metrics: AggregatedMetrics, entity: Dict[str, Any
                 metrics.tabular_with_stats += 1
         if ax.AccessionDetector.detect(ax.first_present(entity, *ax.CONTENT_URL_KEYS)):
             metrics.datasets_with_accession += 1
+        if ax.in_recognized_repository(ax.first_present(entity, *ax.CONTENT_URL_KEYS)):
+            metrics.datasets_in_repository += 1
         if ax.has_dataset_source(entity):
             metrics.datasets_with_source += 1
         url = ax.first_present(entity, "contentUrl", "url")

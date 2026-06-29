@@ -303,6 +303,7 @@ def _deep_coverage_metrics(release_dir):
         "entities_with_provenance_link": m.entities_with_provenance_link,
         "software_with_link": m.software_with_link,
         "datasets_with_accession": m.datasets_with_accession,
+        "datasets_in_repository": m.datasets_in_repository,
         "datasets_sourced": m.datasets_with_source,
         "distribution_link_count": m.distribution_link_count,
         "distinct_protocols": sorted(m.distribution_protocols),
@@ -1098,18 +1099,25 @@ def subrocrate(
 @click.option('--use-official', is_flag=True, help='Use official RO-Crate validator (requires roc-validator package)')
 @click.option('--profile', type=str, default=None, help='Profile to validate against (only with --use-official)')
 @click.option('--requirement-level', type=click.Choice(['REQUIRED', 'RECOMMENDED', 'OPTIONAL']), default='REQUIRED', help='Requirement level for official validator (default: REQUIRED)')
+@click.option('--shacl', 'use_shacl', is_flag=True, help='Validate against the FAIRSCAPE SHACL profile (requires the [shacl] extra: pip install \'fairscape-cli[shacl]\')')
+@click.option('--shapes', type=click.Path(exists=True, path_type=pathlib.Path), default=None, help='SHACL shapes Turtle file (only with --shacl; defaults to the bundled FAIRSCAPE profile)')
+@click.option('--all', 'show_all', is_flag=True, help='Show every SHACL warning instead of a per-rule summary (only with --shacl)')
 @click.pass_context
-def validate(ctx, rocrate_path, use_official, profile, requirement_level):
-    """Validate an RO-Crate against ROCrate v1.2 schema or official RO-Crate validator.
+def validate(ctx, rocrate_path, use_official, profile, requirement_level, use_shacl, shapes, show_all):
+    """Validate an RO-Crate against ROCrate v1.2 schema, the official validator, or the SHACL profile.
 
     By default, validates against the built-in ROCrate v1.2 model.
     Use --use-official to validate with the official RO-Crate validator (requires roc-validator package).
+    Use --shacl to validate against the FAIRSCAPE SHACL profile (requires the [shacl] extra).
 
     Examples:
         fairscape rocrate validate ./my-crate
         fairscape rocrate validate ./my-crate --use-official
         fairscape rocrate validate ./my-crate --use-official --profile ro-crate
         fairscape rocrate validate ./my-crate --use-official --requirement-level RECOMMENDED
+        fairscape rocrate validate ./my-crate --shacl
+        fairscape rocrate validate ./my-crate --shacl --all
+        fairscape rocrate validate ./my-crate --shacl --shapes ./custom-shapes.ttl
     """
 
     if use_official:
@@ -1151,6 +1159,59 @@ def validate(ctx, rocrate_path, use_official, profile, requirement_level):
 
         except Exception as e:
             click.echo(f"ERROR: {e}", err=True)
+            ctx.exit(code=1)
+
+    elif use_shacl:
+        # Validate against the FAIRSCAPE SHACL profile. Importing the helper is
+        # cheap (pyshacl is imported lazily inside shacl_report), so the optional
+        # dependency is only required when the validation actually runs — a missing
+        # pyshacl surfaces there as an ImportError, which we turn into an install
+        # hint. ImportError is caught before the generic handler below.
+        from fairscape_cli.utils.shacl_validation import (
+            shacl_report, resolve_metadata_path, DEFAULT_SHAPES_PATH,
+        )
+
+        try:
+            report = shacl_report(
+                resolve_metadata_path(rocrate_path),
+                shapes or DEFAULT_SHAPES_PATH,
+            )
+        except ImportError:
+            click.echo("ERROR: pyshacl is not installed.", err=True)
+            click.echo("Install with: pip install 'fairscape-cli[shacl]'", err=True)
+            ctx.exit(code=1)
+        except FileNotFoundError:
+            click.echo("✗ ro-crate-metadata.json not found", err=True)
+            ctx.exit(code=1)
+        except json.JSONDecodeError as e:
+            click.echo(f"✗ Invalid JSON: {e}", err=True)
+            ctx.exit(code=1)
+        except Exception as e:
+            click.echo(f"✗ {e}", err=True)
+            ctx.exit(code=1)
+
+        # Warnings (dangling refs, malformed ARKs, …) are advisory and never flip
+        # the verdict; show them grouped by rule, capped at 3 per rule unless --all.
+        warns = [(shape, msg) for sev, shape, msg in report["results"] if sev == "Warning"]
+        if warns:
+            by_shape = {}
+            for shape, msg in warns:
+                by_shape.setdefault(shape, []).append(msg)
+            click.echo(f"  warnings ({len(warns)}):")
+            for shape, msgs in by_shape.items():
+                click.echo(f"    {shape}: {len(msgs)}")
+                for m in (msgs if show_all else msgs[:3]):
+                    click.echo(f"      - {m}")
+                if not show_all and len(msgs) > 3:
+                    click.echo(f"      … {len(msgs) - 3} more (use --all)")
+
+        if report["passes"]:
+            click.echo(f"✓ Conforms (SHACL profile); {report['warnings']} warning(s)")
+        else:
+            click.echo("✗ Validation failed (SHACL profile):", err=True)
+            for sev, shape, msg in report["results"]:
+                if sev == "Violation":
+                    click.echo(f"  [{shape}] {msg}", err=True)
             ctx.exit(code=1)
 
     else:

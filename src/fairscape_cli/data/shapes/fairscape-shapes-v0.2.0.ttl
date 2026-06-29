@@ -1,0 +1,1565 @@
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix evi: <https://w3id.org/EVI#> .
+@prefix schema: <https://schema.org/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rai: <http://mlcommons.org/croissant/RAI/> .
+@prefix fsh: <https://w3id.org/EVI/shapes#> .
+@prefix sh:     <http://www.w3.org/ns/shacl#> .
+@prefix xsd:    <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix evi:    <https://w3id.org/EVI#> .
+@prefix prov:   <http://www.w3.org/ns/prov#> .
+@prefix fsh:    <https://w3id.org/EVI/shapes#> .
+
+#══════════════════════════════════════════════════════════════════════════════
+# FAIRSCAPE RO-Crate SHACL profile — v0.2.0  (PUBLISHED, merged)
+# BUILT by build_shapes.py — do not hand-edit. Edit the two source layers:
+#   Round 1  fairscape-shapes.auto.ttl    (generated; run generate_shapes.py)
+#   Round 2  fairscape-shapes.custom.ttl  (hand-authored graph rules)
+# then run ./regenerate.sh.
+#══════════════════════════════════════════════════════════════════════════════
+
+#══════════════════════════════════════════════════════════════════════════════
+# FAIRSCAPE RO-Crate SHACL profile — v0.2.0  (Round 1: core/parity layer)
+# AUTO-GENERATED from fairscape_models by generate_shapes.py — do not hand-edit.
+# Goal: parity with fairscape_models.rocrate.ROCrateV1_2 (Pydantic).
+# The published profile = this file MERGED with the hand-authored Round 2 layer
+# (fairscape-shapes.custom.ttl) by build_shapes.py. Run ./regenerate.sh to rebuild.
+#══════════════════════════════════════════════════════════════════════════════
+
+fsh: a <http://www.w3.org/2002/07/owl#Ontology> ;
+    rdfs:label "FAIRSCAPE RO-Crate SHACL shapes" ;
+    <http://www.w3.org/2002/07/owl#versionInfo> "0.2.0" .
+
+### ROCrateMetadataElem  (parity with fairscape_models.rocrate.ROCrateMetadataElem)
+fsh:ROCrateMetadataElemShape a sh:NodeShape ;
+    sh:targetClass evi:ROCrate ;
+    rdfs:label "ROCrateMetadataElem" ;
+    sh:closed false ;        # Pydantic models use extra='allow'
+    sh:nodeKind sh:IRI ;     # @id is required (focus node must be an IRI)
+    sh:property [
+        sh:path schema:name ;
+        sh:name "name" ;
+        sh:description "A human-readable name for the dataset." ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "name: required, single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:description ;
+        sh:name "description" ;
+        sh:description "A human-readable description of the dataset." ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "description: required, single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:keywords ;
+        sh:name "keywords" ;
+        sh:description "Keywords or tags describing the dataset, used for discovery and search." ;
+        sh:datatype xsd:string ;
+        sh:message "keywords: xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:version ;
+        sh:name "version" ;
+        sh:description "Version string for this release of the dataset (e.g. '1.0', '2.3.1')." ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "version: required, single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:datePublished ;
+        sh:name "datePublished" ;
+        sh:description "Date the dataset was published or made publicly available (ISO 8601)." ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "datePublished: single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:isPartOf ;
+        sh:name "isPartOf" ;
+        sh:description "Parent organization(s) or project(s) this crate belongs to, referenced by identifier." ;
+        sh:nodeKind sh:IRI ;
+        sh:message "isPartOf: reference (@id)" ;
+    ] ;
+    sh:property [
+        sh:path schema:hasPart ;
+        sh:name "hasPart" ;
+        sh:description "Dataset, Software, Computation, and other entities that are part of this RO-Crate, referenced by identifier." ;
+        sh:nodeKind sh:IRI ;
+        sh:message "hasPart: reference (@id)" ;
+    ] ;
+    sh:property [
+        sh:path schema:publisher ;
+        sh:name "publisher" ;
+        sh:description "Organization or person responsible for publishing or distributing the dataset." ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "publisher: single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:principalInvestigator ;
+        sh:name "principalInvestigator" ;
+        sh:description "A key individual (Principal Investigator) responsible for or overseeing dataset creation. Accepts a plain name string, a reference stub ({\"@id\": \"...\"}) to a Person in @graph, or an inline Person object." ;
+        sh:maxCount 1 ;
+        sh:message "principalInvestigator: single value" ;
+    ] ;
+    sh:property [
+        sh:path schema:contactEmail ;
+        sh:name "contactEmail" ;
+        sh:description "Email address for questions or correspondence about the dataset." ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "contactEmail: single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:identifier ;
+        sh:name "identifier" ;
+        sh:description "DOI or other external persistent identifier for the dataset (used for Findability and Sustainability scoring)." ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "identifier: single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:license ;
+        sh:name "license" ;
+        sh:description "Will the dataset be distributed under a copyright or other IP license? Provide a link to or copy of the license terms (e.g. CC BY 4.0, MIT)." ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "license: single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:conditionsOfAccess ;
+        sh:name "conditionsOfAccess" ;
+        sh:description "Terms and conditions governing access to and use of this dataset, including any data use agreements required." ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "conditionsOfAccess: single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:copyrightNotice ;
+        sh:name "copyrightNotice" ;
+        sh:description "Copyright statement for the dataset, including year and rights holder." ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "copyrightNotice: single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:contentSize ;
+        sh:name "contentSize" ;
+        sh:description "Total size of the dataset content (e.g. '2.4 GB', '150 MB'). Used in AI-Ready Characterization scoring." ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "contentSize: single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:usageInfo ;
+        sh:name "usageInfo" ;
+        sh:description "Additional usage information or instructions for working with this dataset." ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "usageInfo: single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:hasSummaryStatistics ;
+        sh:name "hasSummaryStatistics" ;
+        sh:description "Reference to a summary statistics entity describing distributions, counts, and key statistics for this dataset." ;
+        sh:maxCount 1 ;
+        sh:message "hasSummaryStatistics: single value" ;
+    ] ;
+    sh:property [
+        sh:path schema:ethicalReview ;
+        sh:name "ethicalReview" ;
+        sh:description "Were any ethical or compliance review processes conducted (e.g. by an Institutional Review Board)? If so, describe the process, frequency of review, and outcomes. Or provide a contact for ethical review information." ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "ethicalReview: single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:confidentialityLevel ;
+        sh:name "confidentialityLevel" ;
+        sh:description "HL7 Confidentiality code indicating the level of confidentiality or sensitivity of the dataset (e.g. 'normal', 'restricted', 'very restricted')." ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "confidentialityLevel: single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:irb ;
+        sh:name "irb" ;
+        sh:description "Institutional Review Board (IRB) information — approval status, approving institution, and contact details." ;
+        sh:maxCount 1 ;
+        sh:message "irb: single value" ;
+    ] ;
+    sh:property [
+        sh:path schema:irbProtocolId ;
+        sh:name "irbProtocolId" ;
+        sh:description "IRB protocol identifier number assigned by the reviewing institution." ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "irbProtocolId: single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:humanSubjectExemption ;
+        sh:name "humanSubjectExemption" ;
+        sh:description "If human subjects research qualifies for exemption from full IRB review, the applicable exemption category (e.g. 45 CFR 46 Exemption 4)." ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "humanSubjectExemption: single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:fdaRegulated ;
+        sh:name "fdaRegulated" ;
+        sh:description "Whether this dataset is subject to FDA regulations (e.g. clinical trial data, medical device data)." ;
+        sh:maxCount 1 ;
+        sh:message "fdaRegulated: single value" ;
+    ] ;
+    sh:property [
+        sh:path schema:deidentified ;
+        sh:name "deidentified" ;
+        sh:description "Whether the dataset has been de-identified to remove or obscure personally identifiable information." ;
+        sh:maxCount 1 ;
+        sh:message "deidentified: single value" ;
+    ] ;
+    sh:property [
+        sh:path schema:humanSubjectResearch ;
+        sh:name "humanSubjectResearch" ;
+        sh:description "Does this dataset involve human subjects? Indicate Yes/No and describe the nature of human subjects involvement." ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "humanSubjectResearch: single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:dataGovernanceCommittee ;
+        sh:name "dataGovernanceCommittee" ;
+        sh:description "Name or contact for the data governance committee responsible for oversight, access control, and policy enforcement for this dataset. Accepts a plain name string, a reference stub, or an inline Person." ;
+        sh:maxCount 1 ;
+        sh:message "dataGovernanceCommittee: single value" ;
+    ] ;
+    sh:property [
+        sh:path schema:md5 ;
+        sh:name "md5" ;
+        sh:description "MD5 checksum of the digital object content" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "md5: single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:hash ;
+        sh:name "hash" ;
+        sh:description "Hash of the digital object content (if not MD5)" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "hash: single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path rai:dataCollection ;
+        sh:name "rai:dataCollection" ;
+        sh:description "What mechanisms or procedures were used to collect the data (e.g. hardware sensors, manual curation, software APIs)? Also covers how these mechanisms were validated. (rai:dataCollection)" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "rai:dataCollection: single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path rai:dataCollectionMissingData ;
+        sh:name "rai:dataCollectionMissingData" ;
+        sh:description "Documentation of missing data in the dataset, including patterns (e.g. MCAR, MAR, MNAR), known or suspected causes (e.g. sensor failures, participant dropout, privacy constraints), and strategies used to handle missing values. (rai:dataCollectionMissingData)" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "rai:dataCollectionMissingData: single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path rai:dataCollectionRawData ;
+        sh:name "rai:dataCollectionRawData" ;
+        sh:description "Description of raw data sources before preprocessing, cleaning, or labeling. Documents where the original data comes from and how it can be accessed. (rai:dataCollectionRawData)" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "rai:dataCollectionRawData: single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path rai:dataImputationProtocol ;
+        sh:name "rai:dataImputationProtocol" ;
+        sh:description "Description of data imputation methodology, including techniques used to handle missing values (e.g. mean/median imputation, forward fill, model-based imputation) and rationale for chosen approaches. (rai:dataImputationProtocol)" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "rai:dataImputationProtocol: single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path rai:dataAnnotationProtocol ;
+        sh:name "rai:dataAnnotationProtocol" ;
+        sh:description "Annotation methodology, tasks, and protocols followed during labeling. Includes annotation guidelines, quality control procedures, task definitions, workforce type, annotation characteristics, and label distributions. (rai:dataAnnotationProtocol)" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "rai:dataAnnotationProtocol: single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path rai:dataSocialImpact ;
+        sh:name "rai:dataSocialImpact" ;
+        sh:description "Is there anything about the dataset's composition or collection that might impact future uses or create risks/harm (e.g. unfair treatment, legal or financial risks)? Describe potential impacts and any mitigation strategies. (rai:dataSocialImpact)" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "rai:dataSocialImpact: single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path rai:annotationsPerItem ;
+        sh:name "rai:annotationsPerItem" ;
+        sh:description "Number of annotations collected per data item. Multiple annotations per item enable calculation of inter-annotator agreement. (rai:annotationsPerItem)" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "rai:annotationsPerItem: single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:completeness ;
+        sh:name "completeness" ;
+        sh:description "Assessment of how complete the dataset is relative to its intended scope (e.g. percentage of expected records present, known gaps)." ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "completeness: single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:prohibitedUses ;
+        sh:name "prohibitedUses" ;
+        sh:description "Explicit statement of prohibited or forbidden uses for this dataset — uses that are not permitted by license, ethics, or policy. Stronger than discouraged uses." ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "prohibitedUses: single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path evi:datasetCount ;
+        sh:name "evi:datasetCount" ;
+        sh:description "Pre-aggregated count of Dataset entities across all sub-crates. Used in AI-Ready Provenance scoring in place of counting entities at query time." ;
+        sh:maxCount 1 ;
+        sh:message "evi:datasetCount: single value" ;
+    ] ;
+    sh:property [
+        sh:path evi:computationCount ;
+        sh:name "evi:computationCount" ;
+        sh:description "Pre-aggregated count of Computation and Experiment entities across all sub-crates. Used in AI-Ready Provenance scoring." ;
+        sh:maxCount 1 ;
+        sh:message "evi:computationCount: single value" ;
+    ] ;
+    sh:property [
+        sh:path evi:softwareCount ;
+        sh:name "evi:softwareCount" ;
+        sh:description "Pre-aggregated count of Software entities across all sub-crates. Used in AI-Ready Provenance scoring." ;
+        sh:maxCount 1 ;
+        sh:message "evi:softwareCount: single value" ;
+    ] ;
+    sh:property [
+        sh:path evi:schemaCount ;
+        sh:name "evi:schemaCount" ;
+        sh:description "Pre-aggregated count of Schema entities across all sub-crates. Used in AI-Ready Characterization scoring." ;
+        sh:maxCount 1 ;
+        sh:message "evi:schemaCount: single value" ;
+    ] ;
+    sh:property [
+        sh:path evi:totalContentSizeBytes ;
+        sh:name "evi:totalContentSizeBytes" ;
+        sh:description "Pre-aggregated total content size in bytes across all sub-crate datasets. Used in AI-Ready Characterization scoring." ;
+        sh:maxCount 1 ;
+        sh:message "evi:totalContentSizeBytes: single value" ;
+    ] ;
+    sh:property [
+        sh:path evi:entitiesWithSummaryStats ;
+        sh:name "evi:entitiesWithSummaryStats" ;
+        sh:description "Pre-aggregated count of entities that have hasSummaryStatistics set. Used in AI-Ready Characterization scoring." ;
+        sh:maxCount 1 ;
+        sh:message "evi:entitiesWithSummaryStats: single value" ;
+    ] ;
+    sh:property [
+        sh:path evi:entitiesWithChecksums ;
+        sh:name "evi:entitiesWithChecksums" ;
+        sh:description "Pre-aggregated count of entities that have md5, sha256, or hash set. Used with evi:totalEntities to compute checksum coverage percentage." ;
+        sh:maxCount 1 ;
+        sh:message "evi:entitiesWithChecksums: single value" ;
+    ] ;
+    sh:property [
+        sh:path evi:totalEntities ;
+        sh:name "evi:totalEntities" ;
+        sh:description "Pre-aggregated total count of Dataset and Software entities. Used as denominator for checksum coverage in AI-Ready Pre-Model Explainability scoring." ;
+        sh:maxCount 1 ;
+        sh:message "evi:totalEntities: single value" ;
+    ] ;
+    sh:property [
+        sh:path evi:formats ;
+        sh:name "evi:formats" ;
+        sh:description "Pre-aggregated list of unique file format values (up to 5) across all entities. Used in AI-Ready Computability scoring." ;
+        sh:datatype xsd:string ;
+        sh:message "evi:formats: xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path evi:processed ;
+        sh:name "evi:processed" ;
+        sh:description "Flag indicating whether this release-level RO-Crate has been processed and aggregated metrics computed." ;
+        sh:maxCount 1 ;
+        sh:message "evi:processed: single value" ;
+    ] ;
+    sh:property [
+        sh:path <d4d:contentWarning> ;
+        sh:name "d4d:contentWarning" ;
+        sh:description "Does the dataset contain any data that might be offensive, insulting, threatening, or otherwise anxiety-provoking if viewed directly? (D4D_Composition: ContentWarning)" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "d4d:contentWarning: single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path <d4d:informedConsent> ;
+        sh:name "d4d:informedConsent" ;
+        sh:description "Details about informed consent procedures used in human subjects research — consent type, documentation, withdrawal mechanisms, and scope. (D4D_Human: InformedConsent)" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "d4d:informedConsent: single value, xsd:string" ;
+    ] .
+
+### ROCrateMetadataFileElem  (parity with fairscape_models.rocrate.ROCrateMetadataFileElem)
+fsh:ROCrateMetadataFileElemShape a sh:NodeShape ;
+    sh:targetClass schema:CreativeWork ;
+    rdfs:label "ROCrateMetadataFileElem" ;
+    sh:closed false ;        # Pydantic models use extra='allow'
+    sh:nodeKind sh:IRI ;     # @id is required (focus node must be an IRI)
+    sh:property [
+        sh:path schema:conformsTo ;
+        sh:name "conformsTo" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:nodeKind sh:IRI ;
+        sh:message "conformsTo: required, single value, reference (@id)" ;
+    ] ;
+    sh:property [
+        sh:path schema:about ;
+        sh:name "about" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:nodeKind sh:IRI ;
+        sh:message "about: required, single value, reference (@id)" ;
+    ] .
+
+### Dataset  (parity with fairscape_models.dataset.Dataset)
+fsh:DatasetShape a sh:NodeShape ;
+    sh:targetClass evi:Dataset ;
+    rdfs:label "Dataset" ;
+    sh:closed false ;        # Pydantic models use extra='allow'
+    sh:nodeKind sh:IRI ;     # @id is required (focus node must be an IRI)
+    sh:property [
+        sh:path schema:name ;
+        sh:name "name" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "name: required, single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:description ;
+        sh:name "description" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:minLength 10 ;
+        sh:message "description: required, single value, xsd:string, min length 10" ;
+    ] ;
+    sh:property [
+        sh:path schema:version ;
+        sh:name "version" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "version: single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:additionalDocumentation ;
+        sh:name "additionalDocumentation" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "additionalDocumentation: single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:isPartOf ;
+        sh:name "isPartOf" ;
+        sh:nodeKind sh:IRI ;
+        sh:message "isPartOf: reference (@id)" ;
+    ] ;
+    sh:property [
+        sh:path schema:usedByComputation ;
+        sh:name "usedByComputation" ;
+        sh:nodeKind sh:IRI ;
+        sh:message "usedByComputation: reference (@id)" ;
+    ] ;
+    sh:property [
+        sh:path schema:datePublished ;
+        sh:name "datePublished" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "datePublished: required, single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:keywords ;
+        sh:name "keywords" ;
+        sh:datatype xsd:string ;
+        sh:message "keywords: xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:format ;
+        sh:name "format" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "format: required, single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path evi:Schema ;
+        sh:name "evi:Schema" ;
+        sh:maxCount 1 ;
+        sh:nodeKind sh:IRI ;
+        sh:message "evi:Schema: single value, reference (@id)" ;
+    ] ;
+    sh:property [
+        sh:path schema:derivedFrom ;
+        sh:name "derivedFrom" ;
+        sh:nodeKind sh:IRI ;
+        sh:message "derivedFrom: reference (@id)" ;
+    ] ;
+    sh:property [
+        sh:path schema:contentSize ;
+        sh:name "contentSize" ;
+        sh:description "Total size of the dataset content (e.g. '2.4 GB', '150 MB')." ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "contentSize: single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:rowCount ;
+        sh:name "rowCount" ;
+        sh:description "Number of rows / records for tabular datasets." ;
+        sh:maxCount 1 ;
+        sh:message "rowCount: single value" ;
+    ] ;
+    sh:property [
+        sh:path schema:columnCount ;
+        sh:name "columnCount" ;
+        sh:description "Number of columns / fields for tabular datasets." ;
+        sh:maxCount 1 ;
+        sh:message "columnCount: single value" ;
+    ] ;
+    sh:property [
+        sh:path schema:sampleSize ;
+        sh:name "sampleSize" ;
+        sh:description "Number of samples represented by the dataset (often == rowCount for tabular data, but may differ)." ;
+        sh:maxCount 1 ;
+        sh:message "sampleSize: single value" ;
+    ] ;
+    sh:property [
+        sh:path schema:hasSummaryStatistics ;
+        sh:name "hasSummaryStatistics" ;
+        sh:description "Reference to a summary statistics entity describing distributions, counts, and key statistics for this dataset." ;
+        sh:maxCount 1 ;
+        sh:message "hasSummaryStatistics: single value" ;
+    ] .
+
+### Software  (parity with fairscape_models.software.Software)
+fsh:SoftwareShape a sh:NodeShape ;
+    sh:targetClass evi:Software ;
+    rdfs:label "Software" ;
+    sh:closed false ;        # Pydantic models use extra='allow'
+    sh:nodeKind sh:IRI ;     # @id is required (focus node must be an IRI)
+    sh:property [
+        sh:path schema:name ;
+        sh:name "name" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "name: required, single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:description ;
+        sh:name "description" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:minLength 10 ;
+        sh:message "description: required, single value, xsd:string, min length 10" ;
+    ] ;
+    sh:property [
+        sh:path schema:version ;
+        sh:name "version" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "version: single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:additionalDocumentation ;
+        sh:name "additionalDocumentation" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "additionalDocumentation: single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:isPartOf ;
+        sh:name "isPartOf" ;
+        sh:nodeKind sh:IRI ;
+        sh:message "isPartOf: reference (@id)" ;
+    ] ;
+    sh:property [
+        sh:path schema:usedByComputation ;
+        sh:name "usedByComputation" ;
+        sh:nodeKind sh:IRI ;
+        sh:message "usedByComputation: reference (@id)" ;
+    ] ;
+    sh:property [
+        sh:path schema:dateModified ;
+        sh:name "dateModified" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "dateModified: single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:format ;
+        sh:name "format" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "format: required, single value, xsd:string" ;
+    ] .
+
+### MLModel  (parity with fairscape_models.mlmodel.MLModel)
+fsh:MLModelShape a sh:NodeShape ;
+    sh:targetClass evi:MLModel ;
+    rdfs:label "MLModel" ;
+    sh:closed false ;        # Pydantic models use extra='allow'
+    sh:nodeKind sh:IRI ;     # @id is required (focus node must be an IRI)
+    sh:property [
+        sh:path schema:name ;
+        sh:name "name" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "name: required, single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:description ;
+        sh:name "description" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:minLength 10 ;
+        sh:message "description: required, single value, xsd:string, min length 10" ;
+    ] ;
+    sh:property [
+        sh:path schema:version ;
+        sh:name "version" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "version: single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:additionalDocumentation ;
+        sh:name "additionalDocumentation" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "additionalDocumentation: single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:isPartOf ;
+        sh:name "isPartOf" ;
+        sh:nodeKind sh:IRI ;
+        sh:message "isPartOf: reference (@id)" ;
+    ] ;
+    sh:property [
+        sh:path schema:usedByComputation ;
+        sh:name "usedByComputation" ;
+        sh:nodeKind sh:IRI ;
+        sh:message "usedByComputation: reference (@id)" ;
+    ] ;
+    sh:property [
+        sh:path schema:dateModified ;
+        sh:name "dateModified" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "dateModified: single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:format ;
+        sh:name "format" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "format: required, single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:modelTask ;
+        sh:name "modelTask" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "modelTask: single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:modelArchitecture ;
+        sh:name "modelArchitecture" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "modelArchitecture: single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:trainedOn ;
+        sh:name "trainedOn" ;
+        sh:nodeKind sh:IRI ;
+        sh:message "trainedOn: reference (@id)" ;
+    ] ;
+    sh:property [
+        sh:path schema:derivedFrom ;
+        sh:name "derivedFrom" ;
+        sh:nodeKind sh:IRI ;
+        sh:message "derivedFrom: reference (@id)" ;
+    ] .
+
+### Computation  (parity with fairscape_models.computation.Computation)
+fsh:ComputationShape a sh:NodeShape ;
+    sh:targetClass evi:Computation ;
+    rdfs:label "Computation" ;
+    sh:closed false ;        # Pydantic models use extra='allow'
+    sh:nodeKind sh:IRI ;     # @id is required (focus node must be an IRI)
+    sh:property [
+        sh:path schema:name ;
+        sh:name "name" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "name: required, single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:description ;
+        sh:name "description" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:minLength 10 ;
+        sh:message "description: required, single value, xsd:string, min length 10" ;
+    ] ;
+    sh:property [
+        sh:path schema:associatedPublication ;
+        sh:name "associatedPublication" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "associatedPublication: single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:generated ;
+        sh:name "generated" ;
+        sh:nodeKind sh:IRI ;
+        sh:message "generated: reference (@id)" ;
+    ] ;
+    sh:property [
+        sh:path schema:isPartOf ;
+        sh:name "isPartOf" ;
+        sh:nodeKind sh:IRI ;
+        sh:message "isPartOf: reference (@id)" ;
+    ] ;
+    sh:property [
+        sh:path schema:runBy ;
+        sh:name "runBy" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:message "runBy: required, single value" ;
+    ] ;
+    sh:property [
+        sh:path schema:dateCreated ;
+        sh:name "dateCreated" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "dateCreated: required, single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:additionalDocumentation ;
+        sh:name "additionalDocumentation" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "additionalDocumentation: single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:usedSoftware ;
+        sh:name "usedSoftware" ;
+        sh:nodeKind sh:IRI ;
+        sh:message "usedSoftware: reference (@id)" ;
+    ] ;
+    sh:property [
+        sh:path schema:usedMLModel ;
+        sh:name "usedMLModel" ;
+        sh:nodeKind sh:IRI ;
+        sh:message "usedMLModel: reference (@id)" ;
+    ] ;
+    sh:property [
+        sh:path schema:usedDataset ;
+        sh:name "usedDataset" ;
+        sh:nodeKind sh:IRI ;
+        sh:message "usedDataset: reference (@id)" ;
+    ] ;
+    sh:property [
+        sh:path evi:annotatedBy ;
+        sh:name "evi:annotatedBy" ;
+        sh:nodeKind sh:IRI ;
+        sh:message "evi:annotatedBy: reference (@id)" ;
+    ] .
+
+### Experiment  (parity with fairscape_models.experiment.Experiment)
+fsh:ExperimentShape a sh:NodeShape ;
+    sh:targetClass evi:Experiment ;
+    rdfs:label "Experiment" ;
+    sh:closed false ;        # Pydantic models use extra='allow'
+    sh:nodeKind sh:IRI ;     # @id is required (focus node must be an IRI)
+    sh:property [
+        sh:path schema:name ;
+        sh:name "name" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "name: required, single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:description ;
+        sh:name "description" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:minLength 10 ;
+        sh:message "description: required, single value, xsd:string, min length 10" ;
+    ] ;
+    sh:property [
+        sh:path schema:associatedPublication ;
+        sh:name "associatedPublication" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "associatedPublication: single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:generated ;
+        sh:name "generated" ;
+        sh:nodeKind sh:IRI ;
+        sh:message "generated: reference (@id)" ;
+    ] ;
+    sh:property [
+        sh:path schema:isPartOf ;
+        sh:name "isPartOf" ;
+        sh:nodeKind sh:IRI ;
+        sh:message "isPartOf: reference (@id)" ;
+    ] ;
+    sh:property [
+        sh:path schema:experimentType ;
+        sh:name "experimentType" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "experimentType: required, single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:runBy ;
+        sh:name "runBy" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:message "runBy: required, single value" ;
+    ] ;
+    sh:property [
+        sh:path schema:datePerformed ;
+        sh:name "datePerformed" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "datePerformed: required, single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:protocol ;
+        sh:name "protocol" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "protocol: single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:usedInstrument ;
+        sh:name "usedInstrument" ;
+        sh:nodeKind sh:IRI ;
+        sh:message "usedInstrument: reference (@id)" ;
+    ] ;
+    sh:property [
+        sh:path schema:usedSample ;
+        sh:name "usedSample" ;
+        sh:nodeKind sh:IRI ;
+        sh:message "usedSample: reference (@id)" ;
+    ] ;
+    sh:property [
+        sh:path schema:usedTreatment ;
+        sh:name "usedTreatment" ;
+        sh:nodeKind sh:IRI ;
+        sh:message "usedTreatment: reference (@id)" ;
+    ] ;
+    sh:property [
+        sh:path schema:usedStain ;
+        sh:name "usedStain" ;
+        sh:nodeKind sh:IRI ;
+        sh:message "usedStain: reference (@id)" ;
+    ] .
+
+### Schema  (parity with fairscape_models.schema.Schema)
+fsh:SchemaShape a sh:NodeShape ;
+    sh:targetClass evi:Schema ;
+    rdfs:label "Schema" ;
+    sh:closed false ;        # Pydantic models use extra='allow'
+    sh:nodeKind sh:IRI ;     # @id is required (focus node must be an IRI)
+    sh:property [
+        sh:path schema:name ;
+        sh:name "name" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "name: required, single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:url ;
+        sh:name "url" ;
+        sh:maxCount 1 ;
+        sh:message "url: single value" ;
+    ] ;
+    sh:property [
+        sh:path schema:description ;
+        sh:name "description" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:minLength 5 ;
+        sh:message "description: required, single value, xsd:string, min length 5" ;
+    ] ;
+    sh:property [
+        sh:path schema:license ;
+        sh:name "license" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "license: single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:keywords ;
+        sh:name "keywords" ;
+        sh:datatype xsd:string ;
+        sh:message "keywords: xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:published ;
+        sh:name "published" ;
+        sh:maxCount 1 ;
+        sh:message "published: single value" ;
+    ] ;
+    sh:property [
+        sh:path schema:properties ;
+        sh:name "properties" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:message "properties: required, single value" ;
+    ] ;
+    sh:property [
+        sh:path schema:type ;
+        sh:name "type" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "type: single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:additionalProperties ;
+        sh:name "additionalProperties" ;
+        sh:maxCount 1 ;
+        sh:message "additionalProperties: single value" ;
+    ] ;
+    sh:property [
+        sh:path schema:required ;
+        sh:name "required" ;
+        sh:datatype xsd:string ;
+        sh:message "required: xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:separator ;
+        sh:name "separator" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "separator: single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:header ;
+        sh:name "header" ;
+        sh:maxCount 1 ;
+        sh:message "header: single value" ;
+    ] ;
+    sh:property [
+        sh:path schema:isPartOf ;
+        sh:name "isPartOf" ;
+        sh:nodeKind sh:IRI ;
+        sh:message "isPartOf: reference (@id)" ;
+    ] .
+
+### Sample  (parity with fairscape_models.sample.Sample)
+fsh:SampleShape a sh:NodeShape ;
+    sh:targetClass evi:Sample ;
+    rdfs:label "Sample" ;
+    sh:closed false ;        # Pydantic models use extra='allow'
+    sh:nodeKind sh:IRI ;     # @id is required (focus node must be an IRI)
+    sh:property [
+        sh:path schema:name ;
+        sh:name "name" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "name: required, single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:description ;
+        sh:name "description" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:minLength 1 ;
+        sh:message "description: required, single value, xsd:string, min length 1" ;
+    ] ;
+    sh:property [
+        sh:path schema:keywords ;
+        sh:name "keywords" ;
+        sh:datatype xsd:string ;
+        sh:message "keywords: xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:cellLineReference ;
+        sh:name "cellLineReference" ;
+        sh:maxCount 1 ;
+        sh:nodeKind sh:IRI ;
+        sh:message "cellLineReference: single value, reference (@id)" ;
+    ] ;
+    sh:property [
+        sh:path schema:isPartOf ;
+        sh:name "isPartOf" ;
+        sh:nodeKind sh:IRI ;
+        sh:message "isPartOf: reference (@id)" ;
+    ] .
+
+### Instrument  (parity with fairscape_models.instrument.Instrument)
+fsh:InstrumentShape a sh:NodeShape ;
+    sh:targetClass evi:Instrument ;
+    rdfs:label "Instrument" ;
+    sh:closed false ;        # Pydantic models use extra='allow'
+    sh:nodeKind sh:IRI ;     # @id is required (focus node must be an IRI)
+    sh:property [
+        sh:path schema:name ;
+        sh:name "name" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "name: required, single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:manufacturer ;
+        sh:name "manufacturer" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:minLength 4 ;
+        sh:message "manufacturer: required, single value, xsd:string, min length 4" ;
+    ] ;
+    sh:property [
+        sh:path schema:model ;
+        sh:name "model" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "model: required, single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:description ;
+        sh:name "description" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:minLength 10 ;
+        sh:message "description: required, single value, xsd:string, min length 10" ;
+    ] ;
+    sh:property [
+        sh:path schema:associatedPublication ;
+        sh:name "associatedPublication" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "associatedPublication: single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:additionalDocumentation ;
+        sh:name "additionalDocumentation" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "additionalDocumentation: single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:usedByExperiment ;
+        sh:name "usedByExperiment" ;
+        sh:nodeKind sh:IRI ;
+        sh:message "usedByExperiment: reference (@id)" ;
+    ] ;
+    sh:property [
+        sh:path schema:contentUrl ;
+        sh:name "contentUrl" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "contentUrl: single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:isPartOf ;
+        sh:name "isPartOf" ;
+        sh:nodeKind sh:IRI ;
+        sh:message "isPartOf: reference (@id)" ;
+    ] .
+
+### Annotation  (parity with fairscape_models.annotation.Annotation)
+fsh:AnnotationShape a sh:NodeShape ;
+    sh:targetClass evi:Annotation ;
+    rdfs:label "Annotation" ;
+    sh:closed false ;        # Pydantic models use extra='allow'
+    sh:nodeKind sh:IRI ;     # @id is required (focus node must be an IRI)
+    sh:property [
+        sh:path schema:name ;
+        sh:name "name" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "name: required, single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:description ;
+        sh:name "description" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:minLength 10 ;
+        sh:message "description: required, single value, xsd:string, min length 10" ;
+    ] ;
+    sh:property [
+        sh:path schema:associatedPublication ;
+        sh:name "associatedPublication" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "associatedPublication: single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:generated ;
+        sh:name "generated" ;
+        sh:nodeKind sh:IRI ;
+        sh:message "generated: reference (@id)" ;
+    ] ;
+    sh:property [
+        sh:path schema:isPartOf ;
+        sh:name "isPartOf" ;
+        sh:nodeKind sh:IRI ;
+        sh:message "isPartOf: reference (@id)" ;
+    ] ;
+    sh:property [
+        sh:path schema:createdBy ;
+        sh:name "createdBy" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:message "createdBy: required, single value" ;
+    ] ;
+    sh:property [
+        sh:path schema:dateCreated ;
+        sh:name "dateCreated" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "dateCreated: required, single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:usedDataset ;
+        sh:name "usedDataset" ;
+        sh:nodeKind sh:IRI ;
+        sh:message "usedDataset: reference (@id)" ;
+    ] .
+
+### BioChemEntity  (parity with fairscape_models.biochem_entity.BioChemEntity)
+fsh:BioChemEntityShape a sh:NodeShape ;
+    sh:targetClass evi:BioChemEntity ;
+    rdfs:label "BioChemEntity" ;
+    sh:closed false ;        # Pydantic models use extra='allow'
+    sh:nodeKind sh:IRI ;     # @id is required (focus node must be an IRI)
+    sh:property [
+        sh:path schema:name ;
+        sh:name "name" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "name: required, single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:associatedDisease ;
+        sh:name "associatedDisease" ;
+        sh:maxCount 1 ;
+        sh:nodeKind sh:IRI ;
+        sh:message "associatedDisease: single value, reference (@id)" ;
+    ] ;
+    sh:property [
+        sh:path schema:usedBy ;
+        sh:name "usedBy" ;
+        sh:nodeKind sh:IRI ;
+        sh:message "usedBy: reference (@id)" ;
+    ] ;
+    sh:property [
+        sh:path schema:description ;
+        sh:name "description" ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "description: single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:isPartOf ;
+        sh:name "isPartOf" ;
+        sh:nodeKind sh:IRI ;
+        sh:message "isPartOf: reference (@id)" ;
+    ] .
+
+### MedicalCondition  (parity with fairscape_models.medical_condition.MedicalCondition)
+fsh:MedicalConditionShape a sh:NodeShape ;
+    sh:targetClass schema:MedicalCondition ;
+    rdfs:label "MedicalCondition" ;
+    sh:closed false ;        # Pydantic models use extra='allow'
+    sh:nodeKind sh:IRI ;     # @id is required (focus node must be an IRI)
+    sh:property [
+        sh:path schema:name ;
+        sh:name "name" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "name: required, single value, xsd:string" ;
+    ] ;
+    sh:property [
+        sh:path schema:drug ;
+        sh:name "drug" ;
+        sh:nodeKind sh:IRI ;
+        sh:message "drug: reference (@id)" ;
+    ] ;
+    sh:property [
+        sh:path schema:usedBy ;
+        sh:name "usedBy" ;
+        sh:nodeKind sh:IRI ;
+        sh:message "usedBy: reference (@id)" ;
+    ] ;
+    sh:property [
+        sh:path schema:isPartOf ;
+        sh:name "isPartOf" ;
+        sh:nodeKind sh:IRI ;
+        sh:message "isPartOf: reference (@id)" ;
+    ] ;
+    sh:property [
+        sh:path schema:description ;
+        sh:name "description" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "description: required, single value, xsd:string" ;
+    ] .
+
+
+#══════════════════════════════════════════════════════════════════════════════
+# FAIRSCAPE RO-Crate SHACL profile — v0.2.0  ·  Round 2: HAND-AUTHORED layer
+#══════════════════════════════════════════════════════════════════════════════
+# This file is the opposite of the auto layer: it is written and maintained BY
+# HAND, on purpose. It holds the constraints that CANNOT be derived from the
+# Pydantic models because they are about the *shape of the graph* (links between
+# nodes), not about one field of one object.
+#
+# Round 1 (fairscape-shapes.auto.ttl, generated)  =  "is each node well-formed?"
+# Round 2 (this file)                             =  "do the nodes link up right?"
+# build_shapes.py merges the two into the published fairscape-shapes-v0.2.0.ttl.
+#
+# ── How this stays in sync with the models ───────────────────────────────────
+# Every shape below declares the model terms it leans on with `fsh:reflectsModelTerm`.
+# build_shapes.py checks each of those terms still shows up in the freshly
+# generated Round 1 shapes (i.e. still exists in the Pydantic models). If a model
+# edit renames or drops `usedSoftware`, the build FAILS and points here — so a
+# stale graph rule can never silently pass. When you edit a model and the build
+# complains about a term below, fix the rule in the same commit.
+#
+# ── Two JSON-LD expansions for the same field (important) ────────────────────
+# The provenance keys (usedSoftware/usedDataset/usedMLModel/generated/generatedBy)
+# expand to DIFFERENT IRIs depending on a crate's @context:
+#   * crates with no explicit mapping  → @vocab=schema.org → schema:usedDataset …
+#   * crates that map them through EVI  → evi:usedDataset …
+# Both occur in the real corpus, so every rule below matches BOTH namespaces with
+# a SPARQL property-path alternative, e.g. (schema:usedDataset | evi:usedDataset).
+# `fsh:reflectsModelTerm` still names only the canonical schema:* term — that is
+# the IRI Round 1 emits, so it is what the consistency guard can check. The evi:*
+# alternative is expansion-handling inside the query, not a separate model dep.
+#
+# ── Severity policy (deliberate) ─────────────────────────────────────────────
+#   sh:Violation → fails conformance. Used ONLY where we can be certain it is a
+#                  defect *from this file alone* — i.e. the target node is present
+#                  in THIS graph and is the wrong type.
+#   sh:Warning   → surfaces an issue but conformance stays True. Used wherever a
+#                  multi-crate ("release"/nested) layout could make a flagged ref
+#                  legitimately live in another file. We never fail a valid crate
+#                  just because it points outward.
+#
+# ── Multi-root note ──────────────────────────────────────────────────────────
+# A "release crate" is an RO-Crate whose @graph contains many evi:ROCrate nodes
+# (observed: 11 in cellmap/release). So we do NOT constrain root cardinality.
+# Nothing here assumes a single root.
+#══════════════════════════════════════════════════════════════════════════════
+
+
+# Shared SPARQL prefix declarations (referenced by every SPARQL constraint/target
+# below via `sh:prefixes fsh:`). Without this, the engine can't resolve schema:/
+# evi: inside the query strings.
+fsh: sh:declare
+    [ sh:prefix "schema" ; sh:namespace "https://schema.org/"^^xsd:anyURI ] ,
+    [ sh:prefix "evi"    ; sh:namespace "https://w3id.org/EVI#"^^xsd:anyURI ] ,
+    [ sh:prefix "prov"   ; sh:namespace "http://www.w3.org/ns/prov#"^^xsd:anyURI ] ,
+    [ sh:prefix "rdf"    ; sh:namespace "http://www.w3.org/1999/02/22-rdf-syntax-ns#"^^xsd:anyURI ] .
+
+# Performance marker. The two whole-graph rules below (referential integrity, ARK
+# format) target THIS single node with sh:targetNode, so their SPARQL runs exactly
+# ONCE and scans the graph internally. The obvious alternative — a sh:SPARQLTarget
+# that selects every ark/reference node — makes pyshacl re-run the query once per
+# focus node (thousands of them on a real crate: ~30x slower, 8s vs 0.3s). With a
+# singleton focus the offending node is reported in the message (?subj / ?value)
+# rather than as the focus node; that's the deliberate trade for speed.
+fsh:WholeGraph a rdfs:Resource .
+
+
+#───────────────────────────────────────────────────────────────────────────────
+# 1. PROVENANCE / REFERENCE EDGE TYPING                           (sh:Violation)
+#───────────────────────────────────────────────────────────────────────────────
+# Pydantic stores every cross-entity link (usedSoftware, generatedBy, usedSample,
+# …) as a bare {"@id": ...} stub (IdentifierValue) and never checks WHAT it points
+# to. A Dataset could claim `generatedBy <a Software>` and Pydantic would shrug.
+# Here we type-check each edge — but ONLY when the target node is actually
+# described in this crate (`FILTER EXISTS { ?value ?p ?o }`). If the target lives
+# in another crate of a release we skip it (that's rule 2's job), so a nested crate
+# is never failed for an outward link.
+#
+# The edges live on MANY subject types (generatedBy on Dataset/MLModel/Sample,
+# usedByComputation on almost everything, usedInstrument on Experiment, …), so this
+# is a single whole-graph rule (targetNode fsh:WholeGraph, runs once) rather than
+# one shape per class. Each UNION branch is one edge → its allowed target type(s).
+# The offending node is reported via ?subj / ?value / ?edge in the message.
+#
+# Edge → expected target type, as a (predicate, expected-type) lookup table. The
+# "use*" edges name a specific entity type. The provenance edges generatedBy /
+# generated / derivedFrom are POLYMORPHIC in real crates — a Dataset can be
+# derivedFrom a Sample, generatedBy a bare prov:Activity, etc. — so they are typed
+# against the prov: supertype the link semantically requires:
+#   generatedBy → prov:Activity   (Computation, Experiment, and bare Activity all carry it)
+#   generated / derivedFrom → prov:Entity   (Dataset, Sample, MLModel, … all carry it)
+# Bare keys expand to schema: OR evi: (see header note), so both appear in the table.
+#
+# A single VALUES table + one `?subj ?pred ?value` pattern is used instead of a
+# branch per edge: it is one predicate-indexed scan (fast — the 12-branch UNION
+# version timed out on a 4.6 MB crate) and reads as a plain table. "Described in
+# this crate" = the target has an rdf:type here (every real node does); cheaper
+# than checking for any property.
+
+fsh:ProvenanceEdgeTypingShape a sh:NodeShape ;
+    rdfs:label "Reference edges point at a node of the right type" ;
+    sh:severity sh:Violation ;
+    sh:targetNode fsh:WholeGraph ;   # runs once; see performance marker above
+    fsh:reflectsModelTerm evi:Software , evi:Dataset , evi:MLModel , evi:Computation ,
+                          evi:Experiment , evi:Instrument , evi:Sample , evi:Schema ,
+                          schema:usedSoftware , schema:usedDataset , schema:usedMLModel ,
+                          schema:usedInstrument , schema:usedSample , schema:usedByComputation ,
+                          schema:usedByExperiment , schema:generatedBy , schema:generated ,
+                          schema:derivedFrom , schema:trainedOn , evi:Schema ;
+    # One constraint per expected target type (SHACL forbids VALUES in a SPARQL
+    # constraint, so we can't drive it from a table). Each is a single predicate-
+    # indexed scan and runs once. "Described here" = the target has an rdf:type in
+    # this graph (every real node does); external refs have none and are skipped.
+    sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes fsh: ;
+        sh:message "usedSoftware on {?subj} points to {?value}, described here but not an evi:Software." ;
+        sh:select """SELECT $this ?subj ?value WHERE {
+            ?subj ( schema:usedSoftware | evi:usedSoftware ) ?value .
+            FILTER EXISTS { ?value rdf:type ?t } FILTER NOT EXISTS { ?value rdf:type evi:Software } }""" ] ;
+    sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes fsh: ;
+        sh:message "usedDataset/trainedOn on {?subj} points to {?value}, described here but not an evi:Dataset." ;
+        sh:select """SELECT $this ?subj ?value WHERE {
+            ?subj ( schema:usedDataset | evi:usedDataset | schema:trainedOn | evi:trainedOn ) ?value .
+            FILTER EXISTS { ?value rdf:type ?t } FILTER NOT EXISTS { ?value rdf:type evi:Dataset } }""" ] ;
+    sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes fsh: ;
+        sh:message "usedMLModel on {?subj} points to {?value}, described here but not an evi:MLModel." ;
+        sh:select """SELECT $this ?subj ?value WHERE {
+            ?subj ( schema:usedMLModel | evi:usedMLModel ) ?value .
+            FILTER EXISTS { ?value rdf:type ?t } FILTER NOT EXISTS { ?value rdf:type evi:MLModel } }""" ] ;
+    sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes fsh: ;
+        sh:message "usedInstrument on {?subj} points to {?value}, described here but not an evi:Instrument." ;
+        sh:select """SELECT $this ?subj ?value WHERE {
+            ?subj ( schema:usedInstrument | evi:usedInstrument ) ?value .
+            FILTER EXISTS { ?value rdf:type ?t } FILTER NOT EXISTS { ?value rdf:type evi:Instrument } }""" ] ;
+    sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes fsh: ;
+        sh:message "usedSample on {?subj} points to {?value}, described here but not an evi:Sample." ;
+        sh:select """SELECT $this ?subj ?value WHERE {
+            ?subj ( schema:usedSample | evi:usedSample ) ?value .
+            FILTER EXISTS { ?value rdf:type ?t } FILTER NOT EXISTS { ?value rdf:type evi:Sample } }""" ] ;
+    sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes fsh: ;
+        sh:message "usedByComputation on {?subj} points to {?value}, described here but not an evi:Computation." ;
+        sh:select """SELECT $this ?subj ?value WHERE {
+            ?subj ( schema:usedByComputation | evi:usedByComputation ) ?value .
+            FILTER EXISTS { ?value rdf:type ?t } FILTER NOT EXISTS { ?value rdf:type evi:Computation } }""" ] ;
+    sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes fsh: ;
+        sh:message "usedByExperiment on {?subj} points to {?value}, described here but not an evi:Experiment." ;
+        sh:select """SELECT $this ?subj ?value WHERE {
+            ?subj ( schema:usedByExperiment | evi:usedByExperiment ) ?value .
+            FILTER EXISTS { ?value rdf:type ?t } FILTER NOT EXISTS { ?value rdf:type evi:Experiment } }""" ] ;
+    sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes fsh: ;
+        sh:message "dataSchema on {?subj} points to {?value}, described here but not an evi:Schema." ;
+        sh:select """SELECT $this ?subj ?value WHERE {
+            ?subj evi:Schema ?value .
+            FILTER EXISTS { ?value rdf:type ?t } FILTER NOT EXISTS { ?value rdf:type evi:Schema } }""" ] ;
+    # generatedBy / generated / derivedFrom are POLYMORPHIC and the @type
+    # conventions vary across crates: a node may be typed ['prov:Entity','EVI#Dataset']
+    # in one crate and just ['EVI#Dataset'] in another, and `prov:` expands to either
+    # the real namespace OR a literal `prov:Entity` IRI depending on the @context. So
+    # we can't check a fixed supertype IRI. What IS stable is the EVI/prov *local
+    # name*: an Activity is any type ending Computation / Experiment / Activity. We
+    # match on that (namespace- and convention-independent), distinguishing only the
+    # one thing these edges care about: activity vs. produced-entity.
+    #
+    # generatedBy must point AT an activity (the process that made this node):
+    sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes fsh: ;
+        sh:message "generatedBy on {?subj} points to {?value}, described here but not an Activity (Computation/Experiment/Activity)." ;
+        sh:select """SELECT $this ?subj ?value WHERE {
+            ?subj ( schema:generatedBy | evi:generatedBy ) ?value .
+            FILTER EXISTS { ?value rdf:type ?t }
+            FILTER NOT EXISTS { ?value rdf:type ?at .
+                FILTER( STRENDS(STR(?at),"Computation") || STRENDS(STR(?at),"Experiment") || STRENDS(STR(?at),"Activity") ) } }""" ] ;
+    # generated / derivedFrom must NOT point at an activity (they reference the data
+    # entity produced/derived, never the process itself):
+    sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes fsh: ;
+        sh:message "generated/derivedFrom on {?subj} points to {?value}, which is an Activity — these edges should reference the data entity, not the process." ;
+        sh:select """SELECT $this ?subj ?value WHERE {
+            ?subj ( schema:generated | evi:generated | schema:derivedFrom | evi:derivedFrom ) ?value .
+            ?value rdf:type ?at .
+            FILTER( STRENDS(STR(?at),"Computation") || STRENDS(STR(?at),"Experiment") || STRENDS(STR(?at),"Activity") ) }""" ] .
+
+
+#───────────────────────────────────────────────────────────────────────────────
+# 2. REFERENTIAL INTEGRITY  (dangling @id references)             (sh:Warning)
+#───────────────────────────────────────────────────────────────────────────────
+# Every part/provenance edge whose value is an `ark:` IRI should resolve to a
+# node described somewhere in this @graph. Pydantic cannot check this: it holds
+# the value as a stub and never looks for the target. A real scan of the corpus
+# found 6,712 such unresolved ark: refs across 44/60 valid crates — a mix of (a)
+# genuine broken links and (b) legitimate pointers to a parent/child crate that
+# lives in a different file of a release. Because we cannot tell (a) from (b)
+# from one file, this is a WARNING, not a Violation: it conforms, but you get the
+# signal. (The malformed ones — e.g. a trailing comma — are caught precisely by
+# rule 3.)
+#
+# "Described here" = the target IRI is the subject of at least one triple in this
+# graph (`FILTER NOT EXISTS { ?value ?p ?o }` means it is NOT described).
+
+fsh:DanglingReferenceShape a sh:NodeShape ;
+    rdfs:label "ark: references should resolve within this crate (else warn)" ;
+    sh:severity sh:Warning ;     # whole shape is advisory (see severity policy above)
+    sh:targetNode fsh:WholeGraph ;   # runs once; see performance marker above
+    # Predicate-agnostic on purpose: ANY ark: IRI used as an object with no node
+    # described here is a dangling reference, whatever predicate carries it. This
+    # auto-covers every current and future reference field with no list to maintain
+    # — hence no fsh:reflectsModelTerm. Non-ark values (inline objects, plain
+    # strings, http(s) IRIs) are ignored by the ark: filter.
+    #
+    # We report a single COUNT, not one result per dangling ref: a release crate
+    # legitimately points at thousands of sibling-crate nodes (one had 55k), and
+    # emitting a result for each is both noise and slow (pyshacl builds a node per
+    # result). The count is the signal: 0 = self-contained, a handful = investigate,
+    # thousands = a release/nested crate pointing outward (expected).
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:prefixes fsh: ;
+        sh:message "{?n} ark: reference(s) point to a node not described in this crate. Expected for a release/nested crate that links sibling crates; if this crate should be self-contained, they are broken links." ;
+        sh:select """
+            SELECT $this ( COUNT( DISTINCT ?value ) AS ?n ) WHERE {
+                ?subj ?p ?value .
+                FILTER( isIRI(?value) && STRSTARTS(STR(?value), "ark:") )
+                FILTER NOT EXISTS { ?value rdf:type ?anyType }
+            }
+            GROUP BY $this
+            HAVING ( COUNT( DISTINCT ?value ) > 0 )
+        """ ;
+    ] .
+
+
+#───────────────────────────────────────────────────────────────────────────────
+# 3. ARK IDENTIFIER FORMAT                                        (sh:Warning)
+#───────────────────────────────────────────────────────────────────────────────
+# Any IRI in the ark: space (whether a minted @id or a reference) should look
+# like `ark:NNNNN/<name>` with a 5-digit NAAN and no stray whitespace or comma.
+# This is what caught the real bug: roots minted as
+#   ark:59853/rocrate-...-data-release,   <- trailing comma in the @id itself.
+# Pydantic accepts any string here ("we take what we can get"), so this is a
+# WARNING, not a hard requirement.
+#
+# Not tied to a model field — it is a lexical rule on identifiers — so it has no
+# fsh:reflectsModelTerm. The SPARQL target gathers ark: IRIs that are MINTED here
+# (appear as a subject), which is where the bug originates and is far cheaper than
+# scanning every IRI in object position too. A malformed ark that appears only as
+# a reference is still surfaced — it won't resolve, so rule 2 (dangling) flags it.
+
+fsh:ArkIdentifierFormatShape a sh:NodeShape ;
+    rdfs:label "ARK identifiers are well-formed (ark:NNNNN/...)" ;
+    sh:severity sh:Warning ;     # advisory: "we take what we can get" on id format
+    sh:targetNode fsh:WholeGraph ;   # runs once; see performance marker above
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:prefixes fsh: ;
+        sh:message "Malformed ARK identifier {?value} (expected ark:NNNNN/name, no spaces or commas). A trailing comma is the usual culprit." ;
+        sh:select """
+            SELECT $this ?value WHERE {
+                ?value ?p ?o .
+                FILTER( isIRI(?value) && STRSTARTS(STR(?value), "ark:") )
+                FILTER( ! REGEX(STR(?value), "^ark:[0-9]{5}/[^ ,]+$") )
+            }
+        """ ;
+    ] .
+
+
+#───────────────────────────────────────────────────────────────────────────────
+# 4. DATASET AUTHOR PRESENCE                                      (sh:Violation)
+#───────────────────────────────────────────────────────────────────────────────
+# `author` IS a required field on the Pydantic model (DigitalObject.author has no
+# default), but Round 1 cannot express it. Its type is a *list-union*
+#   Union[str, IdentifierValue, List[Union[str, IdentifierValue]]]
+# and generate_shapes.py drops minCount for any field whose type contains a list
+# (an empty list / null / absent key are indistinguishable in RDF, so a blanket
+# minCount would reject crates Pydantic accepts) AND drops the value-type because
+# the `str | IdentifierValue` union is ambiguous. With neither cardinality nor a
+# datatype, the field yields no constraint and is omitted entirely — see the
+# `author` example called out in generate_shapes.py's module docstring.
+#
+# We re-assert presence here, by hand, because "a Dataset must name who made it"
+# is a real requirement we want enforced. This is a Violation, not a Warning: the
+# Dataset node and its (missing) author are both fully determined by THIS file —
+# there is no multi-crate ambiguity like the outward-reference rules above — and
+# Round 1 already fails a Dataset that omits name/description/datePublished/format,
+# so author simply joins the other required Dataset scalars.
+#
+# An author value is either a name (xsd:string) or an @id reference (sh:IRI),
+# mirroring the str | IdentifierValue members of the model union; sh:or accepts
+# either. We deliberately do NOT add maxCount — author may be a list.
+#
+# Verified safe against the real corpus: 0 of 199,864 Dataset nodes across the 78
+# referenced production crates lack an author, so this fails no real crate.
+
+fsh:DatasetAuthorShape a sh:NodeShape ;
+    rdfs:label "A Dataset must name an author" ;
+    sh:severity sh:Violation ;
+    sh:targetClass evi:Dataset ;
+    fsh:reflectsModelTerm schema:author ;   # DigitalObject.author (list-union; absent from Round 1)
+    sh:property [
+        sh:path schema:author ;
+        sh:minCount 1 ;
+        sh:or (
+            [ sh:datatype xsd:string ]   # a literal author name
+            [ sh:nodeKind sh:IRI ]       # an @id reference (IdentifierValue stub)
+        ) ;
+        sh:message "author: required — a name (xsd:string) or an @id reference" ;
+    ] .

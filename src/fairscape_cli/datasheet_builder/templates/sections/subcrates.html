@@ -319,7 +319,7 @@
               </div>
               {% endif %} {% if subcrate.experiment_patterns %}
               <div class="stat-row indent">
-                <span class="stat-value small">{% for pattern in subcrate.experiment_patterns %}{{ pattern }}{% if not loop.last %}, {% endif %}{% endfor %}</span>
+                <span class="stat-value small">{% for pattern in subcrate.experiment_patterns %}<div>{{ pattern | safe }}</div>{% endfor %}</span>
               </div>
               {% endif %}
               <div class="stat-row">
@@ -328,7 +328,7 @@
               </div>
               {% if subcrate.computation_patterns %}
               <div class="stat-row indent">
-                <span class="stat-value small">{% for pattern in subcrate.computation_patterns %}{{ pattern }}{% if not loop.last %}, {% endif %}{% endfor %}</span>
+                <span class="stat-value small">{% for pattern in subcrate.computation_patterns %}<div>{{ pattern | safe }}</div>{% endfor %}</span>
               </div>
               {% endif %}
               <div class="stat-row">
