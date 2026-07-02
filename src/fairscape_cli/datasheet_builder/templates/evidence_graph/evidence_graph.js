@@ -21,6 +21,29 @@ const evidenceGraphData = window.__EVIDENCE_GRAPH_DATA__;
         return name.substring(0, maxLength - 3) + "...";
     }
 
+    // Greedily pack whole words into lines so long edge labels (e.g.
+    // "representative member") wrap instead of overflowing the fixed-width
+    // SVG label. Short labels come back as a single line unchanged.
+    function wrapEdgeLabel(text, maxCharsPerLine = 16) {
+        if (!text) return [];
+        const words = String(text).split(/\s+/).filter(Boolean);
+        if (words.length === 0) return [];
+        const lines = [];
+        let current = "";
+        words.forEach(word => {
+            if (!current) {
+                current = word;
+            } else if ((current.length + 1 + word.length) <= maxCharsPerLine) {
+                current += " " + word;
+            } else {
+                lines.push(current);
+                current = word;
+            }
+        });
+        if (current) lines.push(current);
+        return lines;
+    }
+
     function createEvidenceNode(entityData) {
         if (!entityData || !entityData["@id"]) return null;
         const id = entityData["@id"];
@@ -589,22 +612,37 @@ const evidenceGraphData = window.__EVIDENCE_GRAPH_DATA__;
                     d: pathD,
                     markerEnd: 'url(#arrowhead)'
                 }),
-                 createElement('rect', {
-                     key: `${edgeData.id}-bg`,
-                     className: 'edge-label-bg',
-                     x: labelX - 25,
-                     y: labelY - 8,
-                     width: 50,
-                     height: 16,
-                     rx: 3,
-                 }),
-                createElement('text', {
-                    key: `${edgeData.id}-text`,
-                    className: 'edge-label-text',
-                    x: labelX,
-                    y: labelY,
-                    dy: "0.em"
-                }, edgeData.label || '')
+                 ...(() => {
+                     const lines = wrapEdgeLabel(edgeData.label || '');
+                     if (lines.length === 0) return [];
+                     const LINE_HEIGHT = 11;
+                     const CHAR_WIDTH = 5.5;
+                     const maxLineChars = lines.reduce((m, l) => Math.max(m, l.length), 0);
+                     const bgWidth = maxLineChars * CHAR_WIDTH + 10;
+                     const bgHeight = lines.length * LINE_HEIGHT + 5;
+                     const firstDy = -((lines.length - 1) * LINE_HEIGHT) / 2;
+                     return [
+                         createElement('rect', {
+                             key: `${edgeData.id}-bg`,
+                             className: 'edge-label-bg',
+                             x: labelX - bgWidth / 2,
+                             y: labelY - bgHeight / 2,
+                             width: bgWidth,
+                             height: bgHeight,
+                             rx: 3,
+                         }),
+                         createElement('text', {
+                             key: `${edgeData.id}-text`,
+                             className: 'edge-label-text',
+                             x: labelX,
+                             y: labelY,
+                         }, lines.map((line, i) => createElement('tspan', {
+                             key: `${edgeData.id}-tspan-${i}`,
+                             x: labelX,
+                             dy: i === 0 ? `${firstDy}px` : `${LINE_HEIGHT}px`,
+                         }, line)))
+                     ];
+                 })()
             ]
         );
     });
