@@ -364,4 +364,4 @@ If you'd like to request a feature or report a bug, please create a GitHub Issue
 
 ## License
 
-This project is licensed under the terms of the MIT license.
+This project is licensed under the terms of the Apache 2 license.
