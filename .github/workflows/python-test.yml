@@ -5,6 +5,18 @@ on:
       - main
   pull_request:
 jobs:
+  codemeta-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check codemeta.json version matches pyproject.toml
+        run: |
+          python3 -c "
+          import json, tomllib
+          cm = json.load(open('codemeta.json'))['version']
+          py = tomllib.load(open('pyproject.toml','rb'))['project']['version']
+          assert cm == py, f'codemeta.json version {cm} != pyproject {py}'
+          "
   build:
     runs-on: ${{ matrix.python-version == '3.8' && 'ubuntu-22.04' || 'ubuntu-latest' }}
     strategy:
