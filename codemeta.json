@@ -1,0 +1,83 @@
+{
+    "@context": "https://w3id.org/codemeta/3.0",
+    "@type": "SoftwareSourceCode",
+    "name": "fairscape-cli",
+    "description": "A utility for packaging objects and validating metadata for FAIRSCAPE. Provides RO-Crate creation and management, schema handling and validation, data import, build artifacts (HTML datasheets, evidence graphs), release management, and publishing to Fairscape, Dataverse, and DataCite.",
+    "version": "1.2.8",
+    "license": "https://spdx.org/licenses/Apache-2.0",
+    "codeRepository": "https://github.com/fairscape/fairscape-cli",
+    "issueTracker": "https://github.com/fairscape/fairscape-cli/issues",
+    "url": "https://fairscape.github.io/fairscape-cli/",
+    "downloadUrl": "https://pypi.org/project/fairscape-cli/",
+    "programmingLanguage": "Python",
+    "runtimePlatform": "Python >= 3.8",
+    "developmentStatus": "active",
+    "keywords": [
+        "fairscape",
+        "reproducibility",
+        "FAIR",
+        "B2AI",
+        "CLI",
+        "RO-Crate"
+    ],
+    "author": [
+        {
+            "@type": "Person",
+            "@id": "https://orcid.org/0000-0003-0384-8499",
+            "givenName": "Maxwell Adam",
+            "familyName": "Levinson",
+            "email": "mal8ch@virginia.edu",
+            "affiliation": {
+                "@type": "Organization",
+                "name": "University of Virginia"
+            }
+        },
+        {
+            "@type": "Person",
+            "@id": "https://orcid.org/0000-0002-1103-3882",
+            "givenName": "Justin",
+            "familyName": "Niestroy",
+            "email": "jniestroy@gmail.com",
+            "affiliation": {
+                "@type": "Organization",
+                "name": "University of Virginia"
+            }
+        },
+        {
+            "@type": "Person",
+            "@id": "https://orcid.org/0000-0003-4647-3877",
+            "givenName": "Sadnan",
+            "familyName": "Al Manir",
+            "email": "ma3xy@virginia.edu",
+            "affiliation": {
+                "@type": "Organization",
+                "name": "University of Virginia"
+            }
+        },
+        {
+            "@type": "Person",
+            "@id": "https://orcid.org/0000-0003-4060-7360",
+            "givenName": "Timothy",
+            "familyName": "Clark",
+            "email": "twclark@virginia.edu",
+            "affiliation": {
+                "@type": "Organization",
+                "name": "University of Virginia"
+            }
+        }
+    ],
+    "softwareRequirements": [
+        {"@type": "SoftwareApplication", "name": "click", "version": ">=8.1.7"},
+        {"@type": "SoftwareApplication", "name": "pydantic", "version": ">=2.5.1"},
+        {"@type": "SoftwareApplication", "name": "fairscape-models", "version": ">=1.2.0"},
+        {"@type": "SoftwareApplication", "name": "jsonschema", "version": ">=4.20.0"},
+        {"@type": "SoftwareApplication", "name": "frictionless", "version": ">=5.0,<6.0"},
+        {"@type": "SoftwareApplication", "name": "rdflib"},
+        {"@type": "SoftwareApplication", "name": "pandas"}
+    ],
+    "funder": {
+        "@type": "Organization",
+        "name": "National Institutes of Health"
+    },
+    "funding": "NIH Bridge2AI: OT2OD032742 (Bridge2AI: Cell Maps for AI (CM4AI) Data Generation Project) and OT2OD032701 (Bridge2AI: Patient-Focused Collaborative Hospital Repository Uniting Standards (CHoRUS) for Equitable AI); Frederick Thomas Fund of the University of Virginia"
+}

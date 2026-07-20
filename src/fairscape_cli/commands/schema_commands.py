@@ -1,21 +1,21 @@
 import click
-import json
-from prettytable import PrettyTable
 import pathlib
+from prettytable import PrettyTable
 from pydantic import (
     ValidationError
 )
-from typing import (
-    Union,
-    Type
-)
 
+from fairscape_models.schema import Schema
+
+from fairscape_cli.config import DEFAULT_CONTEXT, DEFAULT_SCHEMA_TYPE
 from fairscape_cli.models import ReadROCrateMetadata, AppendCrate
 
-from fairscape_cli.models.schema.tabular import (
-    TabularValidationSchema,
-    HDF5ValidationSchema,
+from fairscape_cli.models.schema import (
+    infer_schema,
+    validate_schema,
+    load_schema,
     write_schema as WriteSchema,
+    generate_schema_guid,
     StringProperty,
     NumberProperty,
     IntegerProperty,
@@ -52,18 +52,20 @@ def create_tabular_schema(
     """Initialize a Tabular Schema.
     """
     try:
-        schema_model = TabularValidationSchema.model_validate({
+        schema_model = Schema.model_validate({
+            "@id": guid or generate_schema_guid(name),
+            "@context": DEFAULT_CONTEXT,
+            "@type": DEFAULT_SCHEMA_TYPE,
             "name": name,
-            "description":description,
-            "guid":guid,
-            "properties":{},
+            "description": description,
+            "properties": {},
             "required": [],
-            "header":header,
+            "header": header,
             "separator": separator
         })
 
     except ValidationError as metadataError:
-        click.echo("ERROR Validating TabularValidationSchema")
+        click.echo("ERROR Validating Schema")
         for validationFailure in metadataError.errors():
             click.echo(f"property: {validationFailure.get('loc')} \tmsg: {validationFailure.get('msg')}")
         ctx.exit(code=1)
@@ -88,7 +90,7 @@ def add_property():
 def add_property_string(ctx, name, index, description, value_url, pattern, schema_file):
     """Add a String Property to an existing Schema.
     """
-    try: 
+    try:
         stringPropertyModel = StringProperty.model_validate({
             "name": name,
             "index": index,
@@ -145,7 +147,7 @@ def add_property_number(ctx, name, index, description, maximum, minimum, value_u
 def add_property_boolean(ctx, name, index, description, value_url, schema_file):
     """Add a Boolean property to an existing Schema.
     """
-    try: 
+    try:
         booleanPropertyModel = BooleanProperty.model_validate({
             "name": name,
             "index": index,
@@ -209,7 +211,7 @@ def add_property_array(ctx, name, index, description, value_url, items_datatype,
         datatype_enum = DatatypeEnum(items_datatype)
     except Exception:
         print(f"ITEMS Datatype {items_datatype} invalid\n" +
-            "ITEMS must be oneOf 'boolean'|'object'|'string'|'number'|'integer'" 
+            "ITEMS must be oneOf 'boolean'|'object'|'string'|'number'|'integer'"
         )
         ctx.exit(code=1)
 
@@ -226,70 +228,43 @@ def add_property_array(ctx, name, index, description, value_url, items_datatype,
             )
     except ValidationError as metadataError:
         print("ERROR: MetadataValidationError")
-        for validationFailure in metadataError.errors(): 
+        for validationFailure in metadataError.errors():
             click.echo(f"property: {validationFailure.get('loc')} \tmsg: {validationFailure.get('msg')}")
         ctx.exit(code=1)
 
     ClickAppendProperty(ctx, schema_file, arrayPropertyModel, name)
 
-def determine_schema_type(filepath: str) -> Type[Union[TabularValidationSchema, HDF5ValidationSchema]]:
-    """Determine which schema type to use based on file extension"""
-    ext = pathlib.Path(filepath).suffix.lower()[1:]
-    if ext in ('h5', 'hdf5'):
-        return HDF5ValidationSchema
-    elif ext in ('csv', 'tsv', 'parquet'):
-        return TabularValidationSchema
-    else:
-        raise ValueError(f"Unsupported file extension: {ext}")
-
 @schema.command('validate')
 @click.option('--schema', type=str, required=True)
 @click.option('--data', type=str, required=True)
 @click.pass_context
-def validate(ctx, schema, data): 
+def validate(ctx, schema, data):
     """Execute validation of a Schema against the provided data."""
     if 'ark' not in schema:
         schema_path = pathlib.Path(schema)
         if not schema_path.exists():
             click.echo(f"ERROR: Schema file at path {schema} does not exist")
             ctx.exit(1)
-    
+
     data_path = pathlib.Path(data)
     if not data_path.exists():
         click.echo(f"ERROR: Data file at path {data} does not exist")
         ctx.exit(1)
 
     try:
-        with open(schema) as f:
-            schema_json = json.load(f)
-        
-        schema_class = determine_schema_type(data)
-        validation_schema = schema_class.from_dict(schema_json)
-        
-        validation_errors = validation_schema.validate_file(data)
+        schema_model = load_schema(schema)
+        validation_errors = validate_schema(schema_model, data)
 
         if len(validation_errors) != 0:
             error_table = PrettyTable()
-            if isinstance(validation_schema, HDF5ValidationSchema):
-                error_table.field_names = ['path', 'error_type', 'failed_keyword', 'message']
-            else:
-                error_table.field_names = ['row', 'error_type', 'failed_keyword', 'message']
-
+            error_table.field_names = ['location', 'error_type', 'failed_keyword', 'message']
             for err in validation_errors:
-                if isinstance(validation_schema, HDF5ValidationSchema):
-                    error_table.add_row([
-                        err.path,
-                        err.type,
-                        err.failed_keyword,
-                        str(err.message)
-                    ])
-                else:
-                    error_table.add_row([
-                        err.row,
-                        err.type, 
-                        err.failed_keyword,
-                        str(err.message)
-                    ])
+                error_table.add_row([
+                    err.location,
+                    err.error_type,
+                    err.failed_keyword,
+                    str(err.message)
+                ])
 
             print(error_table)
             ctx.exit(1)
@@ -299,7 +274,7 @@ def validate(ctx, schema, data):
 
     except ValidationError as metadata_error:
         click.echo("Error with schema definition")
-        for validation_failure in metadata_error.errors(): 
+        for validation_failure in metadata_error.errors():
             click.echo(f"property: {validation_failure.get('loc')} \tmsg: {validation_failure.get('msg')}")
         ctx.exit(1)
 
@@ -313,40 +288,37 @@ def validate(ctx, schema, data):
 @click.pass_context
 def infer_schema_rocrate(ctx, name, description, guid, input_file, rocrate_path, schema_file):
     """Infer a schema from a file and optionally append it to an RO-Crate.
-    
+
     INPUT_FILE: File to infer schema from (CSV, TSV, Parquet, or HDF5)
     SCHEMA_FILE: Path to save the schema file
     """
     try:
-        # Determine schema type and infer schema
-        schema_class = determine_schema_type(input_file)
-        schema_model = schema_class.infer_from_file(
-            input_file, 
-            name, 
-            description
+        schema_model = infer_schema(
+            input_file,
+            name,
+            description,
+            guid=guid or None
         )
-        if guid:
-            schema_model.guid = guid
 
         WriteSchema(schema_model, schema_file)
-        
+
         ext = pathlib.Path(input_file).suffix.lower()[1:]
         click.echo(f"Inferred Schema from {ext} file: {str(schema_file)}")
-        
+
         # If RO-Crate path is provided, append the schema to it
         if rocrate_path:
-            
+
             # Read the RO-Crate to verify it exists and is valid
             try:
                 ReadROCrateMetadata(rocrate_path)
             except Exception as exc:
                 click.echo(f"ERROR Reading ROCrate: {str(exc)}")
                 ctx.exit(code=1)
-            
+
             # Append to RO-Crate
             AppendCrate(cratePath=rocrate_path, elements=[schema_model])
             click.echo(f"Added Schema to RO-Crate with ID: {schema_model.guid}")
-        
+
     except ValueError as e:
         click.echo(f"Error with file type: {str(e)}")
         ctx.exit(code=1)
@@ -365,103 +337,31 @@ def register_schema(
     schema_file: str,
 ):
     """Register a JSON Schema with the specified RO-Crate.
-    
+
     ROCRATE-PATH: Path to the RO-Crate to add the schema to
     SCHEMA-FILE: Path to the schema JSON file
     """
     try:
-        
+
         try:
             ReadROCrateMetadata(rocrate_path)
         except Exception as exc:
             click.echo(f"ERROR Reading ROCrate: {str(exc)}")
             ctx.exit(code=1)
-        
-        # Read schema file
-        with open(schema_file, 'r') as f:
-            schema_data = json.load(f)
-        
+
         try:
-            schema_model = TabularValidationSchema.from_dict(schema_data)
-            click.echo(f"Loaded schema as TabularValidationSchema")
-        except Exception as tabular_error:
-            # If that fails, try HDF5ValidationSchema
-            try:
-                schema_model = HDF5ValidationSchema.from_dict(schema_data)
-                click.echo(f"Loaded schema as HDF5ValidationSchema")
-            except Exception as hdf5_error:
-                click.echo(f"ERROR: Could not recognize schema format")
-                click.echo(f"TabularValidationSchema error: {str(tabular_error)}")
-                click.echo(f"HDF5ValidationSchema error: {str(hdf5_error)}")
-                ctx.exit(code=1)
-        
+            schema_model = load_schema(schema_file)
+        except Exception as load_error:
+            click.echo(f"ERROR: Could not recognize schema format")
+            click.echo(f"Schema error: {str(load_error)}")
+            ctx.exit(code=1)
+
         AppendCrate(cratePath=rocrate_path, elements=[schema_model])
         click.echo(f"Schema registered with ID: {schema_model.guid}")
-        
+
     except Exception as exc:
         click.echo(f"ERROR: {str(exc)}")
         ctx.exit(code=1)
-
-@schema.command('validate')
-@click.option('--schema', type=str, required=True)
-@click.option('--data', type=str, required=True)
-@click.pass_context
-def validate(ctx, schema, data): 
-    """Execute validation of a Schema against the provided data."""
-    if 'ark' not in schema:
-        schema_path = pathlib.Path(schema)
-        if not schema_path.exists():
-            click.echo(f"ERROR: Schema file at path {schema} does not exist")
-            ctx.exit(1)
-    
-    data_path = pathlib.Path(data)
-    if not data_path.exists():
-        click.echo(f"ERROR: Data file at path {data} does not exist")
-        ctx.exit(1)
-
-    try:
-        with open(schema) as f:
-            schema_json = json.load(f)
-        
-        schema_class = determine_schema_type(data)
-        validation_schema = schema_class.from_dict(schema_json)
-        
-        validation_errors = validation_schema.validate_file(data)
-
-        if len(validation_errors) != 0:
-            error_table = PrettyTable()
-            if isinstance(validation_schema, HDF5ValidationSchema):
-                error_table.field_names = ['path', 'error_type', 'failed_keyword', 'message']
-            else:
-                error_table.field_names = ['row', 'error_type', 'failed_keyword', 'message']
-
-            for err in validation_errors:
-                if isinstance(validation_schema, HDF5ValidationSchema):
-                    error_table.add_row([
-                        err.path,
-                        err.type,
-                        err.failed_keyword,
-                        str(err.message)
-                    ])
-                else:
-                    error_table.add_row([
-                        err.row,
-                        err.type, 
-                        err.failed_keyword,
-                        str(err.message)
-                    ])
-
-            print(error_table)
-            ctx.exit(1)
-        else:
-            print('Validation Success')
-            ctx.exit(0)
-
-    except ValidationError as metadata_error:
-        click.echo("Error with schema definition")
-        for validation_failure in metadata_error.errors(): 
-            click.echo(f"property: {validation_failure.get('loc')} \tmsg: {validation_failure.get('msg')}")
-        ctx.exit(1)
 
 # Placeholder for future RO-Crate structural validation
 # @validate_group.command('crate')

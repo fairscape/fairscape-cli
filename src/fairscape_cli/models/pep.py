@@ -11,7 +11,7 @@ from fairscape_cli.models import (
     CopyToROCrate
 )
 from fairscape_cli.models.guid_utils import GenerateDatetimeSquid
-from fairscape_cli.models.schema.tabular import TabularValidationSchema
+from fairscape_cli.models.schema import infer_schema
 from fairscape_cli.config import NAAN
 
 
@@ -159,7 +159,7 @@ class PEPtoROCrateMapper:
         
         schema = None
         try:
-            schema = TabularValidationSchema.infer_from_file(
+            schema = infer_schema(
                 str(source_path),
                 f"Schema for {dataset_name}",
                 f"Automatically inferred schema for {dataset_name}"
@@ -218,7 +218,7 @@ class PEPtoROCrateMapper:
         
         schema = None
         try:
-            schema = TabularValidationSchema.infer_from_file(
+            schema = infer_schema(
                 str(source_path),
                 f"Schema for {dataset_name}",
                 f"Automatically inferred schema for {dataset_name}"
