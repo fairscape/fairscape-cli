@@ -224,10 +224,42 @@
       .schema-details-container {
         padding: 0;
       }
-      .toggle-schema {
+      .toggle-schema,
+      .toggle-computation {
         cursor: pointer;
         color: var(--color-accent);
         text-decoration: underline;
+        white-space: nowrap;
+      }
+      .computation-meta {
+        margin-bottom: 10px;
+      }
+      .computation-meta div {
+        margin-bottom: 4px;
+      }
+      .io-heading {
+        font-weight: 600;
+        margin: 12px 0 6px;
+      }
+      .io-crate {
+        color: var(--color-text-muted);
+        font-size: 0.85em;
+      }
+      .mono-id {
+        font-family: monospace;
+        font-size: 0.85em;
+        word-break: break-all;
+      }
+      .computation-command {
+        display: block;
+        padding: 8px 12px;
+        background-color: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-sm);
+        font-family: monospace;
+        font-size: 0.85em;
+        white-space: pre-wrap;
+        word-break: break-all;
       }
       .properties-table {
         margin: 0;
@@ -639,6 +671,156 @@
         <p>No {{ tab_id }} found in this RO-Crate.</p>
         {% endif %}
       </div>
+      {% endmacro %} {% macro render_computation_table(items, tab_id, is_active) %}
+      <div
+        id="{{ tab_id }}-content"
+        class="tab-content"
+        style="display: {% if is_active %}block{% else %}none{% endif %};"
+      >
+        {% if items %}
+        <table id="{{ tab_id }}-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Description</th>
+              <th>Access</th>
+              <th>Date Created</th>
+              <th>Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in items %}
+            <tr class="schema-row" id="computation-row-{{ loop.index }}">
+              <td>{{ item.name }}</td>
+              <td
+                {%
+                if
+                item.description
+                !="item.description_display"
+                %}title="{{ item.description }}"
+                {%
+                endif
+                %}
+              >
+                {{ item.description_display }}
+              </td>
+              <td>{{ item.content_status | safe }}</td>
+              <td>{{ item.date }}</td>
+              <td>
+                {% if item.computation_details %}
+                <span
+                  class="toggle-computation"
+                  data-computation-id="{{ loop.index }}"
+                  >Show Details</span
+                >
+                {% else %} No details found {% endif %}
+              </td>
+            </tr>
+            {% if item.computation_details %} {% set details =
+            item.computation_details %}
+            <tr
+              class="schema-properties-row"
+              id="computation-details-row-{{ loop.index }}"
+              style="display: none"
+            >
+              <td colspan="5" class="schema-details-container">
+                <div class="schema-details">
+                  <div class="computation-meta">
+                    {% if details.source_crate %}
+                    <div>
+                      <strong>Provenance RO-Crate:</strong>
+                      {{ details.source_crate }}
+                    </div>
+                    {% endif %} {% if details.id %}
+                    <div>
+                      <strong>Computation @id:</strong>
+                      <span class="mono-id">{{ details.id }}</span>
+                    </div>
+                    {% endif %}
+                  </div>
+                  {% if details.inputs %}
+                  <div class="io-heading">
+                    Inputs ({{ details.inputs|length }})
+                  </div>
+                  <table class="properties-table">
+                    <thead>
+                      <tr>
+                        <th>Name</th>
+                        <th>@id</th>
+                        <th>Format</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for entry in details.inputs %}
+                      <tr>
+                        <td>
+                          {{ entry.name }}{% if entry.crate %}
+                          <span class="io-crate">(from {{ entry.crate }})</span>
+                          {% endif %}
+                        </td>
+                        <td class="mono-id">{{ entry.id }}</td>
+                        <td>{{ entry.format or "—" }}</td>
+                      </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                  {% endif %} {% if details.outputs %}
+                  <div class="io-heading">
+                    Outputs ({{ details.outputs|length }})
+                  </div>
+                  <table class="properties-table">
+                    <thead>
+                      <tr>
+                        <th>Name</th>
+                        <th>@id</th>
+                        <th>Format</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for entry in details.outputs %}
+                      <tr>
+                        <td>{{ entry.name }}</td>
+                        <td class="mono-id">{{ entry.id }}</td>
+                        <td>{{ entry.format or "—" }}</td>
+                      </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                  {% endif %} {% if details.software %}
+                  <div class="io-heading">Software Used</div>
+                  <table class="properties-table">
+                    <thead>
+                      <tr>
+                        <th>Name</th>
+                        <th>@id</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for entry in details.software %}
+                      <tr>
+                        <td>{{ entry.name }}</td>
+                        <td class="mono-id">{{ entry.id }}</td>
+                      </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                  {% endif %} {% if details.command %}
+                  <div class="io-heading">Command</div>
+                  <code class="computation-command">{{ details.command }}</code>
+                  {% endif %} {% if not details.inputs and not details.outputs
+                  and not details.software and not details.command %}
+                  <p>No detailed provenance recorded for this computation.</p>
+                  {% endif %}
+                </div>
+              </td>
+            </tr>
+            {% endif %} {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <p>No {{ tab_id }} found in this RO-Crate.</p>
+        {% endif %}
+      </div>
       {% endmacro %} {% macro render_other_table(items, tab_id, is_active) %}
       <div
         id="{{ tab_id }}-content"
@@ -685,9 +867,8 @@
       'Description', 'Access', 'Release Date'], 'date') }} {{
       render_table(software, 'software', not datasets and software, ['Name',
       'Description', 'Access', 'Release Date'], 'date') }} {{
-      render_table(computations, 'computations', not datasets and not software
-      and computations, ['Name', 'Description', 'Access', 'Date Created'],
-      'date') }} {{ render_table(samples, 'samples', not datasets and not
+      render_computation_table(computations, 'computations', not datasets and
+      not software and computations) }} {{ render_table(samples, 'samples', not datasets and not
       software and not computations and samples, ['Name', 'Description',
       'Identifier', 'Date Created'], 'date') }} {{ render_table(experiments,
       'experiments', not datasets and not software and not computations and not
@@ -776,6 +957,23 @@
             } else {
               detailsRow.style.display = "table-row";
               this.textContent = "Hide Properties";
+            }
+          });
+        });
+
+        document.querySelectorAll(".toggle-computation").forEach((button) => {
+          button.addEventListener("click", function () {
+            const computationId = this.getAttribute("data-computation-id");
+            const detailsRow = document.getElementById(
+              `computation-details-row-${computationId}`
+            );
+
+            if (detailsRow.style.display === "table-row") {
+              detailsRow.style.display = "none";
+              this.textContent = "Show Details";
+            } else {
+              detailsRow.style.display = "table-row";
+              this.textContent = "Hide Details";
             }
           });
         });

@@ -226,6 +226,7 @@ class SubcratesSectionGenerator(SectionGenerator):
                 'computations_count': details.computations_count,
                 'schemas_count': details.schemas_count,
                 'other_count': details.other_count,
+                'datasets_with_provenance_count': details.datasets_with_provenance_count,
                 
                 # Format and access summaries - convert to dict for template
                 'file_formats': dict(details.file_formats) if details.file_formats else {},
@@ -327,7 +328,8 @@ class PreviewGenerator(SectionGenerator):
                 'content_status': item.content_status or "Not specified",
                 'experimentType': getattr(item, 'experimentType', None) or "N/A",
                 'manufacturer': getattr(item, 'manufacturer', None) or "N/A",
-                'schema_properties': getattr(item, 'schema_properties', None)
+                'schema_properties': getattr(item, 'schema_properties', None),
+                'computation_details': getattr(item, 'computation_details', None)
             }
             prepared.append(item_context)
         return prepared

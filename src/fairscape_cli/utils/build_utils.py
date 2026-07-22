@@ -280,6 +280,7 @@ def process_preview(crate_path: Path, published: bool = False) -> bool:
     from fairscape_models.rocrate import ROCrateV1_2
     from fairscape_models.conversion.converter import ROCToTargetConverter
     from fairscape_models.conversion.mapping.FairscapeDatasheet import PREVIEW_MAPPING_CONFIGURATION
+    from fairscape_models.conversion.mapping.subcrate_utils import enrich_preview_computations
     from fairscape_cli.datasheet_builder.rocrate.section_generators import PreviewGenerator
     from jinja2 import Environment, FileSystemLoader
 
@@ -308,6 +309,13 @@ def process_preview(crate_path: Path, published: bool = False) -> bool:
         )
 
         preview = converter.convert()
+        # Standalone crate: a per-crate index (no rocrateName stamps) still resolves
+        # input/output names and formats from within this crate.
+        local_index = {
+            entity.guid: entity.model_dump()
+            for entity in crate.metadataGraph if hasattr(entity, 'guid')
+        }
+        enrich_preview_computations(preview, crate, local_index)
         preview_html = preview_generator.generate(preview, published)
 
         with open(output_path, 'w', encoding='utf-8') as f:
