@@ -5,12 +5,11 @@ from pydantic import (
     ValidationError
 )
 
-from fairscape_models.schema import Schema
-
 from fairscape_cli.config import DEFAULT_CONTEXT, DEFAULT_SCHEMA_TYPE
 from fairscape_cli.models import ReadROCrateMetadata, AppendCrate
 
 from fairscape_cli.models.schema import (
+    TabularSchema,
     infer_schema,
     validate_schema,
     load_schema,
@@ -52,7 +51,7 @@ def create_tabular_schema(
     """Initialize a Tabular Schema.
     """
     try:
-        schema_model = Schema.model_validate({
+        schema_model = TabularSchema.model_validate({
             "@id": guid or generate_schema_guid(name),
             "@context": DEFAULT_CONTEXT,
             "@type": DEFAULT_SCHEMA_TYPE,
@@ -289,7 +288,8 @@ def validate(ctx, schema, data):
 def infer_schema_rocrate(ctx, name, description, guid, input_file, rocrate_path, schema_file):
     """Infer a schema from a file and optionally append it to an RO-Crate.
 
-    INPUT_FILE: File to infer schema from (CSV, TSV, Parquet, or HDF5)
+    INPUT_FILE: File to infer schema from. Supported: CSV, TSV, Parquet
+    (tabular); HDF5 (.h5/.hdf5); WFDB header (.hea); DICOM (.dcm).
     SCHEMA_FILE: Path to save the schema file
     """
     try:
@@ -321,6 +321,12 @@ def infer_schema_rocrate(ctx, name, description, guid, input_file, rocrate_path,
 
     except ValueError as e:
         click.echo(f"Error with file type: {str(e)}")
+        ctx.exit(code=1)
+    except ImportError as e:
+        click.echo(
+            f"Missing optional dependency for this file type ({str(e)}). "
+            "Install with: pip install 'fairscape-models[schema-infer]'"
+        )
         ctx.exit(code=1)
     except Exception as e:
         click.echo(f"Error inferring schema: {str(e)}")

@@ -9,13 +9,18 @@ from pydantic import (
     model_validator,
 )
 
-from fairscape_models.schema import Property
+from fairscape_models.schema import Schema, Property, load_schema
 
-from fairscape_cli.models.schema.core import load_schema, write_schema
 from fairscape_cli.models.schema.utils import (
     PropertyNameException,
     ColumnIndexException,
 )
+from fairscape_cli.utils.serialization import model_dump_pruned, write_json_atomic
+
+
+def write_schema(schema: Schema, output_file: Union[str, pathlib.Path]) -> None:
+    """Write a schema to a JSON file (canonical aliased form, empty fields pruned)."""
+    write_json_atomic(output_file, model_dump_pruned(schema, by_alias=True))
 
 
 class DatatypeEnum(str, Enum):

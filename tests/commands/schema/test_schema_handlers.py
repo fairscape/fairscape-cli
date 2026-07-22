@@ -39,7 +39,7 @@ def sample_h5(tmp_path: pathlib.Path) -> pathlib.Path:
 
 
 class TestParquetHandler:
-    def test_infer_preserves_exact_types(self, runner, tmp_path, sample_parquet):
+    def test_infer_maps_frictionless_types(self, runner, tmp_path, sample_parquet):
         schema_path = tmp_path / "s_pq.json"
         result = runner.invoke(fairscape_cli_app, [
             "schema", "infer",
@@ -51,14 +51,16 @@ class TestParquetHandler:
 
         data = json.loads(schema_path.read_text())
         props = data["properties"]
+        # Parquet is inferred through frictionless (same engine as csv/tsv).
         assert props["count"]["type"] == "integer"
-        assert props["count"]["source-type"] == "int64"
         assert props["value"]["type"] == "number"
-        assert props["value"]["source-type"] == "double"
         assert props["label"]["type"] == "string"
-        # timestamp collapses to the canonical 'string' but records the exact source
+        # a datetime column collapses to canonical 'string' but keeps its source
         assert props["ts"]["type"] == "string"
-        assert props["ts"]["source-type"] == "timestamp[us]"
+        assert props["ts"]["source-type"] == "datetime"
+        # parquet has no delimiter/header row -> those fields are pruned
+        assert "separator" not in data or data["separator"] is None
+        assert data["EVI:schemaType"] == "tabular"
 
     def test_validate_success(self, runner, tmp_path, sample_parquet):
         schema_path = tmp_path / "s_pq.json"
@@ -72,29 +74,27 @@ class TestParquetHandler:
         assert result.exit_code == 0, result.output
         assert "Validation Success" in result.output
 
-    def test_validate_type_and_missing_column(self, runner, tmp_path, sample_parquet):
+    def test_validate_missing_column(self, runner, tmp_path, sample_parquet):
         schema_path = tmp_path / "s_pq.json"
         runner.invoke(fairscape_cli_app, [
             "schema", "infer", "--name", "PQ", "--description", "parquet schema test",
             str(sample_parquet), str(schema_path),
         ])
         data = json.loads(schema_path.read_text())
-        # break the count column's declared source type + add a nonexistent column
-        data["properties"]["count"]["type"] = "number"
-        data["properties"]["count"]["source-type"] = "float64"
+        # declare a column the file does not contain
         data["properties"]["missing_col"] = {"type": "string", "index": 9, "description": "not present"}
         schema_path.write_text(json.dumps(data))
 
         result = runner.invoke(fairscape_cli_app, [
             "schema", "validate", "--schema", str(schema_path), "--data", str(sample_parquet),
         ])
+        # frictionless surfaces the undeclared column as a missing-label error
         assert result.exit_code != 0
-        assert "type" in result.output
-        assert "required" in result.output
+        assert "missing_col" in result.output
 
 
 class TestHDF5Handler:
-    def test_infer_maps_datasets_to_object_properties(self, runner, tmp_path, sample_h5):
+    def test_infer_maps_datasets_to_structural_properties(self, runner, tmp_path, sample_h5):
         schema_path = tmp_path / "s_h5.json"
         result = runner.invoke(fairscape_cli_app, [
             "schema", "infer",
@@ -105,19 +105,25 @@ class TestHDF5Handler:
         assert result.exit_code == 0, result.output
 
         data = json.loads(schema_path.read_text())
+        assert data["EVI:schemaType"] == "hdf5"
         props = data["properties"]
         assert "grp/ds" in props
         assert "root_data" in props
+
+        # a plain dataset is described structurally (array + shape/dtype), no columns
+        root = props["root_data"]
+        assert root["type"] == "array"
+        assert root["shape"] == [10]
+        assert root["dtype"] == "float64"
+        assert "properties" not in root or root["properties"] is None
+
+        # a compound (structured) dataset exposes its fields as nested properties
         ds = props["grp/ds"]
         assert ds["type"] == "object"
         assert ds["hdf5-path"] == "grp/ds"
+        assert ds["shape"] == [2]
         assert ds["properties"]["id"]["type"] == "integer"
         assert ds["properties"]["score"]["type"] == "number"
-        # every nested column type is one of the six canonical types
-        canonical = {"integer", "number", "string", "array", "boolean", "object"}
-        for dataset_prop in props.values():
-            for col in dataset_prop["properties"].values():
-                assert col["type"] in canonical
 
     def test_validate_success(self, runner, tmp_path, sample_h5):
         schema_path = tmp_path / "s_h5.json"
@@ -211,9 +217,11 @@ class TestLegacyCompat:
         schema_path = tmp_path / "legacy_hdf5_schema.json"
         schema_path.write_text(json.dumps(legacy, indent=2))
 
-        # the legacy non-canonical 'year' type must normalize to 'integer' on load
-        from fairscape_cli.models.schema import load_schema
+        # a legacy per-dataset document (no EVI:schemaType) resolves to HDF5Schema
+        from fairscape_cli.models.schema import load_schema, HDF5Schema
         normalized = load_schema(schema_path)
+        assert isinstance(normalized, HDF5Schema)
+        # the legacy non-canonical 'year' type must normalize to 'integer' on load
         id_prop = normalized.properties["grp/ds"].properties["id"]
         assert id_prop.type == "integer"
         assert (id_prop.model_extra or {}).get("source-type") == "year"
