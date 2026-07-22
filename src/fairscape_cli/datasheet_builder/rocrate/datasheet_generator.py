@@ -30,6 +30,7 @@ from fairscape_models.conversion.mapping.FairscapeDatasheet import (
     SUBCRATE_MAPPING_CONFIGURATION,
     PREVIEW_MAPPING_CONFIGURATION
 )
+from fairscape_models.conversion.mapping.subcrate_utils import enrich_preview_computations
 
 from fairscape_cli.utils.rocrate_helpers import get_root_entity
 
@@ -394,6 +395,7 @@ class DatasheetGenerator:
                 )
 
                 preview = converter.convert()
+                enrich_preview_computations(preview, subcrate, self.global_metadata_index)
 
                 preview_html = self.preview_generator.generate(preview, self.published)
 

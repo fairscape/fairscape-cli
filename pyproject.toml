@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fairscape-cli"
-version = "1.2.8"
+version = "1.2.9"
 description = "A utility for packaging objects and validating metadata for FAIRSCAPE"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -39,9 +39,8 @@ dependencies = [
         "prettytable>=3.9.0",
         "jsonschema>=4.20.0",
         "sqids>=0.4.1",
-        "fairscape-models[schema-infer]>=1.2.0",
+        "fairscape-models[schema-tabular]>=1.2.2",
         "pyyaml",
-        "h5py",
         "frictionless>=5.0,<6.0",
         "beautifulsoup4",
         "pandas",
@@ -101,3 +100,8 @@ test = [
 shacl = [
     "pyshacl>=0.27"
 ]
+# Optional per-format schema inference/validation.
+schema-hdf5 = ["fairscape-models[schema-hdf5]"]
+schema-signal = ["fairscape-models[schema-signal]"]
+schema-image = ["fairscape-models[schema-image]"]
+schema-all = ["fairscape-models[schema-infer]"]

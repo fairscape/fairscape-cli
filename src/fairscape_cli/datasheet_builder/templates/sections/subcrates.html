@@ -24,7 +24,8 @@
         <th scope="col">Dataset</th>
         <th scope="col">Size</th>
         <th scope="col">Files</th>
-        <th scope="col">Computations</th>
+        <th scope="col">Activities</th>
+        <th scope="col">Datasets <span class="small">(withProv)</span></th>
         <th scope="col">Schemas</th>
         <th scope="col">Formats</th>
       </tr>
@@ -43,7 +44,8 @@
         </td>
         <td>{{ subcrate.size if subcrate.size else "—" }}</td>
         <td>{{ subcrate.files_count }}</td>
-        <td>{{ subcrate.computations_count }}</td>
+        <td>{{ subcrate.computations_count + subcrate.experiments_count }}</td>
+        <td>{{ subcrate.datasets_with_provenance_count }} <span class="small">/ {{ subcrate.files_count }}</span></td>
         <td>{{ subcrate.schemas_count }}</td>
         <td class="dataset-index-formats">
           {% if subcrate.file_formats %}{% for fmt in subcrate.file_formats.keys()|list %}{{ fmt }}{% if not loop.last %}, {% endif %}{% endfor %}{% else %}—{% endif %}
@@ -329,6 +331,11 @@
               {% if subcrate.computation_patterns %}
               <div class="stat-row indent">
                 <span class="stat-value small">{% for pattern in subcrate.computation_patterns %}<div>{{ pattern | safe }}</div>{% endfor %}</span>
+              </div>
+              {% endif %}
+              {% if subcrate.computations_count %}
+              <div class="stat-row indent">
+                <span class="stat-value small">Full computation details (inputs, outputs, identifiers) available in the {% if subcrate.preview_url %}<a href="{{ subcrate.preview_url }}">full dataset</a>{% else %}full dataset{% endif %}.</span>
               </div>
               {% endif %}
               <div class="stat-row">

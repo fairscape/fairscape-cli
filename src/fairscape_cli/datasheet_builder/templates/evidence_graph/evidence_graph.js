@@ -530,9 +530,33 @@ const evidenceGraphData = window.__EVIDENCE_GRAPH_DATA__;
         }
     }
 
+    function formatPropertyValue(value) {
+        if (value === null || value === undefined) return "";
+        if (Array.isArray(value)) {
+            return value.map(formatPropertyValue).filter(Boolean).join(", ");
+        }
+        if (typeof value === "object") {
+            return value["@id"] || value.name || JSON.stringify(value);
+        }
+        return String(value);
+    }
+
+    // Properties from the entity's source data worth showing in the info
+    // popover, beyond the ones the popover displays explicitly.
+    function getDisplayableProperties(sourceData) {
+        const EXCLUDED = new Set(["@id", "@type", "@context", "name", "label", "description", "count"]);
+        const props = {};
+        Object.entries(sourceData || {}).forEach(([key, value]) => {
+            if (key.startsWith("_") || EXCLUDED.has(key)) return;
+            const formatted = formatPropertyValue(value);
+            if (formatted) props[key] = formatted;
+        });
+        return props;
+    }
+
     const { createElement, useState, useCallback, useEffect, useRef, memo } = React;
 
-    const EvidenceNode = memo(({ nodeData, onClick }) => {
+    const EvidenceNode = memo(({ nodeData, onClick, onInfoClick }) => {
         const { id, type, label, displayName, description, expandable, x, y, width, height } = nodeData;
         const nodeColor = getNodeColor(type);
         // DatasetGroup (graph-condensation node) and DatasetCollection (synthetic UI grouping
@@ -547,6 +571,14 @@ const evidenceGraphData = window.__EVIDENCE_GRAPH_DATA__;
                 onClick(id);
             }
         }, [id, expandable, onClick]);
+
+        const handleInfoClick = useCallback((event) => {
+            // Keep the 'i' click from triggering node expansion.
+            event.stopPropagation();
+            if (onInfoClick) {
+                onInfoClick(id, event.currentTarget.getBoundingClientRect());
+            }
+        }, [id, onInfoClick]);
 
         const style = {
             left: `${x}px`,
@@ -567,10 +599,61 @@ const evidenceGraphData = window.__EVIDENCE_GRAPH_DATA__;
                 createElement('div', { key: 'header', className: 'node-header', style: { backgroundColor: nodeColor } }, displayType),
                 createElement('div', { key: 'content', className: 'node-content' },
                      createElement('div', { style: { width: '100%', textAlign: 'center' } }, displayName)
-                )
+                ),
+                createElement('button', {
+                    key: 'info',
+                    className: 'node-info-button',
+                    style: { backgroundColor: nodeColor },
+                    onClick: handleInfoClick,
+                    onMouseDown: (e) => e.stopPropagation(),
+                    'aria-label': `Details for ${displayName || label || id}`
+                }, 'i')
             ])
         );
     });
+
+    // Details panel opened by a node's 'i' button — the standalone equivalent
+    // of the web client's Tippy tooltip on EvidenceNode.
+    const NodeInfoPopover = ({ node, anchorRect, onClose }) => {
+        const { id, type, label, displayName, description } = node;
+        const sourceData = node._sourceData || {};
+        const otherProps = getDisplayableProperties(sourceData);
+
+        const PANEL_WIDTH = 360;
+        let left = anchorRect.right + 8;
+        if (left + PANEL_WIDTH > window.innerWidth - 10) {
+            left = Math.max(10, anchorRect.left - PANEL_WIDTH - 8);
+        }
+        const top = Math.max(10, Math.min(anchorRect.top, window.innerHeight - 200));
+
+        const propRow = (key, value) => createElement('div', { key: key, className: 'prop-item' }, [
+            createElement('span', { key: 'k', className: 'prop-key' }, `${key}:`),
+            createElement('span', { key: 'v', className: 'prop-value' }, value)
+        ]);
+
+        const metaRows = [
+            propRow('@id', id),
+            propRow('@type', type),
+        ];
+        if (description) metaRows.push(propRow('description', description));
+        if (type === 'DatasetCollection' && sourceData.count !== undefined) {
+            metaRows.push(propRow('Items', String(sourceData.count)));
+        }
+
+        return createElement('div', {
+            className: 'node-info-popover',
+            style: { left: `${left}px`, top: `${top}px`, width: `${PANEL_WIDTH}px` },
+            onMouseDown: (e) => e.stopPropagation(),
+            onClick: (e) => e.stopPropagation()
+        }, [
+            createElement('button', { key: 'close', className: 'popover-close', onClick: onClose, 'aria-label': 'Close details' }, '×'),
+            createElement('h4', { key: 'title' }, label || displayName || 'Node Details'),
+            createElement('div', { key: 'meta', className: 'popover-section' }, metaRows),
+            Object.keys(otherProps).length > 0 && createElement('div', { key: 'props', className: 'popover-section' },
+                Object.entries(otherProps).map(([key, value]) => propRow(key, value))
+            )
+        ]);
+    };
 
     const Edge = memo(({ edgeData, sourceNode, targetNode }) => {
         if (!sourceNode || !targetNode || sourceNode.x === undefined || targetNode.x === undefined) {
@@ -659,6 +742,7 @@ const evidenceGraphData = window.__EVIDENCE_GRAPH_DATA__;
         const [translate, setTranslate] = useState({ x: 0, y: 0 });
         const [isDragging, setIsDragging] = useState(false);
         const [startDragPos, setStartDragPos] = useState({ x: 0, y: 0 });
+        const [infoPopover, setInfoPopover] = useState(null); // { nodeId, anchorRect }
         const rootRef = useRef(null);
 
 
@@ -709,7 +793,15 @@ const evidenceGraphData = window.__EVIDENCE_GRAPH_DATA__;
         }, [graphData, applyLayout]);
 
 
+        const handleInfoClick = useCallback((nodeId, anchorRect) => {
+            // Toggle: clicking the same node's 'i' again closes the popover.
+            setInfoPopover(current =>
+                current && current.nodeId === nodeId ? null : { nodeId, anchorRect }
+            );
+        }, []);
+
         const handleNodeClick = useCallback((nodeId) => {
+            setInfoPopover(null);
             const clickedNodeIndex = nodes.findIndex(n => n.id === nodeId);
             if (clickedNodeIndex === -1) return;
 
@@ -775,9 +867,10 @@ const evidenceGraphData = window.__EVIDENCE_GRAPH_DATA__;
 
         const handleMouseDown = useCallback((event) => {
             if (event.button !== 0) return;
-             if (event.target.closest('.controls-container') || event.target.closest('.node-wrapper')) {
+             if (event.target.closest('.controls-container') || event.target.closest('.node-wrapper') || event.target.closest('.node-info-popover')) {
                  return;
              }
+            setInfoPopover(null);
             setIsDragging(true);
             setStartDragPos({ x: event.clientX - translate.x, y: event.clientY - translate.y });
             if(rootRef.current) rootRef.current.classList.add('dragging');
@@ -864,12 +957,25 @@ const evidenceGraphData = window.__EVIDENCE_GRAPH_DATA__;
                                 nodes.map(node => createElement(EvidenceNode, {
                                     key: node.id,
                                     nodeData: node,
-                                    onClick: handleNodeClick
+                                    onClick: handleNodeClick,
+                                    onInfoClick: handleInfoClick
                                 }))
                             )
                         ]
                     )
                 ),
+                 (() => {
+                     if (!infoPopover) return null;
+                     const infoNode = nodeMap.get(infoPopover.nodeId);
+                     if (!infoNode) return null;
+                     return createElement(NodeInfoPopover, {
+                         key: 'info-popover',
+                         node: infoNode,
+                         anchorRect: infoPopover.anchorRect,
+                         onClose: () => setInfoPopover(null)
+                     });
+                 })(),
+
                  isLoading && createElement('div', { key: 'loading', className: 'loading-overlay' }, 'Loading...'),
 
                  createElement('div', {key: 'controls', className: 'controls-container'}, [

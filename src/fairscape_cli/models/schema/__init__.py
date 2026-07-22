@@ -1,21 +1,32 @@
-from typing import List, Optional
+"""
+fairscape_cli.models.schema — CLI-facing schema surface.
 
-from fairscape_models.schema import Schema, Property
+The typed schema hierarchy, per-format infer/validate, dispatch, and legacy
+loading live in `fairscape_models.schema`; this package re-exports them together
+with the CLI-only property builders and the file writer.
+"""
 
-from fairscape_cli.models.schema.core import (
-    SchemaHandler,
+from fairscape_models.schema import (
+    Schema,
+    Property,
+    TabularSchema,
+    HDF5Schema,
+    SignalSchema,
+    ImageSchema,
+    NDArraySchema,
     ValidationErrorRecord,
-    frictionless_type_to_json_schema,
     generate_schema_guid,
     SOURCE_TYPE_KEY,
-    register_handler,
-    get_handler,
-    supported_extensions,
+    frictionless_type_to_json_schema,
     load_schema,
-    write_schema,
     normalize_schema_document,
+    schema_class_for_file,
+    infer_schema,
+    validate_schema,
 )
+
 from fairscape_cli.models.schema.properties import (
+    write_schema,
     DatatypeEnum,
     Items,
     NullProperty,
@@ -28,35 +39,22 @@ from fairscape_cli.models.schema.properties import (
     ClickAppendProperty,
 )
 
-# Importing handlers registers the built-in csv/tsv, hdf5, and parquet handlers.
-import fairscape_cli.models.schema.handlers  # noqa: F401,E402
-
-
-def infer_schema(filepath: str, name: str, description: str,
-                 guid: Optional[str] = None) -> Schema:
-    """Infer a canonical Schema from a data file, dispatching by extension."""
-    return get_handler(filepath).infer(filepath, name, description, guid=guid)
-
-
-def validate_schema(schema: Schema, filepath: str) -> List[ValidationErrorRecord]:
-    """Validate a data file against a canonical Schema, dispatching by extension."""
-    return get_handler(filepath).validate(schema, filepath)
-
-
 __all__ = [
     'Schema',
     'Property',
-    'SchemaHandler',
+    'TabularSchema',
+    'HDF5Schema',
+    'SignalSchema',
+    'ImageSchema',
+    'NDArraySchema',
     'ValidationErrorRecord',
-    'frictionless_type_to_json_schema',
     'generate_schema_guid',
     'SOURCE_TYPE_KEY',
-    'register_handler',
-    'get_handler',
-    'supported_extensions',
+    'frictionless_type_to_json_schema',
     'load_schema',
     'write_schema',
     'normalize_schema_document',
+    'schema_class_for_file',
     'infer_schema',
     'validate_schema',
     'DatatypeEnum',
