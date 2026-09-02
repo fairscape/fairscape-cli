@@ -1060,7 +1060,9 @@
       <div class="sidebar-title">Navigation</div>
       <a href="#datasheet-summary">Datasheet Summary</a>
       <a href="#dataset-details">Release Overview</a>
+      {% if use_cases_section %}
       <a href="#ai-readiness">AI Ready Information</a>
+      {% endif %}
       <details class="sidebar-dropdown">
         <summary>Composition</summary>
         <a href="#composition" class="sidebar-subnav-link">All Datasets</a>
@@ -1099,7 +1101,9 @@
 
       <div id="dataset-details">{{ overview_section | safe }}</div>
 
+      {% if use_cases_section %}
       <div id="ai-readiness">{{ use_cases_section | safe }}</div>
+      {% endif %}
 
       <div id="composition" class="section-header">
         <h2>Composition (Datasets {{ subcrate_count }})</h2>

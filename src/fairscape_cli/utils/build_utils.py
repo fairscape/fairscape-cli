@@ -592,3 +592,83 @@ def process_all_subcrates(release_directory: Path, published: bool = False, forc
             click.echo(f"  - {error}")
 
     return results
+
+
+def process_linkml(crate_path: Path) -> bool:
+    """Generate ro-crate-linkml.yaml for a single RO-Crate.
+
+    Importable counterpart of the LinkML step inside the 'build datasheet'
+    command, following the same try/except contract as the other process_*
+    helpers.
+    """
+    from fairscape_cli.datasheet_builder.linkml.convert_rocrate import GenerateLinkML
+
+    metadata_file = crate_path / "ro-crate-metadata.json"
+    output_path = crate_path / "ro-crate-linkml.yaml"
+
+    try:
+        GenerateLinkML(metadata_file, output_path)
+        return True
+    except Exception as e:
+        click.echo(f"  ERROR generating LinkML for {crate_path.name}: {e}")
+        return False
+
+
+def process_crate(
+    crate_path: Path,
+    published: bool = False,
+    *,
+    link_inverses: bool = True,
+    add_io: bool = True,
+    evidence_graph: bool = True,
+    linkml: bool = True,
+    datasheet: bool = True,
+    croissant: bool = False,
+    preview: bool = False,
+    merkle: bool = False,
+    force: bool = False,
+) -> Dict[str, Any]:
+    """Run the single-crate build pipeline as an importable library call.
+
+    The steps and their order match what 'build subcrate' and 'build datasheet'
+    perform between them: link inverses -> add EVI:inputs/outputs -> evidence
+    graph -> [croissant] -> [preview] -> [merkle] -> linkml -> datasheet
+    (which also writes ai_ready_score.json). Each step is best-effort and
+    reported in the returned dict; a False/None value means skipped or failed.
+
+    Meant for programmatic callers (e.g. workflow-engine plugins) that already
+    have a finished ro-crate-metadata.json and want the derived artifacts
+    without shelling out to the CLI.
+    """
+    results: Dict[str, Any] = {
+        'crate': crate_path.name,
+        'link_inverses': None,
+        'add_io': None,
+        'evidence_graph': None,
+        'croissant': None,
+        'preview': None,
+        'merkle_tree': None,
+        'linkml': None,
+        'datasheet': None,
+        'errors': [],
+    }
+
+    def run(step_name, enabled, fn):
+        if not enabled:
+            return
+        ok = fn()
+        results[step_name] = ok
+        if not ok:
+            results['errors'].append(f"Step '{step_name}' failed")
+
+    run('link_inverses', link_inverses, lambda: process_link_inverses(crate_path))
+    run('add_io', add_io, lambda: process_add_io(crate_path))
+    run('evidence_graph', evidence_graph,
+        lambda: process_evidence_graph(crate_path, force=force))
+    run('croissant', croissant, lambda: process_croissant(crate_path))
+    run('preview', preview, lambda: process_preview(crate_path, published))
+    run('merkle_tree', merkle, lambda: process_merkle_tree(crate_path))
+    run('linkml', linkml, lambda: process_linkml(crate_path))
+    run('datasheet', datasheet, lambda: process_datasheet(crate_path, published))
+
+    return results

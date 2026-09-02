@@ -801,9 +801,10 @@ def _get_entity_type(entity: Dict[str, Any]) -> str:
 
 def _accumulate_entity_metrics(metrics: AggregatedMetrics, entity: Dict[str, Any]) -> None:
     """Add one @graph entity's counts, size, checksum, and format info to metrics."""
-    # Shared graph-only detectors so the rollups match what the v2 grader would
-    # compute over an inlined graph.
-    from fairscape_models.conversion.mapping import aiready_extract as ax
+    # Graph-only detectors so the rollups match what the grader would compute
+    # over an inlined graph. These live here rather than in the grader package
+    # because fairscape-grader already depends on this one.
+    from fairscape_cli.models import aiready_detectors as ax
 
     entity_type = _get_entity_type(entity)
 

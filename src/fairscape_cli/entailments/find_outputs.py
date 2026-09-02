@@ -39,6 +39,31 @@ def extract_samples_from_graph(graph: List[Dict]) -> List[str]:
                 samples.append(sample_id)
     return samples
 
+def extract_contained_entities_from_graph(graph: List[Dict]) -> Set[str]:
+    """
+    Extract @ids of entities whose isPartOf resolves to another entity in the
+    @graph — files inside an expanded directory output, config files attached
+    to a workflow, and the like. Their container stands for them in the
+    crate-level inputs/outputs calculation.
+
+    Returns:
+        Set of contained entity @ids
+    """
+    graph_ids = {entity.get("@id") for entity in graph if isinstance(entity, dict)}
+    contained = set()
+    for entity in graph:
+        if not isinstance(entity, dict):
+            continue
+        parts = entity.get("isPartOf") or []
+        if isinstance(parts, dict):
+            parts = [parts]
+        for part in parts:
+            part_id = part.get("@id") if isinstance(part, dict) else part
+            if part_id in graph_ids:
+                contained.add(entity["@id"])
+                break
+    return contained
+
 def extract_used_datasets_from_computations(graph: List[Dict]) -> Set[str]:
     """
     Extract all usedDataset @ids from computations in the @graph.
@@ -71,14 +96,18 @@ def calculate_inputs_outputs(graph: List[Dict]) -> Tuple[List[Dict[str, str]], L
     - Datasets that are neither generated nor used (standalone datasets)
     
     Outputs are:
-    - All datasets that were not used by any computation
-    
+    - All datasets that were not used by any computation, except datasets
+      contained in another described entity (isPartOf resolving within the
+      graph): the container stands for them. Without this, every file inside
+      an expanded directory output counts as a top-level crate output.
+
     Returns:
         Tuple of (inputs, outputs) where each is a list of dicts with "@id" key
     """
     datasets = extract_datasets_from_graph(graph)
     samples = extract_samples_from_graph(graph)
     used_dataset_ids = extract_used_datasets_from_computations(graph)
+    contained_ids = extract_contained_entities_from_graph(graph)
     
     dataset_dict = {dataset_id: has_generated_by for dataset_id, has_generated_by in datasets}
     all_dataset_ids = set(dataset_dict.keys())
@@ -97,10 +126,12 @@ def calculate_inputs_outputs(graph: List[Dict]) -> Tuple[List[Dict[str, str]], L
             inputs.append({"@id": used_dataset_id})
     
     for dataset_id, has_generated_by in datasets:
-        if dataset_id not in used_dataset_ids:
+        if dataset_id in used_dataset_ids:
+            continue
+        if dataset_id not in contained_ids:
             outputs.append({"@id": dataset_id})
-            if not has_generated_by:
-                inputs.append({"@id": dataset_id})
+        if not has_generated_by:
+            inputs.append({"@id": dataset_id})
     
     seen_input_ids = set()
     unique_inputs = []

@@ -236,8 +236,13 @@ def add_property_array(ctx, name, index, description, value_url, items_datatype,
 @schema.command('validate')
 @click.option('--schema', type=str, required=True)
 @click.option('--data', type=str, required=True)
+@click.option('--deep', is_flag=True, default=False,
+              help='Also check the data payload itself, not just its structural metadata. '
+                   'For WFDB signals this reads the whole record and verifies the per-channel '
+                   'checksum stored in the header, which is the only way to catch corruption '
+                   'in the middle of a file. Costs one sequential read (~200 MB/s).')
 @click.pass_context
-def validate(ctx, schema, data):
+def validate(ctx, schema, data, deep):
     """Execute validation of a Schema against the provided data."""
     if 'ark' not in schema:
         schema_path = pathlib.Path(schema)
@@ -252,7 +257,7 @@ def validate(ctx, schema, data):
 
     try:
         schema_model = load_schema(schema)
-        validation_errors = validate_schema(schema_model, data)
+        validation_errors = validate_schema(schema_model, data, deep=deep)
 
         if len(validation_errors) != 0:
             error_table = PrettyTable()

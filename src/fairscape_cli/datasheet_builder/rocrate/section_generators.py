@@ -72,13 +72,15 @@ class OverviewSectionGenerator(SectionGenerator):
             'keywords': overview.keywords or [],  # Keep as list for template
             'completeness': overview.completeness or "",
             
-            # Human subjects & governance
-            'human_subject_research': overview.human_subject_research or "No",
-            'human_subject_exemptions': overview.human_subject_exemptions or "N/A",
-            'deidentified_samples': overview.deidentified_samples or "Yes",
-            'fda_regulated': overview.fda_regulated or "No",
-            'irb': overview.irb if overview.irb else "N/A",
-            'irb_protocol_id': overview.irb_protocol_id or "N/A",
+            # Human subjects & governance. Absent means unknown, so these stay
+            # empty and the template hides them -- do NOT default to "No"/"Yes",
+            # which asserts a regulatory answer the crate never made.
+            'human_subject_research': overview.human_subject_research or "",
+            'human_subject_exemptions': overview.human_subject_exemptions or "",
+            'deidentified_samples': overview.deidentified_samples or "",
+            'fda_regulated': overview.fda_regulated or "",
+            'irb': overview.irb if overview.irb else "",
+            'irb_protocol_id': overview.irb_protocol_id or "",
             'data_governance': overview.data_governance or "",
             
             # Related publications - keep as list
@@ -124,6 +126,11 @@ class UseCasesSectionGenerator(SectionGenerator):
             'machine_annotation_tools': use_cases.machine_annotation_tools or "",
         }
 
+        # Every row in the template is guarded, so with nothing populated we
+        # would emit a bare "AI Ready Details" heading. Drop the whole section.
+        if not any(context.values()):
+            return ""
+
         return super().generate('sections/use_cases.html', **context)
 
 
@@ -142,7 +149,12 @@ class DistributionSectionGenerator(SectionGenerator):
             'release_date': distribution.release_date or "",
             'version': distribution.version or ""
         }
-        
+
+        # Same as use cases: all rows are guarded, so an empty context would
+        # leave a bare "Distribution Information" heading.
+        if not any(context.values()):
+            return ""
+
         return super().generate('sections/distribution.html', **context)
 
 
