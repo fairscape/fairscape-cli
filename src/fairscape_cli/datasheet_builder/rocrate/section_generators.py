@@ -237,12 +237,14 @@ class SubcratesSectionGenerator(SectionGenerator):
                 'experiments_count': details.experiments_count,
                 'computations_count': details.computations_count,
                 'schemas_count': details.schemas_count,
+                'models_count': details.models_count,
                 'other_count': details.other_count,
                 'datasets_with_provenance_count': details.datasets_with_provenance_count,
                 
                 # Format and access summaries - convert to dict for template
                 'file_formats': dict(details.file_formats) if details.file_formats else {},
                 'software_formats': dict(details.software_formats) if details.software_formats else {},
+                'model_formats': dict(details.model_formats) if details.model_formats else {},
                 'file_access': dict(details.file_access) if details.file_access else {},
                 'software_access': dict(details.software_access) if details.software_access else {},
                 

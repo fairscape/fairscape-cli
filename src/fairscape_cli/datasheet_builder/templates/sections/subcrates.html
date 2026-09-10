@@ -74,6 +74,7 @@
         {% if subcrate.size %}<span class="chip">{{ subcrate.size }}</span>{% endif %}
         <span class="chip">{{ subcrate.files_count }} files</span>
         {% if subcrate.computations_count and subcrate.computations_count > 0 %}<span class="chip">{{ subcrate.computations_count }} computations</span>{% endif %}
+        {% if subcrate.models_count and subcrate.models_count > 0 %}<span class="chip">{{ subcrate.models_count }} model{% if subcrate.models_count != 1 %}s{% endif %}</span>{% endif %}
         {% if subcrate.file_formats %}{% for fmt in subcrate.file_formats.keys()|list %}{% if loop.index <= 3 %}<span class="chip chip-format">{{ fmt }}</span>{% endif %}{% endfor %}{% endif %}
       </span>
     </summary>
@@ -254,6 +255,23 @@
             </div>
             {% endif %}
           </div>
+
+          {% if subcrate.models_count and subcrate.models_count > 0 %}
+          <div class="summary-card">
+            <div class="card-header">
+              <span class="card-icon">🧠</span>
+              <span class="card-title">ML Models ({{ subcrate.models_count }})</span>
+            </div>
+            {% if subcrate.model_formats %}
+            <div class="card-content">
+              <div class="stat-row">
+                <span class="stat-label">Flavors: </span>
+                <span class="stat-value">{% for fmt, count in subcrate.model_formats.items() %}{{ fmt }} ({{ count }}){% if not loop.last %}, {% endif %}{% endfor %}</span>
+              </div>
+            </div>
+            {% endif %}
+          </div>
+          {% endif %}
 
           <div class="summary-card">
             <div class="card-header">
