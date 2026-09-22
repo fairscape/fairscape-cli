@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from jinja2 import Environment
 
 from fairscape_models.rocrate import ROCrateV1_2
-from fairscape_models.conversion.mapping.subcrate_utils import normalize_formats
+from fairscape_cli.conversion.mapping.subcrate_utils import normalize_formats
 from fairscape_models.conversion.mapping.AIReady import score_rocrate
 from fairscape_models.conversion.models.AIReady import AIReadyScore
 from fairscape_cli.utils.serialization import model_dump_pruned

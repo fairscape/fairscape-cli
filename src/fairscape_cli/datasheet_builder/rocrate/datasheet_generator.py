@@ -14,7 +14,7 @@ from jinja2 import Environment, FileSystemLoader
 
 from fairscape_models.rocrate import ROCrateV1_2
 from fairscape_models.conversion.converter import ROCToTargetConverter
-from fairscape_models.conversion.models.FairscapeDatasheet import (
+from fairscape_cli.conversion.models.FairscapeDatasheet import (
     FairscapeDatasheet,
     OverviewSection,
     UseCasesSection,
@@ -23,14 +23,14 @@ from fairscape_models.conversion.models.FairscapeDatasheet import (
     CompositionSection,
     Preview
 )
-from fairscape_models.conversion.mapping.FairscapeDatasheet import (
+from fairscape_cli.conversion.mapping.FairscapeDatasheet import (
     OVERVIEW_MAPPING_CONFIGURATION,
     USECASES_MAPPING_CONFIGURATION,
     DISTRIBUTION_MAPPING_CONFIGURATION,
     SUBCRATE_MAPPING_CONFIGURATION,
     PREVIEW_MAPPING_CONFIGURATION
 )
-from fairscape_models.conversion.mapping.subcrate_utils import enrich_preview_computations
+from fairscape_cli.conversion.mapping.subcrate_utils import enrich_preview_computations
 
 from fairscape_cli.utils.rocrate_helpers import get_root_entity
 

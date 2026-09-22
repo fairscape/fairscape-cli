@@ -1,4 +1,4 @@
-from fairscape_models.conversion.mapping.d4d import ROCRATE_TO_D4D_MAPPING
+from fairscape_cli.conversion.mapping.d4d import ROCRATE_TO_D4D_MAPPING
 from fairscape_models.rocrate import ROCrateV1_2
 import yaml
 import json

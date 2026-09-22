@@ -279,8 +279,8 @@ def process_preview(crate_path: Path, published: bool = False) -> bool:
     """Generate ro-crate-preview.html for a single RO-Crate."""
     from fairscape_models.rocrate import ROCrateV1_2
     from fairscape_models.conversion.converter import ROCToTargetConverter
-    from fairscape_models.conversion.mapping.FairscapeDatasheet import PREVIEW_MAPPING_CONFIGURATION
-    from fairscape_models.conversion.mapping.subcrate_utils import enrich_preview_computations
+    from fairscape_cli.conversion.mapping.FairscapeDatasheet import PREVIEW_MAPPING_CONFIGURATION
+    from fairscape_cli.conversion.mapping.subcrate_utils import enrich_preview_computations
     from fairscape_cli.datasheet_builder.rocrate.section_generators import PreviewGenerator
     from jinja2 import Environment, FileSystemLoader
 

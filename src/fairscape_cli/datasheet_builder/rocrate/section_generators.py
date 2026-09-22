@@ -9,7 +9,7 @@ Each generator:
 from typing import Dict, Any, List, Optional
 from jinja2 import Environment
 
-from fairscape_models.conversion.models.FairscapeDatasheet import (
+from fairscape_cli.conversion.models.FairscapeDatasheet import (
     OverviewSection,
     UseCasesSection,
     DistributionSection,
