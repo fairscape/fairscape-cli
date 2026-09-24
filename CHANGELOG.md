@@ -17,6 +17,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 * `build datasheet --template-dir` was accepted but silently ignored; it is now honored.
+* `fairscape-cli` failed to start on a fresh install (`ModuleNotFoundError: No module named 'fairscape_models.conversion.models.FairscapeDatasheet'`, [#61](https://github.com/fairscape/fairscape-cli/issues/61)). The datasheet and D4D mapping modules were removed from `fairscape-models` 1.2.6; they are now vendored under `fairscape_cli.conversion`, and the `fairscape-models` floor is raised to 1.2.6.
 
 ## 0.2.0 (2024-03-28)
 
